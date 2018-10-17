@@ -18,9 +18,10 @@ type ItemStack struct {
 }
 
 // New creates a new ItemStack
-func (s *ItemStack) New() *ItemStack {
-	s.items = []Item{}
-	return s
+func NewItemStack() *ItemStack {
+	return &ItemStack{
+		items: []Item{},
+	}
 }
 
 // Push adds an Item to the top of the stack
@@ -37,4 +38,12 @@ func (s *ItemStack) Pop() *Item {
 	s.items = s.items[0 : len(s.items)-1]
 	s.lock.Unlock()
 	return &item
+}
+
+func (s *ItemStack) Empty() bool {
+	return len(s.items) == 0
+}
+
+func (s *ItemStack) Top() *Item {
+	return &s.items[len(s.items)-1]
 }

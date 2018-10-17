@@ -4,18 +4,8 @@ import (
 	"testing"
 )
 
-var s ItemStack
-
-func initStack() *ItemStack {
-	if s.items == nil {
-		s = ItemStack{}
-		s.New()
-	}
-	return &s
-}
-
 func TestPush(t *testing.T) {
-	s := initStack()
+	s := NewItemStack()
 	s.Push(1)
 	s.Push(2)
 	s.Push(3)
@@ -25,6 +15,10 @@ func TestPush(t *testing.T) {
 }
 
 func TestPop(t *testing.T) {
+	s := NewItemStack()
+	s.Push(1)
+	s.Push(2)
+	s.Push(3)
 	s.Pop()
 	if size := len(s.items); size != 2 {
 		t.Errorf("wrong count, expected 2 and got %d", size)
@@ -34,5 +28,42 @@ func TestPop(t *testing.T) {
 	s.Pop()
 	if size := len(s.items); size != 0 {
 		t.Errorf("wrong count, expected 0 and got %d", size)
+	}
+}
+
+func TestEmpty(t *testing.T) {
+	s := NewItemStack()
+	if !s.Empty() {
+		t.Errorf("expected to be empty, got %d", len(s.items))
+	}
+	s.Push(1)
+	if s.Empty() {
+		t.Error("expected not to be empty")
+	}
+}
+func TestTopFail(t *testing.T) {
+	func() {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Errorf("TestTopFail should have panicked!")
+			}
+		}()
+		// This function should cause a panic
+		s := NewItemStack()
+		s.Top()
+	}()
+}
+
+func TestTop(t *testing.T) {
+	s := NewItemStack()
+	s.Push(1)
+	r := *s.Top()
+	if r != 1 {
+		t.Errorf("expected top to be 1, got %d", r)
+	}
+	s.Push(2)
+	r = *s.Top()
+	if r != 2 {
+		t.Errorf("expected top to be 2, got %d", r)
 	}
 }
