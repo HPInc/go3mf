@@ -1,14 +1,20 @@
 package common
 
-type CNMRException struct {
+type Exception struct {
 	errorCode Error
 }
 
-func (e CNMRException) GetErrorCode() Error {
+func NewException(errorCode Error) Exception {
+	return Exception{
+		errorCode: errorCode,
+	}
+}
+
+func (e Exception) GetErrorCode() Error {
 	return e.errorCode
 }
 
-func (e CNMRException) What() string {
+func (e Exception) What() string {
 	switch e.errorCode {
 	// Success / user interaction (0x0XXX)
 	case UserAborted:
@@ -181,9 +187,9 @@ func (e CNMRException) What() string {
 	case ErrorDuplicateNode:
 		return "An Edge with two identical nodes has been tried to added to a mesh"
 	case ErrorTooManyNodes:
-		return "The mesh exceeds more than  MeshMAXEdgeCount (around two billion) nodes"
+		return "The mesh exceeds more than MeshMAXEdgeCount (around two billion) nodes"
 	case ErrorTooManyFaces:
-		return "The mesh exceeds more than  MeshMAXFaceCount (around two billion) faces"
+		return "The mesh exceeds more than MeshMAXFaceCount (around two billion) faces"
 	case ErrorInvalidNodeIndex:
 		return "The index provided for the node is invalid"
 	case ErrorInvalidFaceIndex:
@@ -191,7 +197,7 @@ func (e CNMRException) What() string {
 	case ErrorInvalidMeshTopology:
 		return "The mesh topology structure is corrupt"
 	case ErrorInvalidCoordinates:
-		return "The coordinates exceed  MeshMAXCoordinate (= 1 billion mm)"
+		return "The coordinates exceed MeshMAXCoordinate (= 1 billion mm)"
 	case ErrorNormalizedZeroVector:
 		return "A zero Vector has been tried to normalized, which is impossible"
 	case ErrorCouldNotOpenFile:
@@ -217,7 +223,7 @@ func (e CNMRException) What() string {
 	case ErrorCouldNotSetUnits:
 		return "The specified units could not be set (for example, the CVectorTree already had some entries)"
 	case ErrorTooManyEdges:
-		return "The mesh exceeds more than  MeshMAXEdgeCount (around two billion) edges"
+		return "The mesh exceeds more than MeshMAXEdgeCount (around two billion) edges"
 	case ErrorInvalidEdgeIndex:
 		return "The index provided for the edge is invalid"
 	case ErrorDuplicateEdge:
@@ -295,7 +301,7 @@ func (e CNMRException) What() string {
 	case ErrorInvalidMeshInformation:
 		return "Mesh Information Object was not assigned"
 	case ErrorTooManyBeams:
-		return "The mesh exceeds more than  MeshMAXBeamCount (around two billion) beams"
+		return "The mesh exceeds more than MeshMAXBeamCount (around two billion) beams"
 
 	// Model error codes (0x8XXX)
 	case ErrorOPCReadFailed:
