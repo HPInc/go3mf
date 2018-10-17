@@ -9,11 +9,12 @@ verify: ## Verify module
 
 .PHONY: test
 test: ## Run all the tests
-	echo 'mode: atomic' > coverage.txt && go test -covermode=atomic -coverprofile=coverage.txt -v -race -timeout=30s ./...
+	echo 'mode: atomic' > coverage.out && go test  ./... -timeout=5s
 
 .PHONY: cover
-cover: test ## Run all the tests and opens the coverage report
-	go tool cover -html=coverage.txt
+cover: ## Run all the tests with race detection and opens the coverage report
+	echo 'mode: atomic' > coverage.out && go test  ./... -coverprofile=coverage.out -race -timeout=5s
+	go tool cover -html=coverage.out
 
 .PHONY: ci
 ci: ## Run all the tests and code checks 
