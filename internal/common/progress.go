@@ -16,12 +16,12 @@ const (
 	ProgressExtraxtOPCPackage
 	ProgressReadNonRootModels
 	ProgressReadRootModel
-	ProgressReadRresources
+	ProgressReadResources
 	ProgressReadMesh
 	ProgressReadSlices
 	ProgressReadBuild
 	ProgressCreateOPCPackage
-	ProgressWriteModelsToStram
+	ProgressWriteModelsToStream
 	ProgressWriteRootModel
 	ProgressWriteNonRootModels
 	ProgressWriteAttachements
@@ -100,4 +100,61 @@ func (p *ProgressMonitor) SetProgressCallback(callback ProgressCallback, userDat
 	p.userData = userData;
 	p.lastCallbackResult = true;
 	p.ResetLevels();
+}
+
+func (p *ProgressMonitor) ClearProgressCallback(){
+	p.SetProgressCallback(nil, nil);
+}
+
+func (p *ProgressMonitor) WasAborted() bool {
+	return p.lastCallbackResult == false;
+}
+
+func (p *ProgressMonitor) GetProgressMessage(progressIdentifier ProgressIdentifier, progressString *string) {
+	switch (progressIdentifier) {
+		case ProgressQueryCanceled: 
+			*progressString = "";
+		case ProgressDone: 
+			*progressString = "Done";
+		case ProgressCleanup: 
+			*progressString = "Cleaning up";
+		case ProgressReadStream: 
+			*progressString = "Reading stream";
+		case ProgressExtraxtOPCPackage: 
+			*progressString = "Extracting OPC package";
+		case ProgressReadNonRootModels: 
+			*progressString = "Reading non-root models";
+		case ProgressReadRootModel:
+			 *progressString = "Reading root model";
+		case ProgressReadResources: 
+			*progressString = "Reading resources";
+		case ProgressReadMesh: 
+			*progressString = "Reading mesh data";
+		case ProgressReadSlices: 
+			*progressString = "Reading slice data";
+		case ProgressReadBuild: 
+			*progressString = "Reading build definition";
+		case ProgressCreateOPCPackage: 
+			*progressString = "Creating OPC package";
+		case ProgressWriteModelsToStream: 
+			*progressString = "Writing models to stream";
+		case ProgressWriteRootModel: 
+			*progressString = "Writing root model";
+		case ProgressWriteNonRootModels: 
+			*progressString = "Writing non-root models";
+		case ProgressWriteAttachements: 
+			*progressString = "Writing attachments";
+		case ProgressWriteContentTypes: 
+			*progressString = "Writing content types";
+		case ProgressWriteNoBjects: 
+			*progressString = "Writing objects";
+		case ProgressWriteNodes: 
+			*progressString = "Writing Nodes";
+		case ProgressWriteTriangles: 
+			*progressString = "Writing triangles";
+		case ProgressWriteSlices: 
+			*progressString = "Writing slices";
+		default: 
+			*progressString = "Unknown Progress Identifier";
+	}
 }
