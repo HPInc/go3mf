@@ -41,18 +41,6 @@ func TestEmpty(t *testing.T) {
 		t.Error("expected not to be empty")
 	}
 }
-func TestTopFail(t *testing.T) {
-	func() {
-		defer func() {
-			if r := recover(); r == nil {
-				t.Errorf("TestTopFail should have panicked!")
-			}
-		}()
-		// This function should cause a panic
-		s := NewItemStack()
-		s.Top()
-	}()
-}
 
 func TestTop(t *testing.T) {
 	s := NewItemStack()
