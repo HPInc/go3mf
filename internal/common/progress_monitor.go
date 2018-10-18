@@ -1,9 +1,9 @@
 package common
 
 import (
-	"math" 
-	"github.com/qmuntal/go3mf/pkg/stack"
 	"github.com/qmuntal/go3mf/pkg/semaphore"
+	"github.com/qmuntal/go3mf/pkg/stack"
+	"math"
 )
 
 // ProgressMonitor is the reference implementation for the Progress interface.
@@ -20,28 +20,28 @@ type ProgressMonitor struct {
 func NewProgressMonitor() *ProgressMonitor {
 	return &ProgressMonitor{
 		lastCallbackResult: true,
-		callbackMutex: semaphore.NewSemaphore(),
-		levels: stack.NewItemStack(),
+		callbackMutex:      semaphore.NewSemaphore(),
+		levels:             stack.NewItemStack(),
 	}
 }
 
 // QueryCancelled cancels the current process with a ProgressQueryCanceled identifier.
-func (p *ProgressMonitor) QueryCancelled() bool{
+func (p *ProgressMonitor) QueryCancelled() bool {
 	return p.Progress(-1, ProgressQueryCanceled)
 }
 
 // Progress updates the progress of the current process.
 // If the callback is nil or there is another progress being notified it does nothing and return true.
-func (p *ProgressMonitor) Progress(progress float64, identifier ProgressIdentifier) bool{
+func (p *ProgressMonitor) Progress(progress float64, identifier ProgressIdentifier) bool {
 	if p.progressCallback == nil || !p.callbackMutex.CanRun() {
 		return true
 	}
 
 	var nProgress int
-	if progress == -1{
+	if progress == -1 {
 		nProgress = -1
-	}else {
-		nProgress = int(100.0*(p.level().A + math.Max(math.Min(progress, 1.0), 0.0) * (p.level().B - p.level().A)))
+	} else {
+		nProgress = int(100.0 * (p.level().A + math.Max(math.Min(progress, 1.0), 0.0)*(p.level().B-p.level().A)))
 	}
 	p.lastCallbackResult = p.progressCallback(nProgress, identifier, p.userData)
 	p.callbackMutex.Done()
@@ -58,7 +58,7 @@ func (p *ProgressMonitor) PushLevel(relativeStart float64, relativeEnd float64) 
 // PopLevel removes a level from the progress
 func (p *ProgressMonitor) PopLevel() Float64Pair {
 	ret := p.level()
-	if (!p.levels.Empty()) {
+	if !p.levels.Empty() {
 		p.levels.Pop()
 	}
 	return ret
@@ -72,7 +72,7 @@ func (p *ProgressMonitor) ResetLevels() {
 }
 
 func (p *ProgressMonitor) level() Float64Pair {
-	if (p.levels.Empty()) {
+	if p.levels.Empty() {
 		p.levels.Push(Float64Pair{0.0, 1.0})
 	}
 	return (*p.levels.Top()).(Float64Pair)
@@ -80,7 +80,7 @@ func (p *ProgressMonitor) level() Float64Pair {
 
 // SetProgressCallback restarts the progress and specifies the callback to be executed on every step of the progress.
 // Optionaly usedData can be defined, which will be passed as parameter to the callback.
-func (p *ProgressMonitor) SetProgressCallback(callback ProgressCallback, userData interface{}){
+func (p *ProgressMonitor) SetProgressCallback(callback ProgressCallback, userData interface{}) {
 	p.progressCallback = callback
 	p.userData = userData
 	p.lastCallbackResult = true
@@ -88,7 +88,7 @@ func (p *ProgressMonitor) SetProgressCallback(callback ProgressCallback, userDat
 }
 
 // ClearProgressCallback restarts the process and clears the progress callback.
-func (p *ProgressMonitor) ClearProgressCallback(){
+func (p *ProgressMonitor) ClearProgressCallback() {
 	p.SetProgressCallback(nil, nil)
 }
 
@@ -99,50 +99,50 @@ func (p *ProgressMonitor) WasAborted() bool {
 
 // GetProgressMessage stringify the progress identifiers.
 func (p *ProgressMonitor) GetProgressMessage(progressIdentifier ProgressIdentifier) string {
-	switch (progressIdentifier) {
-		case ProgressQueryCanceled: 
-			return ""
-		case ProgressDone: 
-			return "Done"
-		case ProgressCleanup: 
-			return "Cleaning up"
-		case ProgressReadStream: 
-			return "Reading stream"
-		case ProgressExtractOPCPackage: 
-			return "Extracting OPC package"
-		case ProgressReadNonRootModels: 
-			return "Reading non-root models"
-		case ProgressReadRootModel:
-			 return "Reading root model"
-		case ProgressReadResources: 
-			return "Reading resources"
-		case ProgressReadMesh: 
-			return "Reading mesh data"
-		case ProgressReadSlices: 
-			return "Reading slice data"
-		case ProgressReadBuild: 
-			return "Reading build definition"
-		case ProgressCreateOPCPackage: 
-			return "Creating OPC package"
-		case ProgressWriteModelsToStream: 
-			return "Writing models to stream"
-		case ProgressWriteRootModel: 
-			return "Writing root model"
-		case ProgressWriteNonRootModels: 
-			return "Writing non-root models"
-		case ProgressWriteAttachements: 
-			return "Writing attachments"
-		case ProgressWriteContentTypes: 
-			return "Writing content types"
-		case ProgressWriteObjects: 
-			return "Writing objects"
-		case ProgressWriteNodes: 
-			return "Writing Nodes"
-		case ProgressWriteTriangles: 
-			return "Writing triangles"
-		case ProgressWriteSlices: 
-			return "Writing slices"
-		default: 
-			return "Unknown Progress Identifier"
+	switch progressIdentifier {
+	case ProgressQueryCanceled:
+		return ""
+	case ProgressDone:
+		return "Done"
+	case ProgressCleanup:
+		return "Cleaning up"
+	case ProgressReadStream:
+		return "Reading stream"
+	case ProgressExtractOPCPackage:
+		return "Extracting OPC package"
+	case ProgressReadNonRootModels:
+		return "Reading non-root models"
+	case ProgressReadRootModel:
+		return "Reading root model"
+	case ProgressReadResources:
+		return "Reading resources"
+	case ProgressReadMesh:
+		return "Reading mesh data"
+	case ProgressReadSlices:
+		return "Reading slice data"
+	case ProgressReadBuild:
+		return "Reading build definition"
+	case ProgressCreateOPCPackage:
+		return "Creating OPC package"
+	case ProgressWriteModelsToStream:
+		return "Writing models to stream"
+	case ProgressWriteRootModel:
+		return "Writing root model"
+	case ProgressWriteNonRootModels:
+		return "Writing non-root models"
+	case ProgressWriteAttachements:
+		return "Writing attachments"
+	case ProgressWriteContentTypes:
+		return "Writing content types"
+	case ProgressWriteObjects:
+		return "Writing objects"
+	case ProgressWriteNodes:
+		return "Writing Nodes"
+	case ProgressWriteTriangles:
+		return "Writing triangles"
+	case ProgressWriteSlices:
+		return "Writing slices"
+	default:
+		return "Unknown Progress Identifier"
 	}
 }
