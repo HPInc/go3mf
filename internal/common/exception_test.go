@@ -69,7 +69,7 @@ func TestException_What(t *testing.T) {
 		{"ErrorAbstract", Exception{ErrorAbstract}, "The function called is abstract and should not have been called"},
 		{"ErrorInvalidHeadBlock", Exception{ErrorInvalidHeadBlock}, "The current block is not assigned"},
 		{"ErrorCOMInitializationFailed", Exception{ErrorCOMInitializationFailed}, "COM CoInitialize failed"},
-		{"ErrorStandardCPPException", Exception{ErrorStandardCPPException}, "A Standard C++ Exception occured"},
+		{"ErrorStandardCPPException", Exception{ErrorStandardCPPException}, "A Standard C++ Exception occurred"},
 		{"ErrorInvalidMesh", Exception{ErrorInvalidMesh}, "No mesh has been given"},
 		{"ErrorCouldNotCreateContext", Exception{ErrorCouldNotCreateContext}, "Context could not be created"},
 		{"ErrorEmptyStringToIntConversion", Exception{ErrorEmptyStringToIntConversion}, "Wanted to convert empty string to integer"},
@@ -338,7 +338,7 @@ func TestException_What(t *testing.T) {
 		{"ErrorDuplicateZTop", Exception{ErrorDuplicateZTop}, "Duplicate Z-top-value in a slice."},
 		{"ErrorMissingTEZTop", Exception{ErrorMissingTEZTop}, "Z-top-value is missing in a slice."},
 		{"ErrorSliceInvalidAttribute", Exception{ErrorSliceInvalidAttribute}, "Invalid attribute in slice extension"},
-		{"ErrorSliceTransformationPlanar", Exception{ErrorSliceTransformationPlanar}, "A slicestack posesses a nonplanar transformation."},
+		{"ErrorSliceTransformationPlanar", Exception{ErrorSliceTransformationPlanar}, "A slicestack possesses a nonplanar transformation."},
 		{"ErrorUUIDNotUnique", Exception{ErrorUUIDNotUnique}, "A UUID is not unique within a package."},
 		{"ErrorMetadataCouldNotGetNamespace", Exception{ErrorMetadataCouldNotGetNamespace}, "Could not get XML Namespace for a metadatum."},
 		{"ErrorInvalidSliceSegmentVertexIndex", Exception{ErrorInvalidSliceSegmentVertexIndex}, "Invalid index for slice segment or polygon."},
@@ -394,7 +394,7 @@ func TestException_What(t *testing.T) {
 		{"ErrorInvalidNameLength", Exception{ErrorInvalidNameLength}, "Invalid name length"},
 		{"ErrorCouldNotCreateModel", Exception{ErrorCouldNotCreateModel}, "Could not create model"},
 		{"ErrorInvalidTextureType", Exception{ErrorInvalidTextureType}, "Invalid Texture type"},
-		{"Unkown", Exception{-1}, "unknown error"},
+		{"Unknown", Exception{-1}, "unknown error"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

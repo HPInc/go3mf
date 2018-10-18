@@ -7,7 +7,7 @@ const GenericExceptionString = "uncatched exception"
   Success / user interaction (0x0XXX)
 -------------------------------------------------------------------*/
 
-// Function has suceeded, there has been no error
+// Function has succeeded, there has been no error
 const Success = 0x0
 
 // Function was aborted by user
@@ -71,7 +71,7 @@ const ErrorInvalidHeadBlock = 0x1010
 // COM CoInitialize failed
 const ErrorCOMInitializationFailed = 0x1011
 
-// A Standard C++ Exception occured
+// A Standard C++ Exception occurred
 const ErrorStandardCPPException = 0x1012
 
 // No mesh has been given

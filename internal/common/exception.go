@@ -57,7 +57,7 @@ func (e Exception) What() string {
 	case ErrorCOMInitializationFailed:
 		return "COM CoInitialize failed"
 	case ErrorStandardCPPException:
-		return "A Standard C++ Exception occured"
+		return "A Standard C++ Exception occurred"
 	case ErrorInvalidMesh:
 		return "No mesh has been given"
 	case ErrorCouldNotCreateContext:
@@ -601,7 +601,7 @@ func (e Exception) What() string {
 	case ErrorSliceInvalidAttribute:
 		return "Invalid attribute in slice extension"
 	case ErrorSliceTransformationPlanar:
-		return "A slicestack posesses a nonplanar transformation."
+		return "A slicestack possesses a nonplanar transformation."
 	case ErrorUUIDNotUnique:
 		return "A UUID is not unique within a package."
 	case ErrorMetadataCouldNotGetNamespace:
