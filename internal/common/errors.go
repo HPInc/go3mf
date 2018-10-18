@@ -10,8 +10,8 @@ type Error struct {
 }
 
 // NewError returns a new error with the desired code
-func NewError(errorCode ErrorCode) Error {
-	return Error{
+func NewError(errorCode ErrorCode) error {
+	return &Error{
 		errorCode: errorCode,
 	}
 }
