@@ -99,50 +99,8 @@ func (p *ProgressMonitor) WasAborted() bool {
 
 // GetProgressMessage stringify the progress identifiers.
 func (p *ProgressMonitor) GetProgressMessage(progressIdentifier ProgressIdentifier) string {
-	switch progressIdentifier {
-	case ProgressQueryCanceled:
-		return ""
-	case ProgressDone:
-		return "Done"
-	case ProgressCleanup:
-		return "Cleaning up"
-	case ProgressReadStream:
-		return "Reading stream"
-	case ProgressExtractOPCPackage:
-		return "Extracting OPC package"
-	case ProgressReadNonRootModels:
-		return "Reading non-root models"
-	case ProgressReadRootModel:
-		return "Reading root model"
-	case ProgressReadResources:
-		return "Reading resources"
-	case ProgressReadMesh:
-		return "Reading mesh data"
-	case ProgressReadSlices:
-		return "Reading slice data"
-	case ProgressReadBuild:
-		return "Reading build definition"
-	case ProgressCreateOPCPackage:
-		return "Creating OPC package"
-	case ProgressWriteModelsToStream:
-		return "Writing models to stream"
-	case ProgressWriteRootModel:
-		return "Writing root model"
-	case ProgressWriteNonRootModels:
-		return "Writing non-root models"
-	case ProgressWriteAttachements:
-		return "Writing attachments"
-	case ProgressWriteContentTypes:
-		return "Writing content types"
-	case ProgressWriteObjects:
-		return "Writing objects"
-	case ProgressWriteNodes:
-		return "Writing Nodes"
-	case ProgressWriteTriangles:
-		return "Writing triangles"
-	case ProgressWriteSlices:
-		return "Writing slices"
-	default:
-		return "Unknown Progress Identifier"
+	if val, ok := ProgressMap[progressIdentifier]; ok {
+		return val
 	}
+	return "Unknown Progress Identifier"
 }

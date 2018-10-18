@@ -1,7 +1,7 @@
 package common
 
-// MessageErrorMap defines a mapping between the error code and the message
-var MessageErrorMap = map[ErrorCode]string{
+// ErrorMap defines a mapping between the error code and the message
+var ErrorMap = map[ErrorCode]string{
 	UserAborted:                                   "The called function was aborted by the user",
 	ErrorNotImplemented:                           "The called function is not fully implemented",
 	ErrorInvalidParam:                             "The call parameter to the function was invalid",

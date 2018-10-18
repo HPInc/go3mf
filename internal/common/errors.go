@@ -22,7 +22,7 @@ func (e *Error) GetErrorCode() ErrorCode {
 }
 
 func (e *Error) Error() string {
-	if val, ok := MessageErrorMap[e.errorCode]; ok {
+	if val, ok := ErrorMap[e.errorCode]; ok {
 		return val
 	}
 	return "unknown error"
