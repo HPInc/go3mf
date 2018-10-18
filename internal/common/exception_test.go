@@ -50,6 +50,7 @@ func TestException_What(t *testing.T) {
 		e    Exception
 		want string
 	}{
+		{"UserAborted", Exception{UserAborted}, "The called function was aborted by the user"},
 		{"ErrorNotImplemented", Exception{ErrorNotImplemented}, "The called function is not fully implemented"},
 		{"ErrorInvalidParam", Exception{ErrorInvalidParam}, "The call parameter to the function was invalid"},
 		{"ErrorCalculationTerminated", Exception{ErrorCalculationTerminated}, "The Calculation has to be canceled"},
@@ -386,6 +387,7 @@ func TestException_What(t *testing.T) {
 		{"ErrorContentTypeEmptyContentType", Exception{ErrorContentTypeEmptyContentType}, "A content type does not have a content type-value."},
 		{"ErrorContentTypeEmptyPartName", Exception{ErrorContentTypeEmptyPartName}, "An override content type does not have a partname."},
 		{"ErrorXMLParserInvalidEscapeString", Exception{ErrorXMLParserInvalidEscapeString}, "XML contains an invalid escape character."},
+		{"ErrorDuplicateBoxAttribute", Exception{ErrorDuplicateBoxAttribute}, "A box attribute is duplicated."},
 		{"ErrorCouldNotGetInterfaceVersion", Exception{ErrorCouldNotGetInterfaceVersion}, "Could not get interface version"},
 		{"ErrorInvalidInterfaceVersion", Exception{ErrorInvalidInterfaceVersion}, "Invalid interface version"},
 		{"ErrorInvalidStreamSize", Exception{ErrorInvalidStreamSize}, "Invalid stream size"},
