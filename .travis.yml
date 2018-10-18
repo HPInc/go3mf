@@ -6,15 +6,16 @@ go_import_path: github.com/qmuntal/go3mf
 go:
   - 1.10.x
   - 1.11.x
-  
+
 env:
   - GO111MODULE=on
 
 notifications:
-  email: false
+  - email: false
 
 before_script:
-  make setup  
+  - make setup  
 
 script:
-  make goveralls
+  - go test  ./... -coverprofile=coverage.out -race -timeout=5s
+  - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci

@@ -18,11 +18,6 @@ cover: ## Run all the tests with race detection and opens the coverage report
 	go test  ./... -coverprofile=coverage.out -race -timeout=5s
 	go tool cover -html=coverage.out
 
-.PHONY: goveralls
-goveralls: ## Run cover and send report to goveralls
-	go test  ./... -coverprofile=coverage.out -race -timeout=5s
-	$GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
-
 .PHONY: ci
 ci: ## Run all the tests and code checks 
 	verify
