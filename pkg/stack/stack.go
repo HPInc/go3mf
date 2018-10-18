@@ -40,10 +40,12 @@ func (s *ItemStack) Pop() *Item {
 	return &item
 }
 
+// Empty removes all the elements from the stack
 func (s *ItemStack) Empty() bool {
 	return len(s.items) == 0
 }
 
+// Top returns the last added element from the stack
 func (s *ItemStack) Top() *Item {
 	return &s.items[len(s.items)-1]
 }
