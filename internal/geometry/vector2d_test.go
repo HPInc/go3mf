@@ -39,6 +39,7 @@ func TestVector2D_Add(t *testing.T) {
 	}{
 		{"zero", NewVector2D(0.0, 5.0), args{NewVector2D(2.0, 3.0)}, NewVector2D(2.0, 8.0)},
 		{"random", NewVector2D(4.0, 5.0), args{NewVector2D(2.0, 3.0)}, NewVector2D(6.0, 8.0)},
+		{"negative", NewVector2D(4.0, 5.0), args{NewVector2D(-2.0, 3.0)}, NewVector2D(2.0, 8.0)},
 		{"big", NewVector2D(4000.0, 5000000.0), args{NewVector2D(2000.0, 3000000.0)}, NewVector2D(6000.0, 8000000.0)},
 	}
 	for _, tt := range tests {
@@ -62,6 +63,7 @@ func TestVector2D_Sub(t *testing.T) {
 	}{
 		{"zero", NewVector2D(0.0, 5.0), args{NewVector2D(2.0, 3.0)}, NewVector2D(-2.0, 2.0)},
 		{"random", NewVector2D(4.0, 5.0), args{NewVector2D(2.0, 3.0)}, NewVector2D(2.0, 2.0)},
+		{"negative", NewVector2D(4.0, -5.0), args{NewVector2D(2.0, 3.0)}, NewVector2D(2.0, -8.0)},
 		{"big", NewVector2D(4000.0, 5000000.0), args{NewVector2D(2000.0, 3000000.0)}, NewVector2D(2000.0, 2000000.0)},
 	}
 	for _, tt := range tests {
