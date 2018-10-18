@@ -6,7 +6,7 @@ type Byte byte
 type Uint16 uint16
 type Int16 int16
 type Int32 int32
-type Error int32
+type ErrorCode int32
 type Bool bool
 type Float float32
 type Double float64
