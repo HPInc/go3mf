@@ -1,6 +1,6 @@
 package common
 
-// ErrorCode
+// ErrorCode defines a code associated to an error
 type ErrorCode int32
 
 // Error contains an error code that has to match with a valid ErrorCode.
@@ -9,17 +9,19 @@ type Error struct {
 	errorCode ErrorCode
 }
 
+// NewError returns a new error with the desired code
 func NewError(errorCode ErrorCode) Error {
 	return Error{
 		errorCode: errorCode,
 	}
 }
 
-func (e Error) GetErrorCode() ErrorCode {
+// GetErrorCode returns the error code
+func (e *Error) GetErrorCode() ErrorCode {
 	return e.errorCode
 }
 
-func (e Error) What() string {
+func (e *Error) Error() string {
 	switch e.errorCode {
 	// Success / user interaction (0x0XXX)
 	case UserAborted:
@@ -202,7 +204,7 @@ func (e Error) What() string {
 	case ErrorInvalidMeshTopology:
 		return "The mesh topology structure is corrupt"
 	case ErrorInvalidCoordinates:
-		return "The coordinates exceed MeshMAXCoordinate (= 1 billion mm)"
+		return "The coordinates exceed MeshMaxCoordinate (= 1 billion mm)"
 	case ErrorNormalizedZeroVector:
 		return "A zero Vector has been tried to normalized, which is impossible"
 	case ErrorCouldNotOpenFile:

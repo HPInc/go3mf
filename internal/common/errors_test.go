@@ -44,7 +44,7 @@ func TestError_GetErrorCode(t *testing.T) {
 	}
 }
 
-func TestError_What(t *testing.T) {
+func TestError_Errort(t *testing.T) {
 	tests := []struct {
 		name string
 		e    Error
@@ -137,7 +137,7 @@ func TestError_What(t *testing.T) {
 		{"ErrorInvalidNodeIndex", Error{ErrorInvalidNodeIndex}, "The index provided for the node is invalid"},
 		{"ErrorInvalidFaceIndex", Error{ErrorInvalidFaceIndex}, "The index provided for the face is invalid"},
 		{"ErrorInvalidMeshTopology", Error{ErrorInvalidMeshTopology}, "The mesh topology structure is corrupt"},
-		{"ErrorInvalidCoordinates", Error{ErrorInvalidCoordinates}, "The coordinates exceed MeshMAXCoordinate (= 1 billion mm)"},
+		{"ErrorInvalidCoordinates", Error{ErrorInvalidCoordinates}, "The coordinates exceed MeshMaxCoordinate (= 1 billion mm)"},
 		{"ErrorNormalizedZeroVector", Error{ErrorNormalizedZeroVector}, "A zero Vector has been tried to normalized, which is impossible"},
 		{"ErrorCouldNotOpenFile", Error{ErrorCouldNotOpenFile}, "The specified file could not be opened"},
 		{"ErrorCouldNotCreateFile", Error{ErrorCouldNotCreateFile}, "The specified file could not be created"},
@@ -398,8 +398,8 @@ func TestError_What(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.What(); got != tt.want {
-				t.Errorf("Exception.What() = %v, want %v", got, tt.want)
+			if got := tt.e.Error(); got != tt.want {
+				t.Errorf("Exception.Error() = %v, want %v", got, tt.want)
 			}
 		})
 	}
