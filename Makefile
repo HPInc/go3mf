@@ -1,14 +1,13 @@
-.PHONY: verify
-verify: ## Verify module
-	go mod tidy
-	go mod verify
-
 .PHONY: setup
 setup: ## Install all the build and lint dependencies
 	go get github.com/mattn/goveralls
 	go get golang.org/x/tools/cmd/cover
-	go mod download
-	verify
+	go get -t -v ./...
+
+.PHONY: verify
+verify: ## Verify module
+	go mod tidy
+	go mod verify
 
 .PHONY: test
 test: ## Run all the tests
