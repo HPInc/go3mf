@@ -15,12 +15,12 @@ test: ## Run all the tests
 
 .PHONY: cover
 cover: ## Run all the tests with race detection and opens the coverage report
-	echo 'mode: atomic' > coverage.out && go test  ./... -coverprofile=coverage.out -race -timeout=5s
+	go test  ./... -coverprofile=coverage.out -race -timeout=5s
 	go tool cover -html=coverage.out
 
 .PHONY: goveralls
 goveralls: ## Run cover and send report to goveralls
-	cover
+	go test  ./... -coverprofile=coverage.out -race -timeout=5s
 	$GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
 
 .PHONY: ci
