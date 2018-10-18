@@ -1,6 +1,7 @@
 .PHONY: verify
 verify: ## Verify module
 	go mod tidy
+	go mod verify
 
 .PHONY: setup
 setup: ## Install all the build and lint dependencies
