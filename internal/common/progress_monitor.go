@@ -94,7 +94,7 @@ func (p *ProgressMonitor) GetProgressMessage(progressIdentifier ProgressIdentifi
 			return "Cleaning up"
 		case ProgressReadStream: 
 			return "Reading stream"
-		case ProgressExtraxtOPCPackage: 
+		case ProgressExtractOPCPackage: 
 			return "Extracting OPC package"
 		case ProgressReadNonRootModels: 
 			return "Reading non-root models"
@@ -120,7 +120,7 @@ func (p *ProgressMonitor) GetProgressMessage(progressIdentifier ProgressIdentifi
 			return "Writing attachments"
 		case ProgressWriteContentTypes: 
 			return "Writing content types"
-		case ProgressWriteNoBjects: 
+		case ProgressWriteObjects: 
 			return "Writing objects"
 		case ProgressWriteNodes: 
 			return "Writing Nodes"
