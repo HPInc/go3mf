@@ -17,7 +17,7 @@ type ItemStack struct {
 	lock  sync.RWMutex
 }
 
-// New creates a new ItemStack
+// NewItemStack creates a new ItemStack
 func NewItemStack() *ItemStack {
 	return &ItemStack{
 		items: []Item{},

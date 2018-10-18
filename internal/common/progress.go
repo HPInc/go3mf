@@ -34,7 +34,7 @@ const (
 	ProgressWriteRootModel
 	// ProgressWriteNonRootModels when the process is writing non-root models
 	ProgressWriteNonRootModels
-	// ProgressWriteAttachements when the process is writting the attachements
+	// ProgressWriteAttachements when the process is writing the attachements
 	ProgressWriteAttachements
 	// ProgressWriteContentTypes when the process is writing content types
 	ProgressWriteContentTypes
