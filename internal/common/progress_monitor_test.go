@@ -116,8 +116,8 @@ func TestProgressMonitor_PushLevel(t *testing.T) {
 		relativeEnd   float64
 	}
 	type want struct {
-		a float64
-		b float64
+		A float64
+		B float64
 	}
 	p := NewProgressMonitor()
 	tests := []struct {
@@ -136,8 +136,8 @@ func TestProgressMonitor_PushLevel(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.p.PushLevel(tt.args.relativeStart, tt.args.relativeEnd)
-			if top := tt.p.level(); math.Abs(top.a-tt.want.a) > 0.001 || math.Abs(top.a-tt.want.a) > 0.001 {
-				t.Errorf("wrong level values, expected %f - %f but got %f - %f", tt.want.a, tt.want.b, top.a, top.b)
+			if top := tt.p.level(); math.Abs(top.A-tt.want.A) > 0.001 || math.Abs(top.B-tt.want.B) > 0.001 {
+				t.Errorf("wrong level values, expected %f - %f but got %f - %f", tt.want.A, tt.want.B, top.A, top.B)
 			}
 		})
 	}

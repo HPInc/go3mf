@@ -1,5 +1,10 @@
 package common
 
+// ErrorCode
+type ErrorCode int32
+
+// Error contains an error code that has to match with a valid ErrorCode.
+// It is mainly used to translate codes to strings
 type Error struct {
 	errorCode ErrorCode
 }

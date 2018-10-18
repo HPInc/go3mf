@@ -1,5 +1,6 @@
 package common
 
+// A ProgressIdentifier is an enumerable for the different progress states
 type ProgressIdentifier int
 
 const (
@@ -47,8 +48,18 @@ const (
 	ProgressWriteSlices
 )
 
+// A Float64Pair is a tuple of two float64 values
+type Float64Pair struct {
+	A float64 // the first element of the tuple
+	B float64 // the second element of the tuple
+}
+
+// ProgressCallback defines the signature of the callback which will be called when there is a progress in the process.
+// Returns true if the progress should continue and false to abort it.
 type ProgressCallback func(progress int, id ProgressIdentifier, data interface{}) bool
 
+// Progress defines an interface that keeps track of the progress of a process.
+// The implementation should manage concurrency and optionally enable a client callback.
 type Progress interface {
 	QueryCancelled() bool
 	Progress(progress float64, identifier ProgressIdentifier) bool
