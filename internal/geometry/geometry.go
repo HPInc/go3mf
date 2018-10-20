@@ -1,5 +1,12 @@
 package geometry
 
+// Vec3I represents a 3D vector typed as int32
+type Vec3I struct {
+	X int32 // X coordinate
+	Y int32 // Y coordinate
+	Z int32 // Z coordinate
+}
+
 // PairMatch defines an interface which is able to identify duplicate pairs of numbers in a given data set.
 type PairMatch interface {
 	// AddMatch adds a match to the set.
