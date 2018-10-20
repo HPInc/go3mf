@@ -19,15 +19,20 @@ type PairMatch interface {
 	// CheckMatch check if a match is in the set.
 	CheckMatch(data1, data2 int32) (val int32, ok bool)
 	// DeleteMatch deletes a match from the set.
-	// If match doesn't exist it bevavhe as a no-op
+	// If match doesn't exist it bevavhe as a no-op.
 	DeleteMatch(data1, data2 int32)
 }
 
-// VectorDic defines an interface which is able to identify vectors by their position
+// VectorDic defines an interface which is able to identify vectors by their position.
 type VectorDic interface {
+	// Units returns the used units.
 	Units() float32
+	// SetUnits sets the used units.
 	SetUnits(units float32)
+	// AddVector adds a vector to the dictionary.
 	AddVector(vec vec3.T, value uint32)
+	// FindVector returns the identifier of the vector.
 	FindVector(vec vec3.T) uint32
+	// RemoveVector removes the vector from the dictionary.
 	RemoveVector(vec vec3.T)
 }
