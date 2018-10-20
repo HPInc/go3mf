@@ -1,2 +1,6 @@
+github.com/barnex/fmath v0.0.0-20150108074215-ec9671f295c2 h1:FOAZHSIFEhocAOfB7LQcZmCEAra7hneHMBPL8Nq/eDk=
+github.com/barnex/fmath v0.0.0-20150108074215-ec9671f295c2/go.mod h1:G7XW+2O6Hk/x6OP8AuwZjI8ZTyXvKDTTKaRK92gapfk=
 github.com/cheekybits/genny v1.0.0 h1:uGGa4nei+j20rOSeDeP5Of12XVm7TGUd4dJA9RDitfE=
 github.com/cheekybits/genny v1.0.0/go.mod h1:+tQajlRqAUrPI7DOSpB0XAqZYtQakVtB7wXkRAgjxjQ=
+github.com/ungerik/go3d v0.0.0-20180509113627-aafc44e85fcf h1:7D0cCiK+1FADkBJLfZ/DI2mFjYEOic/WmWG6aoHaZBE=
+github.com/ungerik/go3d v0.0.0-20180509113627-aafc44e85fcf/go.mod h1:O2qCNQkuiyYrHasQBpAAeRerRi7SIEzpduul5NvsTy0=

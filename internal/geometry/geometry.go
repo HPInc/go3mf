@@ -1,5 +1,9 @@
 package geometry
 
+import (
+	"github.com/ungerik/go3d/vec3"
+)
+
 // Vec3I represents a 3D vector typed as int32
 type Vec3I struct {
 	X int32 // X coordinate
@@ -17,4 +21,13 @@ type PairMatch interface {
 	// DeleteMatch deletes a match from the set.
 	// If match doesn't exist it bevavhe as a no-op
 	DeleteMatch(data1, data2 int32)
+}
+
+// VectorDic defines an interface which is able to identify vectors by their position
+type VectorDic interface {
+	Units() float32
+	SetUnits(units float32)
+	AddVector(vec vec3.T, value uint32)
+	FindVector(vec vec3.T) uint32
+	RemoveVector(vec vec3.T)
 }
