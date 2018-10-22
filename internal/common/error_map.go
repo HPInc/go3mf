@@ -111,7 +111,7 @@ var ErrorMap = map[ErrorCode]string{
 	ErrorEdgesAreNotFormingTriangle:               "The internal triangle structure is corrupted",
 	ErrorNoExportStream:                           "No Export Stream was provided to the exporter",
 	ErrorCouldNotSetParameter:                     "Could not set parameter, because the queue was not empty",
-	ErrorInvalidRECORDSize:                        "Mesh Information records size is invalid",
+	ErrorInvalidRecordSize:                        "Mesh Information records size is invalid",
 	ErrorMeshInformationCountMismatch:             "Mesh Information Face Count dies not match with mesh face count",
 	ErrorInvalidMeshInformationIndex:              "Could not access mesh information",
 	ErrorMeshInformationBufferFull:                "Mesh Information Backup could not be created",

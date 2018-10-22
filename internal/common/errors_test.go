@@ -159,7 +159,7 @@ func TestError_Errort(t *testing.T) {
 		{"ErrorEdgesAreNotFormingTriangle", Error{ErrorEdgesAreNotFormingTriangle}, "The internal triangle structure is corrupted"},
 		{"ErrorNoExportStream", Error{ErrorNoExportStream}, "No Export Stream was provided to the exporter"},
 		{"ErrorCouldNotSetParameter", Error{ErrorCouldNotSetParameter}, "Could not set parameter, because the queue was not empty"},
-		{"ErrorInvalidRECORDSize", Error{ErrorInvalidRECORDSize}, "Mesh Information records size is invalid"},
+		{"ErrorInvalidRecordSize", Error{ErrorInvalidRecordSize}, "Mesh Information records size is invalid"},
 		{"ErrorMeshInformationCountMismatch", Error{ErrorMeshInformationCountMismatch}, "Mesh Information Face Count dies not match with mesh face count"},
 		{"ErrorInvalidMeshInformationIndex", Error{ErrorInvalidMeshInformationIndex}, "Could not access mesh information"},
 		{"ErrorMeshInformationBufferFull", Error{ErrorMeshInformationBufferFull}, "Mesh Information Backup could not be created"},

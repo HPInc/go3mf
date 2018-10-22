@@ -10,6 +10,9 @@ const maxInternalID = 9223372036854775808
 // Color represents a RGB color.
 type Color uint32
 
+// FaceData defines a generic information of a face. Implementations could by NodeColor or TextureCoords.
+type FaceData interface{}
+
 // InformationType is an enumerator that identifies different information types.
 type InformationType int
 
@@ -53,5 +56,19 @@ type MultiProperties struct {
 
 // Composites informs about the properties of a composite.
 type Composites struct {
-	CompositeId uint32 // Identifier of the composite.
+	CompositeID uint32 // Identifier of the composite.
+}
+
+// MeshInformationContainer provides a container for holding the texture information state of a complete mesh structure.
+type MeshInformationContainer interface {
+	// AddFaceData returns the pointer to the data of the added face.
+	// The parameter newFaceCount should indicate the faces information stored in the container, including the new one.
+	// If the count is not equal to the one returned by GetCurrentFaceCount an error will be returned.
+	AddFaceData(newFaceCount uint32) (val *FaceData, err error)
+	// GetFaceData returns the data of the face with the target index.
+	GetFaceData(index uint32) (val *FaceData, err error)
+	// GetCurrentFaceCount returns the number of faces information stored in the container.
+	GetCurrentFaceCount() uint32
+	// Clear removes all the information stored in the container.
+	Clear()
 }

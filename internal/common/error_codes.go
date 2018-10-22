@@ -342,8 +342,8 @@ const ErrorNoExportStream = 0x201C
 // ErrorCouldNotSetParameter Could not set parameter, because the queue was not empty
 const ErrorCouldNotSetParameter = 0x201D
 
-// ErrorInvalidRECORDSize Mesh Information records size is invalid
-const ErrorInvalidRECORDSize = 0x201E
+// ErrorInvalidRecordSize Mesh Information records size is invalid
+const ErrorInvalidRecordSize = 0x201E
 
 // ErrorMeshInformationCountMismatch Mesh Information Face Count dies not match with mesh face count
 const ErrorMeshInformationCountMismatch = 0x201F

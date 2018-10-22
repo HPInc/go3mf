@@ -38,8 +38,8 @@ func (t *TreeVectorDic) Units() float32 {
 
 // SetUnits sets the used units. 
 // Error cases:
-// * code: ErrorInvalidUnits | condition: ((units < VectorMinUnits) || (units > VectorMaxUnits))
-// * code: ErrorCouldNotSetUnits | condition: non-empty tree
+// * ErrorInvalidUnits: ((units < VectorMinUnits) || (units > VectorMaxUnits))
+// * ErrorCouldNotSetUnits: non-empty tree
 func (t *TreeVectorDic) SetUnits(units float32) error {
 	if ((units < VectorMinUnits) || (units > VectorMaxUnits)) {
 		return common.NewError(common.ErrorInvalidUnits)
