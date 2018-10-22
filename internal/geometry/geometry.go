@@ -1,8 +1,15 @@
 package geometry
 
 import (
-	"github.com/go-gl/mathgl/mgl64"
+	"github.com/go-gl/mathgl/mgl32"
 )
+
+// VectorDefaultUnits defines the default units for the vectors
+const VectorDefaultUnits = 0.001
+// VectorMinUnits defines the minimum units for the vectors
+const VectorMinUnits = 0.00001
+// VectorMaxUnits defines the maximum units for the vectors
+const VectorMaxUnits = 1000.0
 
 // Vec3I represents a 3D vector typed as int32
 type Vec3I struct {
@@ -24,15 +31,16 @@ type PairMatch interface {
 }
 
 // VectorDic defines an interface which is able to identify vectors by their position.
+// The units property defines the units of the vectors, where 1.0 mean meters.
 type VectorDic interface {
 	// Units returns the used units.
 	Units() float32
 	// SetUnits sets the used units.
-	SetUnits(units float32)
+	SetUnits(units float32) error
 	// AddVector adds a vector to the dictionary.
-	AddVector(vec mgl64.Vec3, value uint32)
+	AddVector(vec mgl32.Vec3, value uint32)
 	// FindVector returns the identifier of the vector.
-	FindVector(vec mgl64.Vec3) uint32
+	FindVector(vec mgl32.Vec3) uint32
 	// RemoveVector removes the vector from the dictionary.
-	RemoveVector(vec mgl64.Vec3)
+	RemoveVector(vec mgl32.Vec3)
 }

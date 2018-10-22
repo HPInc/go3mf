@@ -44,9 +44,10 @@ func TestTreePairMatch_AddMatch(t *testing.T) {
 			got, ok := p.CheckMatch(tt.args.data1, tt.args.data2)
 			if !ok {
 				t.Error("TreePairMatch.AddMatch() haven't added the match")
+				return
 			}
 			if got != tt.args.param {
-				t.Errorf("NewTreePairMatch() = %v, want %v", got, tt.args.param)
+				t.Errorf("TreePairMatch.CheckMatch() = %v, want %v", got, tt.args.param)
 			}
 		})
 	}
