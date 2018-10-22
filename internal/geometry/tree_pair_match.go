@@ -16,7 +16,7 @@ func NewTreePairMatch() *TreePairMatch {
 }
 
 // AddMatch adds a match to the set.
-// If the match exists it is overriden.
+// If the match exists it is overridden.
 func (t *TreePairMatch) AddMatch(data1, data2, param int32) {
 	t.entries[newPairEntry(data1, data2)] = param
 }
