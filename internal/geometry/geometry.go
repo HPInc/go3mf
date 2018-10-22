@@ -1,7 +1,7 @@
 package geometry
 
 import (
-	"github.com/ungerik/go3d/vec3"
+	"github.com/go-gl/mathgl/mgl64"
 )
 
 // Vec3I represents a 3D vector typed as int32
@@ -30,9 +30,9 @@ type VectorDic interface {
 	// SetUnits sets the used units.
 	SetUnits(units float32)
 	// AddVector adds a vector to the dictionary.
-	AddVector(vec vec3.T, value uint32)
+	AddVector(vec mgl64.Vec3, value uint32)
 	// FindVector returns the identifier of the vector.
-	FindVector(vec vec3.T) uint32
+	FindVector(vec mgl64.Vec3) uint32
 	// RemoveVector removes the vector from the dictionary.
-	RemoveVector(vec vec3.T)
+	RemoveVector(vec mgl64.Vec3)
 }
