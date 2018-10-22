@@ -6,8 +6,10 @@ import (
 
 // VectorDefaultUnits defines the default units for the vectors
 const VectorDefaultUnits = 0.001
+
 // VectorMinUnits defines the minimum units for the vectors
 const VectorMinUnits = 0.00001
+
 // VectorMaxUnits defines the maximum units for the vectors
 const VectorMaxUnits = 1000.0
 

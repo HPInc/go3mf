@@ -122,7 +122,7 @@ func TestTreeVectorDic_AddFindVector(t *testing.T) {
 		got, ok := p.FindVector(tt.args.vec)
 		if !ok {
 			t.Error("TreeVectorDic.AddMatch() haven't added the match")
-				return
+			return
 		}
 		if got != tt.args.value {
 			t.Errorf("TreeVectorDic.FindVector() = %v, want %v", got, tt.args.value)

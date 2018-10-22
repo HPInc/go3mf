@@ -1,25 +1,25 @@
 package meshinfo
 
 import (
-	"reflect"
 	"github.com/qmuntal/go3mf/internal/common"
+	"reflect"
 )
 
 // InMemoryMeshInformationContainer implements MeshInformationContainer
 // and provides a memory container for holding the texture information state of a complete mesh structure.
 type InMemoryMeshInformationContainer struct {
-	elemType reflect.Type
-	faceCount 	uint32
-	dataBlocks            reflect.Value
+	elemType   reflect.Type
+	faceCount  uint32
+	dataBlocks reflect.Value
 }
 
 // NewInMemoryMeshInformationContainer creates a new container.
 func NewInMemoryMeshInformationContainer(currentFaceCount uint32, elemExample FaceData) *InMemoryMeshInformationContainer {
 	elemType := reflect.TypeOf(elemExample)
 	m := &InMemoryMeshInformationContainer{
-		faceCount:        0,
-		elemType: elemType,
-		dataBlocks:       reflect.MakeSlice(reflect.SliceOf(elemType), 0, int(currentFaceCount)),
+		faceCount:  0,
+		elemType:   elemType,
+		dataBlocks: reflect.MakeSlice(reflect.SliceOf(elemType), 0, int(currentFaceCount)),
 	}
 	for i := 1; i <= int(currentFaceCount); i++ {
 		m.AddFaceData(uint32(i))
@@ -52,15 +52,15 @@ func (m *InMemoryMeshInformationContainer) GetFaceData(index uint32) (val *FaceD
 
 	result := m.dataBlocks.Field(int(index)).Elem().Interface().(FaceData)
 	return &result, nil
- }
+}
 
 // GetCurrentFaceCount returns the number of faces information stored in the container.
- func (m *InMemoryMeshInformationContainer) GetCurrentFaceCount() uint32 {
-	 return m.faceCount
- }
+func (m *InMemoryMeshInformationContainer) GetCurrentFaceCount() uint32 {
+	return m.faceCount
+}
 
- // Clear removes all the information stored in the container.
- func (m *InMemoryMeshInformationContainer) Clear() {
+// Clear removes all the information stored in the container.
+func (m *InMemoryMeshInformationContainer) Clear() {
 	m.dataBlocks = reflect.MakeSlice(reflect.SliceOf(m.elemType), 0, 0)
 	m.faceCount = 0
- }
+}

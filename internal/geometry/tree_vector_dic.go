@@ -1,9 +1,9 @@
 package geometry
 
 import (
-	"math"
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/qmuntal/go3mf/internal/common"
+	"math"
 )
 
 // TreeVectorDic implements a n*log(n) lookup tree class to identify vectors by their position
@@ -16,7 +16,7 @@ type TreeVectorDic struct {
 // NewTreeVectorDic creates a default vector
 func NewTreeVectorDic() *TreeVectorDic {
 	return &TreeVectorDic{
-		units: VectorDefaultUnits,
+		units:   VectorDefaultUnits,
 		entries: map[Vec3I]uint32{},
 	}
 }
@@ -36,12 +36,12 @@ func (t *TreeVectorDic) Units() float32 {
 	return t.units
 }
 
-// SetUnits sets the used units. 
+// SetUnits sets the used units.
 // Error cases:
 // * ErrorInvalidUnits: ((units < VectorMinUnits) || (units > VectorMaxUnits))
 // * ErrorCouldNotSetUnits: non-empty tree
 func (t *TreeVectorDic) SetUnits(units float32) error {
-	if ((units < VectorMinUnits) || (units > VectorMaxUnits)) {
+	if (units < VectorMinUnits) || (units > VectorMaxUnits) {
 		return common.NewError(common.ErrorInvalidUnits)
 	}
 	if len(t.entries) > 0 {

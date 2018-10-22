@@ -1,6 +1,5 @@
 package meshinfo
 
-
 import (
 	"github.com/go-gl/mathgl/mgl32"
 )
@@ -39,14 +38,14 @@ type NodeColor struct {
 
 // TextureCoords informs about the coordinates of a texture.
 type TextureCoords struct {
-	TextureID uint32 // Identifier of the texture.
+	TextureID uint32        // Identifier of the texture.
 	Coords    [3]mgl32.Vec2 // Coordinates of the boundaries of the texture.
 }
 
-// BaseMaterial informs about a base material. 
+// BaseMaterial informs about a base material.
 type BaseMaterial struct {
 	MaterialGroupID uint32 // Identifier of the group.
-	MaterialIndex uint32 // Index of the base material used in the group.
+	MaterialIndex   uint32 // Index of the base material used in the group.
 }
 
 // MultiProperties informs about different properties.
