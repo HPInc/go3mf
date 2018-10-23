@@ -60,7 +60,7 @@ type Composites struct {
 
 // meshInformationContainer provides a container for holding the texture information state of a complete mesh structure.
 type meshInformationContainer interface {
-	// addFaceData returns the pointer to the data of the added face.
+	// addFaceData adds data to the last added face and returns the pointer to the data of the added face.
 	// The parameter newFaceCount should indicate the faces information stored in the container, including the new one.
 	// If the count is not equal to the one returned by GetCurrentFaceCount an error will be returned.
 	addFaceData(newFaceCount uint32) (val FaceData, err error)
@@ -75,17 +75,31 @@ type meshInformationContainer interface {
 // MeshInformation defines the Mesh Information Class.
 // This is a base class for handling all the mesh-related linear information (like face colors, textures, etc...).
 type MeshInformation interface {
+	// GetFaceData retrieves the data of the target face.
 	GetFaceData(faceIndex uint32) (val FaceData, err error)
+	// AddFaceData adds data to the last added face and returns the pointer to the data of the added face.
+	// The parameter newFaceCount should indicate the faces information stored in the container, including the new one.
 	AddFaceData(newFaceCount uint32) (val FaceData, err error)
+	// ResetFaceInformation clears the data of an specific face.
 	ResetFaceInformation(faceIndex uint32)
+	// ResetAllFaceInformation resets the informations of all the faces.
 	ResetAllFaceInformation()
+	// GetType returns the type of information stored in this instance.
 	GetType() InformationType
+	// HaceHasData checks if the specific face has any associated data.
 	FaceHasData(faceIndex uint32) bool
+	// cloneFaceInfosFrom clones the data from another face.
 	cloneFaceInfosFrom(faceIndex uint32, otherInfo FaceData, otherFaceIndex uint32)
+	// invalidateFace sets the data of the specific face with its default values.
 	invalidateFace(data FaceData)
+	// cloneInstance creates a deep copy of this instance.
 	cloneInstance(currentFaceCount uint32) *MeshInformation
+	//permuteNodeInformation swap the data of the target mesh.
 	permuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3 uint32)
+	// mergeInformationFrom merges the information of the input mesh with the current information.
 	mergeInformationFrom(info *MeshInformation)
+	// setInternalID sets an ID for the whole mesh information.
 	setInternalID(internalID uint64)
+	// getInternalId gets the internal ID of the mesh information.
 	getInternalID() uint64
 }
