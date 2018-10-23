@@ -5,40 +5,40 @@ import (
 	"reflect"
 )
 
-// InMemoryMeshInformationContainer implements MeshInformationContainer
+// inMemoryMeshInformationContainer implements meshInformationContainer
 // and provides a generic memory container for holding the texture information state of a complete mesh structure
 // using reflection to infer slyce type.
-type InMemoryMeshInformationContainer struct {
+type inMemoryMeshInformationContainer struct {
 	elemType   reflect.Type
 	faceCount  uint32
 	dataBlocks reflect.Value
 }
 
-// NewInMemoryMeshInformationContainer creates a new container that holds elements suchs as the one provided as example.
+// newInMemoryMeshInformationContainer creates a new container that holds elements suchs as the one provided as example.
 // Error cases:
 // * ErrorInvalidRecordSize: The element type is not defined.
-func NewInMemoryMeshInformationContainer(currentFaceCount uint32, elemExample FaceData) (*InMemoryMeshInformationContainer, error) {
+func newInMemoryMeshInformationContainer(currentFaceCount uint32, elemExample FaceData) (*inMemoryMeshInformationContainer, error) {
 	if elemExample == nil {
 		return nil, common.NewError(common.ErrorInvalidRecordSize)
 	}
 	elemType := reflect.TypeOf(elemExample)
-	m := &InMemoryMeshInformationContainer{
+	m := &inMemoryMeshInformationContainer{
 		faceCount:  0,
 		elemType:   elemType,
 		dataBlocks: reflect.MakeSlice(reflect.SliceOf(elemType), 0, int(currentFaceCount)),
 	}
 	for i := 1; i <= int(currentFaceCount); i++ {
-		m.AddFaceData(uint32(i))
+		m.addFaceData(uint32(i))
 	}
 	return m, nil
 }
 
-// AddFaceData returns the pointer to the data of the added face.
+// addFaceData returns the pointer to the data of the added face.
 // The parameter newFaceCount should indicate the faces information stored in the container, including the new one.
 // Error cases:
 // * ErrorInvalidRecordSize: The element type is not defined.
 // * ErrorMeshInformationCountMismatch: The number of faces in the container does not match with the input parameter.
-func (m *InMemoryMeshInformationContainer) AddFaceData(newFaceCount uint32) (FaceData, error) {
+func (m *inMemoryMeshInformationContainer) addFaceData(newFaceCount uint32) (FaceData, error) {
 	if m.elemType == nil {
 		return nil, common.NewError(common.ErrorInvalidRecordSize)
 	}
@@ -51,10 +51,10 @@ func (m *InMemoryMeshInformationContainer) AddFaceData(newFaceCount uint32) (Fac
 	return faceData.Interface().(FaceData), nil
 }
 
-// GetFaceData returns the data of the face with the target index.
+// getFaceData returns the data of the face with the target index.
 // Error cases:
 // * ErrorInvalidMeshInformationIndex: Index is higher than the number of faces
-func (m *InMemoryMeshInformationContainer) GetFaceData(index uint32) (FaceData, error) {
+func (m *inMemoryMeshInformationContainer) getFaceData(index uint32) (FaceData, error) {
 	if index >= m.faceCount {
 		return nil, common.NewError(common.ErrorInvalidMeshInformationIndex)
 	}
@@ -62,13 +62,13 @@ func (m *InMemoryMeshInformationContainer) GetFaceData(index uint32) (FaceData, 
 	return m.dataBlocks.Index(int(index)).Addr().Interface().(FaceData), nil
 }
 
-// GetCurrentFaceCount returns the number of faces information stored in the container.
-func (m *InMemoryMeshInformationContainer) GetCurrentFaceCount() uint32 {
+// getCurrentFaceCount returns the number of faces information stored in the container.
+func (m *inMemoryMeshInformationContainer) getCurrentFaceCount() uint32 {
 	return m.faceCount
 }
 
-// Clear removes all the information stored in the container.
-func (m *InMemoryMeshInformationContainer) Clear() {
+// clear removes all the information stored in the container.
+func (m *inMemoryMeshInformationContainer) clear() {
 	m.dataBlocks = reflect.MakeSlice(reflect.SliceOf(m.elemType), 0, 0)
 	m.faceCount = 0
 }
