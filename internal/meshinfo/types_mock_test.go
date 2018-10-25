@@ -159,6 +159,18 @@ func (mr *MockMeshInformationMockRecorder) Clear() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clear", reflect.TypeOf((*MockMeshInformation)(nil).Clear))
 }
 
+// CloneInstance mocks base method
+func (m *MockMeshInformation) CloneInstance(arg0 uint32) MeshInformation {
+	ret := m.ctrl.Call(m, "CloneInstance", arg0)
+	ret0, _ := ret[0].(MeshInformation)
+	return ret0
+}
+
+// CloneInstance indicates an expected call of CloneInstance
+func (mr *MockMeshInformationMockRecorder) CloneInstance(arg0 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloneInstance", reflect.TypeOf((*MockMeshInformation)(nil).CloneInstance), arg0)
+}
+
 // FaceHasData mocks base method
 func (m *MockMeshInformation) FaceHasData(arg0 uint32) bool {
 	ret := m.ctrl.Call(m, "FaceHasData", arg0)
@@ -236,18 +248,6 @@ func (m *MockMeshInformation) cloneFaceInfosFrom(arg0 uint32, arg1 interface{}, 
 // cloneFaceInfosFrom indicates an expected call of cloneFaceInfosFrom
 func (mr *MockMeshInformationMockRecorder) cloneFaceInfosFrom(arg0, arg1, arg2 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "cloneFaceInfosFrom", reflect.TypeOf((*MockMeshInformation)(nil).cloneFaceInfosFrom), arg0, arg1, arg2)
-}
-
-// cloneInstance mocks base method
-func (m *MockMeshInformation) cloneInstance(arg0 uint32) *MeshInformation {
-	ret := m.ctrl.Call(m, "cloneInstance", arg0)
-	ret0, _ := ret[0].(*MeshInformation)
-	return ret0
-}
-
-// cloneInstance indicates an expected call of cloneInstance
-func (mr *MockMeshInformationMockRecorder) cloneInstance(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "cloneInstance", reflect.TypeOf((*MockMeshInformation)(nil).cloneInstance), arg0)
 }
 
 // getInternalID mocks base method

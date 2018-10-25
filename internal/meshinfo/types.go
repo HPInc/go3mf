@@ -91,16 +91,42 @@ type MeshInformation interface {
 	GetType() InformationType
 	// HaceHasData checks if the specific face has any associated data.
 	FaceHasData(faceIndex uint32) bool
+	// CloneInstance creates a deep copy of this instance.
+	CloneInstance(currentFaceCount uint32) MeshInformation
 	// cloneFaceInfosFrom clones the data from another face.
 	cloneFaceInfosFrom(faceIndex uint32, otherInfo FaceData, otherFaceIndex uint32)
-	// cloneInstance creates a deep copy of this instance.
-	cloneInstance(currentFaceCount uint32) *MeshInformation
 	//permuteNodeInformation swap the data of the target mesh.
 	permuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3 uint32)
 	// mergeInformationFrom merges the information of the input mesh with the current information.
-	mergeInformationFrom(info *MeshInformation)
+	mergeInformationFrom(info MeshInformation)
 	// setInternalID sets an ID for the whole mesh information.
 	setInternalID(internalID uint64)
 	// getInternalId gets the internal ID of the mesh information.
 	getInternalID() uint64
+}
+
+// MeshInformationHandler allows to include different kinds of information in one mesh (like Textures AND colors)
+type MeshInformationHandler interface {
+	// AddInformation adds a new type of information to the handler.
+	AddInformation(info MeshInformation) error
+	// AddFace adds a new face to the handler.
+	AddFace(newFaceCount uint32) error
+	// GetInformationIndexed retrieves an information by index. Informations are order of additions to the handler.
+	GetInformationIndexed(index uint32) (MeshInformation, error)
+	// GetInformationByType retrieves the information of the desried type.
+	GetInformationByType(infoType InformationType) MeshInformation
+	// GetInformationCount returns the number of informations added to the handler.
+	GetInformationCount() uint32
+	// AddInfoFromTable adds the information of the target handler.
+	AddInfoFromTable(otherHandler MeshInformationHandler, currentFaceCount uint32)
+	// CloneFaceInfosFrom clones the data from another face.
+	CloneFaceInfosFrom(faceIndex uint32, otherHandler MeshInformationHandler, otherFaceIndex uint32)
+	// ResetFaceInformation clears the data of an specific face.
+	ResetFaceInformation(faceIndex uint32)
+	// RemoveInformation removes the information of the target type.
+	RemoveInformation(infoType InformationType)
+	// RemoveInformationIndexed removes the information with the target index.
+	RemoveInformationIndexed(faceIndex uint32)
+	// PermuteNodeInformation swap the data of the target mesh.
+	PermuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3 uint32)
 }
