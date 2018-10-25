@@ -1,13 +1,21 @@
 .PHONY: setup
 setup: ## Install all the build and lint dependencies
-	go get github.com/mattn/goveralls
-	go get golang.org/x/tools/cmd/cover
+	go get -u github.com/mattn/goveralls
+	go get -u golang.org/x/tools/cmd/cover
 	go get -t -v ./...
+
+.PHONY: setup-dev
+setup-dev: setup ## Install all the build, lint and dev dependencies
+	go install github.com/golang/mock/mockgen
 
 .PHONY: verify
 verify: ## Verify module
 	go mod tidy
 	go mod verify
+
+.PHONY: gen
+gen: ## RUn go generate in all the directories
+	go generate ./...
 
 .PHONY: test
 test: ## Run all the tests
