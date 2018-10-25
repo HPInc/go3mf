@@ -3,15 +3,15 @@ package meshinfo
 // baseMeshInformation is used as base struct for more specific classes.
 type baseMeshInformation struct {
 	MeshInformationContainer
-	invalidator Invalidator
-	internalID  uint64
+	Invalidator
+	internalID uint64
 }
 
 // newBaseMeshInformation creates a new baseMeshInformation.
 func newBaseMeshInformation(container MeshInformationContainer, invalidator Invalidator) *baseMeshInformation {
 	return &baseMeshInformation{
 		MeshInformationContainer: container,
-		invalidator:              invalidator,
+		Invalidator:              invalidator,
 		internalID:               0,
 	}
 }
@@ -20,7 +20,7 @@ func newBaseMeshInformation(container MeshInformationContainer, invalidator Inva
 func (b *baseMeshInformation) ResetFaceInformation(faceIndex uint32) {
 	data, err := b.GetFaceData(faceIndex)
 	if data != nil && err == nil {
-		b.invalidator.Invalidate(data)
+		b.Invalidator.Invalidate(data)
 	}
 }
 

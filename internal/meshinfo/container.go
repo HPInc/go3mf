@@ -1,8 +1,9 @@
 package meshinfo
 
 import (
-	"github.com/qmuntal/go3mf/internal/common"
 	"reflect"
+
+	"github.com/qmuntal/go3mf/internal/common"
 )
 
 // inMemoryMeshInformationContainer implements MeshInformationContainer
@@ -14,14 +15,10 @@ type inMemoryMeshInformationContainer struct {
 	dataBlocks reflect.Value
 }
 
-// newInMemoryMeshInformationContainer creates a new container that holds elements suchs as the one provided as example.
+// newInMemoryMeshInformationContainer creates a new container that holds the specified element types.
 // Error cases:
 // * ErrorInvalidRecordSize: The element type is not defined.
-func newInMemoryMeshInformationContainer(currentFaceCount uint32, elemExample FaceData) (*inMemoryMeshInformationContainer, error) {
-	if elemExample == nil {
-		return nil, common.NewError(common.ErrorInvalidRecordSize)
-	}
-	elemType := reflect.TypeOf(elemExample)
+func newInMemoryMeshInformationContainer(currentFaceCount uint32, elemType reflect.Type) *inMemoryMeshInformationContainer {
 	m := &inMemoryMeshInformationContainer{
 		faceCount:  0,
 		elemType:   elemType,
@@ -30,7 +27,12 @@ func newInMemoryMeshInformationContainer(currentFaceCount uint32, elemExample Fa
 	for i := 1; i <= int(currentFaceCount); i++ {
 		m.AddFaceData(uint32(i))
 	}
-	return m, nil
+	return m
+}
+
+// Clone creates a copy of the container with all the faces invalidated.
+func (m *inMemoryMeshInformationContainer) clone() MeshInformationContainer {
+	return newInMemoryMeshInformationContainer(m.faceCount, m.elemType)
 }
 
 // AddFaceData returns the pointer to the data of the added face.

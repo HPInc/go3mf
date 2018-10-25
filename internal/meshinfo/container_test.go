@@ -12,25 +12,19 @@ type fakeFaceData struct {
 func TestNewInMemoryMeshInformationContainer(t *testing.T) {
 	type args struct {
 		currentFaceCount uint32
-		elemExample      FaceData
+		elemType         reflect.Type
 	}
 	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
+		name string
+		args args
 	}{
-		{"nil", args{0, nil}, true},
-		{"zero", args{0, fakeFaceData{}}, false},
-		{"one", args{1, fakeFaceData{}}, false},
+		{"zero", args{0, reflect.TypeOf(fakeFaceData{})}},
+		{"one", args{1, reflect.TypeOf(fakeFaceData{})}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := newInMemoryMeshInformationContainer(tt.args.currentFaceCount, tt.args.elemExample)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("newInMemoryMeshInformationContainer() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != nil && (got.GetCurrentFaceCount() != tt.args.currentFaceCount || got.elemType != reflect.TypeOf(tt.args.elemExample)) {
+			got := newInMemoryMeshInformationContainer(tt.args.currentFaceCount, tt.args.elemType)
+			if got.GetCurrentFaceCount() != tt.args.currentFaceCount || got.elemType != tt.args.elemType {
 				t.Error("newInMemoryMeshInformationContainer() created an invalid container")
 			}
 		})
@@ -38,7 +32,7 @@ func TestNewInMemoryMeshInformationContainer(t *testing.T) {
 }
 
 func TestInMemoryMeshInformationContainer_AddFaceData(t *testing.T) {
-	m, _ := newInMemoryMeshInformationContainer(0, fakeFaceData{})
+	m := newInMemoryMeshInformationContainer(0, reflect.TypeOf(fakeFaceData{}))
 	type args struct {
 		newFaceCount uint32
 	}
@@ -68,7 +62,7 @@ func TestInMemoryMeshInformationContainer_AddFaceData(t *testing.T) {
 }
 
 func TestInMemoryMeshInformationContainer_GetFaceData(t *testing.T) {
-	m, _ := newInMemoryMeshInformationContainer(0, fakeFaceData{})
+	m := newInMemoryMeshInformationContainer(0, reflect.TypeOf(fakeFaceData{}))
 	initial, _ := m.AddFaceData(1)
 	type args struct {
 		index uint32
@@ -107,8 +101,8 @@ func TestInMemoryMeshInformationContainer_GetFaceData(t *testing.T) {
 }
 
 func TestInMemoryMeshInformationContainer_GetCurrentFaceCount(t *testing.T) {
-	m, _ := newInMemoryMeshInformationContainer(0, fakeFaceData{})
-	mempty, _ := newInMemoryMeshInformationContainer(0, fakeFaceData{})
+	m := newInMemoryMeshInformationContainer(0, reflect.TypeOf(fakeFaceData{}))
+	mempty := newInMemoryMeshInformationContainer(0, reflect.TypeOf(fakeFaceData{}))
 	m.AddFaceData(1)
 	tests := []struct {
 		name string
@@ -128,7 +122,7 @@ func TestInMemoryMeshInformationContainer_GetCurrentFaceCount(t *testing.T) {
 }
 
 func TestInMemoryMeshInformationContainer_Clear(t *testing.T) {
-	m, _ := newInMemoryMeshInformationContainer(0, fakeFaceData{})
+	m := newInMemoryMeshInformationContainer(0, reflect.TypeOf(fakeFaceData{}))
 	m.AddFaceData(1)
 	tests := []struct {
 		name string

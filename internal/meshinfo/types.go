@@ -78,6 +78,8 @@ type MeshInformationContainer interface {
 	GetCurrentFaceCount() uint32
 	// Clear removes all the information stored in the container.
 	Clear()
+	// clone creates a copy of the container with all the faces invalidated.
+	clone() MeshInformationContainer
 }
 
 // MeshInformation defines the Mesh Information Class.
@@ -89,12 +91,10 @@ type MeshInformation interface {
 	ResetFaceInformation(faceIndex uint32)
 	// GetType returns the type of information stored in this instance.
 	GetType() InformationType
-	// HaceHasData checks if the specific face has any associated data.
+	// FaceHasData checks if the specific face has any associated data.
 	FaceHasData(faceIndex uint32) bool
-	// CloneInstance creates a deep copy of this instance.
-	CloneInstance(currentFaceCount uint32) MeshInformation
 	// cloneFaceInfosFrom clones the data from another face.
-	cloneFaceInfosFrom(faceIndex uint32, otherInfo FaceData, otherFaceIndex uint32)
+	cloneFaceInfosFrom(faceIndex uint32, otherInfo MeshInformation, otherFaceIndex uint32)
 	//permuteNodeInformation swap the data of the target mesh.
 	permuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3 uint32)
 	// mergeInformationFrom merges the information of the input mesh with the current information.
