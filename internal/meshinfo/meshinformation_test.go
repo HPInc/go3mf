@@ -2,9 +2,9 @@ package meshinfo
 
 import (
 	"errors"
+	"github.com/golang/mock/gomock"
 	"reflect"
 	"testing"
-	"github.com/golang/mock/gomock"
 )
 
 func Test_newBaseMeshInformation(t *testing.T) {
@@ -37,16 +37,16 @@ func Test_baseMeshInformation_ResetFaceInformation(t *testing.T) {
 	defer mockCtrl.Finish()
 	mockInvalidator := NewMockInvalidator(mockCtrl)
 	mockContainer := NewMockMeshInformationContainer(mockCtrl)
-	
+
 	type args struct {
 		faceIndex uint32
 	}
 	tests := []struct {
-		name string
-		b    *baseMeshInformation
-		args args
+		name     string
+		b        *baseMeshInformation
+		args     args
 		wantData bool
-		wantErr bool
+		wantErr  bool
 	}{
 		{"nil data", newBaseMeshInformation(mockContainer, mockInvalidator), args{1}, false, false},
 		{"error", newBaseMeshInformation(mockContainer, mockInvalidator), args{2}, true, true},
@@ -56,8 +56,8 @@ func Test_baseMeshInformation_ResetFaceInformation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var (
-				data FaceData
-				err error
+				data  FaceData
+				err   error
 				times int
 			)
 			if tt.wantData {
@@ -83,8 +83,8 @@ func Test_baseMeshInformation_Clear(t *testing.T) {
 	mockInvalidator := NewMockInvalidator(mockCtrl)
 	mockContainer := NewMockMeshInformationContainer(mockCtrl)
 	tests := []struct {
-		name string
-		b    *baseMeshInformation
+		name    string
+		b       *baseMeshInformation
 		faceNum uint32
 	}{
 		{"empty", newBaseMeshInformation(mockContainer, mockInvalidator), 0},
