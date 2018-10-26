@@ -4,11 +4,33 @@ import (
 	"errors"
 	"reflect"
 	"testing"
+
 	"github.com/golang/mock/gomock"
 )
 
+func TestNewBaseMaterial(t *testing.T) {
+	type args struct {
+		materialGroupID uint32
+		materialIndex   uint32
+	}
+	tests := []struct {
+		name string
+		args args
+		want *BaseMaterial
+	}{
+		{"new", args{1, 2}, &BaseMaterial{1, 2}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewBaseMaterial(tt.args.materialGroupID, tt.args.materialIndex); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewBaseMaterial() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func Test_baseMaterialInvalidator_Invalidate(t *testing.T) {
-	expected := &BaseMaterial{0,0}
+	expected := &BaseMaterial{0, 0}
 	type args struct {
 		data FaceData
 	}
@@ -18,7 +40,7 @@ func Test_baseMaterialInvalidator_Invalidate(t *testing.T) {
 		args args
 	}{
 		{"generic", baseMaterialInvalidator{}, args{&fakeFaceData{}}},
-		{"specific", baseMaterialInvalidator{}, args{&BaseMaterial{2,1}}},
+		{"specific", baseMaterialInvalidator{}, args{&BaseMaterial{2, 1}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -32,7 +54,7 @@ func Test_baseMaterialInvalidator_Invalidate(t *testing.T) {
 	}
 }
 
-func TestNewBaseMaterialsInfo(t *testing.T) {
+func TestNewBaseMaterialsMeshInfo(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockContainer := NewMockContainer(mockCtrl)
@@ -43,41 +65,41 @@ func TestNewBaseMaterialsInfo(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *BaseMaterialsInfo
+		want *BaseMaterialsMeshInfo
 	}{
-		{"new", args{mockContainer}, &BaseMaterialsInfo{*newBaseMeshInfo(mockContainer, baseMaterialInvalidator{})}},
+		{"new", args{mockContainer}, &BaseMaterialsMeshInfo{*newBaseMeshInfo(mockContainer, baseMaterialInvalidator{})}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewBaseMaterialsInfo(tt.args.container); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewBaseMaterialsInfo() = %v, want %v", got, tt.want)
+			if got := NewBaseMaterialsMeshInfo(tt.args.container); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewBaseMaterialsMeshInfo() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestBaseMaterialsInfo_GetType(t *testing.T) {
+func TestBaseMaterialsMeshInfo_GetType(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockContainer := NewMockContainer(mockCtrl)
 	mockContainer.EXPECT().Clear()
 	tests := []struct {
 		name string
-		p    *BaseMaterialsInfo
+		p    *BaseMaterialsMeshInfo
 		want InformationType
 	}{
-		{"InfoBaseMaterials", NewBaseMaterialsInfo(mockContainer), InfoBaseMaterials},
+		{"InfoBaseMaterials", NewBaseMaterialsMeshInfo(mockContainer), InfoBaseMaterials},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.p.GetType(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("BaseMaterialsInfo.GetType() = %v, want %v", got, tt.want)
+				t.Errorf("BaseMaterialsMeshInfo.GetType() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestBaseMaterialsInfo_FaceHasData(t *testing.T) {
+func TestBaseMaterialsMeshInfo_FaceHasData(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockContainer := NewMockContainer(mockCtrl)
@@ -86,19 +108,19 @@ func TestBaseMaterialsInfo_FaceHasData(t *testing.T) {
 		faceIndex uint32
 	}
 	tests := []struct {
-		name string
-		p    *BaseMaterialsInfo
-		args args
+		name    string
+		p       *BaseMaterialsMeshInfo
+		args    args
 		wantErr bool
-		want bool
+		want    bool
 	}{
-		{"error", NewBaseMaterialsInfo(mockContainer), args{0}, true, false},
-		{"nodata", NewBaseMaterialsInfo(mockContainer), args{0}, false, false},
-		{"nodata", NewBaseMaterialsInfo(mockContainer), args{0}, false, true},
+		{"error", NewBaseMaterialsMeshInfo(mockContainer), args{0}, true, false},
+		{"nodata", NewBaseMaterialsMeshInfo(mockContainer), args{0}, false, false},
+		{"data", NewBaseMaterialsMeshInfo(mockContainer), args{0}, false, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			data := &BaseMaterial{0,0}
+			data := &BaseMaterial{0, 0}
 			if tt.want {
 				data.MaterialGroupID = 1
 			}
@@ -108,13 +130,13 @@ func TestBaseMaterialsInfo_FaceHasData(t *testing.T) {
 			}
 			mockContainer.EXPECT().GetFaceData(tt.args.faceIndex).Return(data, err)
 			if got := tt.p.FaceHasData(tt.args.faceIndex); got != tt.want {
-				t.Errorf("BaseMaterialsInfo.FaceHasData() = %v, want %v", got, tt.want)
+				t.Errorf("BaseMaterialsMeshInfo.FaceHasData() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestBaseMaterialsInfo_Clone(t *testing.T) {	
+func TestBaseMaterialsMeshInfo_Clone(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockContainer := NewMockContainer(mockCtrl)
@@ -124,21 +146,21 @@ func TestBaseMaterialsInfo_Clone(t *testing.T) {
 	mockContainer.EXPECT().Clone().Return(mockContainer2)
 	tests := []struct {
 		name string
-		p    *BaseMaterialsInfo
+		p    *BaseMaterialsMeshInfo
 		want MeshInfo
 	}{
-		{"base", NewBaseMaterialsInfo(mockContainer), &BaseMaterialsInfo{*newBaseMeshInfo(mockContainer2, baseMaterialInvalidator{})}},
+		{"base", NewBaseMaterialsMeshInfo(mockContainer), &BaseMaterialsMeshInfo{*newBaseMeshInfo(mockContainer2, baseMaterialInvalidator{})}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.p.Clone(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("BaseMaterialsInfo.Clone() = %v, want %v", got, tt.want)
+				t.Errorf("BaseMaterialsMeshInfo.Clone() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestBaseMaterialsInfo_cloneFaceInfosFrom(t *testing.T) {
+func TestBaseMaterialsMeshInfo_cloneFaceInfosFrom(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockContainer1 := NewMockContainer(mockCtrl)
@@ -151,15 +173,15 @@ func TestBaseMaterialsInfo_cloneFaceInfosFrom(t *testing.T) {
 		otherFaceIndex uint32
 	}
 	tests := []struct {
-		name string
-		p    *BaseMaterialsInfo
-		args args
+		name         string
+		p            *BaseMaterialsMeshInfo
+		args         args
 		want1, want2 *BaseMaterial
-		err1, err2 error
+		err1, err2   error
 	}{
-		{"err1", NewBaseMaterialsInfo(mockContainer1), args{1, NewBaseMaterialsInfo(mockContainer2), 2}, &BaseMaterial{2,3}, &BaseMaterial{4,5}, errors.New(""), nil},
-		{"err2", NewBaseMaterialsInfo(mockContainer1), args{1, NewBaseMaterialsInfo(mockContainer2), 2}, &BaseMaterial{2,3}, &BaseMaterial{4,5}, nil, errors.New("")},
-		{"err2", NewBaseMaterialsInfo(mockContainer1), args{1, NewBaseMaterialsInfo(mockContainer2), 2}, &BaseMaterial{2,3}, &BaseMaterial{4,5}, nil, nil},
+		{"err1", NewBaseMaterialsMeshInfo(mockContainer1), args{1, NewBaseMaterialsMeshInfo(mockContainer2), 2}, &BaseMaterial{2, 3}, &BaseMaterial{4, 5}, errors.New(""), nil},
+		{"err2", NewBaseMaterialsMeshInfo(mockContainer1), args{1, NewBaseMaterialsMeshInfo(mockContainer2), 2}, &BaseMaterial{2, 3}, &BaseMaterial{4, 5}, nil, errors.New("")},
+		{"err2", NewBaseMaterialsMeshInfo(mockContainer1), args{1, NewBaseMaterialsMeshInfo(mockContainer2), 2}, &BaseMaterial{2, 3}, &BaseMaterial{4, 5}, nil, nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -172,20 +194,20 @@ func TestBaseMaterialsInfo_cloneFaceInfosFrom(t *testing.T) {
 
 			if tt.err1 != nil {
 				if reflect.DeepEqual(tt.want1, tt.want2) {
-					t.Error("BaseMaterialsInfo.cloneFaceInfosFrom() modified face data when it shouldn't (1)")
+					t.Error("BaseMaterialsMeshInfo.cloneFaceInfosFrom() modified face data when it shouldn't (1)")
 				}
 			} else if tt.err2 != nil {
 				if reflect.DeepEqual(tt.want1, tt.want2) {
-					t.Error("BaseMaterialsInfo.cloneFaceInfosFrom() modified face data when it shouldn't (2)")
+					t.Error("BaseMaterialsMeshInfo.cloneFaceInfosFrom() modified face data when it shouldn't (2)")
 				}
 			} else if !reflect.DeepEqual(tt.want1, tt.want2) {
-				t.Errorf("BaseMaterialsInfo.cloneFaceInfosFrom() = %v, want %v", tt.want1, tt.want2)
+				t.Errorf("BaseMaterialsMeshInfo.cloneFaceInfosFrom() = %v, want %v", tt.want1, tt.want2)
 			}
 		})
 	}
 }
 
-func TestBaseMaterialsInfo_permuteNodeInformation(t *testing.T) {
+func TestBaseMaterialsMeshInfo_permuteNodeInformation(t *testing.T) {
 	type args struct {
 		faceIndex  uint32
 		nodeIndex1 uint32
@@ -194,10 +216,10 @@ func TestBaseMaterialsInfo_permuteNodeInformation(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		p    *BaseMaterialsInfo
+		p    *BaseMaterialsMeshInfo
 		args args
 	}{
-		{"nothing happens", &BaseMaterialsInfo{baseMeshInfo{nil, nil, 0}}, args{1, 2, 3, 4}},
+		{"nothing happens", &BaseMaterialsMeshInfo{baseMeshInfo{nil, nil, 0}}, args{1, 2, 3, 4}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -206,16 +228,16 @@ func TestBaseMaterialsInfo_permuteNodeInformation(t *testing.T) {
 	}
 }
 
-func TestBaseMaterialsInfo_mergeInformationFrom(t *testing.T) {
+func TestBaseMaterialsMeshInfo_mergeInformationFrom(t *testing.T) {
 	type args struct {
 		info MeshInfo
 	}
 	tests := []struct {
 		name string
-		p    *BaseMaterialsInfo
+		p    *BaseMaterialsMeshInfo
 		args args
 	}{
-		{"nothing happens", &BaseMaterialsInfo{baseMeshInfo{nil, nil, 0}}, args{nil}},
+		{"nothing happens", &BaseMaterialsMeshInfo{baseMeshInfo{nil, nil, 0}}, args{nil}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

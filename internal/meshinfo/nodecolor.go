@@ -5,6 +5,11 @@ type NodeColor struct {
 	Colors [3]Color // Colors of every vertex in a node.
 }
 
+// NewNodeColor creates a new node color form an RGB color.
+func NewNodeColor(r, g, b Color) *NodeColor {
+	return &NodeColor{[3]Color{r, g, b}}
+}
+
 type nodeColorInvalidator struct {
 }
 
@@ -16,25 +21,25 @@ func (p nodeColorInvalidator) Invalidate(data FaceData) {
 	}
 }
 
-// NodeColorsInfo specializes the baseMeshInfo struct to "colors defined per node".
+// NodeColorsMeshInfo specializes the baseMeshInfo struct to "colors defined per node".
 // It implements functions to interpolate and reconstruct colors while the mesh topology is changing.
-type NodeColorsInfo struct {
+type NodeColorsMeshInfo struct {
 	baseMeshInfo
 }
 
-// NewNodeColorsInfo creates a new Node colors mesh information struct.
-func NewNodeColorsInfo(container Container) *NodeColorsInfo {
+// NewNodeColorsMeshInfo creates a new Node colors mesh information struct.
+func NewNodeColorsMeshInfo(container Container) *NodeColorsMeshInfo {
 	container.Clear()
-	return &NodeColorsInfo{*newBaseMeshInfo(container, baseMaterialInvalidator{})}
+	return &NodeColorsMeshInfo{*newBaseMeshInfo(container, nodeColorInvalidator{})}
 }
 
 // GetType returns the type of information stored in this instance.
-func (p *NodeColorsInfo) GetType() InformationType {
+func (p *NodeColorsMeshInfo) GetType() InformationType {
 	return InfoNodeColors
 }
 
 // FaceHasData checks if the specific face has any associated data.
-func (p *NodeColorsInfo) FaceHasData(faceIndex uint32) bool {
+func (p *NodeColorsMeshInfo) FaceHasData(faceIndex uint32) bool {
 	data, err := p.GetFaceData(faceIndex)
 	if err == nil {
 		node := data.(*NodeColor)
@@ -44,12 +49,12 @@ func (p *NodeColorsInfo) FaceHasData(faceIndex uint32) bool {
 }
 
 // Clone creates a deep copy of this instance.
-func (p *NodeColorsInfo) Clone() MeshInfo {
-	return NewNodeColorsInfo(p.baseMeshInfo.Container.Clone())
+func (p *NodeColorsMeshInfo) Clone() MeshInfo {
+	return NewNodeColorsMeshInfo(p.baseMeshInfo.Container.Clone())
 }
 
 // cloneFaceInfosFrom clones the data from another face.
-func (p *NodeColorsInfo) cloneFaceInfosFrom(faceIndex uint32, otherInfo MeshInfo, otherFaceIndex uint32) {
+func (p *NodeColorsMeshInfo) cloneFaceInfosFrom(faceIndex uint32, otherInfo MeshInfo, otherFaceIndex uint32) {
 	targetData, err := p.GetFaceData(faceIndex)
 	if err != nil {
 		return
@@ -63,16 +68,15 @@ func (p *NodeColorsInfo) cloneFaceInfosFrom(faceIndex uint32, otherInfo MeshInfo
 }
 
 //permuteNodeInformation swaps the colors.
-func (p *NodeColorsInfo) permuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3 uint32) {
+func (p *NodeColorsMeshInfo) permuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3 uint32) {
 	data, err := p.GetFaceData(faceIndex)
-	if err != nil && (nodeIndex1 < 3) && (nodeIndex2 < 3) && (nodeIndex3 < 3) {
+	if err == nil && (nodeIndex1 < 3) && (nodeIndex2 < 3) && (nodeIndex3 < 3) {
 		node := data.(*NodeColor)
-		copy := *node
-		node.Colors[0], node.Colors[1], node.Colors[2] = copy.Colors[nodeIndex1], copy.Colors[nodeIndex2], copy.Colors[nodeIndex3]
+		node.Colors[0], node.Colors[1], node.Colors[2] = node.Colors[nodeIndex1], node.Colors[nodeIndex2], node.Colors[nodeIndex3]
 	}
 }
 
 // mergeInformationFrom does nothing.
-func (p *NodeColorsInfo) mergeInformationFrom(info MeshInfo) {
+func (p *NodeColorsMeshInfo) mergeInformationFrom(info MeshInfo) {
 	// nothing to merge
 }

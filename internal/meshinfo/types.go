@@ -9,7 +9,7 @@ import (
 const maxInternalID = 9223372036854775808
 
 // Color represents a RGB color.
-type Color uint32
+type Color = uint32
 
 // FaceData defines a generic information of a face. Implementations could by NodeColor or TextureCoords.
 type FaceData = interface{}
