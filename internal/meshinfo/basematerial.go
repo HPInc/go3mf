@@ -1,5 +1,11 @@
 package meshinfo
 
+// BaseMaterial informs about a base material.
+type BaseMaterial struct {
+	MaterialGroupID uint32 // Identifier of the group.
+	MaterialIndex   uint32 // Index of the base material used in the group.
+}
+
 type baseMaterialInvalidator struct {
 }
 
