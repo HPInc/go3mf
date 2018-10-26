@@ -2,10 +2,6 @@
 
 package meshinfo
 
-import (
-	"github.com/go-gl/mathgl/mgl32"
-)
-
 const maxInternalID = 9223372036854775808
 
 // Color represents a RGB color.
@@ -26,18 +22,8 @@ const (
 	InfoNodeColors
 	// InfoTextureCoords defines texture coordinates information.
 	InfoTextureCoords
-	// InfoCompositeMaterials defines composite materials information.
-	InfoCompositeMaterials
-	// InfoMultiProperties defines multiple properties information.
-	InfoMultiProperties
 	infoLastType
 )
-
-// TextureCoords informs about the coordinates of a texture.
-type TextureCoords struct {
-	TextureID uint32        // Identifier of the texture.
-	Coords    [3]mgl32.Vec2 // Coordinates of the boundaries of the texture.
-}
 
 // Invalidator is used to invalidate a specific data.
 type Invalidator interface {
