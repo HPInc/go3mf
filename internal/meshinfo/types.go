@@ -81,7 +81,7 @@ type Repository interface {
 }
 
 // Container provides a repository for holding information state of a complete mesh structure.
-// It is intended to be used as a low level repository of mesh information, 
+// It is intended to be used as a low level repository of mesh information,
 // such a thin wrapper arround an in memory map or a disk serializer.
 type Container interface {
 	Repository

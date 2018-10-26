@@ -42,10 +42,10 @@ func Test_baseMeshInfo_ResetFaceInformation(t *testing.T) {
 		faceIndex uint32
 	}
 	tests := []struct {
-		name     string
-		b        *baseMeshInfo
-		args     args
-		wantErr  bool
+		name    string
+		b       *baseMeshInfo
+		args    args
+		wantErr bool
 	}{
 		{"error", newBaseMeshInfo(mockContainer, mockInvalidator), args{2}, true},
 		{"success", newBaseMeshInfo(mockContainer, mockInvalidator), args{4}, false},
