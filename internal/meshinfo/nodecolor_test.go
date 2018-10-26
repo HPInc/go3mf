@@ -30,7 +30,7 @@ func TestNewNodeColor(t *testing.T) {
 	}
 }
 
-func Test_nodeColorInvalidator_Invalidate(t *testing.T) {
+func Test_NodeColorInvalidator_Invalidate(t *testing.T) {
 	expected := NewNodeColor(0, 0, 0)
 	type args struct {
 		data FaceData
@@ -56,7 +56,7 @@ func Test_nodeColorInvalidator_Invalidate(t *testing.T) {
 	}
 }
 
-func TestNewNodeColorsMeshInfo(t *testing.T) {
+func TestNewnodeColorsMeshInfo(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockContainer := NewMockContainer(mockCtrl)
@@ -67,14 +67,14 @@ func TestNewNodeColorsMeshInfo(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *NodeColorsMeshInfo
+		want *nodeColorsMeshInfo
 	}{
-		{"new", args{mockContainer}, &NodeColorsMeshInfo{*newBaseMeshInfo(mockContainer, nodeColorInvalidator{})}},
+		{"new", args{mockContainer}, &nodeColorsMeshInfo{*newbaseMeshInfo(mockContainer, nodeColorInvalidator{})}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewNodeColorsMeshInfo(tt.args.container); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewNodeColorsMeshInfo() = %v, want %v", got, tt.want)
+			if got := newnodeColorsMeshInfo(tt.args.container); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("newnodeColorsMeshInfo() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -87,15 +87,15 @@ func TestNodeColorsMeshInfo_GetType(t *testing.T) {
 	mockContainer.EXPECT().Clear()
 	tests := []struct {
 		name string
-		p    *NodeColorsMeshInfo
+		p    *nodeColorsMeshInfo
 		want InformationType
 	}{
-		{"InfoNodeColors", NewNodeColorsMeshInfo(mockContainer), InfoNodeColors},
+		{"InfoNodeColors", newnodeColorsMeshInfo(mockContainer), InfoNodeColors},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.p.GetType(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NodeColorsMeshInfo.GetType() = %v, want %v", got, tt.want)
+				t.Errorf("nodeColorsMeshInfo.GetType() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -111,18 +111,18 @@ func TestNodeColorsMeshInfo_FaceHasData(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		p       *NodeColorsMeshInfo
+		p       *nodeColorsMeshInfo
 		args    args
 		wantErr bool
 		color   *NodeColor
 		want    bool
 	}{
-		{"error", NewNodeColorsMeshInfo(mockContainer), args{0}, true, NewNodeColor(1, 2, 3), false},
-		{"nocolor1", NewNodeColorsMeshInfo(mockContainer), args{0}, false, NewNodeColor(0, 0, 0), false},
-		{"nocolor1", NewNodeColorsMeshInfo(mockContainer), args{0}, false, NewNodeColor(0, 2, 3), true},
-		{"nocolor2", NewNodeColorsMeshInfo(mockContainer), args{0}, false, NewNodeColor(1, 0, 3), true},
-		{"nocolor3", NewNodeColorsMeshInfo(mockContainer), args{0}, false, NewNodeColor(1, 2, 0), true},
-		{"data", NewNodeColorsMeshInfo(mockContainer), args{0}, false, NewNodeColor(1, 2, 3), true},
+		{"error", newnodeColorsMeshInfo(mockContainer), args{0}, true, NewNodeColor(1, 2, 3), false},
+		{"nocolor1", newnodeColorsMeshInfo(mockContainer), args{0}, false, NewNodeColor(0, 0, 0), false},
+		{"nocolor1", newnodeColorsMeshInfo(mockContainer), args{0}, false, NewNodeColor(0, 2, 3), true},
+		{"nocolor2", newnodeColorsMeshInfo(mockContainer), args{0}, false, NewNodeColor(1, 0, 3), true},
+		{"nocolor3", newnodeColorsMeshInfo(mockContainer), args{0}, false, NewNodeColor(1, 2, 0), true},
+		{"data", newnodeColorsMeshInfo(mockContainer), args{0}, false, NewNodeColor(1, 2, 3), true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -132,7 +132,7 @@ func TestNodeColorsMeshInfo_FaceHasData(t *testing.T) {
 			}
 			mockContainer.EXPECT().GetFaceData(tt.args.faceIndex).Return(tt.color, err)
 			if got := tt.p.FaceHasData(tt.args.faceIndex); got != tt.want {
-				t.Errorf("NodeColorsMeshInfo.FaceHasData() = %v, want %v", got, tt.want)
+				t.Errorf("nodeColorsMeshInfo.FaceHasData() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -148,15 +148,15 @@ func TestNodeColorsMeshInfo_Clone(t *testing.T) {
 	mockContainer.EXPECT().Clone().Return(mockContainer2)
 	tests := []struct {
 		name string
-		p    *NodeColorsMeshInfo
+		p    *nodeColorsMeshInfo
 		want MeshInfo
 	}{
-		{"base", NewNodeColorsMeshInfo(mockContainer), &NodeColorsMeshInfo{*newBaseMeshInfo(mockContainer2, nodeColorInvalidator{})}},
+		{"base", newnodeColorsMeshInfo(mockContainer), &nodeColorsMeshInfo{*newbaseMeshInfo(mockContainer2, nodeColorInvalidator{})}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.p.Clone(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NodeColorsMeshInfo.Clone() = %v, want %v", got, tt.want)
+				t.Errorf("nodeColorsMeshInfo.Clone() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -176,14 +176,14 @@ func TestNodeColorsMeshInfo_cloneFaceInfosFrom(t *testing.T) {
 	}
 	tests := []struct {
 		name         string
-		p            *NodeColorsMeshInfo
+		p            *nodeColorsMeshInfo
 		args         args
 		want1, want2 *NodeColor
 		err1, err2   error
 	}{
-		{"err1", NewNodeColorsMeshInfo(mockContainer1), args{1, NewNodeColorsMeshInfo(mockContainer2), 2}, NewNodeColor(1, 2, 3), NewNodeColor(4, 5, 6), errors.New(""), nil},
-		{"err2", NewNodeColorsMeshInfo(mockContainer1), args{1, NewNodeColorsMeshInfo(mockContainer2), 2}, NewNodeColor(1, 2, 3), NewNodeColor(4, 5, 6), nil, errors.New("")},
-		{"permuted", NewNodeColorsMeshInfo(mockContainer1), args{1, NewNodeColorsMeshInfo(mockContainer2), 2}, NewNodeColor(1, 2, 3), NewNodeColor(4, 5, 6), nil, nil},
+		{"err1", newnodeColorsMeshInfo(mockContainer1), args{1, newnodeColorsMeshInfo(mockContainer2), 2}, NewNodeColor(1, 2, 3), NewNodeColor(4, 5, 6), errors.New(""), nil},
+		{"err2", newnodeColorsMeshInfo(mockContainer1), args{1, newnodeColorsMeshInfo(mockContainer2), 2}, NewNodeColor(1, 2, 3), NewNodeColor(4, 5, 6), nil, errors.New("")},
+		{"permuted", newnodeColorsMeshInfo(mockContainer1), args{1, newnodeColorsMeshInfo(mockContainer2), 2}, NewNodeColor(1, 2, 3), NewNodeColor(4, 5, 6), nil, nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -196,14 +196,14 @@ func TestNodeColorsMeshInfo_cloneFaceInfosFrom(t *testing.T) {
 
 			if tt.err1 != nil {
 				if reflect.DeepEqual(tt.want1, tt.want2) {
-					t.Error("NodeColorsMeshInfo.cloneFaceInfosFrom() modified face data when it shouldn't (1)")
+					t.Error("nodeColorsMeshInfo.cloneFaceInfosFrom() modified face data when it shouldn't (1)")
 				}
 			} else if tt.err2 != nil {
 				if reflect.DeepEqual(tt.want1, tt.want2) {
-					t.Error("NodeColorsMeshInfo.cloneFaceInfosFrom() modified face data when it shouldn't (2)")
+					t.Error("nodeColorsMeshInfo.cloneFaceInfosFrom() modified face data when it shouldn't (2)")
 				}
 			} else if !reflect.DeepEqual(tt.want1, tt.want2) {
-				t.Errorf("NodeColorsMeshInfo.cloneFaceInfosFrom() = %v, want %v", tt.want1, tt.want2)
+				t.Errorf("nodeColorsMeshInfo.cloneFaceInfosFrom() = %v, want %v", tt.want1, tt.want2)
 			}
 		})
 	}
@@ -222,18 +222,18 @@ func TestNodeColorsMeshInfo_permuteNodeInformation(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		p       *NodeColorsMeshInfo
+		p       *nodeColorsMeshInfo
 		args    args
 		wantErr bool
 		data    *NodeColor
 		want    *NodeColor
 	}{
-		{"err", NewNodeColorsMeshInfo(mockContainer), args{1, 2, 1, 0}, true, NewNodeColor(1, 2, 0), NewNodeColor(1, 2, 0)},
-		{"index1", NewNodeColorsMeshInfo(mockContainer), args{1, 3, 1, 0}, false, NewNodeColor(1, 2, 0), NewNodeColor(1, 2, 0)},
-		{"index2", NewNodeColorsMeshInfo(mockContainer), args{1, 2, 3, 0}, false, NewNodeColor(1, 2, 0), NewNodeColor(1, 2, 0)},
-		{"index3", NewNodeColorsMeshInfo(mockContainer), args{1, 2, 2, 3}, false, NewNodeColor(1, 2, 0), NewNodeColor(1, 2, 0)},
-		{"equal", NewNodeColorsMeshInfo(mockContainer), args{1, 0, 1, 2}, false, NewNodeColor(1, 2, 0), NewNodeColor(1, 2, 0)},
-		{"diff", NewNodeColorsMeshInfo(mockContainer), args{1, 2, 0, 1}, false, NewNodeColor(4, 3, 1), NewNodeColor(1, 4, 3)},
+		{"err", newnodeColorsMeshInfo(mockContainer), args{1, 2, 1, 0}, true, NewNodeColor(1, 2, 0), NewNodeColor(1, 2, 0)},
+		{"index1", newnodeColorsMeshInfo(mockContainer), args{1, 3, 1, 0}, false, NewNodeColor(1, 2, 0), NewNodeColor(1, 2, 0)},
+		{"index2", newnodeColorsMeshInfo(mockContainer), args{1, 2, 3, 0}, false, NewNodeColor(1, 2, 0), NewNodeColor(1, 2, 0)},
+		{"index3", newnodeColorsMeshInfo(mockContainer), args{1, 2, 2, 3}, false, NewNodeColor(1, 2, 0), NewNodeColor(1, 2, 0)},
+		{"equal", newnodeColorsMeshInfo(mockContainer), args{1, 0, 1, 2}, false, NewNodeColor(1, 2, 0), NewNodeColor(1, 2, 0)},
+		{"diff", newnodeColorsMeshInfo(mockContainer), args{1, 2, 0, 1}, false, NewNodeColor(4, 3, 1), NewNodeColor(1, 4, 3)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -244,7 +244,7 @@ func TestNodeColorsMeshInfo_permuteNodeInformation(t *testing.T) {
 			mockContainer.EXPECT().GetFaceData(tt.args.faceIndex).Return(tt.data, err)
 			tt.p.permuteNodeInformation(tt.args.faceIndex, tt.args.nodeIndex1, tt.args.nodeIndex2, tt.args.nodeIndex3)
 			if !reflect.DeepEqual(tt.data, tt.want) {
-				t.Errorf("NodeColorsMeshInfo.permuteNodeInformation() = %v, want %v", tt.data, tt.want)
+				t.Errorf("nodeColorsMeshInfo.permuteNodeInformation() = %v, want %v", tt.data, tt.want)
 			}
 		})
 	}
@@ -256,10 +256,10 @@ func TestNodeColorsMeshInfo_mergeInformationFrom(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		p    *NodeColorsMeshInfo
+		p    *nodeColorsMeshInfo
 		args args
 	}{
-		{"nothing happens", &NodeColorsMeshInfo{baseMeshInfo{nil, nil, 0}}, args{nil}},
+		{"nothing happens", &nodeColorsMeshInfo{baseMeshInfo{nil, nil, 0}}, args{nil}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -7,8 +7,8 @@ type baseMeshInfo struct {
 	internalID uint64
 }
 
-// newBaseMeshInfo creates a new baseMeshInfo.
-func newBaseMeshInfo(container Container, invalidator Invalidator) *baseMeshInfo {
+// newbaseMeshInfo creates a new baseMeshInfo.
+func newbaseMeshInfo(container Container, invalidator Invalidator) *baseMeshInfo {
 	return &baseMeshInfo{
 		Container:   container,
 		Invalidator: invalidator,

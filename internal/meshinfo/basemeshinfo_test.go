@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func Test_newBaseMeshInfo(t *testing.T) {
+func Test_newbaseMeshInfo(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockInvalidator := NewMockInvalidator(mockCtrl)
@@ -25,8 +25,8 @@ func Test_newBaseMeshInfo(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := newBaseMeshInfo(tt.args.container, tt.args.invalidator); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("newBaseMeshInfo() = %v, want %v", got, tt.want)
+			if got := newbaseMeshInfo(tt.args.container, tt.args.invalidator); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("newbaseMeshInfo() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -47,8 +47,8 @@ func Test_baseMeshInfo_ResetFaceInformation(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"error", newBaseMeshInfo(mockContainer, mockInvalidator), args{2}, true},
-		{"success", newBaseMeshInfo(mockContainer, mockInvalidator), args{4}, false},
+		{"error", newbaseMeshInfo(mockContainer, mockInvalidator), args{2}, true},
+		{"success", newbaseMeshInfo(mockContainer, mockInvalidator), args{4}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -80,9 +80,9 @@ func Test_baseMeshInfo_Clear(t *testing.T) {
 		b       *baseMeshInfo
 		faceNum uint32
 	}{
-		{"empty", newBaseMeshInfo(mockContainer, mockInvalidator), 0},
-		{"one", newBaseMeshInfo(mockContainer, mockInvalidator), 1},
-		{"two", newBaseMeshInfo(mockContainer, mockInvalidator), 2},
+		{"empty", newbaseMeshInfo(mockContainer, mockInvalidator), 0},
+		{"one", newbaseMeshInfo(mockContainer, mockInvalidator), 1},
+		{"two", newbaseMeshInfo(mockContainer, mockInvalidator), 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -104,9 +104,9 @@ func Test_baseMeshInfo_setInternalID(t *testing.T) {
 		b    *baseMeshInfo
 		args args
 	}{
-		{"zero", newBaseMeshInfo(nil, nil), args{0}},
-		{"one", newBaseMeshInfo(nil, nil), args{1}},
-		{"two", newBaseMeshInfo(nil, nil), args{3}},
+		{"zero", newbaseMeshInfo(nil, nil), args{0}},
+		{"one", newbaseMeshInfo(nil, nil), args{1}},
+		{"two", newbaseMeshInfo(nil, nil), args{3}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -124,7 +124,7 @@ func Test_baseMeshInfo_getInternalID(t *testing.T) {
 		b    *baseMeshInfo
 		want uint64
 	}{
-		{"new", newBaseMeshInfo(nil, nil), 0},
+		{"new", newbaseMeshInfo(nil, nil), 0},
 		{"one", &baseMeshInfo{nil, nil, 1}, 1},
 		{"two", &baseMeshInfo{nil, nil, 2}, 2},
 	}

@@ -77,6 +77,12 @@ type MeshInfo interface {
 	getInternalID() uint64
 }
 
+// MeshInfoFactory allows a dynamic creation of different Structs of Information.
+type MeshInfoFactory interface {
+	// Create creates a new MeshInfo of the desired type.
+	Create(infoType InformationType, currentFaceCount uint32) (MeshInfo, error)
+}
+
 // Handler allows to include different kinds of information in one mesh (like Textures AND colors)
 type Handler interface {
 	// AddInformation adds a new type of information to the handler.

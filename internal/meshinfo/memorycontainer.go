@@ -15,8 +15,8 @@ type memoryContainer struct {
 	dataBlocks reflect.Value
 }
 
-// newMemoryContainer creates a new container that holds the specified element types.
-func newMemoryContainer(currentFaceCount uint32, elemType reflect.Type) *memoryContainer {
+// newmemoryContainer creates a new container that holds the specified element types.
+func newmemoryContainer(currentFaceCount uint32, elemType reflect.Type) *memoryContainer {
 	m := &memoryContainer{
 		faceCount:  0,
 		elemType:   elemType,
@@ -30,7 +30,7 @@ func newMemoryContainer(currentFaceCount uint32, elemType reflect.Type) *memoryC
 
 // Clone creates a copy of the container with all the faces invalidated.
 func (m *memoryContainer) Clone() Container {
-	return newMemoryContainer(m.faceCount, m.elemType)
+	return newmemoryContainer(m.faceCount, m.elemType)
 }
 
 // AddFaceData returns the pointer to the data of the added face.

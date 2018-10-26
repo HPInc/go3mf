@@ -9,7 +9,7 @@ type fakeFaceData struct {
 	a int
 }
 
-func TestNewMemoryContainer(t *testing.T) {
+func TestNewmemoryContainer(t *testing.T) {
 	type args struct {
 		currentFaceCount uint32
 		elemType         reflect.Type
@@ -23,23 +23,23 @@ func TestNewMemoryContainer(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := newMemoryContainer(tt.args.currentFaceCount, tt.args.elemType)
+			got := newmemoryContainer(tt.args.currentFaceCount, tt.args.elemType)
 			if got.GetCurrentFaceCount() != tt.args.currentFaceCount || got.elemType != tt.args.elemType {
-				t.Error("newMemoryContainer() created an invalid container")
+				t.Error("newmemoryContainer() created an invalid container")
 			}
 		})
 	}
 }
 
 func Test_memoryContainer_Clone(t *testing.T) {
-	p := newMemoryContainer(0, reflect.TypeOf(fakeFaceData{}))
+	p := newmemoryContainer(0, reflect.TypeOf(fakeFaceData{}))
 	p.AddFaceData(1)
 	tests := []struct {
 		name string
 		m    *memoryContainer
 		want *memoryContainer
 	}{
-		{"empty", p, newMemoryContainer(1, reflect.TypeOf(fakeFaceData{}))},
+		{"empty", p, newmemoryContainer(1, reflect.TypeOf(fakeFaceData{}))},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -51,7 +51,7 @@ func Test_memoryContainer_Clone(t *testing.T) {
 }
 
 func TestMemoryContainer_AddFaceData(t *testing.T) {
-	m := newMemoryContainer(0, reflect.TypeOf(fakeFaceData{}))
+	m := newmemoryContainer(0, reflect.TypeOf(fakeFaceData{}))
 	type args struct {
 		newFaceCount uint32
 	}
@@ -81,7 +81,7 @@ func TestMemoryContainer_AddFaceData(t *testing.T) {
 }
 
 func TestMemoryContainer_GetFaceData(t *testing.T) {
-	m := newMemoryContainer(0, reflect.TypeOf(fakeFaceData{}))
+	m := newmemoryContainer(0, reflect.TypeOf(fakeFaceData{}))
 	initial, _ := m.AddFaceData(1)
 	type args struct {
 		index uint32
@@ -120,8 +120,8 @@ func TestMemoryContainer_GetFaceData(t *testing.T) {
 }
 
 func TestMemoryContainer_GetCurrentFaceCount(t *testing.T) {
-	m := newMemoryContainer(0, reflect.TypeOf(fakeFaceData{}))
-	mempty := newMemoryContainer(0, reflect.TypeOf(fakeFaceData{}))
+	m := newmemoryContainer(0, reflect.TypeOf(fakeFaceData{}))
+	mempty := newmemoryContainer(0, reflect.TypeOf(fakeFaceData{}))
 	m.AddFaceData(1)
 	tests := []struct {
 		name string
@@ -141,7 +141,7 @@ func TestMemoryContainer_GetCurrentFaceCount(t *testing.T) {
 }
 
 func TestMemoryContainer_Clear(t *testing.T) {
-	m := newMemoryContainer(0, reflect.TypeOf(fakeFaceData{}))
+	m := newmemoryContainer(0, reflect.TypeOf(fakeFaceData{}))
 	m.AddFaceData(1)
 	tests := []struct {
 		name string
