@@ -10,24 +10,24 @@ func (p baseMaterialInvalidator) Invalidate(data FaceData) {
 	}
 }
 
-// BaseMaterialsInformation specializes the baseMeshInformation struct to "base materials".
-type BaseMaterialsInformation struct {
-	baseMeshInformation
+// BaseMaterialsInfo specializes the baseMeshInfo struct to "base materials".
+type BaseMaterialsInfo struct {
+	baseMeshInfo
 }
 
-// NewBaseMaterialsInformation creates a new Base materials mesh information struct.
-func NewBaseMaterialsInformation(container MeshInformationContainer) *BaseMaterialsInformation {
+// NewBaseMaterialsInfo creates a new Base materials mesh information struct.
+func NewBaseMaterialsInfo(container Container) *BaseMaterialsInfo {
 	container.Clear()
-	return &BaseMaterialsInformation{*newBaseMeshInformation(container, baseMaterialInvalidator{})}
+	return &BaseMaterialsInfo{*newBaseMeshInfo(container, baseMaterialInvalidator{})}
 }
 
 // GetType returns the type of information stored in this instance.
-func (p *BaseMaterialsInformation) GetType() InformationType {
+func (p *BaseMaterialsInfo) GetType() InformationType {
 	return InfoBaseMaterials
 }
 
 // FaceHasData checks if the specific face has any associated data.
-func (p *BaseMaterialsInformation) FaceHasData(faceIndex uint32) bool {
+func (p *BaseMaterialsInfo) FaceHasData(faceIndex uint32) bool {
 	data, err := p.GetFaceData(faceIndex)
 	if err == nil {
 		return data.(*BaseMaterial).MaterialGroupID != 0
@@ -36,12 +36,12 @@ func (p *BaseMaterialsInformation) FaceHasData(faceIndex uint32) bool {
 }
 
 // Clone creates a deep copy of this instance.
-func (p *BaseMaterialsInformation) Clone() MeshInformation {
-	return NewBaseMaterialsInformation(p.clone())
+func (p *BaseMaterialsInfo) Clone() MeshInfo {
+	return NewBaseMaterialsInfo(p.baseMeshInfo.Container.Clone())
 }
 
 // cloneFaceInfosFrom clones the data from another face.
-func (p *BaseMaterialsInformation) cloneFaceInfosFrom(faceIndex uint32, otherInfo MeshInformation, otherFaceIndex uint32) {
+func (p *BaseMaterialsInfo) cloneFaceInfosFrom(faceIndex uint32, otherInfo MeshInfo, otherFaceIndex uint32) {
 	targetData, err := p.GetFaceData(faceIndex)
 	if err != nil {
 		return
@@ -55,11 +55,11 @@ func (p *BaseMaterialsInformation) cloneFaceInfosFrom(faceIndex uint32, otherInf
 }
 
 //permuteNodeInformation swap the data of the target mesh.
-func (p *BaseMaterialsInformation) permuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3 uint32) {
+func (p *BaseMaterialsInfo) permuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3 uint32) {
 	// nothing to merge
 }
 
 // mergeInformationFrom merges the information of the input mesh with the current information.
-func (p *BaseMaterialsInformation) mergeInformationFrom(info MeshInformation) {
+func (p *BaseMaterialsInfo) mergeInformationFrom(info MeshInfo) {
 	// nothing to merge
 }

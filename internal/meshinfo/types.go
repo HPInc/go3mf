@@ -1,4 +1,4 @@
-//go:generate mockgen -destination types_mock_test.go -package meshinfo -self_package github.com/qmuntal/go3mf/internal/meshinfo github.com/qmuntal/go3mf/internal/meshinfo Invalidator,MeshInformationContainer,MeshInformation
+//go:generate mockgen -destination types_mock_test.go -package meshinfo -self_package github.com/qmuntal/go3mf/internal/meshinfo github.com/qmuntal/go3mf/internal/meshinfo Invalidator,Container,MeshInfo
 
 package meshinfo
 
@@ -66,8 +66,8 @@ type Invalidator interface {
 	Invalidate(data FaceData)
 }
 
-// MeshInformationContainer provides a container for holding the texture information state of a complete mesh structure.
-type MeshInformationContainer interface {
+// Repository defines an interface for interacting with a mesh information repository.
+type Repository interface {
 	// AddFaceData adds data to the last added face and returns the pointer to the data of the added face.
 	// The parameter newFaceCount should indicate the faces information stored in the container, including the new one.
 	// If the count is not equal to the one returned by GetCurrentFaceCount an error will be returned.
@@ -78,15 +78,22 @@ type MeshInformationContainer interface {
 	GetCurrentFaceCount() uint32
 	// Clear removes all the information stored in the container.
 	Clear()
-	// clone creates a copy of the container with all the faces invalidated.
-	clone() MeshInformationContainer
 }
 
-// MeshInformation defines the Mesh Information Class.
-// This is a base class for handling all the mesh-related linear information (like face colors, textures, etc...).
-type MeshInformation interface {
+// Container provides a repository for holding information state of a complete mesh structure.
+// It is intended to be used as a low level repository of mesh information, 
+// such a thin wrapper arround an in memory map or a disk serializer.
+type Container interface {
+	Repository
+	// Clone creates a copy of the container with all the faces invalidated.
+	Clone() Container
+}
+
+// MeshInfo defines the Mesh Information Class.
+// This is a base struct for handling all the mesh-related linear information (like face colors, textures, etc...).
+type MeshInfo interface {
 	Invalidator
-	MeshInformationContainer
+	Repository
 	// ResetFaceInformation clears the data of an specific face.
 	ResetFaceInformation(faceIndex uint32)
 	// GetType returns the type of information stored in this instance.
@@ -94,33 +101,33 @@ type MeshInformation interface {
 	// FaceHasData checks if the specific face has any associated data.
 	FaceHasData(faceIndex uint32) bool
 	// cloneFaceInfosFrom clones the data from another face.
-	cloneFaceInfosFrom(faceIndex uint32, otherInfo MeshInformation, otherFaceIndex uint32)
+	cloneFaceInfosFrom(faceIndex uint32, otherInfo MeshInfo, otherFaceIndex uint32)
 	//permuteNodeInformation swap the data of the target mesh.
 	permuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3 uint32)
 	// mergeInformationFrom merges the information of the input mesh with the current information.
-	mergeInformationFrom(info MeshInformation)
+	mergeInformationFrom(info MeshInfo)
 	// setInternalID sets an ID for the whole mesh information.
 	setInternalID(internalID uint64)
 	// getInternalId gets the internal ID of the mesh information.
 	getInternalID() uint64
 }
 
-// MeshInformationHandler allows to include different kinds of information in one mesh (like Textures AND colors)
-type MeshInformationHandler interface {
+// Handler allows to include different kinds of information in one mesh (like Textures AND colors)
+type Handler interface {
 	// AddInformation adds a new type of information to the handler.
-	AddInformation(info MeshInformation) error
+	AddInformation(info MeshInfo) error
 	// AddFace adds a new face to the handler.
 	AddFace(newFaceCount uint32) error
 	// GetInformationIndexed retrieves an information by index. Informations are order of additions to the handler.
-	GetInformationIndexed(index uint32) (MeshInformation, error)
+	GetInformationIndexed(index uint32) (MeshInfo, error)
 	// GetInformationByType retrieves the information of the desried type.
-	GetInformationByType(infoType InformationType) MeshInformation
+	GetInformationByType(infoType InformationType) MeshInfo
 	// GetInformationCount returns the number of informations added to the handler.
 	GetInformationCount() uint32
 	// AddInfoFromTable adds the information of the target handler.
-	AddInfoFromTable(otherHandler MeshInformationHandler, currentFaceCount uint32)
+	AddInfoFromTable(otherHandler Handler, currentFaceCount uint32)
 	// CloneFaceInfosFrom clones the data from another face.
-	CloneFaceInfosFrom(faceIndex uint32, otherHandler MeshInformationHandler, otherFaceIndex uint32)
+	CloneFaceInfosFrom(faceIndex uint32, otherHandler Handler, otherFaceIndex uint32)
 	// ResetFaceInformation clears the data of an specific face.
 	ResetFaceInformation(faceIndex uint32)
 	// RemoveInformation removes the information of the target type.
