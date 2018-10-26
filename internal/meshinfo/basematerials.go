@@ -54,12 +54,12 @@ func (p *BaseMaterialsInfo) cloneFaceInfosFrom(faceIndex uint32, otherInfo MeshI
 	targetData.(*BaseMaterial).MaterialIndex = sourceData.(*BaseMaterial).MaterialIndex
 }
 
-//permuteNodeInformation swap the data of the target mesh.
+//permuteNodeInformation does nothing.
 func (p *BaseMaterialsInfo) permuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3 uint32) {
 	// nothing to merge
 }
 
-// mergeInformationFrom merges the information of the input mesh with the current information.
+// mergeInformationFrom does nothing.
 func (p *BaseMaterialsInfo) mergeInformationFrom(info MeshInfo) {
 	// nothing to merge
 }
