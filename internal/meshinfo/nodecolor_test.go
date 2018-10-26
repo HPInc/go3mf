@@ -183,7 +183,7 @@ func TestNodeColorsMeshInfo_cloneFaceInfosFrom(t *testing.T) {
 	}{
 		{"err1", NewNodeColorsMeshInfo(mockContainer1), args{1, NewNodeColorsMeshInfo(mockContainer2), 2}, NewNodeColor(1, 2, 3), NewNodeColor(4, 5, 6), errors.New(""), nil},
 		{"err2", NewNodeColorsMeshInfo(mockContainer1), args{1, NewNodeColorsMeshInfo(mockContainer2), 2}, NewNodeColor(1, 2, 3), NewNodeColor(4, 5, 6), nil, errors.New("")},
-		{"err2", NewNodeColorsMeshInfo(mockContainer1), args{1, NewNodeColorsMeshInfo(mockContainer2), 2}, NewNodeColor(1, 2, 3), NewNodeColor(4, 5, 6), nil, nil},
+		{"permuted", NewNodeColorsMeshInfo(mockContainer1), args{1, NewNodeColorsMeshInfo(mockContainer2), 2}, NewNodeColor(1, 2, 3), NewNodeColor(4, 5, 6), nil, nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
