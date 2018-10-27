@@ -16,6 +16,7 @@ type LookupHandler struct {
 // NewLookupHandler creates a new lookup handler.
 func NewLookupHandler() *LookupHandler {
 	handler := &LookupHandler{
+		lookup:            make(map[InformationType]MeshInfo, infoLastType),
 		internalIDCounter: 1,
 	}
 	for infoType := InfoAbstract; infoType < infoLastType; infoType++ {
@@ -41,7 +42,7 @@ func (h *LookupHandler) AddFace(newFaceCount uint32) error {
 	for _, info := range h.lookup {
 		data, err := info.AddFaceData(newFaceCount)
 		if err != nil {
-			return nil
+			return err
 		}
 		info.Invalidate(data)
 	}
