@@ -49,8 +49,8 @@ func (p *nodeColorsMeshInfo) FaceHasData(faceIndex uint32) bool {
 }
 
 // Clone creates a deep copy of this instance.
-func (p *nodeColorsMeshInfo) Clone() MeshInfo {
-	return newnodeColorsMeshInfo(p.baseMeshInfo.Container.Clone())
+func (p *nodeColorsMeshInfo) Clone(currentFaceCount uint32) MeshInfo {
+	return newnodeColorsMeshInfo(p.baseMeshInfo.Container.Clone(currentFaceCount))
 }
 
 // cloneFaceInfosFrom clones the data from another face.

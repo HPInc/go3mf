@@ -29,8 +29,8 @@ func newmemoryContainer(currentFaceCount uint32, elemType reflect.Type) *memoryC
 }
 
 // Clone creates a copy of the container with all the faces invalidated.
-func (m *memoryContainer) Clone() Container {
-	return newmemoryContainer(m.faceCount, m.elemType)
+func (m *memoryContainer) Clone(currentFaceCount uint32) Container {
+	return newmemoryContainer(currentFaceCount, m.elemType)
 }
 
 // AddFaceData returns the pointer to the data of the added face.

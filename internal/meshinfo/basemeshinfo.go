@@ -16,8 +16,8 @@ func newbaseMeshInfo(container Container, invalidator Invalidator) *baseMeshInfo
 	}
 }
 
-// ResetFaceInformation clears the data of an specific face.
-func (b *baseMeshInfo) ResetFaceInformation(faceIndex uint32) {
+// resetFaceInformation clears the data of an specific face.
+func (b *baseMeshInfo) resetFaceInformation(faceIndex uint32) {
 	data, err := b.GetFaceData(faceIndex)
 	if err == nil {
 		b.Invalidator.Invalidate(data)
@@ -28,7 +28,7 @@ func (b *baseMeshInfo) ResetFaceInformation(faceIndex uint32) {
 func (b *baseMeshInfo) Clear() {
 	count := int(b.GetCurrentFaceCount())
 	for i := 0; i < count; i++ {
-		b.ResetFaceInformation(uint32(i))
+		b.resetFaceInformation(uint32(i))
 	}
 }
 

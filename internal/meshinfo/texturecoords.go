@@ -54,8 +54,8 @@ func (p *textureCoordsMeshInfo) FaceHasData(faceIndex uint32) bool {
 }
 
 // Clone creates a deep copy of this instance.
-func (p *textureCoordsMeshInfo) Clone() MeshInfo {
-	return newtextureCoordsMeshInfo(p.baseMeshInfo.Container.Clone())
+func (p *textureCoordsMeshInfo) Clone(currentFaceCount uint32) MeshInfo {
+	return newtextureCoordsMeshInfo(p.baseMeshInfo.Container.Clone(currentFaceCount))
 }
 
 // cloneFaceInfosFrom clones the data from another face.

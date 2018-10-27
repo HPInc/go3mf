@@ -32,18 +32,20 @@ func TestNewmemoryContainer(t *testing.T) {
 }
 
 func Test_memoryContainer_Clone(t *testing.T) {
-	p := newmemoryContainer(0, reflect.TypeOf(fakeFaceData{}))
-	p.AddFaceData(1)
+	type args struct {
+		currentFaceCount uint32
+	}
 	tests := []struct {
 		name string
 		m    *memoryContainer
+		args args
 		want *memoryContainer
 	}{
-		{"empty", p, newmemoryContainer(1, reflect.TypeOf(fakeFaceData{}))},
+		{"empty", newmemoryContainer(0, reflect.TypeOf(fakeFaceData{})), args{2}, newmemoryContainer(1, reflect.TypeOf(fakeFaceData{}))},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.m.Clone(); got.GetCurrentFaceCount() != tt.want.faceCount {
+			if got := tt.m.Clone(tt.args.currentFaceCount); got.GetCurrentFaceCount() != tt.args.currentFaceCount {
 				t.Errorf("memoryContainer.Clone() = %v, want %v", got, tt.want)
 			}
 		})

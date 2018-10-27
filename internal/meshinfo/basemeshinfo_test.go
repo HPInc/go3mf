@@ -32,7 +32,7 @@ func Test_newbaseMeshInfo(t *testing.T) {
 	}
 }
 
-func Test_baseMeshInfo_ResetFaceInformation(t *testing.T) {
+func Test_baseMeshInfo_resetFaceInformation(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockInvalidator := NewMockInvalidator(mockCtrl)
@@ -65,7 +65,7 @@ func Test_baseMeshInfo_ResetFaceInformation(t *testing.T) {
 
 			mockContainer.EXPECT().GetFaceData(tt.args.faceIndex).Return(data, err)
 			mockInvalidator.EXPECT().Invalidate(data).Times(times)
-			tt.b.ResetFaceInformation(tt.args.faceIndex)
+			tt.b.resetFaceInformation(tt.args.faceIndex)
 		})
 	}
 }

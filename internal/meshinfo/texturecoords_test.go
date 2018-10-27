@@ -134,17 +134,21 @@ func TestTextureCoordsMeshInfo_Clone(t *testing.T) {
 	mockContainer2 := NewMockContainer(mockCtrl)
 	mockContainer.EXPECT().Clear()
 	mockContainer2.EXPECT().Clear()
-	mockContainer.EXPECT().Clone().Return(mockContainer2)
+	type args struct {
+		currentFaceCount uint32
+	}
 	tests := []struct {
 		name string
 		p    *textureCoordsMeshInfo
+		args args
 		want MeshInfo
 	}{
-		{"base", newtextureCoordsMeshInfo(mockContainer), &textureCoordsMeshInfo{*newbaseMeshInfo(mockContainer2, textureCoordsInvalidator{})}},
+		{"base", newtextureCoordsMeshInfo(mockContainer), args{2}, &textureCoordsMeshInfo{*newbaseMeshInfo(mockContainer2, textureCoordsInvalidator{})}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.Clone(); !reflect.DeepEqual(got, tt.want) {
+			mockContainer.EXPECT().Clone(tt.args.currentFaceCount).Return(mockContainer2)
+			if got := tt.p.Clone(tt.args.currentFaceCount); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("textureCoordsMeshInfo.Clone() = %v, want %v", got, tt.want)
 			}
 		})
