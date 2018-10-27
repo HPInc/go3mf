@@ -13,7 +13,8 @@ type LookupHandler struct {
 	internalIDCounter uint64
 }
 
-func NewInformationHandler() *LookupHandler {
+// NewLookupHandler creates a new lookup handler.
+func NewLookupHandler() *LookupHandler {
 	handler := &LookupHandler{
 		internalIDCounter: 1,
 	}
