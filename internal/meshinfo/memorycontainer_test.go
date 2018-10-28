@@ -10,7 +10,7 @@ import (
 func TestNewmemoryContainer(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	mockContainer := NewMockInvalidator(mockCtrl)
+	mockContainer := NewMockFaceData(mockCtrl)
 	type args struct {
 		currentFaceCount uint32
 		elemType         reflect.Type
@@ -35,7 +35,7 @@ func TestNewmemoryContainer(t *testing.T) {
 func Test_memoryContainer_Clone(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	mockContainer := NewMockInvalidator(mockCtrl)
+	mockContainer := NewMockFaceData(mockCtrl)
 	type args struct {
 		currentFaceCount uint32
 	}
@@ -59,8 +59,8 @@ func Test_memoryContainer_Clone(t *testing.T) {
 func TestMemoryContainer_AddFaceData(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	mockInvalidator := NewMockInvalidator(mockCtrl)
-	m := newmemoryContainer(0, reflect.TypeOf(*mockInvalidator))
+	mockFaceData := NewMockFaceData(mockCtrl)
+	m := newmemoryContainer(0, reflect.TypeOf(*mockFaceData))
 	type args struct {
 		newFaceCount uint32
 	}
@@ -71,9 +71,9 @@ func TestMemoryContainer_AddFaceData(t *testing.T) {
 		wantVal FaceData
 		wantErr bool
 	}{
-		{"invalid element type", &memoryContainer{nil, 0, reflect.MakeSlice(reflect.SliceOf(reflect.TypeOf(*mockInvalidator)), 0, 0)}, args{0}, nil, true},
+		{"invalid element type", &memoryContainer{nil, 0, reflect.MakeSlice(reflect.SliceOf(reflect.TypeOf(*mockFaceData)), 0, 0)}, args{0}, nil, true},
 		{"invalid face number", m, args{0}, nil, true},
-		{"valid face number", m, args{2}, mockInvalidator, false},
+		{"valid face number", m, args{2}, mockFaceData, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -92,8 +92,8 @@ func TestMemoryContainer_AddFaceData(t *testing.T) {
 func TestMemoryContainer_GetFaceData(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	mockInvalidator := NewMockInvalidator(mockCtrl)
-	m := newmemoryContainer(0, reflect.TypeOf(*mockInvalidator))
+	mockFaceData := NewMockFaceData(mockCtrl)
+	m := newmemoryContainer(0, reflect.TypeOf(*mockFaceData))
 	initial, _ := m.AddFaceData(1)
 	type args struct {
 		index uint32
@@ -106,7 +106,7 @@ func TestMemoryContainer_GetFaceData(t *testing.T) {
 		wantErr bool
 	}{
 		{"invalid index", m, args{1}, nil, true},
-		{"valid index", m, args{0}, mockInvalidator, false},
+		{"valid index", m, args{0}, mockFaceData, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -128,9 +128,9 @@ func TestMemoryContainer_GetFaceData(t *testing.T) {
 func TestMemoryContainer_GetCurrentFaceCount(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	mockInvalidator := NewMockInvalidator(mockCtrl)
-	m := newmemoryContainer(0, reflect.TypeOf(*mockInvalidator))
-	mempty := newmemoryContainer(0, reflect.TypeOf(*mockInvalidator))
+	mockFaceData := NewMockFaceData(mockCtrl)
+	m := newmemoryContainer(0, reflect.TypeOf(*mockFaceData))
+	mempty := newmemoryContainer(0, reflect.TypeOf(*mockFaceData))
 	m.AddFaceData(1)
 	tests := []struct {
 		name string
@@ -152,8 +152,8 @@ func TestMemoryContainer_GetCurrentFaceCount(t *testing.T) {
 func TestMemoryContainer_Clear(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	mockInvalidator := NewMockInvalidator(mockCtrl)
-	m := newmemoryContainer(0, reflect.TypeOf(*mockInvalidator))
+	mockFaceData := NewMockFaceData(mockCtrl)
+	m := newmemoryContainer(0, reflect.TypeOf(*mockFaceData))
 	m.AddFaceData(1)
 	tests := []struct {
 		name string

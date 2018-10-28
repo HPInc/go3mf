@@ -40,9 +40,9 @@ func TestMemoryMeshInfoFactory_Create(t *testing.T) {
 		wantErr bool
 	}{
 		{"error", NewMemoryMeshInfoFactory(), args{InfoAbstract, 0}, nil, true},
-		{"basematerials", NewMemoryMeshInfoFactory(), args{InfoBaseMaterials, 0}, newbaseMaterialsMeshInfo(mockContainer), false},
-		{"nodecolors", NewMemoryMeshInfoFactory(), args{InfoNodeColors, 0}, newnodeColorsMeshInfo(mockContainer), false},
-		{"textureCoords", NewMemoryMeshInfoFactory(), args{InfoTextureCoords, 0}, newtextureCoordsMeshInfo(mockContainer), false},
+		{"basematerials", NewMemoryMeshInfoFactory(), args{InfoBaseMaterials, 0}, newgenericMeshInfo(mockContainer, InfoBaseMaterials), false},
+		{"nodecolors", NewMemoryMeshInfoFactory(), args{InfoNodeColors, 0}, newgenericMeshInfo(mockContainer, InfoNodeColors), false},
+		{"textureCoords", NewMemoryMeshInfoFactory(), args{InfoTextureCoords, 0}, newgenericMeshInfo(mockContainer, InfoTextureCoords), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

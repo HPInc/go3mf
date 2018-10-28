@@ -18,11 +18,11 @@ func NewMemoryMeshInfoFactory() *MemoryMeshInfoFactory {
 func (f *MemoryMeshInfoFactory) Create(infoType InformationType, currentFaceCount uint32) (MeshInfo, error) {
 	switch infoType {
 	case InfoBaseMaterials:
-		return newbaseMaterialsMeshInfo(newmemoryContainer(currentFaceCount, reflect.TypeOf((*BaseMaterial)(nil)).Elem())), nil
+		return newgenericMeshInfo(newmemoryContainer(currentFaceCount, reflect.TypeOf((*BaseMaterial)(nil)).Elem()), infoType), nil
 	case InfoNodeColors:
-		return newnodeColorsMeshInfo(newmemoryContainer(currentFaceCount, reflect.TypeOf((*NodeColor)(nil)).Elem())), nil
+		return newgenericMeshInfo(newmemoryContainer(currentFaceCount, reflect.TypeOf((*NodeColor)(nil)).Elem()), infoType), nil
 	case InfoTextureCoords:
-		return newtextureCoordsMeshInfo(newmemoryContainer(currentFaceCount, reflect.TypeOf((*TextureCoords)(nil)).Elem())), nil
+		return newgenericMeshInfo(newmemoryContainer(currentFaceCount, reflect.TypeOf((*TextureCoords)(nil)).Elem()), infoType), nil
 	}
 	return nil, common.NewError(common.ErrorInvalidInformationType)
 }

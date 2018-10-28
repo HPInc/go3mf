@@ -27,7 +27,7 @@ func NewLookupHandler() *LookupHandler {
 
 // AddInformation adds a new type of information to the handler.
 func (h *LookupHandler) AddInformation(info MeshInfo) error {
-	infoType := info.GetType()
+	infoType := info.InfoType()
 	h.lookup[infoType] = info
 	info.setInternalID(h.internalIDCounter)
 	h.internalIDCounter++

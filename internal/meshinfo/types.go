@@ -1,19 +1,43 @@
-//go:generate mockgen -destination types_mock_test.go -package meshinfo -self_package github.com/qmuntal/go3mf/internal/meshinfo github.com/qmuntal/go3mf/internal/meshinfo Invalidator,Container,MeshInfo
+//go:generate mockgen -destination types_mock_test.go -package meshinfo -self_package github.com/qmuntal/go3mf/internal/meshinfo github.com/qmuntal/go3mf/internal/meshinfo FaceData,Container,MeshInfo
 
 package meshinfo
 
 // Color represents a RGB color.
 type Color = uint32
 
-// Invalidator can reset its values to zeros.
+// Invalidator defines an interface that can reset its values to zeros.
 type Invalidator interface {
 	// Invalidate sets the data with its default values.
 	Invalidate()
 }
 
-// FaceData defines a generic information of a face. Implementations could by NodeColor or TextureCoords.
+// Copier defines an interface that can perfom a deep copy from another object.
+type Copier interface {
+	// Copy copies all the properties from another object. Do nothing if not the same type.
+	Copy(from interface{})
+}
+
+// Permuter defines an interface that can permute its properties.
+type Permuter interface {
+	// Permute some properties of the instance using the desired indexes.
+	// Not all the indexes have to be used.
+	Permute(index1, index2, index3 uint32)
+}
+
+// Merger defines an interface that can merge itself with another object.
+type Merger interface {
+	// Merge merges both instances.
+	Merge(other interface{})
+}
+
+// FaceData defines a generic information of a face.
 type FaceData interface {
 	Invalidator
+	Copier
+	Permuter
+	Merger
+	// HasData returns true if the instances has any kind of data other than its default ones.
+	HasData() bool
 }
 
 // InformationType is an enumerator that identifies different information types.
@@ -58,8 +82,8 @@ type Container interface {
 // This is a base struct for handling all the mesh-related linear information (like face colors, textures, etc...).
 type MeshInfo interface {
 	Repository
-	// GetType returns the type of information stored in this instance.
-	GetType() InformationType
+	// InfoType returns the type of information stored in this instance.
+	InfoType() InformationType
 	// FaceHasData checks if the specific face has any associated data.
 	FaceHasData(faceIndex uint32) bool
 	// Clone creates a deep copy of this instance.
@@ -76,12 +100,6 @@ type MeshInfo interface {
 	setInternalID(internalID uint64)
 	// getInternalId gets the internal ID of the mesh information.
 	getInternalID() uint64
-}
-
-// MeshInfoFactory allows a dynamic creation of different Structs of Information.
-type MeshInfoFactory interface {
-	// Create creates a new MeshInfo of the desired type.
-	Create(infoType InformationType, currentFaceCount uint32) (MeshInfo, error)
 }
 
 // Handler allows to include different kinds of information in one mesh (like Textures AND colors)
