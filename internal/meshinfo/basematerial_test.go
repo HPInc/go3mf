@@ -8,47 +8,19 @@ import (
 	"github.com/golang/mock/gomock"
 )
 
-func TestNewBaseMaterial(t *testing.T) {
-	type args struct {
-		materialGroupID uint32
-		materialIndex   uint32
-	}
+func TestBaseMaterial_Invalidate(t *testing.T) {
 	tests := []struct {
 		name string
-		args args
-		want *BaseMaterial
+		b    *BaseMaterial
 	}{
-		{"new", args{1, 2}, &BaseMaterial{1, 2}},
+		{"base", &BaseMaterial{1, 2}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewBaseMaterial(tt.args.materialGroupID, tt.args.materialIndex); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewBaseMaterial() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_baseMaterialInvalidator_Invalidate(t *testing.T) {
-	expected := &BaseMaterial{0, 0}
-	type args struct {
-		data FaceData
-	}
-	tests := []struct {
-		name string
-		p    baseMaterialInvalidator
-		args args
-	}{
-		{"generic", baseMaterialInvalidator{}, args{&fakeFaceData{}}},
-		{"specific", baseMaterialInvalidator{}, args{&BaseMaterial{2, 1}}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.p.Invalidate(tt.args.data)
-			if got, ok := tt.args.data.(*BaseMaterial); ok {
-				if !reflect.DeepEqual(got, expected) {
-					t.Errorf("baseMaterialInvalidator.Invalidate expected  = %v, want %v", got, expected)
-				}
+			tt.b.Invalidate()
+			want := new(BaseMaterial)
+			if !reflect.DeepEqual(tt.b, want) {
+				t.Errorf("BaseMaterial.Invalidate() = %v, want %v", tt.b, want)
 			}
 		})
 	}
@@ -67,7 +39,7 @@ func TestNewbaseMaterialsMeshInfo(t *testing.T) {
 		args args
 		want *baseMaterialsMeshInfo
 	}{
-		{"new", args{mockContainer}, &baseMaterialsMeshInfo{*newbaseMeshInfo(mockContainer, baseMaterialInvalidator{})}},
+		{"new", args{mockContainer}, &baseMaterialsMeshInfo{*newbaseMeshInfo(mockContainer)}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -152,7 +124,7 @@ func TestBaseMaterialsMeshInfo_Clone(t *testing.T) {
 		args args
 		want MeshInfo
 	}{
-		{"base", newbaseMaterialsMeshInfo(mockContainer), args{2}, &baseMaterialsMeshInfo{*newbaseMeshInfo(mockContainer2, baseMaterialInvalidator{})}},
+		{"base", newbaseMaterialsMeshInfo(mockContainer), args{2}, &baseMaterialsMeshInfo{*newbaseMeshInfo(mockContainer2)}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -223,7 +195,7 @@ func TestBaseMaterialsMeshInfo_permuteNodeInformation(t *testing.T) {
 		p    *baseMaterialsMeshInfo
 		args args
 	}{
-		{"nothing happens", &baseMaterialsMeshInfo{baseMeshInfo{nil, nil, 0}}, args{1, 2, 3, 4}},
+		{"nothing happens", &baseMaterialsMeshInfo{baseMeshInfo{nil, 0}}, args{1, 2, 3, 4}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -241,7 +213,7 @@ func TestBaseMaterialsMeshInfo_mergeInformationFrom(t *testing.T) {
 		p    *baseMaterialsMeshInfo
 		args args
 	}{
-		{"nothing happens", &baseMaterialsMeshInfo{baseMeshInfo{nil, nil, 0}}, args{nil}},
+		{"nothing happens", &baseMaterialsMeshInfo{baseMeshInfo{nil, 0}}, args{nil}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

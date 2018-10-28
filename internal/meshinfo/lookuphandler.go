@@ -44,7 +44,7 @@ func (h *LookupHandler) AddFace(newFaceCount uint32) error {
 		if err != nil {
 			return err
 		}
-		info.Invalidate(data)
+		data.Invalidate()
 	}
 	return nil
 }

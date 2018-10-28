@@ -5,20 +5,10 @@ type NodeColor struct {
 	Colors [3]Color // Colors of every vertex in a node.
 }
 
-// NewNodeColor creates a new node color form an RGB color.
-func NewNodeColor(r, g, b Color) *NodeColor {
-	return &NodeColor{[3]Color{r, g, b}}
-}
-
-type nodeColorInvalidator struct {
-}
-
-func (p nodeColorInvalidator) Invalidate(data FaceData) {
-	if node, ok := data.(*NodeColor); ok {
-		node.Colors[0] = 0x00000000
-		node.Colors[1] = 0x00000000
-		node.Colors[2] = 0x00000000
-	}
+func (n *NodeColor) Invalidate() {
+	n.Colors[0] = 0
+	n.Colors[1] = 0
+	n.Colors[2] = 0
 }
 
 // nodeColorsMeshInfo specializes the baseMeshInfo struct to "colors defined per node".
@@ -30,7 +20,7 @@ type nodeColorsMeshInfo struct {
 // newnodeColorsMeshInfo creates a new Node colors mesh information struct.
 func newnodeColorsMeshInfo(container Container) *nodeColorsMeshInfo {
 	container.Clear()
-	return &nodeColorsMeshInfo{*newbaseMeshInfo(container, nodeColorInvalidator{})}
+	return &nodeColorsMeshInfo{*newbaseMeshInfo(container)}
 }
 
 // GetType returns the type of information stored in this instance.

@@ -2,30 +2,29 @@ package meshinfo
 
 import (
 	"errors"
-	"github.com/golang/mock/gomock"
 	"reflect"
 	"testing"
+
+	"github.com/golang/mock/gomock"
 )
 
 func Test_newbaseMeshInfo(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	mockInvalidator := NewMockInvalidator(mockCtrl)
 	mockContainer := NewMockContainer(mockCtrl)
 	type args struct {
-		container   Container
-		invalidator Invalidator
+		container Container
 	}
 	tests := []struct {
 		name string
 		args args
 		want *baseMeshInfo
 	}{
-		{"new", args{mockContainer, mockInvalidator}, &baseMeshInfo{mockContainer, mockInvalidator, 0}},
+		{"new", args{mockContainer}, &baseMeshInfo{mockContainer, 0}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := newbaseMeshInfo(tt.args.container, tt.args.invalidator); !reflect.DeepEqual(got, tt.want) {
+			if got := newbaseMeshInfo(tt.args.container); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("newbaseMeshInfo() = %v, want %v", got, tt.want)
 			}
 		})
@@ -35,7 +34,6 @@ func Test_newbaseMeshInfo(t *testing.T) {
 func Test_baseMeshInfo_resetFaceInformation(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	mockInvalidator := NewMockInvalidator(mockCtrl)
 	mockContainer := NewMockContainer(mockCtrl)
 
 	type args struct {
@@ -47,12 +45,12 @@ func Test_baseMeshInfo_resetFaceInformation(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"error", newbaseMeshInfo(mockContainer, mockInvalidator), args{2}, true},
-		{"success", newbaseMeshInfo(mockContainer, mockInvalidator), args{4}, false},
+		{"error", newbaseMeshInfo(mockContainer), args{2}, true},
+		{"success", newbaseMeshInfo(mockContainer), args{4}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			data := &fakeFaceData{}
+			mockInvalidator := NewMockInvalidator(mockCtrl)
 			var (
 				err   error
 				times int
@@ -63,8 +61,8 @@ func Test_baseMeshInfo_resetFaceInformation(t *testing.T) {
 				times = 1
 			}
 
-			mockContainer.EXPECT().GetFaceData(tt.args.faceIndex).Return(data, err)
-			mockInvalidator.EXPECT().Invalidate(data).Times(times)
+			mockContainer.EXPECT().GetFaceData(tt.args.faceIndex).Return(mockInvalidator, err)
+			mockInvalidator.EXPECT().Invalidate().Times(times)
 			tt.b.resetFaceInformation(tt.args.faceIndex)
 		})
 	}
@@ -73,23 +71,22 @@ func Test_baseMeshInfo_resetFaceInformation(t *testing.T) {
 func Test_baseMeshInfo_Clear(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	mockInvalidator := NewMockInvalidator(mockCtrl)
 	mockContainer := NewMockContainer(mockCtrl)
 	tests := []struct {
 		name    string
 		b       *baseMeshInfo
 		faceNum uint32
 	}{
-		{"empty", newbaseMeshInfo(mockContainer, mockInvalidator), 0},
-		{"one", newbaseMeshInfo(mockContainer, mockInvalidator), 1},
-		{"two", newbaseMeshInfo(mockContainer, mockInvalidator), 2},
+		{"empty", newbaseMeshInfo(mockContainer), 0},
+		{"one", newbaseMeshInfo(mockContainer), 1},
+		{"two", newbaseMeshInfo(mockContainer), 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			data := &fakeFaceData{}
+			mockInvalidator := NewMockInvalidator(mockCtrl)
 			mockContainer.EXPECT().GetCurrentFaceCount().Return(tt.faceNum)
-			mockContainer.EXPECT().GetFaceData(gomock.Any()).Return(data, nil).Times(int(tt.faceNum))
-			mockInvalidator.EXPECT().Invalidate(data).Times(int(tt.faceNum))
+			mockContainer.EXPECT().GetFaceData(gomock.Any()).Return(mockInvalidator, nil).Times(int(tt.faceNum))
+			mockInvalidator.EXPECT().Invalidate().Times(int(tt.faceNum))
 			tt.b.Clear()
 		})
 	}
@@ -104,9 +101,9 @@ func Test_baseMeshInfo_setInternalID(t *testing.T) {
 		b    *baseMeshInfo
 		args args
 	}{
-		{"zero", newbaseMeshInfo(nil, nil), args{0}},
-		{"one", newbaseMeshInfo(nil, nil), args{1}},
-		{"two", newbaseMeshInfo(nil, nil), args{3}},
+		{"zero", newbaseMeshInfo(nil), args{0}},
+		{"one", newbaseMeshInfo(nil), args{1}},
+		{"two", newbaseMeshInfo(nil), args{3}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -124,9 +121,9 @@ func Test_baseMeshInfo_getInternalID(t *testing.T) {
 		b    *baseMeshInfo
 		want uint64
 	}{
-		{"new", newbaseMeshInfo(nil, nil), 0},
-		{"one", &baseMeshInfo{nil, nil, 1}, 1},
-		{"two", &baseMeshInfo{nil, nil, 2}, 2},
+		{"new", newbaseMeshInfo(nil), 0},
+		{"one", &baseMeshInfo{nil, 1}, 1},
+		{"two", &baseMeshInfo{nil, 2}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -10,21 +10,11 @@ type TextureCoords struct {
 	Coords    [3]mgl32.Vec2 // Coordinates of the boundaries of the texture.
 }
 
-// NewTextureCoords creates a new node color form an RGB color.
-func NewTextureCoords(textureID uint32) *TextureCoords {
-	return &TextureCoords{textureID, [3]mgl32.Vec2{mgl32.Vec2{0.0, 0.0}, mgl32.Vec2{0.0, 0.0}, mgl32.Vec2{0.0, 0.0}}}
-}
-
-type textureCoordsInvalidator struct {
-}
-
-func (p textureCoordsInvalidator) Invalidate(data FaceData) {
-	if node, ok := data.(*TextureCoords); ok {
-		node.TextureID = 0
-		node.Coords[0] = mgl32.Vec2{0.0, 0.0}
-		node.Coords[1] = mgl32.Vec2{0.0, 0.0}
-		node.Coords[2] = mgl32.Vec2{0.0, 0.0}
-	}
+func (t *TextureCoords) Invalidate() {
+	t.TextureID = 0
+	t.Coords[0] = mgl32.Vec2{0.0, 0.0}
+	t.Coords[1] = mgl32.Vec2{0.0, 0.0}
+	t.Coords[2] = mgl32.Vec2{0.0, 0.0}
 }
 
 // textureCoordsMeshInfo specializes the baseMeshInfo struct to "textures".
@@ -36,7 +26,7 @@ type textureCoordsMeshInfo struct {
 // newtextureCoordsMeshInfo creates a new Node colors mesh information struct.
 func newtextureCoordsMeshInfo(container Container) *textureCoordsMeshInfo {
 	container.Clear()
-	return &textureCoordsMeshInfo{*newbaseMeshInfo(container, textureCoordsInvalidator{})}
+	return &textureCoordsMeshInfo{*newbaseMeshInfo(container)}
 }
 
 // GetType returns the type of information stored in this instance.

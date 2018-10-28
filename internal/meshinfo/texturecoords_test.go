@@ -9,41 +9,24 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-func TestNewTextureCoords(t *testing.T) {
-	type args struct {
-		textureID uint32
-	}
+func TestTextureCoords_Invalidate(t *testing.T) {
 	tests := []struct {
 		name string
-		args args
-		want *TextureCoords
+		t    *TextureCoords
 	}{
-		{"new", args{1}, &TextureCoords{1, [3]mgl32.Vec2{mgl32.Vec2{0.0, 0.0}, mgl32.Vec2{0.0, 0.0}, mgl32.Vec2{0.0, 0.0}}}},
+		{"base", new(TextureCoords)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewTextureCoords(tt.args.textureID); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewTextureCoords() = %v, want %v", got, tt.want)
+			tt.t.TextureID = 2
+			tt.t.Coords[0] = mgl32.Vec2{1.0, 2.0}
+			tt.t.Coords[1] = mgl32.Vec2{5.0, 3.0}
+			tt.t.Coords[2] = mgl32.Vec2{6.0, 4.0}
+			tt.t.Invalidate()
+			want := new(TextureCoords)
+			if !reflect.DeepEqual(tt.t, want) {
+				t.Errorf("TextureCoords.Invalidate() = %v, want %v", tt.t, want)
 			}
-		})
-	}
-}
-
-func Test_textureCoordsInvalidator_Invalidate(t *testing.T) {
-	type args struct {
-		data FaceData
-	}
-	tests := []struct {
-		name string
-		p    textureCoordsInvalidator
-		args args
-	}{
-		{"generic", textureCoordsInvalidator{}, args{&fakeFaceData{}}},
-		{"specific", textureCoordsInvalidator{}, args{NewTextureCoords(4)}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.p.Invalidate(tt.args.data)
 		})
 	}
 }
@@ -61,7 +44,7 @@ func TestNewtextureCoordsMeshInfo(t *testing.T) {
 		args args
 		want *textureCoordsMeshInfo
 	}{
-		{"new", args{mockContainer}, &textureCoordsMeshInfo{*newbaseMeshInfo(mockContainer, textureCoordsInvalidator{})}},
+		{"new", args{mockContainer}, &textureCoordsMeshInfo{*newbaseMeshInfo(mockContainer)}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -109,9 +92,9 @@ func TestTextureCoordsMeshInfo_FaceHasData(t *testing.T) {
 		coords  *TextureCoords
 		want    bool
 	}{
-		{"error", newtextureCoordsMeshInfo(mockContainer), args{0}, true, NewTextureCoords(0), false},
-		{"nodata", newtextureCoordsMeshInfo(mockContainer), args{0}, false, NewTextureCoords(0), false},
-		{"data", newtextureCoordsMeshInfo(mockContainer), args{0}, false, NewTextureCoords(1), true},
+		{"error", newtextureCoordsMeshInfo(mockContainer), args{0}, true, &TextureCoords{}, false},
+		{"nodata", newtextureCoordsMeshInfo(mockContainer), args{0}, false, &TextureCoords{}, false},
+		{"data", newtextureCoordsMeshInfo(mockContainer), args{0}, false, &TextureCoords{TextureID: 1}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -143,7 +126,7 @@ func TestTextureCoordsMeshInfo_Clone(t *testing.T) {
 		args args
 		want MeshInfo
 	}{
-		{"base", newtextureCoordsMeshInfo(mockContainer), args{2}, &textureCoordsMeshInfo{*newbaseMeshInfo(mockContainer2, textureCoordsInvalidator{})}},
+		{"base", newtextureCoordsMeshInfo(mockContainer), args{2}, &textureCoordsMeshInfo{*newbaseMeshInfo(mockContainer2)}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -162,7 +145,7 @@ func TestTextureCoordsMeshInfo_cloneFaceInfosFrom(t *testing.T) {
 	mockContainer2 := NewMockContainer(mockCtrl)
 	mockContainer1.EXPECT().Clear().MaxTimes(3)
 	mockContainer2.EXPECT().Clear().MaxTimes(3)
-	source := NewTextureCoords(4)
+	source := &TextureCoords{TextureID: 4}
 	source.Coords[0] = mgl32.Vec2{1.0, 3.0}
 	source.Coords[1] = mgl32.Vec2{0.0, 2.0}
 	source.Coords[2] = mgl32.Vec2{0.0, 0.0}
@@ -178,9 +161,9 @@ func TestTextureCoordsMeshInfo_cloneFaceInfosFrom(t *testing.T) {
 		want1, want2 *TextureCoords
 		err1, err2   error
 	}{
-		{"err1", newtextureCoordsMeshInfo(mockContainer1), args{1, newtextureCoordsMeshInfo(mockContainer2), 2}, NewTextureCoords(1), source, errors.New(""), nil},
-		{"err2", newtextureCoordsMeshInfo(mockContainer1), args{1, newtextureCoordsMeshInfo(mockContainer2), 2}, NewTextureCoords(1), source, nil, errors.New("")},
-		{"permuted", newtextureCoordsMeshInfo(mockContainer1), args{1, newtextureCoordsMeshInfo(mockContainer2), 2}, NewTextureCoords(1), source, nil, nil},
+		{"err1", newtextureCoordsMeshInfo(mockContainer1), args{1, newtextureCoordsMeshInfo(mockContainer2), 2}, &TextureCoords{TextureID: 1}, source, errors.New(""), nil},
+		{"err2", newtextureCoordsMeshInfo(mockContainer1), args{1, newtextureCoordsMeshInfo(mockContainer2), 2}, &TextureCoords{TextureID: 1}, source, nil, errors.New("")},
+		{"permuted", newtextureCoordsMeshInfo(mockContainer1), args{1, newtextureCoordsMeshInfo(mockContainer2), 2}, &TextureCoords{TextureID: 1}, source, nil, nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -211,11 +194,11 @@ func TestTextureCoordsMeshInfo_permuteNodeInformation(t *testing.T) {
 	defer mockCtrl.Finish()
 	mockContainer := NewMockContainer(mockCtrl)
 	mockContainer.EXPECT().Clear().MaxTimes(6)
-	source := NewTextureCoords(4)
+	source := &TextureCoords{TextureID: 4}
 	source.Coords[0] = mgl32.Vec2{1.0, 3.0}
 	source.Coords[1] = mgl32.Vec2{0.0, 2.0}
 	source.Coords[2] = mgl32.Vec2{0.0, 0.0}
-	target := NewTextureCoords(4)
+	target := &TextureCoords{TextureID: 4}
 	target.Coords[0] = mgl32.Vec2{0.0, 0.0}
 	target.Coords[1] = mgl32.Vec2{1.0, 3.0}
 	target.Coords[2] = mgl32.Vec2{0.0, 2.0}
@@ -233,11 +216,11 @@ func TestTextureCoordsMeshInfo_permuteNodeInformation(t *testing.T) {
 		data    *TextureCoords
 		want    *TextureCoords
 	}{
-		{"err", newtextureCoordsMeshInfo(mockContainer), args{1, 2, 1, 0}, true, NewTextureCoords(1), NewTextureCoords(1)},
-		{"index1", newtextureCoordsMeshInfo(mockContainer), args{1, 3, 1, 0}, false, NewTextureCoords(1), NewTextureCoords(1)},
-		{"index2", newtextureCoordsMeshInfo(mockContainer), args{1, 2, 3, 0}, false, NewTextureCoords(1), NewTextureCoords(1)},
-		{"index3", newtextureCoordsMeshInfo(mockContainer), args{1, 2, 2, 3}, false, NewTextureCoords(1), NewTextureCoords(1)},
-		{"equal", newtextureCoordsMeshInfo(mockContainer), args{1, 0, 1, 2}, false, NewTextureCoords(1), NewTextureCoords(1)},
+		{"err", newtextureCoordsMeshInfo(mockContainer), args{1, 2, 1, 0}, true, &TextureCoords{TextureID: 1}, &TextureCoords{TextureID: 1}},
+		{"index1", newtextureCoordsMeshInfo(mockContainer), args{1, 3, 1, 0}, false, &TextureCoords{TextureID: 1}, &TextureCoords{TextureID: 1}},
+		{"index2", newtextureCoordsMeshInfo(mockContainer), args{1, 2, 3, 0}, false, &TextureCoords{TextureID: 1}, &TextureCoords{TextureID: 1}},
+		{"index3", newtextureCoordsMeshInfo(mockContainer), args{1, 2, 2, 3}, false, &TextureCoords{TextureID: 1}, &TextureCoords{TextureID: 1}},
+		{"equal", newtextureCoordsMeshInfo(mockContainer), args{1, 0, 1, 2}, false, &TextureCoords{TextureID: 1}, &TextureCoords{TextureID: 1}},
 		{"diff", newtextureCoordsMeshInfo(mockContainer), args{1, 2, 0, 1}, false, source, target},
 	}
 	for _, tt := range tests {
@@ -264,7 +247,7 @@ func TestTextureCoordsMeshInfo_mergeInformationFrom(t *testing.T) {
 		p    *textureCoordsMeshInfo
 		args args
 	}{
-		{"nothing happens", &textureCoordsMeshInfo{baseMeshInfo{nil, nil, 0}}, args{nil}},
+		{"nothing happens", &textureCoordsMeshInfo{baseMeshInfo{nil, 0}}, args{nil}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

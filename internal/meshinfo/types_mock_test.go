@@ -33,13 +33,13 @@ func (m *MockInvalidator) EXPECT() *MockInvalidatorMockRecorder {
 }
 
 // Invalidate mocks base method
-func (m *MockInvalidator) Invalidate(arg0 interface{}) {
-	m.ctrl.Call(m, "Invalidate", arg0)
+func (m *MockInvalidator) Invalidate() {
+	m.ctrl.Call(m, "Invalidate")
 }
 
 // Invalidate indicates an expected call of Invalidate
-func (mr *MockInvalidatorMockRecorder) Invalidate(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Invalidate", reflect.TypeOf((*MockInvalidator)(nil).Invalidate), arg0)
+func (mr *MockInvalidatorMockRecorder) Invalidate() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Invalidate", reflect.TypeOf((*MockInvalidator)(nil).Invalidate))
 }
 
 // MockContainer is a mock of Container interface
@@ -66,9 +66,9 @@ func (m *MockContainer) EXPECT() *MockContainerMockRecorder {
 }
 
 // AddFaceData mocks base method
-func (m *MockContainer) AddFaceData(arg0 uint32) (interface{}, error) {
+func (m *MockContainer) AddFaceData(arg0 uint32) (FaceData, error) {
 	ret := m.ctrl.Call(m, "AddFaceData", arg0)
-	ret0, _ := ret[0].(interface{})
+	ret0, _ := ret[0].(FaceData)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -113,9 +113,9 @@ func (mr *MockContainerMockRecorder) GetCurrentFaceCount() *gomock.Call {
 }
 
 // GetFaceData mocks base method
-func (m *MockContainer) GetFaceData(arg0 uint32) (interface{}, error) {
+func (m *MockContainer) GetFaceData(arg0 uint32) (FaceData, error) {
 	ret := m.ctrl.Call(m, "GetFaceData", arg0)
-	ret0, _ := ret[0].(interface{})
+	ret0, _ := ret[0].(FaceData)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -149,9 +149,9 @@ func (m *MockMeshInfo) EXPECT() *MockMeshInfoMockRecorder {
 }
 
 // AddFaceData mocks base method
-func (m *MockMeshInfo) AddFaceData(arg0 uint32) (interface{}, error) {
+func (m *MockMeshInfo) AddFaceData(arg0 uint32) (FaceData, error) {
 	ret := m.ctrl.Call(m, "AddFaceData", arg0)
-	ret0, _ := ret[0].(interface{})
+	ret0, _ := ret[0].(FaceData)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -208,9 +208,9 @@ func (mr *MockMeshInfoMockRecorder) GetCurrentFaceCount() *gomock.Call {
 }
 
 // GetFaceData mocks base method
-func (m *MockMeshInfo) GetFaceData(arg0 uint32) (interface{}, error) {
+func (m *MockMeshInfo) GetFaceData(arg0 uint32) (FaceData, error) {
 	ret := m.ctrl.Call(m, "GetFaceData", arg0)
-	ret0, _ := ret[0].(interface{})
+	ret0, _ := ret[0].(FaceData)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -230,16 +230,6 @@ func (m *MockMeshInfo) GetType() InformationType {
 // GetType indicates an expected call of GetType
 func (mr *MockMeshInfoMockRecorder) GetType() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetType", reflect.TypeOf((*MockMeshInfo)(nil).GetType))
-}
-
-// Invalidate mocks base method
-func (m *MockMeshInfo) Invalidate(arg0 interface{}) {
-	m.ctrl.Call(m, "Invalidate", arg0)
-}
-
-// Invalidate indicates an expected call of Invalidate
-func (mr *MockMeshInfoMockRecorder) Invalidate(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Invalidate", reflect.TypeOf((*MockMeshInfo)(nil).Invalidate), arg0)
 }
 
 // cloneFaceInfosFrom mocks base method

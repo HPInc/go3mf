@@ -8,49 +8,22 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-func TestNewNodeColor(t *testing.T) {
-	type args struct {
-		r uint32
-		g uint32
-		b uint32
-	}
+func TestNodeColor_Invalidate(t *testing.T) {
 	tests := []struct {
 		name string
-		args args
-		want *NodeColor
+		n    *NodeColor
 	}{
-		{"new", args{1, 2, 3}, &NodeColor{[3]Color{1, 2, 3}}},
+		{"base", new(NodeColor)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewNodeColor(tt.args.r, tt.args.g, tt.args.b); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewNodeColor() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_NodeColorInvalidator_Invalidate(t *testing.T) {
-	expected := NewNodeColor(0, 0, 0)
-	type args struct {
-		data FaceData
-	}
-	tests := []struct {
-		name string
-		p    nodeColorInvalidator
-		args args
-	}{
-		{"generic", nodeColorInvalidator{}, args{&fakeFaceData{}}},
-		{"specific", nodeColorInvalidator{}, args{NewNodeColor(4, 5, 6)}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.p.Invalidate(tt.args.data)
-			tt.p.Invalidate(tt.args.data)
-			if got, ok := tt.args.data.(*NodeColor); ok {
-				if !reflect.DeepEqual(got, expected) {
-					t.Errorf("nodeColorInvalidator.Invalidate expected  = %v, want %v", got, expected)
-				}
+			tt.n.Colors[0] = 1
+			tt.n.Colors[1] = 2
+			tt.n.Colors[2] = 3
+			tt.n.Invalidate()
+			want := new(NodeColor)
+			if !reflect.DeepEqual(tt.n, want) {
+				t.Errorf("NodeColor.Invalidate() = %v, want %v", tt.n, want)
 			}
 		})
 	}
@@ -69,7 +42,7 @@ func TestNewnodeColorsMeshInfo(t *testing.T) {
 		args args
 		want *nodeColorsMeshInfo
 	}{
-		{"new", args{mockContainer}, &nodeColorsMeshInfo{*newbaseMeshInfo(mockContainer, nodeColorInvalidator{})}},
+		{"new", args{mockContainer}, &nodeColorsMeshInfo{*newbaseMeshInfo(mockContainer)}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -117,12 +90,12 @@ func TestNodeColorsMeshInfo_FaceHasData(t *testing.T) {
 		color   *NodeColor
 		want    bool
 	}{
-		{"error", newnodeColorsMeshInfo(mockContainer), args{0}, true, NewNodeColor(1, 2, 3), false},
-		{"nocolor1", newnodeColorsMeshInfo(mockContainer), args{0}, false, NewNodeColor(0, 0, 0), false},
-		{"nocolor1", newnodeColorsMeshInfo(mockContainer), args{0}, false, NewNodeColor(0, 2, 3), true},
-		{"nocolor2", newnodeColorsMeshInfo(mockContainer), args{0}, false, NewNodeColor(1, 0, 3), true},
-		{"nocolor3", newnodeColorsMeshInfo(mockContainer), args{0}, false, NewNodeColor(1, 2, 0), true},
-		{"data", newnodeColorsMeshInfo(mockContainer), args{0}, false, NewNodeColor(1, 2, 3), true},
+		{"error", newnodeColorsMeshInfo(mockContainer), args{0}, true, &NodeColor{[3]Color{1, 2, 3}}, false},
+		{"nocolor1", newnodeColorsMeshInfo(mockContainer), args{0}, false, &NodeColor{[3]Color{0, 0, 0}}, false},
+		{"nocolor1", newnodeColorsMeshInfo(mockContainer), args{0}, false, &NodeColor{[3]Color{0, 2, 3}}, true},
+		{"nocolor2", newnodeColorsMeshInfo(mockContainer), args{0}, false, &NodeColor{[3]Color{1, 0, 3}}, true},
+		{"nocolor3", newnodeColorsMeshInfo(mockContainer), args{0}, false, &NodeColor{[3]Color{1, 2, 0}}, true},
+		{"data", newnodeColorsMeshInfo(mockContainer), args{0}, false, &NodeColor{[3]Color{1, 2, 3}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -154,7 +127,7 @@ func TestNodeColorsMeshInfo_Clone(t *testing.T) {
 		args args
 		want MeshInfo
 	}{
-		{"base", newnodeColorsMeshInfo(mockContainer), args{2}, &nodeColorsMeshInfo{*newbaseMeshInfo(mockContainer2, nodeColorInvalidator{})}},
+		{"base", newnodeColorsMeshInfo(mockContainer), args{2}, &nodeColorsMeshInfo{*newbaseMeshInfo(mockContainer2)}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -185,9 +158,9 @@ func TestNodeColorsMeshInfo_cloneFaceInfosFrom(t *testing.T) {
 		want1, want2 *NodeColor
 		err1, err2   error
 	}{
-		{"err1", newnodeColorsMeshInfo(mockContainer1), args{1, newnodeColorsMeshInfo(mockContainer2), 2}, NewNodeColor(1, 2, 3), NewNodeColor(4, 5, 6), errors.New(""), nil},
-		{"err2", newnodeColorsMeshInfo(mockContainer1), args{1, newnodeColorsMeshInfo(mockContainer2), 2}, NewNodeColor(1, 2, 3), NewNodeColor(4, 5, 6), nil, errors.New("")},
-		{"permuted", newnodeColorsMeshInfo(mockContainer1), args{1, newnodeColorsMeshInfo(mockContainer2), 2}, NewNodeColor(1, 2, 3), NewNodeColor(4, 5, 6), nil, nil},
+		{"err1", newnodeColorsMeshInfo(mockContainer1), args{1, newnodeColorsMeshInfo(mockContainer2), 2}, &NodeColor{[3]Color{1, 2, 3}}, &NodeColor{[3]Color{4, 5, 6}}, errors.New(""), nil},
+		{"err2", newnodeColorsMeshInfo(mockContainer1), args{1, newnodeColorsMeshInfo(mockContainer2), 2}, &NodeColor{[3]Color{1, 2, 3}}, &NodeColor{[3]Color{4, 5, 6}}, nil, errors.New("")},
+		{"permuted", newnodeColorsMeshInfo(mockContainer1), args{1, newnodeColorsMeshInfo(mockContainer2), 2}, &NodeColor{[3]Color{1, 2, 3}}, &NodeColor{[3]Color{4, 5, 6}}, nil, nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -232,12 +205,12 @@ func TestNodeColorsMeshInfo_permuteNodeInformation(t *testing.T) {
 		data    *NodeColor
 		want    *NodeColor
 	}{
-		{"err", newnodeColorsMeshInfo(mockContainer), args{1, 2, 1, 0}, true, NewNodeColor(1, 2, 0), NewNodeColor(1, 2, 0)},
-		{"index1", newnodeColorsMeshInfo(mockContainer), args{1, 3, 1, 0}, false, NewNodeColor(1, 2, 0), NewNodeColor(1, 2, 0)},
-		{"index2", newnodeColorsMeshInfo(mockContainer), args{1, 2, 3, 0}, false, NewNodeColor(1, 2, 0), NewNodeColor(1, 2, 0)},
-		{"index3", newnodeColorsMeshInfo(mockContainer), args{1, 2, 2, 3}, false, NewNodeColor(1, 2, 0), NewNodeColor(1, 2, 0)},
-		{"equal", newnodeColorsMeshInfo(mockContainer), args{1, 0, 1, 2}, false, NewNodeColor(1, 2, 0), NewNodeColor(1, 2, 0)},
-		{"diff", newnodeColorsMeshInfo(mockContainer), args{1, 2, 0, 1}, false, NewNodeColor(4, 3, 1), NewNodeColor(1, 4, 3)},
+		{"err", newnodeColorsMeshInfo(mockContainer), args{1, 2, 1, 0}, true, &NodeColor{[3]Color{1, 2, 0}}, &NodeColor{[3]Color{1, 2, 0}}},
+		{"index1", newnodeColorsMeshInfo(mockContainer), args{1, 3, 1, 0}, false, &NodeColor{[3]Color{1, 2, 0}}, &NodeColor{[3]Color{1, 2, 0}}},
+		{"index2", newnodeColorsMeshInfo(mockContainer), args{1, 2, 3, 0}, false, &NodeColor{[3]Color{1, 2, 0}}, &NodeColor{[3]Color{1, 2, 0}}},
+		{"index3", newnodeColorsMeshInfo(mockContainer), args{1, 2, 2, 3}, false, &NodeColor{[3]Color{1, 2, 0}}, &NodeColor{[3]Color{1, 2, 0}}},
+		{"equal", newnodeColorsMeshInfo(mockContainer), args{1, 0, 1, 2}, false, &NodeColor{[3]Color{1, 2, 0}}, &NodeColor{[3]Color{1, 2, 0}}},
+		{"diff", newnodeColorsMeshInfo(mockContainer), args{1, 2, 0, 1}, false, &NodeColor{[3]Color{4, 3, 1}}, &NodeColor{[3]Color{1, 4, 3}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -263,7 +236,7 @@ func TestNodeColorsMeshInfo_mergeInformationFrom(t *testing.T) {
 		p    *nodeColorsMeshInfo
 		args args
 	}{
-		{"nothing happens", &nodeColorsMeshInfo{baseMeshInfo{nil, nil, 0}}, args{nil}},
+		{"nothing happens", &nodeColorsMeshInfo{baseMeshInfo{nil, 0}}, args{nil}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -5,8 +5,16 @@ package meshinfo
 // Color represents a RGB color.
 type Color = uint32
 
+// Invalidator can reset its values to zeros.
+type Invalidator interface {
+	// Invalidate sets the data with its default values.
+	Invalidate()
+}
+
 // FaceData defines a generic information of a face. Implementations could by NodeColor or TextureCoords.
-type FaceData = interface{}
+type FaceData interface {
+	Invalidator
+}
 
 // InformationType is an enumerator that identifies different information types.
 type InformationType int
@@ -22,12 +30,6 @@ const (
 	InfoTextureCoords
 	infoLastType
 )
-
-// Invalidator is used to invalidate a specific data.
-type Invalidator interface {
-	// Invalidate sets the data with its default values.
-	Invalidate(data FaceData)
-}
 
 // Repository defines an interface for interacting with a mesh information repository.
 type Repository interface {
@@ -55,7 +57,6 @@ type Container interface {
 // MeshInfo defines the Mesh Information Class.
 // This is a base struct for handling all the mesh-related linear information (like face colors, textures, etc...).
 type MeshInfo interface {
-	Invalidator
 	Repository
 	// GetType returns the type of information stored in this instance.
 	GetType() InformationType

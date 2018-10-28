@@ -6,19 +6,9 @@ type BaseMaterial struct {
 	MaterialIndex   uint32 // Index of the base material used in the group.
 }
 
-// NewBaseMaterial creates a new base material.
-func NewBaseMaterial(materialGroupID, materialIndex uint32) *BaseMaterial {
-	return &BaseMaterial{materialGroupID, materialIndex}
-}
-
-type baseMaterialInvalidator struct {
-}
-
-func (p baseMaterialInvalidator) Invalidate(data FaceData) {
-	if node, ok := data.(*BaseMaterial); ok {
-		node.MaterialGroupID = 0
-		node.MaterialIndex = 0
-	}
+func (b *BaseMaterial) Invalidate() {
+	b.MaterialGroupID = 0
+	b.MaterialIndex = 0
 }
 
 // baseMaterialsMeshInfo specializes the baseMeshInfo struct to "base materials".
@@ -29,7 +19,7 @@ type baseMaterialsMeshInfo struct {
 // newbaseMaterialsMeshInfo creates a new Base materials mesh information struct.
 func newbaseMaterialsMeshInfo(container Container) *baseMaterialsMeshInfo {
 	container.Clear()
-	return &baseMaterialsMeshInfo{*newbaseMeshInfo(container, baseMaterialInvalidator{})}
+	return &baseMaterialsMeshInfo{*newbaseMeshInfo(container)}
 }
 
 // GetType returns the type of information stored in this instance.
