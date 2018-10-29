@@ -16,7 +16,7 @@ type memoryContainer struct {
 }
 
 // newmemoryContainer creates a new container that holds the specified element types.
-func newmemoryContainer(currentFaceCount uint32, infoType reflect.Type) *memoryContainer {
+func newmemoryContainer(currentFaceCount uint32, infoType reflect.Type) Container {
 	m := &memoryContainer{
 		faceCount:  0,
 		infoType:   infoType,

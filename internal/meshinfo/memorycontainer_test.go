@@ -24,7 +24,7 @@ func TestNewmemoryContainer(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := newmemoryContainer(tt.args.currentFaceCount, tt.args.infoType)
+			got := newmemoryContainer(tt.args.currentFaceCount, tt.args.infoType).(*memoryContainer)
 			if got.GetCurrentFaceCount() != tt.args.currentFaceCount || got.infoType != tt.args.infoType {
 				t.Error("newmemoryContainer() created an invalid container")
 			}
@@ -45,7 +45,7 @@ func Test_memoryContainer_Clone(t *testing.T) {
 		args args
 		want *memoryContainer
 	}{
-		{"empty", newmemoryContainer(0, reflect.TypeOf(*mockContainer)), args{2}, newmemoryContainer(1, reflect.TypeOf(*mockContainer))},
+		{"empty", newmemoryContainer(0, reflect.TypeOf(*mockContainer)).(*memoryContainer), args{2}, newmemoryContainer(1, reflect.TypeOf(*mockContainer)).(*memoryContainer)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -60,7 +60,7 @@ func Test_memoryContainer_AddFaceData(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockFaceData := NewMockFaceData(mockCtrl)
-	m := newmemoryContainer(0, reflect.TypeOf(*mockFaceData))
+	m := newmemoryContainer(0, reflect.TypeOf(*mockFaceData)).(*memoryContainer)
 	type args struct {
 		newFaceCount uint32
 	}
@@ -93,7 +93,7 @@ func Test_memoryContainer_GetFaceData(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockFaceData := NewMockFaceData(mockCtrl)
-	m := newmemoryContainer(0, reflect.TypeOf(*mockFaceData))
+	m := newmemoryContainer(0, reflect.TypeOf(*mockFaceData)).(*memoryContainer)
 	initial, _ := m.AddFaceData(1)
 	type args struct {
 		index uint32
@@ -129,8 +129,8 @@ func Test_memoryContainer_GetCurrentFaceCount(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockFaceData := NewMockFaceData(mockCtrl)
-	m := newmemoryContainer(0, reflect.TypeOf(*mockFaceData))
-	mempty := newmemoryContainer(0, reflect.TypeOf(*mockFaceData))
+	m := newmemoryContainer(0, reflect.TypeOf(*mockFaceData)).(*memoryContainer)
+	mempty := newmemoryContainer(0, reflect.TypeOf(*mockFaceData)).(*memoryContainer)
 	m.AddFaceData(1)
 	tests := []struct {
 		name string
@@ -153,7 +153,7 @@ func Test_memoryContainer_Clear(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockFaceData := NewMockFaceData(mockCtrl)
-	m := newmemoryContainer(0, reflect.TypeOf(*mockFaceData))
+	m := newmemoryContainer(0, reflect.TypeOf(*mockFaceData)).(*memoryContainer)
 	m.AddFaceData(1)
 	tests := []struct {
 		name string
@@ -180,7 +180,7 @@ func Test_memoryContainer_InfoType(t *testing.T) {
 		m    *memoryContainer
 		want reflect.Type
 	}{
-		{"base", newmemoryContainer(0, reflect.TypeOf(*mockFaceData)), reflect.TypeOf(*mockFaceData)},
+		{"base", newmemoryContainer(0, reflect.TypeOf(*mockFaceData)).(*memoryContainer), reflect.TypeOf(*mockFaceData)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
