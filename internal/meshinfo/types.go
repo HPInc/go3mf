@@ -7,55 +7,20 @@ import "reflect"
 // Color represents a RGB color.
 type Color = uint32
 
-// Invalidator defines an interface that can reset its values to zeros.
-type Invalidator interface {
+// FaceData defines a generic information of a face.
+type FaceData interface {
 	// Invalidate sets the data with its default values.
 	Invalidate()
-}
-
-// Copier defines an interface that can perfom a deep copy from another object.
-type Copier interface {
 	// Copy copies all the properties from another object. Do nothing if not the same type.
 	Copy(from interface{})
-}
-
-// Permuter defines an interface that can permute its properties.
-type Permuter interface {
 	// Permute some properties of the instance using the desired indexes.
 	// Not all the indexes have to be used.
 	Permute(index1, index2, index3 uint32)
-}
-
-// Merger defines an interface that can merge itself with another object.
-type Merger interface {
 	// Merge merges both instances.
 	Merge(other interface{})
-}
-
-// FaceData defines a generic information of a face.
-type FaceData interface {
-	Invalidator
-	Copier
-	Permuter
-	Merger
 	// HasData returns true if the instances has any kind of data other than its default ones.
 	HasData() bool
 }
-
-// InformationType is an enumerator that identifies different information types.
-type InformationType int
-
-const (
-	// InfoAbstract defines abstract information.
-	InfoAbstract InformationType = iota
-	// InfoBaseMaterials defines base materials information.
-	InfoBaseMaterials
-	// InfoNodeColors defines node colors information.
-	InfoNodeColors
-	// InfoTextureCoords defines texture coordinates information.
-	InfoTextureCoords
-	infoLastType
-)
 
 // Repository defines an interface for interacting with a mesh information repository.
 type Repository interface {

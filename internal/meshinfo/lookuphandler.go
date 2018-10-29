@@ -16,7 +16,7 @@ type lookupHandler struct {
 // NewLookupHandler creates a new lookup handler.
 func NewLookupHandler() Handler {
 	handler := &lookupHandler{
-		lookup:            make(map[reflect.Type]MeshInfo, infoLastType),
+		lookup:            make(map[reflect.Type]MeshInfo, 0),
 		internalIDCounter: 1,
 	}
 	return handler
