@@ -8,19 +8,19 @@ import (
 
 // memoryContainer implements Container
 // and provides a generic memory container for holding mesh information state of a complete mesh structure
-// using reflection to infer slyce type.
+// using reflection to infer slice type.
 type memoryContainer struct {
-	elemType   reflect.Type
+	infoType   reflect.Type
 	faceCount  uint32
 	dataBlocks reflect.Value
 }
 
 // newmemoryContainer creates a new container that holds the specified element types.
-func newmemoryContainer(currentFaceCount uint32, elemType reflect.Type) *memoryContainer {
+func newmemoryContainer(currentFaceCount uint32, infoType reflect.Type) *memoryContainer {
 	m := &memoryContainer{
 		faceCount:  0,
-		elemType:   elemType,
-		dataBlocks: reflect.MakeSlice(reflect.SliceOf(elemType), 0, int(currentFaceCount)),
+		infoType:   infoType,
+		dataBlocks: reflect.MakeSlice(reflect.SliceOf(infoType), 0, int(currentFaceCount)),
 	}
 	for i := 1; i <= int(currentFaceCount); i++ {
 		m.AddFaceData(uint32(i))
@@ -30,7 +30,12 @@ func newmemoryContainer(currentFaceCount uint32, elemType reflect.Type) *memoryC
 
 // Clone creates a copy of the container with all the faces invalidated.
 func (m *memoryContainer) Clone(currentFaceCount uint32) Container {
-	return newmemoryContainer(currentFaceCount, m.elemType)
+	return newmemoryContainer(currentFaceCount, m.infoType)
+}
+
+	// InfoType returns the type of the stored data.
+func (m *memoryContainer) InfoType() reflect.Type {
+	return m.infoType
 }
 
 // AddFaceData returns the pointer to the data of the added face.
@@ -39,10 +44,10 @@ func (m *memoryContainer) Clone(currentFaceCount uint32) Container {
 // * ErrorInvalidRecordSize: The element type is not defined.
 // * ErrorMeshInformationCountMismatch: The number of faces in the container does not match with the input parameter.
 func (m *memoryContainer) AddFaceData(newFaceCount uint32) (FaceData, error) {
-	if m.elemType == nil {
+	if m.infoType == nil {
 		return nil, common.NewError(common.ErrorInvalidRecordSize)
 	}
-	faceData := reflect.New(m.elemType)
+	faceData := reflect.New(m.infoType)
 	m.dataBlocks = reflect.Append(m.dataBlocks, faceData.Elem())
 	m.faceCount++
 	if m.faceCount != newFaceCount {
@@ -69,6 +74,6 @@ func (m *memoryContainer) GetCurrentFaceCount() uint32 {
 
 // Clear removes all the information stored in the container.
 func (m *memoryContainer) Clear() {
-	m.dataBlocks = reflect.MakeSlice(reflect.SliceOf(m.elemType), 0, 0)
+	m.dataBlocks = reflect.MakeSlice(reflect.SliceOf(m.infoType), 0, 0)
 	m.faceCount = 0
 }

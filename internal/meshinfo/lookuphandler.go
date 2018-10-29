@@ -9,14 +9,14 @@ const maxInternalID = 9223372036854775808
 // LookupHandler implements Handler.
 // It allows to include different kinds of information in one mesh (like Textures AND colors).
 type LookupHandler struct {
-	lookup            map[InformationType]MeshInfo
+	lookup            map[interface{}]MeshInfo
 	internalIDCounter uint64
 }
 
 // NewLookupHandler creates a new lookup handler.
 func NewLookupHandler() *LookupHandler {
 	handler := &LookupHandler{
-		lookup:            make(map[InformationType]MeshInfo, infoLastType),
+		lookup:            make(map[interface{}]MeshInfo, infoLastType),
 		internalIDCounter: 1,
 	}
 	for infoType := InfoAbstract; infoType < infoLastType; infoType++ {

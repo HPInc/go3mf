@@ -3,17 +3,11 @@ package meshinfo
 import (
 	"reflect"
 	"testing"
-
-	gomock "github.com/golang/mock/gomock"
 )
 
 func TestMemoryMeshInfoFactory_Create(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-	mockContainer := NewMockContainer(mockCtrl)
-	mockContainer.EXPECT().Clear().MaxTimes(3)
 	type args struct {
-		infoType         InformationType
+		infoType         reflect.Type
 		currentFaceCount uint32
 	}
 	tests := []struct {
@@ -23,10 +17,9 @@ func TestMemoryMeshInfoFactory_Create(t *testing.T) {
 		want    MeshInfo
 		wantErr bool
 	}{
-		{"error", new(MemoryMeshInfoFactory), args{InfoAbstract, 0}, nil, true},
-		{"basematerials", new(MemoryMeshInfoFactory), args{InfoBaseMaterials, 0}, newgenericMeshInfo(mockContainer, InfoBaseMaterials), false},
-		{"nodecolors", new(MemoryMeshInfoFactory), args{InfoNodeColors, 0}, newgenericMeshInfo(mockContainer, InfoNodeColors), false},
-		{"textureCoords", new(MemoryMeshInfoFactory), args{InfoTextureCoords, 0}, newgenericMeshInfo(mockContainer, InfoTextureCoords), false},
+		{"basematerial", new(MemoryMeshInfoFactory), args{reflect.TypeOf((*BaseMaterial)(nil)).Elem(), 3}, newgenericMeshInfo(newmemoryContainer(3, reflect.TypeOf((*BaseMaterial)(nil)).Elem())), false},
+		{"basematerial", new(MemoryMeshInfoFactory), args{reflect.TypeOf((*NodeColor)(nil)).Elem(), 3}, newgenericMeshInfo(newmemoryContainer(3, reflect.TypeOf((*NodeColor)(nil)).Elem())), false},
+		{"basematerial", new(MemoryMeshInfoFactory), args{reflect.TypeOf((*TextureCoords)(nil)).Elem(), 3}, newgenericMeshInfo(newmemoryContainer(3, reflect.TypeOf((*TextureCoords)(nil)).Elem())), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -35,7 +28,7 @@ func TestMemoryMeshInfoFactory_Create(t *testing.T) {
 				t.Errorf("MemoryMeshInfoFactory.Create() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !(reflect.TypeOf(got) == reflect.TypeOf(tt.want)) {
+			if !reflect.DeepEqual(got.InfoType(), tt.want.InfoType()) {
 				t.Errorf("MemoryMeshInfoFactory.Create() = %v, want %v", got, tt.want)
 			}
 		})

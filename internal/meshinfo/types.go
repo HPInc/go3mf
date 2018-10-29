@@ -2,6 +2,8 @@
 
 package meshinfo
 
+import "reflect"
+
 // Color represents a RGB color.
 type Color = uint32
 
@@ -65,6 +67,8 @@ type Repository interface {
 	GetFaceData(faceIndex uint32) (val FaceData, err error)
 	// GetCurrentFaceCount returns the number of faces information stored in the container.
 	GetCurrentFaceCount() uint32
+	// InfoType returns the type of the stored data.
+	InfoType() reflect.Type
 	// Clear removes all the information stored in the container.
 	Clear()
 }
@@ -82,8 +86,6 @@ type Container interface {
 // This is a base struct for handling all the mesh-related linear information (like face colors, textures, etc...).
 type MeshInfo interface {
 	Repository
-	// InfoType returns the type of information stored in this instance.
-	InfoType() InformationType
 	// FaceHasData checks if the specific face has any associated data.
 	FaceHasData(faceIndex uint32) bool
 	// Clone creates a deep copy of this instance.

@@ -14,19 +14,18 @@ func Test_newgenericMeshInfo(t *testing.T) {
 	mockContainer := NewMockContainer(mockCtrl)
 	type args struct {
 		container Container
-		infoType  InformationType
 	}
 	tests := []struct {
 		name string
 		args args
 		want *genericMeshInfo
 	}{
-		{"new1", args{mockContainer, InfoAbstract}, &genericMeshInfo{mockContainer, 0, InfoAbstract}},
-		{"new2", args{mockContainer, infoLastType}, &genericMeshInfo{mockContainer, 0, infoLastType}},
+		{"new1", args{mockContainer}, &genericMeshInfo{mockContainer, 0}},
+		{"new2", args{mockContainer}, &genericMeshInfo{mockContainer, 0}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := newgenericMeshInfo(tt.args.container, tt.args.infoType); !reflect.DeepEqual(got, tt.want) {
+			if got := newgenericMeshInfo(tt.args.container); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("newgenericMeshInfo() = %v, want %v", got, tt.want)
 			}
 		})
@@ -47,8 +46,8 @@ func Test_genericMeshInfo_resetFaceInformation(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"error", newgenericMeshInfo(mockContainer, InfoAbstract), args{2}, true},
-		{"success", newgenericMeshInfo(mockContainer, InfoAbstract), args{4}, false},
+		{"error", newgenericMeshInfo(mockContainer), args{2}, true},
+		{"success", newgenericMeshInfo(mockContainer), args{4}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -79,9 +78,9 @@ func Test_genericMeshInfo_Clear(t *testing.T) {
 		b       *genericMeshInfo
 		faceNum uint32
 	}{
-		{"empty", newgenericMeshInfo(mockContainer, InfoAbstract), 0},
-		{"one", newgenericMeshInfo(mockContainer, InfoAbstract), 1},
-		{"two", newgenericMeshInfo(mockContainer, InfoAbstract), 2},
+		{"empty", newgenericMeshInfo(mockContainer), 0},
+		{"one", newgenericMeshInfo(mockContainer), 1},
+		{"two", newgenericMeshInfo(mockContainer), 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -103,9 +102,9 @@ func Test_genericMeshInfo_setInternalID(t *testing.T) {
 		b    *genericMeshInfo
 		args args
 	}{
-		{"zero", newgenericMeshInfo(nil, InfoAbstract), args{0}},
-		{"one", newgenericMeshInfo(nil, InfoAbstract), args{1}},
-		{"two", newgenericMeshInfo(nil, InfoAbstract), args{3}},
+		{"zero", newgenericMeshInfo(nil), args{0}},
+		{"one", newgenericMeshInfo(nil), args{1}},
+		{"two", newgenericMeshInfo(nil), args{3}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -123,32 +122,14 @@ func Test_genericMeshInfo_getInternalID(t *testing.T) {
 		b    *genericMeshInfo
 		want uint64
 	}{
-		{"new", newgenericMeshInfo(nil, InfoAbstract), 0},
-		{"one", &genericMeshInfo{nil, 1, InfoAbstract}, 1},
-		{"two", &genericMeshInfo{nil, 2, InfoAbstract}, 2},
+		{"new", newgenericMeshInfo(nil), 0},
+		{"one", &genericMeshInfo{nil, 1}, 1},
+		{"two", &genericMeshInfo{nil, 2}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.b.getInternalID(); got != tt.want {
 				t.Errorf("genericMeshInfo.getInternalID() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_genericMeshInfo_InfoType(t *testing.T) {
-	tests := []struct {
-		name string
-		b    *genericMeshInfo
-		want InformationType
-	}{
-		{"base", newgenericMeshInfo(nil, InfoAbstract), InfoAbstract},
-		{"base", newgenericMeshInfo(nil, infoLastType), infoLastType},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.b.InfoType(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("genericMeshInfo.InfoType() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -168,7 +149,7 @@ func Test_genericMeshInfo_Clone(t *testing.T) {
 		args args
 		want MeshInfo
 	}{
-		{"base", newgenericMeshInfo(mockContainer, InfoAbstract), args{2}, newgenericMeshInfo(mockContainer2, InfoAbstract)},
+		{"base", newgenericMeshInfo(mockContainer), args{2}, newgenericMeshInfo(mockContainer2)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -197,9 +178,9 @@ func Test_genericMeshInfo_cloneFaceInfosFrom(t *testing.T) {
 		data1, data2 *MockFaceData
 		err1, err2   error
 	}{
-		{"err1", newgenericMeshInfo(mockContainer, InfoAbstract), args{1, NewMockMeshInfo(mockCtrl), 2}, NewMockFaceData(mockCtrl), NewMockFaceData(mockCtrl), errors.New(""), nil},
-		{"err2", newgenericMeshInfo(mockContainer, InfoAbstract), args{1, NewMockMeshInfo(mockCtrl), 2}, NewMockFaceData(mockCtrl), NewMockFaceData(mockCtrl), nil, errors.New("")},
-		{"success", newgenericMeshInfo(mockContainer, InfoAbstract), args{1, NewMockMeshInfo(mockCtrl), 2}, NewMockFaceData(mockCtrl), NewMockFaceData(mockCtrl), nil, nil},
+		{"err1", newgenericMeshInfo(mockContainer), args{1, NewMockMeshInfo(mockCtrl), 2}, NewMockFaceData(mockCtrl), NewMockFaceData(mockCtrl), errors.New(""), nil},
+		{"err2", newgenericMeshInfo(mockContainer), args{1, NewMockMeshInfo(mockCtrl), 2}, NewMockFaceData(mockCtrl), NewMockFaceData(mockCtrl), nil, errors.New("")},
+		{"success", newgenericMeshInfo(mockContainer), args{1, NewMockMeshInfo(mockCtrl), 2}, NewMockFaceData(mockCtrl), NewMockFaceData(mockCtrl), nil, nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -232,8 +213,8 @@ func Test_genericMeshInfo_permuteNodeInformation(t *testing.T) {
 		data *MockFaceData
 		err  error
 	}{
-		{"err", newgenericMeshInfo(mockContainer, InfoAbstract), args{1, 2, 3, 4}, NewMockFaceData(mockCtrl), errors.New("")},
-		{"success", newgenericMeshInfo(mockContainer, InfoAbstract), args{1, 2, 3, 4}, NewMockFaceData(mockCtrl), nil},
+		{"err", newgenericMeshInfo(mockContainer), args{1, 2, 3, 4}, NewMockFaceData(mockCtrl), errors.New("")},
+		{"success", newgenericMeshInfo(mockContainer), args{1, 2, 3, 4}, NewMockFaceData(mockCtrl), nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -255,7 +236,7 @@ func Test_genericMeshInfo_mergeInformationFrom(t *testing.T) {
 		b    *genericMeshInfo
 		args args
 	}{
-		{"nothing happens", &genericMeshInfo{nil, 0, InfoAbstract}, args{nil}},
+		{"nothing happens", &genericMeshInfo{nil, 0}, args{nil}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -279,9 +260,9 @@ func Test_genericMeshInfo_FaceHasData(t *testing.T) {
 		err  error
 		want bool
 	}{
-		{"err", newgenericMeshInfo(mockContainer, InfoAbstract), args{1}, NewMockFaceData(mockCtrl), errors.New(""), false},
-		{"false", newgenericMeshInfo(mockContainer, InfoAbstract), args{1}, NewMockFaceData(mockCtrl), nil, false},
-		{"true", newgenericMeshInfo(mockContainer, InfoAbstract), args{1}, NewMockFaceData(mockCtrl), nil, true},
+		{"err", newgenericMeshInfo(mockContainer), args{1}, NewMockFaceData(mockCtrl), errors.New(""), false},
+		{"false", newgenericMeshInfo(mockContainer), args{1}, NewMockFaceData(mockCtrl), nil, false},
+		{"true", newgenericMeshInfo(mockContainer), args{1}, NewMockFaceData(mockCtrl), nil, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

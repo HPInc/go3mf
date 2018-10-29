@@ -4,26 +4,19 @@ package meshinfo
 type genericMeshInfo struct {
 	Container
 	internalID uint64
-	infoType   InformationType
 }
 
 // newgenericMeshInfo creates a new genericMeshInfo.
-func newgenericMeshInfo(container Container, infoType InformationType) *genericMeshInfo {
+func newgenericMeshInfo(container Container) *genericMeshInfo {
 	return &genericMeshInfo{
 		Container:  container,
 		internalID: 0,
-		infoType:   infoType,
 	}
 }
 
 // Clone creates a deep copy of this instance.
 func (b *genericMeshInfo) Clone(currentFaceCount uint32) MeshInfo {
-	return newgenericMeshInfo(b.Container.Clone(currentFaceCount), b.infoType)
-}
-
-// GetType returns the type of information stored in this instance.
-func (b *genericMeshInfo) InfoType() InformationType {
-	return b.infoType
+	return newgenericMeshInfo(b.Container.Clone(currentFaceCount))
 }
 
 // FaceHasData checks if the specific face has any associated data.

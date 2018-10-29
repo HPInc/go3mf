@@ -167,6 +167,18 @@ func (mr *MockContainerMockRecorder) GetFaceData(arg0 interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFaceData", reflect.TypeOf((*MockContainer)(nil).GetFaceData), arg0)
 }
 
+// InfoType mocks base method
+func (m *MockContainer) InfoType() reflect.Type {
+	ret := m.ctrl.Call(m, "InfoType")
+	ret0, _ := ret[0].(reflect.Type)
+	return ret0
+}
+
+// InfoType indicates an expected call of InfoType
+func (mr *MockContainerMockRecorder) InfoType() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InfoType", reflect.TypeOf((*MockContainer)(nil).InfoType))
+}
+
 // MockMeshInfo is a mock of MeshInfo interface
 type MockMeshInfo struct {
 	ctrl     *gomock.Controller
@@ -263,9 +275,9 @@ func (mr *MockMeshInfoMockRecorder) GetFaceData(arg0 interface{}) *gomock.Call {
 }
 
 // InfoType mocks base method
-func (m *MockMeshInfo) InfoType() InformationType {
+func (m *MockMeshInfo) InfoType() reflect.Type {
 	ret := m.ctrl.Call(m, "InfoType")
-	ret0, _ := ret[0].(InformationType)
+	ret0, _ := ret[0].(reflect.Type)
 	return ret0
 }
 

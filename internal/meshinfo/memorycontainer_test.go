@@ -13,7 +13,7 @@ func TestNewmemoryContainer(t *testing.T) {
 	mockContainer := NewMockFaceData(mockCtrl)
 	type args struct {
 		currentFaceCount uint32
-		elemType         reflect.Type
+		infoType         reflect.Type
 	}
 	tests := []struct {
 		name string
@@ -24,8 +24,8 @@ func TestNewmemoryContainer(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := newmemoryContainer(tt.args.currentFaceCount, tt.args.elemType)
-			if got.GetCurrentFaceCount() != tt.args.currentFaceCount || got.elemType != tt.args.elemType {
+			got := newmemoryContainer(tt.args.currentFaceCount, tt.args.infoType)
+			if got.GetCurrentFaceCount() != tt.args.currentFaceCount || got.infoType != tt.args.infoType {
 				t.Error("newmemoryContainer() created an invalid container")
 			}
 		})
@@ -71,7 +71,7 @@ func TestMemoryContainer_AddFaceData(t *testing.T) {
 		wantVal FaceData
 		wantErr bool
 	}{
-		{"invalid element type", &memoryContainer{nil, 0, reflect.MakeSlice(reflect.SliceOf(reflect.TypeOf(*mockFaceData)), 0, 0)}, args{0}, nil, true},
+		{"invalid data type", &memoryContainer{nil, 0, reflect.MakeSlice(reflect.SliceOf(reflect.TypeOf(*mockFaceData)), 0, 0)}, args{0}, nil, true},
 		{"invalid face number", m, args{0}, nil, true},
 		{"valid face number", m, args{2}, mockFaceData, false},
 	}

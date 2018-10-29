@@ -14,7 +14,7 @@ func TestNewLookupHandler(t *testing.T) {
 	}{
 		{"new", &LookupHandler{
 			internalIDCounter: 1,
-			lookup:            map[InformationType]MeshInfo{InfoAbstract: nil, InfoBaseMaterials: nil, InfoNodeColors: nil, InfoTextureCoords: nil},
+			lookup:            map[interface{}]MeshInfo{InfoAbstract: nil, InfoBaseMaterials: nil, InfoNodeColors: nil, InfoTextureCoords: nil},
 		}},
 	}
 	for _, tt := range tests {
@@ -50,7 +50,7 @@ func TestLookupHandler_AddInformation(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.args.info.(*MockMeshInfo).EXPECT().InfoType().Return(InfoAbstract)
+			tt.args.info.(*MockMeshInfo).EXPECT().InfoType().Return(reflect.TypeOf(""))
 			tt.args.info.(*MockMeshInfo).EXPECT().setInternalID(tt.expectedInternalID)
 			if err := tt.h.AddInformation(tt.args.info); (err != nil) != tt.wantErr {
 				t.Errorf("LookupHandler.AddInformation() error = %v, wantErr %v", err, tt.wantErr)
