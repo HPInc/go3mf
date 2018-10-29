@@ -6,8 +6,8 @@ type genericMeshInfo struct {
 	internalID uint64
 }
 
-// newgenericMeshInfo creates a new genericMeshInfo.
-func newgenericMeshInfo(container Container) *genericMeshInfo {
+// NewGenericMeshInfo creates a new genericMeshInfo.
+func NewGenericMeshInfo(container Container) MeshInfo {
 	return &genericMeshInfo{
 		Container:  container,
 		internalID: 0,
@@ -16,7 +16,7 @@ func newgenericMeshInfo(container Container) *genericMeshInfo {
 
 // Clone creates a deep copy of this instance.
 func (b *genericMeshInfo) Clone(currentFaceCount uint32) MeshInfo {
-	return newgenericMeshInfo(b.Container.Clone(currentFaceCount))
+	return NewGenericMeshInfo(b.Container.Clone(currentFaceCount))
 }
 
 // FaceHasData checks if the specific face has any associated data.

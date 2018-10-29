@@ -111,7 +111,7 @@ type Handler interface {
 	// AddFace adds a new face to the handler.
 	AddFace(newFaceCount uint32) error
 	// GetInformationByType retrieves the information of the desried type.
-	GetInformationByType(infoType InformationType) MeshInfo
+	GetInformationByType(infoType reflect.Type) MeshInfo
 	// GetInformationCount returns the number of informations added to the handler.
 	GetInformationCount() uint32
 	// AddInfoFromTable adds the information of the target handler.
@@ -121,7 +121,9 @@ type Handler interface {
 	// ResetFaceInformation clears the data of an specific face.
 	ResetFaceInformation(faceIndex uint32)
 	// RemoveInformation removes the information of the target type.
-	RemoveInformation(infoType InformationType)
+	RemoveInformation(infoType reflect.Type)
 	// PermuteNodeInformation swap the data of the target mesh.
 	PermuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3 uint32)
+	// InfoTypes returns the types of informations stored in the handler.
+	InfoTypes() []reflect.Type
 }

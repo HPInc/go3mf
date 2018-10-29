@@ -14,7 +14,7 @@ func TestNewLookupHandler(t *testing.T) {
 	}{
 		{"new", &LookupHandler{
 			internalIDCounter: 1,
-			lookup:            map[interface{}]MeshInfo{InfoAbstract: nil, InfoBaseMaterials: nil, InfoNodeColors: nil, InfoTextureCoords: nil},
+			lookup:            map[reflect.Type]MeshInfo{},
 		}},
 	}
 	for _, tt := range tests {
@@ -81,7 +81,7 @@ func TestLookupHandler_AddFace(t *testing.T) {
 
 func TestLookupHandler_GetInformationByType(t *testing.T) {
 	type args struct {
-		infoType InformationType
+		infoType reflect.Type
 	}
 	tests := []struct {
 		name string
@@ -179,7 +179,7 @@ func TestLookupHandler_ResetFaceInformation(t *testing.T) {
 
 func TestLookupHandler_RemoveInformation(t *testing.T) {
 	type args struct {
-		infoType InformationType
+		infoType reflect.Type
 	}
 	tests := []struct {
 		name string

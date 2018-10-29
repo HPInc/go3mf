@@ -1,6 +1,7 @@
 package meshinfo
 
 import (
+	"reflect"
 	"github.com/qmuntal/go3mf/internal/common"
 )
 
@@ -9,20 +10,26 @@ const maxInternalID = 9223372036854775808
 // LookupHandler implements Handler.
 // It allows to include different kinds of information in one mesh (like Textures AND colors).
 type LookupHandler struct {
-	lookup            map[interface{}]MeshInfo
+	lookup            map[reflect.Type]MeshInfo
 	internalIDCounter uint64
 }
 
 // NewLookupHandler creates a new lookup handler.
 func NewLookupHandler() *LookupHandler {
 	handler := &LookupHandler{
-		lookup:            make(map[interface{}]MeshInfo, infoLastType),
+		lookup:            make(map[reflect.Type]MeshInfo, infoLastType),
 		internalIDCounter: 1,
 	}
-	for infoType := InfoAbstract; infoType < infoLastType; infoType++ {
-		handler.lookup[infoType] = nil
-	}
 	return handler
+}
+
+// InfoTypes returns the types of informations stored in the handler.
+func (h *LookupHandler) InfoTypes() []reflect.Type {
+	types := make([]reflect.Type, 0, len(h.lookup))
+	for infoType := range h.lookup {
+		types = append(types, infoType)
+	}
+	return types
 }
 
 // AddInformation adds a new type of information to the handler.
@@ -50,7 +57,7 @@ func (h *LookupHandler) AddFace(newFaceCount uint32) error {
 }
 
 // GetInformationByType retrieves the information of the desried type.
-func (h *LookupHandler) GetInformationByType(infoType InformationType) MeshInfo {
+func (h *LookupHandler) GetInformationByType(infoType reflect.Type) MeshInfo {
 	return h.lookup[infoType]
 }
 
@@ -67,16 +74,15 @@ func (h *LookupHandler) GetInformationCount() uint32 {
 
 // AddInfoFromTable adds the information of the target handler.
 func (h *LookupHandler) AddInfoFromTable(otherHandler Handler, currentFaceCount uint32) error {
-	for infoType := InfoAbstract; infoType < infoLastType; infoType++ {
+	types := otherHandler.InfoTypes()
+	for _, infoType := range types {
 		otherInfo := otherHandler.GetInformationByType(infoType)
-		if otherInfo != nil {
-			if h.lookup[infoType] == nil {
-				err := h.AddInformation(otherInfo.Clone(currentFaceCount))
-				if err != nil {
-					return err
-				}
-				h.lookup[infoType].mergeInformationFrom(otherInfo)
+		if h.lookup[infoType] == nil {
+			err := h.AddInformation(otherInfo.Clone(currentFaceCount))
+			if err != nil {
+				return err
 			}
+			h.lookup[infoType].mergeInformationFrom(otherInfo)
 		}
 	}
 	return nil
@@ -84,10 +90,11 @@ func (h *LookupHandler) AddInfoFromTable(otherHandler Handler, currentFaceCount 
 
 // CloneFaceInfosFrom clones the data from another face.
 func (h *LookupHandler) CloneFaceInfosFrom(faceIndex uint32, otherHandler Handler, otherFaceIndex uint32) {
-	for infoType := InfoAbstract; infoType < infoLastType; infoType++ {
+	types := otherHandler.InfoTypes()
+	for _, infoType := range types {
 		otherInfo := otherHandler.GetInformationByType(infoType)
 		info := h.lookup[infoType]
-		if (otherInfo != nil) && (info != nil) {
+		if info != nil {
 			info.cloneFaceInfosFrom(faceIndex, otherInfo, otherFaceIndex)
 		}
 	}
@@ -101,7 +108,7 @@ func (h *LookupHandler) ResetFaceInformation(faceIndex uint32) {
 }
 
 // RemoveInformation removes the information of the target type.
-func (h *LookupHandler) RemoveInformation(infoType InformationType) {
+func (h *LookupHandler) RemoveInformation(infoType reflect.Type) {
 	h.lookup[infoType] = nil
 }
 
