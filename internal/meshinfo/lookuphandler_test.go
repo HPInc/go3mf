@@ -59,17 +59,35 @@ func TestLookupHandler_AddInformation(t *testing.T) {
 	}
 }
 
+func TestLookupHandler_InfoTypes(t *testing.T) {
+	tests := []struct {
+		name string
+		h    *LookupHandler
+		want []reflect.Type
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.h.InfoTypes(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("LookupHandler.InfoTypes() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestLookupHandler_AddFace(t *testing.T) {
 	type args struct {
 		newFaceCount uint32
 	}
 	tests := []struct {
-		name     string
-		h        *LookupHandler
-		args     args
-		meshInfo *MockMeshInfo
-		wantErr  bool
-	}{}
+		name    string
+		h       *LookupHandler
+		args    args
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := tt.h.AddFace(tt.args.newFaceCount); (err != nil) != tt.wantErr {
@@ -84,17 +102,22 @@ func TestLookupHandler_GetInformationByType(t *testing.T) {
 		infoType reflect.Type
 	}
 	tests := []struct {
-		name string
-		h    *LookupHandler
-		args args
-		want MeshInfo
+		name  string
+		h     *LookupHandler
+		args  args
+		want  MeshInfo
+		want1 bool
 	}{
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.h.GetInformationByType(tt.args.infoType); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("LookupHandler.GetInformationByType() = %v, want %v", got, tt.want)
+			got, got1 := tt.h.GetInformationByType(tt.args.infoType)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("LookupHandler.GetInformationByType() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("LookupHandler.GetInformationByType() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}

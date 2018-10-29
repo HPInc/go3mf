@@ -57,33 +57,28 @@ func (h *LookupHandler) AddFace(newFaceCount uint32) error {
 }
 
 // GetInformationByType retrieves the information of the desried type.
-func (h *LookupHandler) GetInformationByType(infoType reflect.Type) MeshInfo {
-	return h.lookup[infoType]
+func (h *LookupHandler) GetInformationByType(infoType reflect.Type) (MeshInfo, bool) {
+	info, ok := h.lookup[infoType]
+	return info, ok
 }
 
 // GetInformationCount returns the number of informations added to the handler.
 func (h *LookupHandler) GetInformationCount() uint32 {
-	count := 0
-	for _, info := range h.lookup {
-		if info != nil {
-			count++
-		}
-	}
-	return uint32(count)
+	return uint32(len(h.lookup))
 }
 
 // AddInfoFromTable adds the information of the target handler.
 func (h *LookupHandler) AddInfoFromTable(otherHandler Handler, currentFaceCount uint32) error {
 	types := otherHandler.InfoTypes()
 	for _, infoType := range types {
-		otherInfo := otherHandler.GetInformationByType(infoType)
-		if h.lookup[infoType] == nil {
+		otherInfo, _ := otherHandler.GetInformationByType(infoType)
+		if _, ok := h.lookup[infoType]; !ok {
 			err := h.AddInformation(otherInfo.Clone(currentFaceCount))
 			if err != nil {
 				return err
 			}
-			h.lookup[infoType].mergeInformationFrom(otherInfo)
 		}
+		h.lookup[infoType].mergeInformationFrom(otherInfo)
 	}
 	return nil
 }
@@ -92,9 +87,9 @@ func (h *LookupHandler) AddInfoFromTable(otherHandler Handler, currentFaceCount 
 func (h *LookupHandler) CloneFaceInfosFrom(faceIndex uint32, otherHandler Handler, otherFaceIndex uint32) {
 	types := otherHandler.InfoTypes()
 	for _, infoType := range types {
-		otherInfo := otherHandler.GetInformationByType(infoType)
-		info := h.lookup[infoType]
-		if info != nil {
+		otherInfo, _ := otherHandler.GetInformationByType(infoType)
+		info, ok := h.lookup[infoType]
+		if ok {
 			info.cloneFaceInfosFrom(faceIndex, otherInfo, otherFaceIndex)
 		}
 	}
@@ -109,7 +104,9 @@ func (h *LookupHandler) ResetFaceInformation(faceIndex uint32) {
 
 // RemoveInformation removes the information of the target type.
 func (h *LookupHandler) RemoveInformation(infoType reflect.Type) {
-	h.lookup[infoType] = nil
+	if _, ok := h.lookup[infoType]; ok {
+		delete(h.lookup, infoType)
+	}
 }
 
 // PermuteNodeInformation swap the data of the target mesh.

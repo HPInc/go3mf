@@ -111,7 +111,7 @@ type Handler interface {
 	// AddFace adds a new face to the handler.
 	AddFace(newFaceCount uint32) error
 	// GetInformationByType retrieves the information of the desried type.
-	GetInformationByType(infoType reflect.Type) MeshInfo
+	GetInformationByType(infoType reflect.Type) (MeshInfo, bool)
 	// GetInformationCount returns the number of informations added to the handler.
 	GetInformationCount() uint32
 	// AddInfoFromTable adds the information of the target handler.
