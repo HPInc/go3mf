@@ -7,6 +7,28 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
+func TestNewNodeColor(t *testing.T) {
+	type args struct {
+		color1 Color
+		color2 Color
+		color3 Color
+	}
+	tests := []struct {
+		name string
+		args args
+		want *NodeColor
+	}{
+		{"base", args{1, 2, 3}, &NodeColor{[3]Color{1, 2, 3}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewNodeColor(tt.args.color1, tt.args.color2, tt.args.color3); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewNodeColor() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestNodeColor_Invalidate(t *testing.T) {
 	tests := []struct {
 		name string
