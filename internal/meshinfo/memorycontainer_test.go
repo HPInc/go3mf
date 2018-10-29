@@ -56,7 +56,7 @@ func Test_memoryContainer_Clone(t *testing.T) {
 	}
 }
 
-func TestMemoryContainer_AddFaceData(t *testing.T) {
+func Test_memoryContainer_AddFaceData(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockFaceData := NewMockFaceData(mockCtrl)
@@ -89,7 +89,7 @@ func TestMemoryContainer_AddFaceData(t *testing.T) {
 	}
 }
 
-func TestMemoryContainer_GetFaceData(t *testing.T) {
+func Test_memoryContainer_GetFaceData(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockFaceData := NewMockFaceData(mockCtrl)
@@ -125,7 +125,7 @@ func TestMemoryContainer_GetFaceData(t *testing.T) {
 	}
 }
 
-func TestMemoryContainer_GetCurrentFaceCount(t *testing.T) {
+func Test_memoryContainer_GetCurrentFaceCount(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockFaceData := NewMockFaceData(mockCtrl)
@@ -149,7 +149,7 @@ func TestMemoryContainer_GetCurrentFaceCount(t *testing.T) {
 	}
 }
 
-func TestMemoryContainer_Clear(t *testing.T) {
+func Test_memoryContainer_Clear(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockFaceData := NewMockFaceData(mockCtrl)
@@ -166,6 +166,26 @@ func TestMemoryContainer_Clear(t *testing.T) {
 			tt.m.Clear()
 			if got := tt.m.GetCurrentFaceCount(); got != 0 {
 				t.Errorf("memoryContainer.Clear() = %v, want %v", got, 0)
+			}
+		})
+	}
+}
+
+func Test_memoryContainer_InfoType(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockFaceData := NewMockFaceData(mockCtrl)
+	tests := []struct {
+		name string
+		m    *memoryContainer
+		want reflect.Type
+	}{
+		{"base", newmemoryContainer(0, reflect.TypeOf(*mockFaceData)), reflect.TypeOf(*mockFaceData)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.InfoType(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("memoryContainer.InfoType() = %v, want %v", got, tt.want)
 			}
 		})
 	}

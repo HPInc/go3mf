@@ -7,16 +7,16 @@ import (
 
 const maxInternalID = 9223372036854775808
 
-// LookupHandler implements Handler.
+// lookupHandler implements Handler.
 // It allows to include different kinds of information in one mesh (like Textures AND colors).
-type LookupHandler struct {
+type lookupHandler struct {
 	lookup            map[reflect.Type]MeshInfo
 	internalIDCounter uint64
 }
 
 // NewLookupHandler creates a new lookup handler.
-func NewLookupHandler() *LookupHandler {
-	handler := &LookupHandler{
+func NewLookupHandler() Handler {
+	handler := &lookupHandler{
 		lookup:            make(map[reflect.Type]MeshInfo, infoLastType),
 		internalIDCounter: 1,
 	}
@@ -24,7 +24,7 @@ func NewLookupHandler() *LookupHandler {
 }
 
 // InfoTypes returns the types of informations stored in the handler.
-func (h *LookupHandler) InfoTypes() []reflect.Type {
+func (h *lookupHandler) InfoTypes() []reflect.Type {
 	types := make([]reflect.Type, 0, len(h.lookup))
 	for infoType := range h.lookup {
 		types = append(types, infoType)
@@ -33,7 +33,7 @@ func (h *LookupHandler) InfoTypes() []reflect.Type {
 }
 
 // AddInformation adds a new type of information to the handler.
-func (h *LookupHandler) AddInformation(info MeshInfo) error {
+func (h *lookupHandler) AddInformation(info MeshInfo) error {
 	infoType := info.InfoType()
 	h.lookup[infoType] = info
 	info.setInternalID(h.internalIDCounter)
@@ -45,7 +45,7 @@ func (h *LookupHandler) AddInformation(info MeshInfo) error {
 }
 
 // AddFace adds a new face to the handler.
-func (h *LookupHandler) AddFace(newFaceCount uint32) error {
+func (h *lookupHandler) AddFace(newFaceCount uint32) error {
 	for _, info := range h.lookup {
 		data, err := info.AddFaceData(newFaceCount)
 		if err != nil {
@@ -57,18 +57,18 @@ func (h *LookupHandler) AddFace(newFaceCount uint32) error {
 }
 
 // GetInformationByType retrieves the information of the desried type.
-func (h *LookupHandler) GetInformationByType(infoType reflect.Type) (MeshInfo, bool) {
+func (h *lookupHandler) GetInformationByType(infoType reflect.Type) (MeshInfo, bool) {
 	info, ok := h.lookup[infoType]
 	return info, ok
 }
 
 // GetInformationCount returns the number of informations added to the handler.
-func (h *LookupHandler) GetInformationCount() uint32 {
+func (h *lookupHandler) GetInformationCount() uint32 {
 	return uint32(len(h.lookup))
 }
 
 // AddInfoFromTable adds the information of the target handler.
-func (h *LookupHandler) AddInfoFromTable(otherHandler Handler, currentFaceCount uint32) error {
+func (h *lookupHandler) AddInfoFromTable(otherHandler Handler, currentFaceCount uint32) error {
 	types := otherHandler.InfoTypes()
 	for _, infoType := range types {
 		otherInfo, _ := otherHandler.GetInformationByType(infoType)
@@ -84,7 +84,7 @@ func (h *LookupHandler) AddInfoFromTable(otherHandler Handler, currentFaceCount 
 }
 
 // CloneFaceInfosFrom clones the data from another face.
-func (h *LookupHandler) CloneFaceInfosFrom(faceIndex uint32, otherHandler Handler, otherFaceIndex uint32) {
+func (h *lookupHandler) CloneFaceInfosFrom(faceIndex uint32, otherHandler Handler, otherFaceIndex uint32) {
 	types := otherHandler.InfoTypes()
 	for _, infoType := range types {
 		otherInfo, _ := otherHandler.GetInformationByType(infoType)
@@ -96,21 +96,21 @@ func (h *LookupHandler) CloneFaceInfosFrom(faceIndex uint32, otherHandler Handle
 }
 
 // ResetFaceInformation clears the data of an specific face.
-func (h *LookupHandler) ResetFaceInformation(faceIndex uint32) {
+func (h *lookupHandler) ResetFaceInformation(faceIndex uint32) {
 	for _, info := range h.lookup {
 		info.resetFaceInformation(faceIndex)
 	}
 }
 
 // RemoveInformation removes the information of the target type.
-func (h *LookupHandler) RemoveInformation(infoType reflect.Type) {
+func (h *lookupHandler) RemoveInformation(infoType reflect.Type) {
 	if _, ok := h.lookup[infoType]; ok {
 		delete(h.lookup, infoType)
 	}
 }
 
 // PermuteNodeInformation swap the data of the target mesh.
-func (h *LookupHandler) PermuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3 uint32) {
+func (h *lookupHandler) PermuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3 uint32) {
 	for _, info := range h.lookup {
 		info.permuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3)
 	}
