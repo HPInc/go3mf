@@ -99,7 +99,7 @@ func Test_lookupHandler_AddFace(t *testing.T) {
 		wantErr bool
 	}{
 		{"err1", h, args{3}, NewMockFaceData(mockCtrl), errors.New(""), true},
-		{"succsess", h, args{3}, NewMockFaceData(mockCtrl), nil, false},
+		{"success", h, args{3}, NewMockFaceData(mockCtrl), nil, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

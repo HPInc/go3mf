@@ -1,7 +1,7 @@
 package meshinfo
 
 // NodeColor informs about the color of a node.
-// A node have three colors, one for each vertex of its assoicated face.
+// A node have three colors, one for each vertex of its associated face.
 type NodeColor struct {
 	Colors [3]Color // Colors of every vertex in a node.
 }
