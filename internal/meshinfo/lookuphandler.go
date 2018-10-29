@@ -13,8 +13,8 @@ type lookupHandler struct {
 	internalIDCounter uint64
 }
 
-// NewLookupHandler creates a new lookup handler.
-func NewLookupHandler() Handler {
+// newlookupHandler creates a new lookup handler.
+func newlookupHandler() Handler {
 	handler := &lookupHandler{
 		lookup:            make(map[reflect.Type]MeshInfo, 0),
 		internalIDCounter: 1,

@@ -8,7 +8,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-func TestNewLookupHandler(t *testing.T) {
+func Test_newlookupHandler(t *testing.T) {
 	tests := []struct {
 		name string
 		want *lookupHandler
@@ -20,8 +20,8 @@ func TestNewLookupHandler(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewLookupHandler(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewLookupHandler() = %v, want %v", got, tt.want)
+			if got := newlookupHandler(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("newlookupHandler() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -31,8 +31,8 @@ func Test_lookupHandler_AddInformation(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockMesh := NewMockMeshInfo(mockCtrl)
-	h := NewLookupHandler().(*lookupHandler)
-	herr := NewLookupHandler().(*lookupHandler)
+	h := newlookupHandler().(*lookupHandler)
+	herr := newlookupHandler().(*lookupHandler)
 	herr.internalIDCounter = maxInternalID
 	type args struct {
 		info MeshInfo
@@ -61,7 +61,7 @@ func Test_lookupHandler_AddInformation(t *testing.T) {
 }
 
 func Test_lookupHandler_InfoTypes(t *testing.T) {
-	h := NewLookupHandler().(*lookupHandler)
+	h := newlookupHandler().(*lookupHandler)
 	h.lookup[reflect.TypeOf((*string)(nil)).Elem()] = nil
 	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = nil
 	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = nil
@@ -84,7 +84,7 @@ func Test_lookupHandler_InfoTypes(t *testing.T) {
 func Test_lookupHandler_AddFace(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	h := NewLookupHandler().(*lookupHandler)
+	h := newlookupHandler().(*lookupHandler)
 	meshInfo := NewMockMeshInfo(mockCtrl)
 	h.lookup[reflect.TypeOf((*string)(nil)).Elem()] = meshInfo
 	type args struct {
@@ -117,7 +117,7 @@ func Test_lookupHandler_AddFace(t *testing.T) {
 func Test_lookupHandler_GetInformationByType(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	h := NewLookupHandler().(*lookupHandler)
+	h := newlookupHandler().(*lookupHandler)
 	meshInfo1 := NewMockMeshInfo(mockCtrl)
 	meshInfo2 := NewMockMeshInfo(mockCtrl)
 	h.lookup[reflect.TypeOf((*string)(nil)).Elem()] = meshInfo1
@@ -150,7 +150,7 @@ func Test_lookupHandler_GetInformationByType(t *testing.T) {
 }
 
 func Test_lookupHandler_GetInformationCount(t *testing.T) {
-	h := NewLookupHandler().(*lookupHandler)
+	h := newlookupHandler().(*lookupHandler)
 	h.lookup[reflect.TypeOf((*string)(nil)).Elem()] = nil
 	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = nil
 	tests := []struct {
@@ -176,10 +176,10 @@ func Test_lookupHandler_AddInfoFromTable(t *testing.T) {
 	defer mockCtrl.Finish()
 	otherMeshInfo := NewMockMeshInfo(mockCtrl)
 	ownMeshInfo := NewMockMeshInfo(mockCtrl)
-	herr := NewLookupHandler().(*lookupHandler)
+	herr := newlookupHandler().(*lookupHandler)
 	herr.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = ownMeshInfo
 	herr.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = ownMeshInfo
-	h := NewLookupHandler().(*lookupHandler)
+	h := newlookupHandler().(*lookupHandler)
 	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = ownMeshInfo
 	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = ownMeshInfo
 	type args struct {
@@ -220,7 +220,7 @@ func Test_lookupHandler_CloneFaceInfosFrom(t *testing.T) {
 	defer mockCtrl.Finish()
 	otherMeshInfo := NewMockMeshInfo(mockCtrl)
 	ownMeshInfo := NewMockMeshInfo(mockCtrl)
-	h := NewLookupHandler().(*lookupHandler)
+	h := newlookupHandler().(*lookupHandler)
 	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = ownMeshInfo
 	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = ownMeshInfo
 	type args struct {
@@ -249,7 +249,7 @@ func Test_lookupHandler_ResetFaceInformation(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	meshInfo := NewMockMeshInfo(mockCtrl)
-	h := NewLookupHandler().(*lookupHandler)
+	h := newlookupHandler().(*lookupHandler)
 	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = meshInfo
 	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = meshInfo
 	type args struct {
@@ -271,7 +271,7 @@ func Test_lookupHandler_ResetFaceInformation(t *testing.T) {
 }
 
 func Test_lookupHandler_RemoveInformation(t *testing.T) {
-	h := NewLookupHandler().(*lookupHandler)
+	h := newlookupHandler().(*lookupHandler)
 	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = nil
 	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = nil
 	type args struct {
@@ -302,7 +302,7 @@ func Test_lookupHandler_PermuteNodeInformation(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	meshInfo := NewMockMeshInfo(mockCtrl)
-	h := NewLookupHandler().(*lookupHandler)
+	h := newlookupHandler().(*lookupHandler)
 	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = meshInfo
 	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = meshInfo
 	type args struct {
