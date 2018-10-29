@@ -7,6 +7,27 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
+func TestNewBaseMaterial(t *testing.T) {
+	type args struct {
+		groupID uint32
+		index   uint32
+	}
+	tests := []struct {
+		name string
+		args args
+		want *BaseMaterial
+	}{
+		{"base", args{1, 2}, &BaseMaterial{1, 2}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewBaseMaterial(tt.args.groupID, tt.args.index); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewBaseMaterial() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestBaseMaterial_Invalidate(t *testing.T) {
 	tests := []struct {
 		name string

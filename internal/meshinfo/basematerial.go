@@ -2,14 +2,19 @@ package meshinfo
 
 // BaseMaterial informs about a base material.
 type BaseMaterial struct {
-	MaterialGroupID uint32 // Identifier of the group.
-	MaterialIndex   uint32 // Index of the base material used in the group.
+	GroupID uint32 // Identifier of the group.
+	Index   uint32 // Index of the base material used in the group.
+}
+
+// NewBaseMaterial creates a base material.
+func NewBaseMaterial(groupID, index uint32) *BaseMaterial {
+	return &BaseMaterial{groupID, index}
 }
 
 // Invalidate sets to zero all the properties.
 func (b *BaseMaterial) Invalidate() {
-	b.MaterialGroupID = 0
-	b.MaterialIndex = 0
+	b.GroupID = 0
+	b.Index = 0
 }
 
 // Copy copy the properties of another base material.
@@ -18,13 +23,13 @@ func (b *BaseMaterial) Copy(from interface{}) {
 	if !ok {
 		return
 	}
-	b.MaterialGroupID = other.MaterialGroupID
-	b.MaterialIndex = other.MaterialIndex
+	b.GroupID = other.GroupID
+	b.Index = other.Index
 }
 
 // HasData returns true if the group id is different from zero.
 func (b *BaseMaterial) HasData() bool {
-	return b.MaterialGroupID != 0
+	return b.GroupID != 0
 }
 
 // Permute is not necessary for a base material.
