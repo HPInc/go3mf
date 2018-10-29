@@ -13,8 +13,8 @@ type memoryContainer struct {
 	dataBlocks reflect.Value
 }
 
-// newmemoryContainer creates a new container that holds the specified element types.
-func newmemoryContainer(currentFaceCount uint32, infoType reflect.Type) Container {
+// NewMemoryContainer creates a new container that holds the specified element types.
+func NewMemoryContainer(currentFaceCount uint32, infoType reflect.Type) Container {
 	m := &memoryContainer{
 		faceCount:  0,
 		infoType:   infoType,
@@ -27,7 +27,7 @@ func newmemoryContainer(currentFaceCount uint32, infoType reflect.Type) Containe
 }
 
 func (m *memoryContainer) Clone(currentFaceCount uint32) Container {
-	return newmemoryContainer(currentFaceCount, m.infoType)
+	return NewMemoryContainer(currentFaceCount, m.infoType)
 }
 
 // InfoType returns the type of the stored data.
