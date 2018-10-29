@@ -8,38 +8,38 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-func TestNewHandler(t *testing.T) {
+func TestNewLookupHandler(t *testing.T) {
 	tests := []struct {
 		name string
-		want *Handler
+		want *lookupHandler
 	}{
-		{"new", &Handler{
+		{"new", &lookupHandler{
 			internalIDCounter: 1,
 			lookup:            map[reflect.Type]MeshInfo{},
 		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewHandler(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewHandler() = %v, want %v", got, tt.want)
+			if got := NewLookupHandler(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewLookupHandler() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestHandler_AddInformation(t *testing.T) {
+func Test_lookupHandler_AddInformation(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockMesh := NewMockMeshInfo(mockCtrl)
-	h := NewHandler()
-	herr := NewHandler()
+	h := NewLookupHandler().(*lookupHandler)
+	herr := NewLookupHandler().(*lookupHandler)
 	herr.internalIDCounter = maxInternalID
 	type args struct {
 		info MeshInfo
 	}
 	tests := []struct {
 		name               string
-		h                  *Handler
+		h                  *lookupHandler
 		args               args
 		wantErr            bool
 		expectedInternalID uint64
@@ -54,16 +54,37 @@ func TestHandler_AddInformation(t *testing.T) {
 			tt.args.info.(*MockMeshInfo).EXPECT().InfoType().Return(reflect.TypeOf(""))
 			tt.args.info.(*MockMeshInfo).EXPECT().setInternalID(tt.expectedInternalID)
 			if err := tt.h.AddInformation(tt.args.info); (err != nil) != tt.wantErr {
-				t.Errorf("Handler.AddInformation() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("lookupHandler.AddInformation() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func TestHandler_AddFace(t *testing.T) {
+func Test_lookupHandler_InfoTypes(t *testing.T) {
+	h := NewLookupHandler().(*lookupHandler)
+	h.lookup[reflect.TypeOf((*string)(nil)).Elem()] = nil
+	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = nil
+	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = nil
+	tests := []struct {
+		name string
+		h    *lookupHandler
+		want []reflect.Type
+	}{
+		{"types", h, []reflect.Type{reflect.TypeOf((*string)(nil)).Elem(), reflect.TypeOf((*float32)(nil)).Elem(), reflect.TypeOf((*float64)(nil)).Elem()}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.h.InfoTypes(); !sameTypeSlice(got, tt.want) {
+				t.Errorf("lookupHandler.InfoTypes() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_lookupHandler_AddFace(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	h := NewHandler()
+	h := NewLookupHandler().(*lookupHandler)
 	meshInfo := NewMockMeshInfo(mockCtrl)
 	h.lookup[reflect.TypeOf((*string)(nil)).Elem()] = meshInfo
 	type args struct {
@@ -71,7 +92,7 @@ func TestHandler_AddFace(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		h       *Handler
+		h       *lookupHandler
 		args    args
 		data    *MockFaceData
 		err     error
@@ -87,16 +108,16 @@ func TestHandler_AddFace(t *testing.T) {
 				tt.data.EXPECT().Invalidate().Return()
 			}
 			if err := tt.h.AddFace(tt.args.newFaceCount); (err != nil) != tt.wantErr {
-				t.Errorf("Handler.AddFace() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("lookupHandler.AddFace() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func TestHandler_GetInformationByType(t *testing.T) {
+func Test_lookupHandler_GetInformationByType(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	h := NewHandler()
+	h := NewLookupHandler().(*lookupHandler)
 	meshInfo1 := NewMockMeshInfo(mockCtrl)
 	meshInfo2 := NewMockMeshInfo(mockCtrl)
 	h.lookup[reflect.TypeOf((*string)(nil)).Elem()] = meshInfo1
@@ -106,7 +127,7 @@ func TestHandler_GetInformationByType(t *testing.T) {
 	}
 	tests := []struct {
 		name  string
-		h     *Handler
+		h     *lookupHandler
 		args  args
 		want  MeshInfo
 		want1 bool
@@ -119,65 +140,65 @@ func TestHandler_GetInformationByType(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, got1 := tt.h.GetInformationByType(tt.args.infoType)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Handler.GetInformationByType() got = %v, want %v", got, tt.want)
+				t.Errorf("lookupHandler.GetInformationByType() got = %v, want %v", got, tt.want)
 			}
 			if got1 != tt.want1 {
-				t.Errorf("Handler.GetInformationByType() got1 = %v, want %v", got1, tt.want1)
+				t.Errorf("lookupHandler.GetInformationByType() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}
 }
 
-func TestHandler_GetInformationCount(t *testing.T) {
-	h := NewHandler()
+func Test_lookupHandler_GetInformationCount(t *testing.T) {
+	h := NewLookupHandler().(*lookupHandler)
 	h.lookup[reflect.TypeOf((*string)(nil)).Elem()] = nil
 	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = nil
 	tests := []struct {
 		name string
-		h    *Handler
+		h    *lookupHandler
 		want uint32
 	}{
-		{"empty", new(Handler), 0},
+		{"empty", new(lookupHandler), 0},
 		{"withdata", h, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.h.GetInformationCount(); got != tt.want {
-				t.Errorf("Handler.GetInformationCount() = %v, want %v", got, tt.want)
+				t.Errorf("lookupHandler.GetInformationCount() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestHandler_AddInfoFromTable(t *testing.T) {
+func Test_lookupHandler_AddInfoFromTable(t *testing.T) {
+	types := []reflect.Type{reflect.TypeOf((*string)(nil)).Elem(), reflect.TypeOf((*float32)(nil)).Elem(), reflect.TypeOf((*float64)(nil)).Elem()}
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	otherMeshInfo := NewMockMeshInfo(mockCtrl)
 	ownMeshInfo := NewMockMeshInfo(mockCtrl)
-	herr := NewHandler()
+	herr := NewLookupHandler().(*lookupHandler)
 	herr.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = ownMeshInfo
 	herr.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = ownMeshInfo
-	h := NewHandler()
+	h := NewLookupHandler().(*lookupHandler)
 	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = ownMeshInfo
 	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = ownMeshInfo
 	type args struct {
-		otherHandler     *Handler
+		otherHandler     *MockHandler
 		currentFaceCount uint32
 	}
 	tests := []struct {
 		name    string
-		h       *Handler
+		h       *lookupHandler
 		args    args
 		wantErr bool
 	}{
-		{"error", herr, args{NewHandler(), 3}, true},
-		{"added", h, args{NewHandler(), 3}, false},
+		{"error", herr, args{NewMockHandler(mockCtrl), 3}, true},
+		{"added", h, args{NewMockHandler(mockCtrl), 3}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.args.otherHandler.lookup[reflect.TypeOf((*string)(nil)).Elem()] = otherMeshInfo
-			tt.args.otherHandler.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = otherMeshInfo
-			tt.args.otherHandler.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = otherMeshInfo
+			tt.args.otherHandler.EXPECT().InfoTypes().Return(types)
+			tt.args.otherHandler.EXPECT().GetInformationByType(gomock.Any()).Return(otherMeshInfo, true).MaxTimes(3)
 			if tt.wantErr {
 				tt.h.internalIDCounter = maxInternalID
 			} else {
@@ -187,48 +208,48 @@ func TestHandler_AddInfoFromTable(t *testing.T) {
 			ownMeshInfo.EXPECT().InfoType().Return(reflect.TypeOf((*string)(nil)).Elem())
 			ownMeshInfo.EXPECT().setInternalID(tt.h.internalIDCounter)
 			if err := tt.h.AddInfoFromTable(tt.args.otherHandler, tt.args.currentFaceCount); (err != nil) != tt.wantErr {
-				t.Errorf("Handler.AddInfoFromTable() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("lookupHandler.AddInfoFromTable() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func TestHandler_CloneFaceInfosFrom(t *testing.T) {
+func Test_lookupHandler_CloneFaceInfosFrom(t *testing.T) {
+	types := []reflect.Type{reflect.TypeOf((*string)(nil)).Elem(), reflect.TypeOf((*float32)(nil)).Elem(), reflect.TypeOf((*float64)(nil)).Elem()}
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	otherMeshInfo := NewMockMeshInfo(mockCtrl)
 	ownMeshInfo := NewMockMeshInfo(mockCtrl)
-	h := NewHandler()
+	h := NewLookupHandler().(*lookupHandler)
 	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = ownMeshInfo
 	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = ownMeshInfo
 	type args struct {
 		faceIndex      uint32
-		otherHandler   *Handler
+		otherHandler   *MockHandler
 		otherFaceIndex uint32
 	}
 	tests := []struct {
 		name string
-		h    *Handler
+		h    *lookupHandler
 		args args
 	}{
-		{"base", h, args{2, NewHandler(), 3}},
+		{"base", h, args{2, NewMockHandler(mockCtrl), 3}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.args.otherHandler.lookup[reflect.TypeOf((*string)(nil)).Elem()] = otherMeshInfo
-			tt.args.otherHandler.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = otherMeshInfo
-			tt.args.otherHandler.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = otherMeshInfo
+			tt.args.otherHandler.EXPECT().InfoTypes().Return(types)
+			tt.args.otherHandler.EXPECT().GetInformationByType(gomock.Any()).Return(otherMeshInfo, true).MaxTimes(3)
 			ownMeshInfo.EXPECT().cloneFaceInfosFrom(tt.args.faceIndex, ownMeshInfo, tt.args.otherFaceIndex).MaxTimes(2)
 			tt.h.CloneFaceInfosFrom(tt.args.faceIndex, tt.args.otherHandler, tt.args.otherFaceIndex)
 		})
 	}
 }
 
-func TestHandler_ResetFaceInformation(t *testing.T) {
+func Test_lookupHandler_ResetFaceInformation(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	meshInfo := NewMockMeshInfo(mockCtrl)
-	h := NewHandler()
+	h := NewLookupHandler().(*lookupHandler)
 	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = meshInfo
 	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = meshInfo
 	type args struct {
@@ -236,7 +257,7 @@ func TestHandler_ResetFaceInformation(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		h    *Handler
+		h    *lookupHandler
 		args args
 	}{
 		{"base", h, args{2}},
@@ -249,8 +270,8 @@ func TestHandler_ResetFaceInformation(t *testing.T) {
 	}
 }
 
-func TestHandler_RemoveInformation(t *testing.T) {
-	h := NewHandler()
+func Test_lookupHandler_RemoveInformation(t *testing.T) {
+	h := NewLookupHandler().(*lookupHandler)
 	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = nil
 	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = nil
 	type args struct {
@@ -258,7 +279,7 @@ func TestHandler_RemoveInformation(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		h    *Handler
+		h    *lookupHandler
 		args args
 		want int
 	}{
@@ -271,17 +292,17 @@ func TestHandler_RemoveInformation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.h.RemoveInformation(tt.args.infoType)
 			if got := len(tt.h.lookup); got != tt.want {
-				t.Errorf("Handler.RemoveInformation() want = %v, got %v", tt.want, got)
+				t.Errorf("lookupHandler.RemoveInformation() want = %v, got %v", tt.want, got)
 			}
 		})
 	}
 }
 
-func TestHandler_PermuteNodeInformation(t *testing.T) {
+func Test_lookupHandler_PermuteNodeInformation(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	meshInfo := NewMockMeshInfo(mockCtrl)
-	h := NewHandler()
+	h := NewLookupHandler().(*lookupHandler)
 	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = meshInfo
 	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = meshInfo
 	type args struct {
@@ -292,7 +313,7 @@ func TestHandler_PermuteNodeInformation(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		h    *Handler
+		h    *lookupHandler
 		args args
 	}{
 		{"base", h, args{1, 2, 3, 4}},
@@ -303,4 +324,27 @@ func TestHandler_PermuteNodeInformation(t *testing.T) {
 			tt.h.PermuteNodeInformation(tt.args.faceIndex, tt.args.nodeIndex1, tt.args.nodeIndex2, tt.args.nodeIndex3)
 		})
 	}
+}
+
+func sameTypeSlice(x, y []reflect.Type) bool {
+	if len(x) != len(y) {
+		return false
+	}
+	diff := make(map[reflect.Type]int, len(x))
+	for _, _x := range x {
+		diff[_x]++
+	}
+	for _, _y := range y {
+		if _, ok := diff[_y]; !ok {
+			return false
+		}
+		diff[_y]--
+		if diff[_y] == 0 {
+			delete(diff, _y)
+		}
+	}
+	if len(diff) == 0 {
+		return true
+	}
+	return false
 }

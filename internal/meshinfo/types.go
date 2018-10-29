@@ -1,4 +1,4 @@
-//go:generate mockgen -destination types_mock_test.go -package meshinfo -self_package github.com/qmuntal/go3mf/internal/meshinfo github.com/qmuntal/go3mf/internal/meshinfo FaceData,Container,MeshInfo
+//go:generate mockgen -destination types_mock_test.go -package meshinfo -self_package github.com/qmuntal/go3mf/internal/meshinfo github.com/qmuntal/go3mf/internal/meshinfo FaceData,Container,MeshInfo,Handler
 
 package meshinfo
 
@@ -67,4 +67,28 @@ type MeshInfo interface {
 	setInternalID(internalID uint64)
 	// getInternalId gets the internal ID of the mesh information.
 	getInternalID() uint64
+}
+
+// Handler allows to include different kinds of information in one mesh (like Textures AND colors)
+type Handler interface {
+	// AddInformation adds a new type of information to the handler.
+	AddInformation(info MeshInfo) error
+	// AddFace adds a new face to the handler.
+	AddFace(newFaceCount uint32) error
+	// GetInformationByType retrieves the information of the desried type.
+	GetInformationByType(infoType reflect.Type) (MeshInfo, bool)
+	// GetInformationCount returns the number of informations added to the handler.
+	GetInformationCount() uint32
+	// AddInfoFromTable adds the information of the target handler.
+	AddInfoFromTable(otherHandler Handler, currentFaceCount uint32) error
+	// CloneFaceInfosFrom clones the data from another face.
+	CloneFaceInfosFrom(faceIndex uint32, otherHandler Handler, otherFaceIndex uint32)
+	// ResetFaceInformation clears the data of an specific face.
+	ResetFaceInformation(faceIndex uint32)
+	// RemoveInformation removes the information of the target type.
+	RemoveInformation(infoType reflect.Type)
+	// PermuteNodeInformation swap the data of the target mesh.
+	PermuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3 uint32)
+	// InfoTypes returns the types of informations stored in the handler.
+	InfoTypes() []reflect.Type
 }
