@@ -23,7 +23,6 @@ func NewLookupHandler() Handler {
 	return handler
 }
 
-// InfoTypes returns the types of informations stored in the handler.
 func (h *lookupHandler) InfoTypes() []reflect.Type {
 	types := make([]reflect.Type, 0, len(h.lookup))
 	for infoType := range h.lookup {
@@ -32,7 +31,6 @@ func (h *lookupHandler) InfoTypes() []reflect.Type {
 	return types
 }
 
-// AddInformation adds a new type of information to the handler.
 func (h *lookupHandler) AddInformation(info MeshInfo) error {
 	infoType := info.InfoType()
 	h.lookup[infoType] = info
@@ -44,7 +42,6 @@ func (h *lookupHandler) AddInformation(info MeshInfo) error {
 	return nil
 }
 
-// AddFace adds a new face to the handler.
 func (h *lookupHandler) AddFace(newFaceCount uint32) error {
 	for _, info := range h.lookup {
 		data, err := info.AddFaceData(newFaceCount)
@@ -56,18 +53,15 @@ func (h *lookupHandler) AddFace(newFaceCount uint32) error {
 	return nil
 }
 
-// GetInformationByType retrieves the information of the desried type.
 func (h *lookupHandler) GetInformationByType(infoType reflect.Type) (MeshInfo, bool) {
 	info, ok := h.lookup[infoType]
 	return info, ok
 }
 
-// GetInformationCount returns the number of informations added to the handler.
 func (h *lookupHandler) GetInformationCount() uint32 {
 	return uint32(len(h.lookup))
 }
 
-// AddInfoFromTable adds the information of the target handler.
 func (h *lookupHandler) AddInfoFromTable(otherHandler Handler, currentFaceCount uint32) error {
 	types := otherHandler.InfoTypes()
 	for _, infoType := range types {
@@ -83,7 +77,6 @@ func (h *lookupHandler) AddInfoFromTable(otherHandler Handler, currentFaceCount 
 	return nil
 }
 
-// CloneFaceInfosFrom clones the data from another face.
 func (h *lookupHandler) CloneFaceInfosFrom(faceIndex uint32, otherHandler Handler, otherFaceIndex uint32) {
 	types := otherHandler.InfoTypes()
 	for _, infoType := range types {
@@ -95,21 +88,18 @@ func (h *lookupHandler) CloneFaceInfosFrom(faceIndex uint32, otherHandler Handle
 	}
 }
 
-// ResetFaceInformation clears the data of an specific face.
 func (h *lookupHandler) ResetFaceInformation(faceIndex uint32) {
 	for _, info := range h.lookup {
 		info.resetFaceInformation(faceIndex)
 	}
 }
 
-// RemoveInformation removes the information of the target type.
 func (h *lookupHandler) RemoveInformation(infoType reflect.Type) {
 	if _, ok := h.lookup[infoType]; ok {
 		delete(h.lookup, infoType)
 	}
 }
 
-// PermuteNodeInformation swap the data of the target mesh.
 func (h *lookupHandler) PermuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3 uint32) {
 	for _, info := range h.lookup {
 		info.permuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3)

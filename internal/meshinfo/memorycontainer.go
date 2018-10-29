@@ -28,7 +28,6 @@ func newmemoryContainer(currentFaceCount uint32, infoType reflect.Type) *memoryC
 	return m
 }
 
-// Clone creates a copy of the container with all the faces invalidated.
 func (m *memoryContainer) Clone(currentFaceCount uint32) Container {
 	return newmemoryContainer(currentFaceCount, m.infoType)
 }
@@ -38,11 +37,6 @@ func (m *memoryContainer) InfoType() reflect.Type {
 	return m.infoType
 }
 
-// AddFaceData returns the pointer to the data of the added face.
-// The parameter newFaceCount should indicate the faces information stored in the container, including the new one.
-// Error cases:
-// * ErrorInvalidRecordSize: The element type is not defined.
-// * ErrorMeshInformationCountMismatch: The number of faces in the container does not match with the input parameter.
 func (m *memoryContainer) AddFaceData(newFaceCount uint32) (FaceData, error) {
 	if m.infoType == nil {
 		return nil, common.NewError(common.ErrorInvalidRecordSize)
@@ -56,9 +50,6 @@ func (m *memoryContainer) AddFaceData(newFaceCount uint32) (FaceData, error) {
 	return faceData.Interface().(FaceData), nil
 }
 
-// GetFaceData returns the data of the face with the target index.
-// Error cases:
-// * ErrorInvalidMeshInformationIndex: Index is higher than the number of faces
 func (m *memoryContainer) GetFaceData(faceIndex uint32) (FaceData, error) {
 	if faceIndex >= m.faceCount {
 		return nil, common.NewError(common.ErrorInvalidMeshInformationIndex)
@@ -67,7 +58,6 @@ func (m *memoryContainer) GetFaceData(faceIndex uint32) (FaceData, error) {
 	return m.dataBlocks.Index(int(faceIndex)).Addr().Interface().(FaceData), nil
 }
 
-// GetCurrentFaceCount returns the number of faces information stored in the container.
 func (m *memoryContainer) GetCurrentFaceCount() uint32 {
 	return m.faceCount
 }
