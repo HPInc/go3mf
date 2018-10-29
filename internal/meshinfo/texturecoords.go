@@ -10,6 +10,11 @@ type TextureCoords struct {
 	Coords    [3]mgl32.Vec2 // Coordinates of the boundaries of the texture.
 }
 
+// NewTextureCoords creates a new NewTextureCoords.
+func NewTextureCoords(textureID uint32, coord1, coord2, coord3 mgl32.Vec2) *TextureCoords {
+	return &TextureCoords{textureID, [3]mgl32.Vec2{coord1, coord2, coord3}}
+}
+
 // Invalidate sets to zero all the properties.
 func (t *TextureCoords) Invalidate() {
 	t.TextureID = 0
