@@ -1,8 +1,8 @@
 package meshinfo
 
 import (
-	"reflect"
 	"github.com/qmuntal/go3mf/internal/common"
+	"reflect"
 )
 
 const maxInternalID = 9223372036854775808

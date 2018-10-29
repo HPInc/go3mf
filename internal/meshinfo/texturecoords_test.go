@@ -20,7 +20,7 @@ func TestNewTextureCoords(t *testing.T) {
 		args args
 		want *TextureCoords
 	}{
-		{"base", args{2,mgl32.Vec2{1.0, 2.0}, mgl32.Vec2{5.0, 3.0}, mgl32.Vec2{6.0, 4.0}}, &TextureCoords{2, [3]mgl32.Vec2{mgl32.Vec2{1.0, 2.0}, mgl32.Vec2{5.0, 3.0}, mgl32.Vec2{6.0, 4.0}}}},
+		{"base", args{2, mgl32.Vec2{1.0, 2.0}, mgl32.Vec2{5.0, 3.0}, mgl32.Vec2{6.0, 4.0}}, &TextureCoords{2, [3]mgl32.Vec2{mgl32.Vec2{1.0, 2.0}, mgl32.Vec2{5.0, 3.0}, mgl32.Vec2{6.0, 4.0}}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -30,7 +30,6 @@ func TestNewTextureCoords(t *testing.T) {
 		})
 	}
 }
-
 
 func TestTextureCoords_Invalidate(t *testing.T) {
 	tests := []struct {

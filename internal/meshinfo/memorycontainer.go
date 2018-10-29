@@ -32,7 +32,7 @@ func (m *memoryContainer) Clone(currentFaceCount uint32) Container {
 	return newmemoryContainer(currentFaceCount, m.infoType)
 }
 
-	// InfoType returns the type of the stored data.
+// InfoType returns the type of the stored data.
 func (m *memoryContainer) InfoType() reflect.Type {
 	return m.infoType
 }
