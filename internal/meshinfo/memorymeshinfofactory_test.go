@@ -7,22 +7,6 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-func TestNewMemoryMeshInfoFactory(t *testing.T) {
-	tests := []struct {
-		name string
-		want *MemoryMeshInfoFactory
-	}{
-		{"base", &MemoryMeshInfoFactory{}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewMemoryMeshInfoFactory(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewMemoryMeshInfoFactory() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestMemoryMeshInfoFactory_Create(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
@@ -39,10 +23,10 @@ func TestMemoryMeshInfoFactory_Create(t *testing.T) {
 		want    MeshInfo
 		wantErr bool
 	}{
-		{"error", NewMemoryMeshInfoFactory(), args{InfoAbstract, 0}, nil, true},
-		{"basematerials", NewMemoryMeshInfoFactory(), args{InfoBaseMaterials, 0}, newgenericMeshInfo(mockContainer, InfoBaseMaterials), false},
-		{"nodecolors", NewMemoryMeshInfoFactory(), args{InfoNodeColors, 0}, newgenericMeshInfo(mockContainer, InfoNodeColors), false},
-		{"textureCoords", NewMemoryMeshInfoFactory(), args{InfoTextureCoords, 0}, newgenericMeshInfo(mockContainer, InfoTextureCoords), false},
+		{"error", new(MemoryMeshInfoFactory), args{InfoAbstract, 0}, nil, true},
+		{"basematerials", new(MemoryMeshInfoFactory), args{InfoBaseMaterials, 0}, newgenericMeshInfo(mockContainer, InfoBaseMaterials), false},
+		{"nodecolors", new(MemoryMeshInfoFactory), args{InfoNodeColors, 0}, newgenericMeshInfo(mockContainer, InfoNodeColors), false},
+		{"textureCoords", new(MemoryMeshInfoFactory), args{InfoTextureCoords, 0}, newgenericMeshInfo(mockContainer, InfoTextureCoords), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

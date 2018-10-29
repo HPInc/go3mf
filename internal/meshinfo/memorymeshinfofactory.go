@@ -10,10 +10,6 @@ import (
 type MemoryMeshInfoFactory struct {
 }
 
-func NewMemoryMeshInfoFactory() *MemoryMeshInfoFactory {
-	return &MemoryMeshInfoFactory{}
-}
-
 // Create creates a new MeshInfo of the desired type.
 func (f *MemoryMeshInfoFactory) Create(infoType InformationType, currentFaceCount uint32) (MeshInfo, error) {
 	switch infoType {
