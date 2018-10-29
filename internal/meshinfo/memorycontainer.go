@@ -2,8 +2,6 @@ package meshinfo
 
 import (
 	"reflect"
-
-	"github.com/qmuntal/go3mf/internal/common"
 )
 
 // memoryContainer implements Container
@@ -39,20 +37,20 @@ func (m *memoryContainer) InfoType() reflect.Type {
 
 func (m *memoryContainer) AddFaceData(newFaceCount uint32) (FaceData, error) {
 	if m.infoType == nil {
-		return nil, common.NewError(common.ErrorInvalidRecordSize)
+		return nil, &InvalidInfoTypeError{m.infoType}
 	}
 	faceData := reflect.New(m.infoType)
 	m.dataBlocks = reflect.Append(m.dataBlocks, faceData.Elem())
 	m.faceCount++
 	if m.faceCount != newFaceCount {
-		return nil, common.NewError(common.ErrorMeshInformationCountMismatch)
+		return nil, &FaceCountMissmatchError{m.faceCount, newFaceCount}
 	}
 	return faceData.Interface().(FaceData), nil
 }
 
 func (m *memoryContainer) GetFaceData(faceIndex uint32) (FaceData, error) {
 	if faceIndex >= m.faceCount {
-		return nil, common.NewError(common.ErrorInvalidMeshInformationIndex)
+		return nil, &FaceDataIndexError{m.faceCount, faceIndex}
 	}
 
 	return m.dataBlocks.Index(int(faceIndex)).Addr().Interface().(FaceData), nil

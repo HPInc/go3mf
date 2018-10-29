@@ -1,7 +1,6 @@
 package meshinfo
 
 import (
-	"github.com/qmuntal/go3mf/internal/common"
 	"reflect"
 )
 
@@ -37,7 +36,7 @@ func (h *lookupHandler) AddInformation(info MeshInfo) error {
 	info.setInternalID(h.internalIDCounter)
 	h.internalIDCounter++
 	if h.internalIDCounter > maxInternalID {
-		return common.NewError(common.ErrorHandleOverflow)
+		return new(HandlerOverflowError)
 	}
 	return nil
 }
