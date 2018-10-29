@@ -24,6 +24,7 @@ func (t *TextureCoords) Copy(from interface{}) {
 	if !ok {
 		return
 	}
+	t.TextureID = other.TextureID
 	t.Coords[0], t.Coords[1], t.Coords[2] = other.Coords[0], other.Coords[1], other.Coords[2]
 }
 
