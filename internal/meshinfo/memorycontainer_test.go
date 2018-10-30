@@ -116,9 +116,8 @@ func Test_memoryContainer_GetFaceData(t *testing.T) {
 				return
 			}
 			if !tt.wantErr {
-				got := gotVal
-				if !(got != initial) {
-					t.Errorf("memoryContainer.GetFaceData() = %v, want %v", got, initial)
+				if !reflect.DeepEqual(gotVal, initial) {
+					t.Errorf("memoryContainer.GetFaceData() = %v, want %v", gotVal, initial)
 				}
 			}
 		})

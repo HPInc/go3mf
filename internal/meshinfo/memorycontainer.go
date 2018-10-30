@@ -45,7 +45,7 @@ func (m *memoryContainer) AddFaceData(newFaceCount uint32) (FaceData, error) {
 	if m.faceCount != newFaceCount {
 		return nil, &FaceCountMissmatchError{m.faceCount, newFaceCount}
 	}
-	return faceData.Interface().(FaceData), nil
+	return m.GetFaceData(newFaceCount - 1)
 }
 
 func (m *memoryContainer) GetFaceData(faceIndex uint32) (FaceData, error) {

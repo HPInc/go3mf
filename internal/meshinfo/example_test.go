@@ -1,37 +1,31 @@
 package meshinfo
 
 import "fmt"
-import "testing"
 
-func TestExample(t *testing.T) {
+func Example() {
 	handler := NewHandler()
 	err := handler.AddInformation(NewBaseMaterialInfo(0))
 	if err != nil {
-		return
+		panic(err)
 	}
 	err = handler.AddInformation(NewNodeColorInfo(0))
 	if err != nil {
-		return
+		panic(err)
 	}
 	err = handler.AddInformation(NewTextureCoordsInfo(0))
 	if err != nil {
-		return
+		panic(err)
 	}
 	fmt.Println(handler.GetInformationCount())
 
-	err = handler.AddFace(1)
-	if err != nil {
-		return
-	}
-
 	materialInfo, ok := handler.GetInformationByType(BaseMaterialType)
 	if !ok {
-		return
+		panic(ok)
 	}
 
-	data, err := materialInfo.AddFaceData(1)
+	data, err := materialInfo.(*genericMeshInfo).AddFaceData(1)
 	if err != nil {
-		return
+		panic(err)
 	}
 	fmt.Println(data.HasData())
 
@@ -40,9 +34,9 @@ func TestExample(t *testing.T) {
 
 	fmt.Println(data.HasData())
 
-	newData, err := materialInfo.GetFaceData(0)
+	newData, err := materialInfo.(*genericMeshInfo).GetFaceData(0)
 	if err != nil {
-		return
+		panic(err)
 	}
 	fmt.Println(newData)
 
@@ -50,4 +44,5 @@ func TestExample(t *testing.T) {
 	// 3
 	// false
 	// true
+	// &{2 1}
 }
