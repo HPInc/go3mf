@@ -6,11 +6,6 @@ type NodeColor struct {
 	Colors [3]Color // Colors of every vertex in a node.
 }
 
-// NewNodeColor creates a new node color.
-func NewNodeColor(color1, color2, color3 Color) *NodeColor {
-	return &NodeColor{[3]Color{color1, color2, color3}}
-}
-
 // Invalidate sets to zero all the properties.
 func (n *NodeColor) Invalidate() {
 	n.Colors[0] = 0x00000000

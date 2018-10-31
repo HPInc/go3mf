@@ -6,11 +6,6 @@ type BaseMaterial struct {
 	Index   uint32 // Index of the base material used in the group.
 }
 
-// NewBaseMaterial creates a base material.
-func NewBaseMaterial(groupID, index uint32) *BaseMaterial {
-	return &BaseMaterial{groupID, index}
-}
-
 // Invalidate sets to zero all the properties.
 func (b *BaseMaterial) Invalidate() {
 	b.GroupID = 0

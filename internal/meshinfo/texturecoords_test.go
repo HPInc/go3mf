@@ -8,29 +8,6 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-func TestNewTextureCoords(t *testing.T) {
-	type args struct {
-		textureID uint32
-		coord1    mgl32.Vec2
-		coord2    mgl32.Vec2
-		coord3    mgl32.Vec2
-	}
-	tests := []struct {
-		name string
-		args args
-		want *TextureCoords
-	}{
-		{"base", args{2, mgl32.Vec2{1.0, 2.0}, mgl32.Vec2{5.0, 3.0}, mgl32.Vec2{6.0, 4.0}}, &TextureCoords{2, [3]mgl32.Vec2{mgl32.Vec2{1.0, 2.0}, mgl32.Vec2{5.0, 3.0}, mgl32.Vec2{6.0, 4.0}}}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewTextureCoords(tt.args.textureID, tt.args.coord1, tt.args.coord2, tt.args.coord3); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewTextureCoords() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestTextureCoords_Invalidate(t *testing.T) {
 	tests := []struct {
 		name string
