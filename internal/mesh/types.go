@@ -6,7 +6,7 @@ import (
 
 // Node defines a node of a mesh.
 type Node struct {
-	Index    uint32      // Index of the node inside the mesh.
+	Index    uint32     // Index of the node inside the mesh.
 	Position mgl32.Vec3 // Coordinates of the node.
 }
 
@@ -27,13 +27,13 @@ type BeamSet struct {
 type Beam struct {
 	Index       uint32    // Index of the beam.
 	NodeIndices [2]uint32 // Indices of the two nodes that defines the beam.
-	Radius      float64  // radius of the beam.
-	CapMode     int32    // Capping mode.
+	Radius      float64   // radius of the beam.
+	CapMode     int32     // Capping mode.
 }
 
 // SliceNode defines a node of an slice.
 type SliceNode struct {
-	Index    uint32      // Index of the slice.
+	Index    uint32     // Index of the slice.
 	Position mgl32.Vec2 // Coordinates of the node.
 }
 

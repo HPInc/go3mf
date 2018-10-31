@@ -1,8 +1,8 @@
 package mesh
 
 import (
-	"github.com/qmuntal/go3mf/internal/meshinfo"
 	"github.com/go-gl/mathgl/mgl32"
+	"github.com/qmuntal/go3mf/internal/meshinfo"
 )
 
 // Mesh is not really a mesh, since it lacks the component edges and the
@@ -11,16 +11,16 @@ import (
 // orientation (i.e. the face can look up or look down) and have three nodes.
 // The orientation is defined by the order of its nodes.
 type Mesh struct {
-	Nodes []*Node
-	Faces []*Face
-	BeamLattice BeamLattice
+	Nodes              []*Node
+	Faces              []*Face
+	BeamLattice        BeamLattice
 	InformationHandler meshinfo.Handler
 }
 
 // NewMesh creates a new default Mesh.
 func NewMesh() *Mesh {
 	return &Mesh{
-		BeamLattice: *NewBeamLattice(),
+		BeamLattice:        *NewBeamLattice(),
 		InformationHandler: meshinfo.NewHandler(),
 	}
 }
@@ -47,7 +47,7 @@ func (m *Mesh) GetFace(index uint32) *Face {
 
 func (m *Mesh) AddNode(position mgl32.Vec3) *Node {
 	node := &Node{
-		Index: m.NodeCount(),
+		Index:    m.NodeCount(),
 		Position: position,
 	}
 	m.Nodes = append(m.Nodes, node)
@@ -56,8 +56,8 @@ func (m *Mesh) AddNode(position mgl32.Vec3) *Node {
 
 func (m *Mesh) AddFace(node1, node2, node3 *Node) *Face {
 	face := &Face{
-		Index : m.FaceCount(),
-		NodeIndices: [3]uint32{node1.Index, node2.Index, node3.Index}, 
+		Index:       m.FaceCount(),
+		NodeIndices: [3]uint32{node1.Index, node2.Index, node3.Index},
 	}
 	m.Faces = append(m.Faces, face)
 	m.InformationHandler.AddFace(m.FaceCount())
@@ -90,6 +90,6 @@ func (m *Mesh) Merge(mesh *Mesh, matrix mgl32.Mat4) {
 	}
 
 	if beamCount != 0 {
-		
+
 	}
 }

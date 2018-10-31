@@ -6,8 +6,7 @@ import (
 
 const maxInternalID = 9223372036854775808
 
-// Handler implements Handler.
-// It allows to include different kinds of information in one mesh (like Textures AND colors).
+// Handler allows to include different kinds of information in one mesh (like Textures AND colors).
 type Handler struct {
 	lookup            map[reflect.Type]MeshInfo
 	internalIDCounter uint64
@@ -22,6 +21,7 @@ func NewHandler() *Handler {
 	return handler
 }
 
+// InfoTypes returns the types of informations stored in the handler.
 func (h *Handler) InfoTypes() []reflect.Type {
 	types := make([]reflect.Type, 0, len(h.lookup))
 	for infoType := range h.lookup {
@@ -30,6 +30,7 @@ func (h *Handler) InfoTypes() []reflect.Type {
 	return types
 }
 
+// AddInformation adds a new type of information to the handler.
 func (h *Handler) AddInformation(info MeshInfo) error {
 	infoType := info.InfoType()
 	h.lookup[infoType] = info
@@ -41,6 +42,7 @@ func (h *Handler) AddInformation(info MeshInfo) error {
 	return nil
 }
 
+// AddFace adds a new face to the handler.
 func (h *Handler) AddFace(newFaceCount uint32) error {
 	for _, info := range h.lookup {
 		data, err := info.AddFaceData(newFaceCount)
@@ -52,15 +54,18 @@ func (h *Handler) AddFace(newFaceCount uint32) error {
 	return nil
 }
 
+// GetInformationByType retrieves the information of the desried type.
 func (h *Handler) GetInformationByType(infoType reflect.Type) (MeshInfo, bool) {
 	info, ok := h.lookup[infoType]
 	return info, ok
 }
 
+// GetInformationCount returns the number of informations added to the handler.
 func (h *Handler) GetInformationCount() uint32 {
 	return uint32(len(h.lookup))
 }
 
+// AddInfoFromTable adds the information of the target handler.
 func (h *Handler) AddInfoFromTable(informer TypedInformer, currentFaceCount uint32) error {
 	types := informer.InfoTypes()
 	for _, infoType := range types {
@@ -76,6 +81,7 @@ func (h *Handler) AddInfoFromTable(informer TypedInformer, currentFaceCount uint
 	return nil
 }
 
+// CloneFaceInfosFrom clones the data from another face.
 func (h *Handler) CloneFaceInfosFrom(faceIndex uint32, informer TypedInformer, otherFaceIndex uint32) {
 	types := informer.InfoTypes()
 	for _, infoType := range types {
@@ -87,18 +93,21 @@ func (h *Handler) CloneFaceInfosFrom(faceIndex uint32, informer TypedInformer, o
 	}
 }
 
+// ResetFaceInformation clears the data of an specific face.
 func (h *Handler) ResetFaceInformation(faceIndex uint32) {
 	for _, info := range h.lookup {
 		info.resetFaceInformation(faceIndex)
 	}
 }
 
+// RemoveInformation removes the information of the target type.
 func (h *Handler) RemoveInformation(infoType reflect.Type) {
 	if _, ok := h.lookup[infoType]; ok {
 		delete(h.lookup, infoType)
 	}
 }
 
+// PermuteNodeInformation swap the data of the target mesh.
 func (h *Handler) PermuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3 uint32) {
 	for _, info := range h.lookup {
 		info.permuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3)
