@@ -362,9 +362,9 @@ func (m *MockTypedInformer) EXPECT() *MockTypedInformerMockRecorder {
 }
 
 // GetInformationByType mocks base method
-func (m *MockTypedInformer) GetInformationByType(arg0 reflect.Type) (MeshInfo, bool) {
+func (m *MockTypedInformer) GetInformationByType(arg0 reflect.Type) (*GenericMeshInfo, bool) {
 	ret := m.ctrl.Call(m, "GetInformationByType", arg0)
-	ret0, _ := ret[0].(MeshInfo)
+	ret0, _ := ret[0].(*GenericMeshInfo)
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
@@ -384,6 +384,19 @@ func (m *MockTypedInformer) InfoTypes() []reflect.Type {
 // InfoTypes indicates an expected call of InfoTypes
 func (mr *MockTypedInformerMockRecorder) InfoTypes() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InfoTypes", reflect.TypeOf((*MockTypedInformer)(nil).InfoTypes))
+}
+
+// getInformationByType mocks base method
+func (m *MockTypedInformer) getInformationByType(arg0 reflect.Type) (MeshInfo, bool) {
+	ret := m.ctrl.Call(m, "getInformationByType", arg0)
+	ret0, _ := ret[0].(MeshInfo)
+	ret1, _ := ret[1].(bool)
+	return ret0, ret1
+}
+
+// getInformationByType indicates an expected call of getInformationByType
+func (mr *MockTypedInformerMockRecorder) getInformationByType(arg0 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getInformationByType", reflect.TypeOf((*MockTypedInformer)(nil).getInformationByType), arg0)
 }
 
 // MockFaceQuerier is a mock of FaceQuerier interface

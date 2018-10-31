@@ -76,8 +76,6 @@ type MeshInfo interface {
 	Repository
 	FaceModifier
 	Identificator
-	// FaceHasData checks if the specific face has any associated data.
-	FaceHasData(faceIndex uint32) bool
 	// Clone creates a deep copy of this instance.
 	Clone(currentFaceCount uint32) MeshInfo
 }
@@ -85,7 +83,9 @@ type MeshInfo interface {
 // TypedInformer inform about specific types of information.
 type TypedInformer interface {
 	// GetInformationByType retrieves the information of the desired type.
-	GetInformationByType(infoType reflect.Type) (MeshInfo, bool)
+	GetInformationByType(infoType reflect.Type) (*GenericMeshInfo, bool)
 	// InfoTypes returns the types of informations stored in the handler.
 	InfoTypes() []reflect.Type
+	// getInformationByType retrieves the information of the desired type.
+	getInformationByType(infoType reflect.Type) (MeshInfo, bool)
 }

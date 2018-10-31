@@ -27,7 +27,7 @@ func Test_NewHandler(t *testing.T) {
 	}
 }
 
-func TestHandler_AddInformation(t *testing.T) {
+func TestHandler_addInformation(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockMesh := NewMockMeshInfo(mockCtrl)
@@ -53,8 +53,8 @@ func TestHandler_AddInformation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.args.info.(*MockMeshInfo).EXPECT().InfoType().Return(reflect.TypeOf(""))
 			tt.args.info.(*MockMeshInfo).EXPECT().setInternalID(tt.expectedInternalID)
-			if err := tt.h.AddInformation(tt.args.info); (err != nil) != tt.wantErr {
-				t.Errorf("Handler.AddInformation() error = %v, wantErr %v", err, tt.wantErr)
+			if err := tt.h.addInformation(tt.args.info); (err != nil) != tt.wantErr {
+				t.Errorf("Handler.addInformation() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
@@ -114,7 +114,7 @@ func TestHandler_AddFace(t *testing.T) {
 	}
 }
 
-func TestHandler_GetInformationByType(t *testing.T) {
+func TestHandler_getInformationByType(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	h := NewHandler()
@@ -138,12 +138,12 @@ func TestHandler_GetInformationByType(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := tt.h.GetInformationByType(tt.args.infoType)
+			got, got1 := tt.h.getInformationByType(tt.args.infoType)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Handler.GetInformationByType() got = %v, want %v", got, tt.want)
+				t.Errorf("Handler.getInformationByType() got = %v, want %v", got, tt.want)
 			}
 			if got1 != tt.want1 {
-				t.Errorf("Handler.GetInformationByType() got1 = %v, want %v", got1, tt.want1)
+				t.Errorf("Handler.getInformationByType() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}
@@ -198,7 +198,7 @@ func TestHandler_AddInfoFromTable(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.args.otherHandler.EXPECT().InfoTypes().Return(types)
-			tt.args.otherHandler.EXPECT().GetInformationByType(gomock.Any()).Return(otherMeshInfo, true).MaxTimes(3)
+			tt.args.otherHandler.EXPECT().getInformationByType(gomock.Any()).Return(otherMeshInfo, true).MaxTimes(3)
 			if tt.wantErr {
 				tt.h.internalIDCounter = maxInternalID
 			}
@@ -236,7 +236,7 @@ func TestHandler_CloneFaceInfosFrom(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.args.otherHandler.EXPECT().InfoTypes().Return(types)
-			tt.args.otherHandler.EXPECT().GetInformationByType(gomock.Any()).Return(otherMeshInfo, true).MaxTimes(3)
+			tt.args.otherHandler.EXPECT().getInformationByType(gomock.Any()).Return(otherMeshInfo, true).MaxTimes(3)
 			ownMeshInfo.EXPECT().cloneFaceInfosFrom(tt.args.faceIndex, ownMeshInfo, tt.args.otherFaceIndex).MaxTimes(2)
 			tt.h.CloneFaceInfosFrom(tt.args.faceIndex, tt.args.otherHandler, tt.args.otherFaceIndex)
 		})

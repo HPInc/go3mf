@@ -30,8 +30,13 @@ func (h *Handler) InfoTypes() []reflect.Type {
 	return types
 }
 
-// AddInformation adds a new type of information to the handler.
-func (h *Handler) AddInformation(info MeshInfo) error {
+// AddInformation adds a information to the handler.
+func (h *Handler) AddInformation(info *GenericMeshInfo) error {
+	return h.addInformation(info)
+}
+
+// addInformation adds a new type of information to the handler.
+func (h *Handler) addInformation(info MeshInfo) error {
 	infoType := info.InfoType()
 	h.lookup[infoType] = info
 	info.setInternalID(h.internalIDCounter)
@@ -55,7 +60,13 @@ func (h *Handler) AddFace(newFaceCount uint32) error {
 }
 
 // GetInformationByType retrieves the information of the desried type.
-func (h *Handler) GetInformationByType(infoType reflect.Type) (MeshInfo, bool) {
+func (h *Handler) GetInformationByType(infoType reflect.Type) (*GenericMeshInfo, bool) {
+	info, ok := h.lookup[infoType]
+	return info.(*GenericMeshInfo), ok
+}
+
+// getInformationByType retrieves the information of the desried type.
+func (h *Handler) getInformationByType(infoType reflect.Type) (MeshInfo, bool) {
 	info, ok := h.lookup[infoType]
 	return info, ok
 }
@@ -69,9 +80,9 @@ func (h *Handler) GetInformationCount() uint32 {
 func (h *Handler) AddInfoFromTable(informer TypedInformer, currentFaceCount uint32) error {
 	types := informer.InfoTypes()
 	for _, infoType := range types {
-		otherInfo, _ := informer.GetInformationByType(infoType)
+		otherInfo, _ := informer.getInformationByType(infoType)
 		if _, ok := h.lookup[infoType]; !ok {
-			err := h.AddInformation(otherInfo.Clone(currentFaceCount))
+			err := h.addInformation(otherInfo.Clone(currentFaceCount))
 			if err != nil {
 				return err
 			}
@@ -84,7 +95,7 @@ func (h *Handler) AddInfoFromTable(informer TypedInformer, currentFaceCount uint
 func (h *Handler) CloneFaceInfosFrom(faceIndex uint32, informer TypedInformer, otherFaceIndex uint32) {
 	types := informer.InfoTypes()
 	for _, infoType := range types {
-		otherInfo, _ := informer.GetInformationByType(infoType)
+		otherInfo, _ := informer.getInformationByType(infoType)
 		info, ok := h.lookup[infoType]
 		if ok {
 			info.cloneFaceInfosFrom(faceIndex, otherInfo, otherFaceIndex)

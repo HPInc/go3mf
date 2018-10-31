@@ -1,24 +1,26 @@
 package meshinfo
 
-// genericMeshInfo is used as base struct for more specific classes.
-type genericMeshInfo struct {
+// GenericMeshInfo is used as base struct for more specific classes.
+type GenericMeshInfo struct {
 	Container
 	internalID uint64
 }
 
-// newgenericMeshInfo creates a new genericMeshInfo.
-func newgenericMeshInfo(container Container) MeshInfo {
-	return &genericMeshInfo{
+// NewGenericMeshInfo creates a new GenericMeshInfo.
+func NewGenericMeshInfo(container Container) *GenericMeshInfo {
+	return &GenericMeshInfo{
 		Container:  container,
 		internalID: 0,
 	}
 }
 
-func (b *genericMeshInfo) Clone(currentFaceCount uint32) MeshInfo {
-	return newgenericMeshInfo(b.Container.Clone(currentFaceCount))
+// Clone creates a deep copy of this instance.
+func (b *GenericMeshInfo) Clone(currentFaceCount uint32) MeshInfo {
+	return NewGenericMeshInfo(b.Container.Clone(currentFaceCount))
 }
 
-func (b *genericMeshInfo) FaceHasData(faceIndex uint32) bool {
+// FaceHasData checks if the specific face has any associated data.
+func (b *GenericMeshInfo) FaceHasData(faceIndex uint32) bool {
 	data, err := b.GetFaceData(faceIndex)
 	if err != nil {
 		return false
@@ -26,14 +28,16 @@ func (b *genericMeshInfo) FaceHasData(faceIndex uint32) bool {
 	return data.HasData()
 }
 
-func (b *genericMeshInfo) Clear() {
+// Clear removes all the information stored in the container.
+func (b *GenericMeshInfo) Clear() {
 	count := int(b.GetCurrentFaceCount())
 	for i := 0; i < count; i++ {
 		b.resetFaceInformation(uint32(i))
 	}
 }
 
-func (b *genericMeshInfo) resetFaceInformation(faceIndex uint32) {
+// resetFaceInformation clears the data of an specific face.
+func (b *GenericMeshInfo) resetFaceInformation(faceIndex uint32) {
 	data, err := b.GetFaceData(faceIndex)
 	if err != nil {
 		return
@@ -41,7 +45,8 @@ func (b *genericMeshInfo) resetFaceInformation(faceIndex uint32) {
 	data.Invalidate()
 }
 
-func (b *genericMeshInfo) cloneFaceInfosFrom(faceIndex uint32, otherInfo FaceQuerier, otherFaceIndex uint32) {
+// cloneFaceInfosFrom clones the data from another face.
+func (b *GenericMeshInfo) cloneFaceInfosFrom(faceIndex uint32, otherInfo FaceQuerier, otherFaceIndex uint32) {
 	targetData, err := b.GetFaceData(faceIndex)
 	if err != nil {
 		return
@@ -53,7 +58,8 @@ func (b *genericMeshInfo) cloneFaceInfosFrom(faceIndex uint32, otherInfo FaceQue
 	targetData.Copy(sourceData)
 }
 
-func (b *genericMeshInfo) permuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3 uint32) {
+// permuteNodeInformation swap the data of the target mesh.
+func (b *GenericMeshInfo) permuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3 uint32) {
 	data, err := b.GetFaceData(faceIndex)
 	if err != nil {
 		return
@@ -61,10 +67,12 @@ func (b *genericMeshInfo) permuteNodeInformation(faceIndex, nodeIndex1, nodeInde
 	data.Permute(nodeIndex1, nodeIndex2, nodeIndex3)
 }
 
-func (b *genericMeshInfo) setInternalID(internalID uint64) {
+// setInternalID sets an ID for the whole mesh information.
+func (b *GenericMeshInfo) setInternalID(internalID uint64) {
 	b.internalID = internalID
 }
 
-func (b *genericMeshInfo) getInternalID() uint64 {
+// getInternalID gets the internal ID of the mesh information.
+func (b *GenericMeshInfo) getInternalID() uint64 {
 	return b.internalID
 }

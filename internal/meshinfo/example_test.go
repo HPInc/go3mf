@@ -25,7 +25,7 @@ func Example() {
 		panic(ok)
 	}
 
-	data, err := materialInfo.(*genericMeshInfo).AddFaceData(1)
+	data, err := materialInfo.AddFaceData(1)
 	if err != nil {
 		panic(err)
 	}
@@ -36,7 +36,7 @@ func Example() {
 
 	fmt.Println(data.HasData())
 
-	newData, err := materialInfo.(*genericMeshInfo).GetFaceData(0)
+	newData, err := materialInfo.GetFaceData(0)
 	if err != nil {
 		panic(err)
 	}
