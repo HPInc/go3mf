@@ -143,8 +143,8 @@ func TestBeamLattice_SetCapMode(t *testing.T) {
 
 func TestBeamLattice_Clear(t *testing.T) {
 	b := new(BeamLattice)
-	b.Beams = append(b.Beams, Beam{})
-	b.BeamSets = append(b.BeamSets, BeamSet{})
+	b.Beams = append(b.Beams, new(Beam))
+	b.BeamSets = append(b.BeamSets, new(BeamSet))
 	tests := []struct {
 		name string
 		b    *BeamLattice

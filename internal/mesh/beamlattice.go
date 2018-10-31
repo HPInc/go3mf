@@ -2,8 +2,8 @@ package mesh
 
 // BeamLattice defines a beam lattice structure.
 type BeamLattice struct {
-	Beams             []Beam
-	BeamSets          []BeamSet
+	Beams             []*Beam
+	BeamSets          []*BeamSet
 	minLength, radius float64
 	capMode           BeamLatticeCapMode
 }
@@ -49,6 +49,6 @@ func (b *BeamLattice) SetCapMode(val BeamLatticeCapMode) {
 
 // Clear resets the value of Beams and BeamSets.
 func (b *BeamLattice) Clear() {
-	b.Beams = make([]Beam, 0)
-	b.BeamSets = make([]BeamSet, 0)
+	b.Beams = make([]*Beam, 0)
+	b.BeamSets = make([]*BeamSet, 0)
 }
