@@ -14,7 +14,7 @@ type Mesh struct {
 	Nodes              []*Node
 	Faces              []*Face
 	BeamLattice        BeamLattice
-	InformationHandler meshinfo.Handler
+	InformationHandler *meshinfo.Handler
 }
 
 // NewMesh creates a new default Mesh.
