@@ -11,11 +11,6 @@ var (
 	BaseMaterialType = reflect.TypeOf((*BaseMaterial)(nil))
 )
 
-// NewHandler creates a default handler.
-func NewHandler() Handler {
-	return newlookupHandler()
-}
-
 // NewNodeColorInfo creates a default node color mesh info.
 func NewNodeColorInfo(currentFaceCount uint32) MeshInfo {
 	return newInfo(currentFaceCount, NodeColorType)

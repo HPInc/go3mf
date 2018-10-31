@@ -5,22 +5,6 @@ import (
 	"testing"
 )
 
-func TestNewHandler(t *testing.T) {
-	tests := []struct {
-		name string
-		want Handler
-	}{
-		{"base", newlookupHandler()},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewHandler(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewHandler() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestNewNodeColorInfo(t *testing.T) {
 	type args struct {
 		currentFaceCount uint32
