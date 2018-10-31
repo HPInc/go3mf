@@ -76,7 +76,6 @@ func (h *Handler) AddInfoFromTable(informer TypedInformer, currentFaceCount uint
 				return err
 			}
 		}
-		h.lookup[infoType].mergeInformationFrom(otherInfo)
 	}
 	return nil
 }

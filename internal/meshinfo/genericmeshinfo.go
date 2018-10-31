@@ -41,7 +41,7 @@ func (b *genericMeshInfo) resetFaceInformation(faceIndex uint32) {
 	data.Invalidate()
 }
 
-func (b *genericMeshInfo) cloneFaceInfosFrom(faceIndex uint32, otherInfo MeshInfo, otherFaceIndex uint32) {
+func (b *genericMeshInfo) cloneFaceInfosFrom(faceIndex uint32, otherInfo FaceQuerier, otherFaceIndex uint32) {
 	targetData, err := b.GetFaceData(faceIndex)
 	if err != nil {
 		return
@@ -59,10 +59,6 @@ func (b *genericMeshInfo) permuteNodeInformation(faceIndex, nodeIndex1, nodeInde
 		return
 	}
 	data.Permute(nodeIndex1, nodeIndex2, nodeIndex3)
-}
-
-func (b *genericMeshInfo) mergeInformationFrom(info MeshInfo) {
-	// nothing to merge
 }
 
 func (b *genericMeshInfo) setInternalID(internalID uint64) {

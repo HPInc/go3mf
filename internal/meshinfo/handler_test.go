@@ -201,8 +201,6 @@ func TestHandler_AddInfoFromTable(t *testing.T) {
 			tt.args.otherHandler.EXPECT().GetInformationByType(gomock.Any()).Return(otherMeshInfo, true).MaxTimes(3)
 			if tt.wantErr {
 				tt.h.internalIDCounter = maxInternalID
-			} else {
-				ownMeshInfo.EXPECT().mergeInformationFrom(otherMeshInfo).MaxTimes(3)
 			}
 			otherMeshInfo.EXPECT().Clone(tt.args.currentFaceCount).Return(ownMeshInfo)
 			ownMeshInfo.EXPECT().InfoType().Return(reflect.TypeOf((*string)(nil)).Elem())

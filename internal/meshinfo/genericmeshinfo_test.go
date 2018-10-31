@@ -227,24 +227,6 @@ func Test_genericMeshInfo_permuteNodeInformation(t *testing.T) {
 	}
 }
 
-func Test_genericMeshInfo_mergeInformationFrom(t *testing.T) {
-	type args struct {
-		info MeshInfo
-	}
-	tests := []struct {
-		name string
-		b    MeshInfo
-		args args
-	}{
-		{"nothing happens", &genericMeshInfo{nil, 0}, args{nil}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.b.mergeInformationFrom(tt.args.info)
-		})
-	}
-}
-
 func Test_genericMeshInfo_FaceHasData(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
