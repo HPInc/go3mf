@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestNewNodeColorInfo(t *testing.T) {
+func TestNewNodeColorFacesData(t *testing.T) {
 	type args struct {
 		currentFaceCount uint32
 	}
@@ -18,14 +18,14 @@ func TestNewNodeColorInfo(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewNodeColorInfo(tt.args.currentFaceCount).InfoType(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewNodeColorInfo() = %v, want %v", got, tt.want)
+			if got := NewNodeColorFacesData(tt.args.currentFaceCount).InfoType(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewNodeColorFacesData() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestNewTextureCoordsInfo(t *testing.T) {
+func TestNewTextureCoordsFacesData(t *testing.T) {
 	type args struct {
 		currentFaceCount uint32
 	}
@@ -38,14 +38,14 @@ func TestNewTextureCoordsInfo(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewTextureCoordsInfo(tt.args.currentFaceCount).InfoType(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewTextureCoordsInfo() = %v, want %v", got, tt.want)
+			if got := NewTextureCoordsFacesData(tt.args.currentFaceCount).InfoType(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewTextureCoordsFacesData() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestNewBaseMaterialInfo(t *testing.T) {
+func TestNewBaseMaterialFacesData(t *testing.T) {
 	type args struct {
 		currentFaceCount uint32
 	}
@@ -58,8 +58,8 @@ func TestNewBaseMaterialInfo(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewBaseMaterialInfo(tt.args.currentFaceCount).InfoType(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewBaseMaterialInfo() = %v, want %v", got, tt.want)
+			if got := NewBaseMaterialFacesData(tt.args.currentFaceCount).InfoType(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewBaseMaterialFacesData() = %v, want %v", got, tt.want)
 			}
 		})
 	}

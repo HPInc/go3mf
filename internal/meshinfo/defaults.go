@@ -11,18 +11,18 @@ var (
 	BaseMaterialType = reflect.TypeOf((*BaseMaterial)(nil))
 )
 
-// NewNodeColorInfo creates a default node color mesh info.
-func NewNodeColorInfo(currentFaceCount uint32) *FacesData {
+// NewNodeColorFacesData creates a default node color mesh info.
+func NewNodeColorFacesData(currentFaceCount uint32) *FacesData {
 	return newInfo(currentFaceCount, NodeColorType)
 }
 
-// NewTextureCoordsInfo creates a default texture coordinates mesh info.
-func NewTextureCoordsInfo(currentFaceCount uint32) *FacesData {
+// NewTextureCoordsFacesData creates a default texture coordinates mesh info.
+func NewTextureCoordsFacesData(currentFaceCount uint32) *FacesData {
 	return newInfo(currentFaceCount, TextureCoordsType)
 }
 
-// NewBaseMaterialInfo creates a default base material mesh info.
-func NewBaseMaterialInfo(currentFaceCount uint32) *FacesData {
+// NewBaseMaterialFacesData creates a default base material mesh info.
+func NewBaseMaterialFacesData(currentFaceCount uint32) *FacesData {
 	return newInfo(currentFaceCount, BaseMaterialType)
 }
 

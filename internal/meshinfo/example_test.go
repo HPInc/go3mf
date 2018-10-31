@@ -6,15 +6,15 @@ import (
 
 func Example() {
 	handler := NewHandler()
-	err := handler.AddInformation(NewBaseMaterialInfo(0))
+	err := handler.AddInformation(NewBaseMaterialFacesData(0))
 	if err != nil {
 		panic(err)
 	}
-	err = handler.AddInformation(NewNodeColorInfo(0))
+	err = handler.AddInformation(NewNodeColorFacesData(0))
 	if err != nil {
 		panic(err)
 	}
-	err = handler.AddInformation(NewTextureCoordsInfo(0))
+	err = handler.AddInformation(NewTextureCoordsFacesData(0))
 	if err != nil {
 		panic(err)
 	}
