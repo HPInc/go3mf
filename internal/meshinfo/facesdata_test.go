@@ -8,7 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 )
 
-func Test_NewGenericMeshInfo(t *testing.T) {
+func Test_newFacesData(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockContainer := NewMockContainer(mockCtrl)
@@ -18,21 +18,21 @@ func Test_NewGenericMeshInfo(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *GenericMeshInfo
+		want *FacesData
 	}{
-		{"new1", args{mockContainer}, &GenericMeshInfo{mockContainer, 0}},
-		{"new2", args{mockContainer}, &GenericMeshInfo{mockContainer, 0}},
+		{"new1", args{mockContainer}, &FacesData{mockContainer, 0}},
+		{"new2", args{mockContainer}, &FacesData{mockContainer, 0}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewGenericMeshInfo(tt.args.container); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewGenericMeshInfo() = %v, want %v", got, tt.want)
+			if got := newFacesData(tt.args.container); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("newFacesData() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestGenericMeshInfo_resetFaceInformation(t *testing.T) {
+func TestFacesData_resetFaceInformation(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockContainer := NewMockContainer(mockCtrl)
@@ -42,12 +42,12 @@ func TestGenericMeshInfo_resetFaceInformation(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		b       *GenericMeshInfo
+		b       *FacesData
 		args    args
 		wantErr bool
 	}{
-		{"error", NewGenericMeshInfo(mockContainer), args{2}, true},
-		{"success", NewGenericMeshInfo(mockContainer), args{4}, false},
+		{"error", newFacesData(mockContainer), args{2}, true},
+		{"success", newFacesData(mockContainer), args{4}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -69,18 +69,18 @@ func TestGenericMeshInfo_resetFaceInformation(t *testing.T) {
 	}
 }
 
-func TestGenericMeshInfo_Clear(t *testing.T) {
+func TestFacesData_Clear(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockContainer := NewMockContainer(mockCtrl)
 	tests := []struct {
 		name    string
-		b       *GenericMeshInfo
+		b       *FacesData
 		faceNum uint32
 	}{
-		{"empty", NewGenericMeshInfo(mockContainer), 0},
-		{"one", NewGenericMeshInfo(mockContainer), 1},
-		{"two", NewGenericMeshInfo(mockContainer), 2},
+		{"empty", newFacesData(mockContainer), 0},
+		{"one", newFacesData(mockContainer), 1},
+		{"two", newFacesData(mockContainer), 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -93,49 +93,49 @@ func TestGenericMeshInfo_Clear(t *testing.T) {
 	}
 }
 
-func TestGenericMeshInfo_setInternalID(t *testing.T) {
+func TestFacesData_setInternalID(t *testing.T) {
 	type args struct {
 		internalID uint64
 	}
 	tests := []struct {
 		name string
-		b    *GenericMeshInfo
+		b    *FacesData
 		args args
 	}{
-		{"zero", NewGenericMeshInfo(nil), args{0}},
-		{"one", NewGenericMeshInfo(nil), args{1}},
-		{"two", NewGenericMeshInfo(nil), args{3}},
+		{"zero", newFacesData(nil), args{0}},
+		{"one", newFacesData(nil), args{1}},
+		{"two", newFacesData(nil), args{3}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.b.setInternalID(tt.args.internalID)
 			if got := tt.b.getInternalID(); got != tt.args.internalID {
-				t.Errorf("GenericMeshInfo.setInternalID() = %v, want %v", got, tt.args.internalID)
+				t.Errorf("FacesData.setInternalID() = %v, want %v", got, tt.args.internalID)
 			}
 		})
 	}
 }
 
-func TestGenericMeshInfo_getInternalID(t *testing.T) {
+func TestFacesData_getInternalID(t *testing.T) {
 	tests := []struct {
 		name string
-		b    *GenericMeshInfo
+		b    *FacesData
 		want uint64
 	}{
-		{"new", NewGenericMeshInfo(nil), 0},
-		{"one", &GenericMeshInfo{nil, 1}, 1},
-		{"two", &GenericMeshInfo{nil, 2}, 2},
+		{"new", newFacesData(nil), 0},
+		{"one", &FacesData{nil, 1}, 1},
+		{"two", &FacesData{nil, 2}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.b.getInternalID(); got != tt.want {
-				t.Errorf("GenericMeshInfo.getInternalID() = %v, want %v", got, tt.want)
+				t.Errorf("FacesData.getInternalID() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestGenericMeshInfo_clone(t *testing.T) {
+func TestFacesData_clone(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockContainer := NewMockContainer(mockCtrl)
@@ -145,42 +145,42 @@ func TestGenericMeshInfo_clone(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		b    *GenericMeshInfo
+		b    *FacesData
 		args args
-		want *GenericMeshInfo
+		want *FacesData
 	}{
-		{"base", NewGenericMeshInfo(mockContainer), args{2}, NewGenericMeshInfo(mockContainer2)},
+		{"base", newFacesData(mockContainer), args{2}, newFacesData(mockContainer2)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockContainer.EXPECT().clone(tt.args.currentFaceCount).Return(mockContainer2)
 			if got := tt.b.clone(tt.args.currentFaceCount); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GenericMeshInfo.clone() = %v, want %v", got, tt.want)
+				t.Errorf("FacesData.clone() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestGenericMeshInfo_cloneFaceInfosFrom(t *testing.T) {
+func TestFacesData_cloneFaceInfosFrom(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockContainer := NewMockContainer(mockCtrl)
 
 	type args struct {
 		faceIndex      uint32
-		otherInfo      *MockMeshInfo
+		otherInfo      *MockHandleable
 		otherFaceIndex uint32
 	}
 	tests := []struct {
 		name         string
-		b            *GenericMeshInfo
+		b            *FacesData
 		args         args
 		data1, data2 *MockFaceData
 		err1, err2   error
 	}{
-		{"err1", NewGenericMeshInfo(mockContainer), args{1, NewMockMeshInfo(mockCtrl), 2}, NewMockFaceData(mockCtrl), NewMockFaceData(mockCtrl), errors.New(""), nil},
-		{"err2", NewGenericMeshInfo(mockContainer), args{1, NewMockMeshInfo(mockCtrl), 2}, NewMockFaceData(mockCtrl), NewMockFaceData(mockCtrl), nil, errors.New("")},
-		{"success", NewGenericMeshInfo(mockContainer), args{1, NewMockMeshInfo(mockCtrl), 2}, NewMockFaceData(mockCtrl), NewMockFaceData(mockCtrl), nil, nil},
+		{"err1", newFacesData(mockContainer), args{1, NewMockHandleable(mockCtrl), 2}, NewMockFaceData(mockCtrl), NewMockFaceData(mockCtrl), errors.New(""), nil},
+		{"err2", newFacesData(mockContainer), args{1, NewMockHandleable(mockCtrl), 2}, NewMockFaceData(mockCtrl), NewMockFaceData(mockCtrl), nil, errors.New("")},
+		{"success", newFacesData(mockContainer), args{1, NewMockHandleable(mockCtrl), 2}, NewMockFaceData(mockCtrl), NewMockFaceData(mockCtrl), nil, nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -196,7 +196,7 @@ func TestGenericMeshInfo_cloneFaceInfosFrom(t *testing.T) {
 	}
 }
 
-func TestGenericMeshInfo_permuteNodeInformation(t *testing.T) {
+func TestFacesData_permuteNodeInformation(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockContainer := NewMockContainer(mockCtrl)
@@ -208,13 +208,13 @@ func TestGenericMeshInfo_permuteNodeInformation(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		b    *GenericMeshInfo
+		b    *FacesData
 		args args
 		data *MockFaceData
 		err  error
 	}{
-		{"err", NewGenericMeshInfo(mockContainer), args{1, 2, 3, 4}, NewMockFaceData(mockCtrl), errors.New("")},
-		{"success", NewGenericMeshInfo(mockContainer), args{1, 2, 3, 4}, NewMockFaceData(mockCtrl), nil},
+		{"err", newFacesData(mockContainer), args{1, 2, 3, 4}, NewMockFaceData(mockCtrl), errors.New("")},
+		{"success", newFacesData(mockContainer), args{1, 2, 3, 4}, NewMockFaceData(mockCtrl), nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -227,7 +227,7 @@ func TestGenericMeshInfo_permuteNodeInformation(t *testing.T) {
 	}
 }
 
-func TestGenericMeshInfo_FaceHasData(t *testing.T) {
+func TestFacesData_FaceHasData(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockContainer := NewMockContainer(mockCtrl)
@@ -236,15 +236,15 @@ func TestGenericMeshInfo_FaceHasData(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		b    *GenericMeshInfo
+		b    *FacesData
 		args args
 		data *MockFaceData
 		err  error
 		want bool
 	}{
-		{"err", NewGenericMeshInfo(mockContainer), args{1}, NewMockFaceData(mockCtrl), errors.New(""), false},
-		{"false", NewGenericMeshInfo(mockContainer), args{1}, NewMockFaceData(mockCtrl), nil, false},
-		{"true", NewGenericMeshInfo(mockContainer), args{1}, NewMockFaceData(mockCtrl), nil, true},
+		{"err", newFacesData(mockContainer), args{1}, NewMockFaceData(mockCtrl), errors.New(""), false},
+		{"false", newFacesData(mockContainer), args{1}, NewMockFaceData(mockCtrl), nil, false},
+		{"true", newFacesData(mockContainer), args{1}, NewMockFaceData(mockCtrl), nil, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -253,7 +253,7 @@ func TestGenericMeshInfo_FaceHasData(t *testing.T) {
 				tt.data.EXPECT().HasData().Return(tt.want)
 			}
 			if got := tt.b.FaceHasData(tt.args.faceIndex); got != tt.want {
-				t.Errorf("GenericMeshInfo.FaceHasData() = %v, want %v", got, tt.want)
+				t.Errorf("FacesData.FaceHasData() = %v, want %v", got, tt.want)
 			}
 		})
 	}

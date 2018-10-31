@@ -8,14 +8,14 @@ const maxInternalID = 9223372036854775808
 
 // Handler allows to include different kinds of information in one mesh (like Textures AND colors).
 type Handler struct {
-	lookup            map[reflect.Type]MeshInfo
+	lookup            map[reflect.Type]Handleable
 	internalIDCounter uint64
 }
 
 // NewHandler creates a new lookup handler.
 func NewHandler() *Handler {
 	handler := &Handler{
-		lookup:            make(map[reflect.Type]MeshInfo, 0),
+		lookup:            make(map[reflect.Type]Handleable, 0),
 		internalIDCounter: 1,
 	}
 	return handler
@@ -31,12 +31,12 @@ func (h *Handler) InfoTypes() []reflect.Type {
 }
 
 // AddInformation adds a information to the handler.
-func (h *Handler) AddInformation(info *GenericMeshInfo) error {
+func (h *Handler) AddInformation(info *FacesData) error {
 	return h.addInformation(info)
 }
 
 // addInformation adds a new type of information to the handler.
-func (h *Handler) addInformation(info MeshInfo) error {
+func (h *Handler) addInformation(info Handleable) error {
 	infoType := info.InfoType()
 	h.lookup[infoType] = info
 	info.setInternalID(h.internalIDCounter)
@@ -60,13 +60,13 @@ func (h *Handler) AddFace(newFaceCount uint32) error {
 }
 
 // GetInformationByType retrieves the information of the desried type.
-func (h *Handler) GetInformationByType(infoType reflect.Type) (*GenericMeshInfo, bool) {
+func (h *Handler) GetInformationByType(infoType reflect.Type) (*FacesData, bool) {
 	info, ok := h.lookup[infoType]
-	return info.(*GenericMeshInfo), ok
+	return info.(*FacesData), ok
 }
 
 // getInformationByType retrieves the information of the desried type.
-func (h *Handler) getInformationByType(infoType reflect.Type) (MeshInfo, bool) {
+func (h *Handler) getInformationByType(infoType reflect.Type) (Handleable, bool) {
 	info, ok := h.lookup[infoType]
 	return info, ok
 }

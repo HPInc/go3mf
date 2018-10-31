@@ -15,7 +15,7 @@ func Test_NewHandler(t *testing.T) {
 	}{
 		{"new", &Handler{
 			internalIDCounter: 1,
-			lookup:            map[reflect.Type]MeshInfo{},
+			lookup:            map[reflect.Type]Handleable{},
 		}},
 	}
 	for _, tt := range tests {
@@ -30,12 +30,12 @@ func Test_NewHandler(t *testing.T) {
 func TestHandler_addInformation(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	mockMesh := NewMockMeshInfo(mockCtrl)
+	mockHandleable := NewMockHandleable(mockCtrl)
 	h := NewHandler()
 	herr := NewHandler()
 	herr.internalIDCounter = maxInternalID
 	type args struct {
-		info MeshInfo
+		info *MockHandleable
 	}
 	tests := []struct {
 		name               string
@@ -44,15 +44,15 @@ func TestHandler_addInformation(t *testing.T) {
 		wantErr            bool
 		expectedInternalID uint64
 	}{
-		{"1", h, args{mockMesh}, false, 1},
-		{"2", h, args{mockMesh}, false, 2},
-		{"3", h, args{mockMesh}, false, 3},
-		{"max", herr, args{mockMesh}, true, maxInternalID},
+		{"1", h, args{mockHandleable}, false, 1},
+		{"2", h, args{mockHandleable}, false, 2},
+		{"3", h, args{mockHandleable}, false, 3},
+		{"max", herr, args{mockHandleable}, true, maxInternalID},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.args.info.(*MockMeshInfo).EXPECT().InfoType().Return(reflect.TypeOf(""))
-			tt.args.info.(*MockMeshInfo).EXPECT().setInternalID(tt.expectedInternalID)
+			tt.args.info.EXPECT().InfoType().Return(reflect.TypeOf(""))
+			tt.args.info.EXPECT().setInternalID(tt.expectedInternalID)
 			if err := tt.h.addInformation(tt.args.info); (err != nil) != tt.wantErr {
 				t.Errorf("Handler.addInformation() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -85,8 +85,8 @@ func TestHandler_AddFace(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	h := NewHandler()
-	meshInfo := NewMockMeshInfo(mockCtrl)
-	h.lookup[reflect.TypeOf((*string)(nil)).Elem()] = meshInfo
+	handleable := NewMockHandleable(mockCtrl)
+	h.lookup[reflect.TypeOf((*string)(nil)).Elem()] = handleable
 	type args struct {
 		newFaceCount uint32
 	}
@@ -103,7 +103,7 @@ func TestHandler_AddFace(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			meshInfo.EXPECT().AddFaceData(tt.args.newFaceCount).Return(tt.data, tt.err)
+			handleable.EXPECT().AddFaceData(tt.args.newFaceCount).Return(tt.data, tt.err)
 			if tt.err == nil {
 				tt.data.EXPECT().Invalidate().Return()
 			}
@@ -118,10 +118,10 @@ func TestHandler_getInformationByType(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	h := NewHandler()
-	meshInfo1 := NewMockMeshInfo(mockCtrl)
-	meshInfo2 := NewMockMeshInfo(mockCtrl)
-	h.lookup[reflect.TypeOf((*string)(nil)).Elem()] = meshInfo1
-	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = meshInfo2
+	handleable1 := NewMockHandleable(mockCtrl)
+	handleable2 := NewMockHandleable(mockCtrl)
+	h.lookup[reflect.TypeOf((*string)(nil)).Elem()] = handleable1
+	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = handleable2
 	type args struct {
 		infoType reflect.Type
 	}
@@ -129,12 +129,12 @@ func TestHandler_getInformationByType(t *testing.T) {
 		name  string
 		h     *Handler
 		args  args
-		want  MeshInfo
+		want  Handleable
 		want1 bool
 	}{
 		{"nil", h, args{nil}, nil, false},
-		{"valid1", h, args{reflect.TypeOf((*string)(nil)).Elem()}, meshInfo1, true},
-		{"valid1", h, args{reflect.TypeOf((*float32)(nil)).Elem()}, meshInfo2, true},
+		{"valid1", h, args{reflect.TypeOf((*string)(nil)).Elem()}, handleable1, true},
+		{"valid1", h, args{reflect.TypeOf((*float32)(nil)).Elem()}, handleable2, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -174,14 +174,14 @@ func TestHandler_AddInfoFromTable(t *testing.T) {
 	types := []reflect.Type{reflect.TypeOf((*string)(nil)).Elem(), reflect.TypeOf((*float32)(nil)).Elem(), reflect.TypeOf((*float64)(nil)).Elem()}
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	otherMeshInfo := NewMockMeshInfo(mockCtrl)
-	ownMeshInfo := NewMockMeshInfo(mockCtrl)
+	otherHandleable := NewMockHandleable(mockCtrl)
+	ownHandleable := NewMockHandleable(mockCtrl)
 	herr := NewHandler()
-	herr.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = ownMeshInfo
-	herr.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = ownMeshInfo
+	herr.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = ownHandleable
+	herr.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = ownHandleable
 	h := NewHandler()
-	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = ownMeshInfo
-	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = ownMeshInfo
+	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = ownHandleable
+	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = ownHandleable
 	type args struct {
 		otherHandler     *MockTypedInformer
 		currentFaceCount uint32
@@ -198,13 +198,13 @@ func TestHandler_AddInfoFromTable(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.args.otherHandler.EXPECT().InfoTypes().Return(types)
-			tt.args.otherHandler.EXPECT().getInformationByType(gomock.Any()).Return(otherMeshInfo, true).MaxTimes(3)
+			tt.args.otherHandler.EXPECT().getInformationByType(gomock.Any()).Return(otherHandleable, true).MaxTimes(3)
 			if tt.wantErr {
 				tt.h.internalIDCounter = maxInternalID
 			}
-			otherMeshInfo.EXPECT().clone(tt.args.currentFaceCount).Return(ownMeshInfo)
-			ownMeshInfo.EXPECT().InfoType().Return(reflect.TypeOf((*string)(nil)).Elem())
-			ownMeshInfo.EXPECT().setInternalID(tt.h.internalIDCounter)
+			otherHandleable.EXPECT().clone(tt.args.currentFaceCount).Return(ownHandleable)
+			ownHandleable.EXPECT().InfoType().Return(reflect.TypeOf((*string)(nil)).Elem())
+			ownHandleable.EXPECT().setInternalID(tt.h.internalIDCounter)
 			if err := tt.h.AddInfoFromTable(tt.args.otherHandler, tt.args.currentFaceCount); (err != nil) != tt.wantErr {
 				t.Errorf("Handler.AddInfoFromTable() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -216,11 +216,11 @@ func TestHandler_CloneFaceInfosFrom(t *testing.T) {
 	types := []reflect.Type{reflect.TypeOf((*string)(nil)).Elem(), reflect.TypeOf((*float32)(nil)).Elem(), reflect.TypeOf((*float64)(nil)).Elem()}
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	otherMeshInfo := NewMockMeshInfo(mockCtrl)
-	ownMeshInfo := NewMockMeshInfo(mockCtrl)
+	otherHandleable := NewMockHandleable(mockCtrl)
+	ownHandleable := NewMockHandleable(mockCtrl)
 	h := NewHandler()
-	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = ownMeshInfo
-	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = ownMeshInfo
+	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = ownHandleable
+	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = ownHandleable
 	type args struct {
 		faceIndex      uint32
 		otherHandler   *MockTypedInformer
@@ -236,8 +236,8 @@ func TestHandler_CloneFaceInfosFrom(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.args.otherHandler.EXPECT().InfoTypes().Return(types)
-			tt.args.otherHandler.EXPECT().getInformationByType(gomock.Any()).Return(otherMeshInfo, true).MaxTimes(3)
-			ownMeshInfo.EXPECT().cloneFaceInfosFrom(tt.args.faceIndex, ownMeshInfo, tt.args.otherFaceIndex).MaxTimes(2)
+			tt.args.otherHandler.EXPECT().getInformationByType(gomock.Any()).Return(otherHandleable, true).MaxTimes(3)
+			ownHandleable.EXPECT().cloneFaceInfosFrom(tt.args.faceIndex, ownHandleable, tt.args.otherFaceIndex).MaxTimes(2)
 			tt.h.CloneFaceInfosFrom(tt.args.faceIndex, tt.args.otherHandler, tt.args.otherFaceIndex)
 		})
 	}
@@ -246,10 +246,10 @@ func TestHandler_CloneFaceInfosFrom(t *testing.T) {
 func TestHandler_ResetFaceInformation(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	meshInfo := NewMockMeshInfo(mockCtrl)
+	handleable := NewMockHandleable(mockCtrl)
 	h := NewHandler()
-	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = meshInfo
-	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = meshInfo
+	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = handleable
+	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = handleable
 	type args struct {
 		faceIndex uint32
 	}
@@ -262,7 +262,7 @@ func TestHandler_ResetFaceInformation(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			meshInfo.EXPECT().resetFaceInformation(tt.args.faceIndex).MaxTimes(2)
+			handleable.EXPECT().resetFaceInformation(tt.args.faceIndex).MaxTimes(2)
 			tt.h.ResetFaceInformation(tt.args.faceIndex)
 		})
 	}
@@ -299,10 +299,10 @@ func TestHandler_RemoveInformation(t *testing.T) {
 func TestHandler_PermuteNodeInformation(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	meshInfo := NewMockMeshInfo(mockCtrl)
+	handleable := NewMockHandleable(mockCtrl)
 	h := NewHandler()
-	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = meshInfo
-	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = meshInfo
+	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = handleable
+	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = handleable
 	type args struct {
 		faceIndex  uint32
 		nodeIndex1 uint32
@@ -318,7 +318,7 @@ func TestHandler_PermuteNodeInformation(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			meshInfo.EXPECT().permuteNodeInformation(tt.args.faceIndex, tt.args.nodeIndex1, tt.args.nodeIndex2, tt.args.nodeIndex3).MaxTimes(2)
+			handleable.EXPECT().permuteNodeInformation(tt.args.faceIndex, tt.args.nodeIndex1, tt.args.nodeIndex2, tt.args.nodeIndex3).MaxTimes(2)
 			tt.h.PermuteNodeInformation(tt.args.faceIndex, tt.args.nodeIndex1, tt.args.nodeIndex2, tt.args.nodeIndex3)
 		})
 	}

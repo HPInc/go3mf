@@ -1,4 +1,4 @@
-//go:generate mockgen -destination types_mock_test.go -package meshinfo -self_package github.com/qmuntal/go3mf/internal/meshinfo github.com/qmuntal/go3mf/internal/meshinfo FaceData,Container,MeshInfo,TypedInformer,FaceQuerier
+//go:generate mockgen -destination types_mock_test.go -package meshinfo -self_package github.com/qmuntal/go3mf/internal/meshinfo github.com/qmuntal/go3mf/internal/meshinfo FaceData,Container,TypedInformer,FaceQuerier,Handleable
 
 package meshinfo
 
@@ -31,9 +31,6 @@ type FaceQuerier interface {
 // Repository defines an interface for interacting with a mesh information repository.
 type Repository interface {
 	FaceQuerier
-	// AddFaceData adds data to the last added face and returns the pointer to the data of the added face.
-	// The parameter newFaceCount should indicate the faces information stored in the container, including the new one.
-	// If the count is not equal to the one returned by GetCurrentFaceCount an error will be returned.
 	AddFaceData(newFaceCount uint32) (val FaceData, err error)
 	// GetCurrentFaceCount returns the number of faces information stored in the container.
 	GetCurrentFaceCount() uint32
@@ -52,8 +49,8 @@ type Container interface {
 	clone(currentFaceCount uint32) Container
 }
 
-// FaceModifier defines methods that can modify an inexed face.
-type FaceModifier interface {
+// faceModifier defines methods that can modify an inexed face.
+type faceModifier interface {
 	// resetFaceInformation clears the data of an specific face.
 	resetFaceInformation(faceIndex uint32)
 	// cloneFaceInfosFrom clones the data from another face.
@@ -62,30 +59,28 @@ type FaceModifier interface {
 	permuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3 uint32)
 }
 
-// Identificator defines methods to set and get an identification.
-type Identificator interface {
+// Handleable defines an interface than can be handled by Handler.
+type Handleable interface {
+	FaceQuerier
+	faceModifier
+	// AddFaceData adds data to the last added face and returns the pointer to the data of the added face.
+	// The parameter newFaceCount should indicate the faces information stored in the container, including the new one.
+	// If the count is not equal to the one returned by GetCurrentFaceCount an error will be returned.
+	AddFaceData(newFaceCount uint32) (val FaceData, err error)
+	// InfoType returns the type of the stored data.
+	InfoType() reflect.Type
 	// setInternalID sets an ID for the whole mesh information.
 	setInternalID(internalID uint64)
-	// getInternalID gets the internal ID of the mesh information.
-	getInternalID() uint64
-}
-
-// MeshInfo defines the Mesh Information Class.
-// This is a base struct for handling all the mesh-related linear information (like face colors, textures, etc...).
-type MeshInfo interface {
-	Repository
-	FaceModifier
-	Identificator
 	// clone creates a deep copy of this instance.
-	clone(currentFaceCount uint32) MeshInfo
+	clone(currentFaceCount uint32) Handleable
 }
 
 // TypedInformer inform about specific types of information.
 type TypedInformer interface {
 	// GetInformationByType retrieves the information of the desired type.
-	GetInformationByType(infoType reflect.Type) (*GenericMeshInfo, bool)
+	GetInformationByType(infoType reflect.Type) (*FacesData, bool)
 	// InfoTypes returns the types of informations stored in the handler.
 	InfoTypes() []reflect.Type
 	// getInformationByType retrieves the information of the desired type.
-	getInformationByType(infoType reflect.Type) (MeshInfo, bool)
+	getInformationByType(infoType reflect.Type) (Handleable, bool)
 }
