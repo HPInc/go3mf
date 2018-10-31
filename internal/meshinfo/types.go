@@ -65,7 +65,7 @@ type MeshInfo interface {
 	mergeInformationFrom(info MeshInfo)
 	// setInternalID sets an ID for the whole mesh information.
 	setInternalID(internalID uint64)
-	// getInternalId gets the internal ID of the mesh information.
+	// getInternalID gets the internal ID of the mesh information.
 	getInternalID() uint64
 }
 

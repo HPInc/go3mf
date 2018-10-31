@@ -30,7 +30,7 @@ func TestNewNodeColorInfo(t *testing.T) {
 		args args
 		want reflect.Type
 	}{
-		{"base", args{1}, reflect.TypeOf((*NodeColor)(nil)).Elem()},
+		{"base", args{1}, reflect.TypeOf((*NodeColor)(nil))},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -50,7 +50,7 @@ func TestNewTextureCoordsInfo(t *testing.T) {
 		args args
 		want reflect.Type
 	}{
-		{"base", args{1}, reflect.TypeOf((*TextureCoords)(nil)).Elem()},
+		{"base", args{1}, reflect.TypeOf((*TextureCoords)(nil))},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -70,7 +70,7 @@ func TestNewBaseMaterialInfo(t *testing.T) {
 		args args
 		want reflect.Type
 	}{
-		{"base", args{1}, reflect.TypeOf((*BaseMaterial)(nil)).Elem()},
+		{"base", args{1}, reflect.TypeOf((*BaseMaterial)(nil))},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

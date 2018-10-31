@@ -4,11 +4,11 @@ import "reflect"
 
 var (
 	// NodeColorType is the type of a NodeColor.
-	NodeColorType = reflect.TypeOf((*NodeColor)(nil)).Elem()
+	NodeColorType = reflect.TypeOf((*NodeColor)(nil))
 	// TextureCoordsType is the type of a TextureCoords.
-	TextureCoordsType = reflect.TypeOf((*TextureCoords)(nil)).Elem()
+	TextureCoordsType = reflect.TypeOf((*TextureCoords)(nil))
 	// BaseMaterialType is the type of a BaseMaterial.
-	BaseMaterialType = reflect.TypeOf((*BaseMaterial)(nil)).Elem()
+	BaseMaterialType = reflect.TypeOf((*BaseMaterial)(nil))
 )
 
 // NewHandler creates a default handler.

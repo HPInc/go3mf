@@ -39,13 +39,13 @@ func (m *memoryContainer) AddFaceData(newFaceCount uint32) (FaceData, error) {
 	if m.infoType == nil {
 		return nil, &InvalidInfoTypeError{m.infoType}
 	}
-	faceData := reflect.New(m.infoType)
-	m.dataBlocks = reflect.Append(m.dataBlocks, faceData.Elem())
+	faceData := reflect.New(m.infoType.Elem())
+	m.dataBlocks = reflect.Append(m.dataBlocks, faceData)
 	m.faceCount++
 	if m.faceCount != newFaceCount {
 		return nil, &FaceCountMissmatchError{m.faceCount, newFaceCount}
 	}
-	return m.GetFaceData(newFaceCount - 1)
+	return faceData.Interface().(FaceData), nil
 }
 
 func (m *memoryContainer) GetFaceData(faceIndex uint32) (FaceData, error) {
@@ -53,7 +53,7 @@ func (m *memoryContainer) GetFaceData(faceIndex uint32) (FaceData, error) {
 		return nil, &FaceDataIndexError{m.faceCount, faceIndex}
 	}
 
-	return m.dataBlocks.Index(int(faceIndex)).Addr().Interface().(FaceData), nil
+	return m.dataBlocks.Index(int(faceIndex)).Interface().(FaceData), nil
 }
 
 func (m *memoryContainer) GetCurrentFaceCount() uint32 {

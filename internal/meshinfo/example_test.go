@@ -1,6 +1,8 @@
 package meshinfo
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func Example() {
 	handler := NewHandler()
