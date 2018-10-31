@@ -48,8 +48,8 @@ type Repository interface {
 // such a thin wrapper around an in memory map or a disk serializer.
 type Container interface {
 	Repository
-	// Clone creates a copy of the container with all the faces invalidated.
-	Clone(currentFaceCount uint32) Container
+	// clone creates a copy of the container with all the faces invalidated.
+	clone(currentFaceCount uint32) Container
 }
 
 // FaceModifier defines methods that can modify an inexed face.
@@ -76,8 +76,8 @@ type MeshInfo interface {
 	Repository
 	FaceModifier
 	Identificator
-	// Clone creates a deep copy of this instance.
-	Clone(currentFaceCount uint32) MeshInfo
+	// clone creates a deep copy of this instance.
+	clone(currentFaceCount uint32) MeshInfo
 }
 
 // TypedInformer inform about specific types of information.

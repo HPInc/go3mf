@@ -202,7 +202,7 @@ func TestHandler_AddInfoFromTable(t *testing.T) {
 			if tt.wantErr {
 				tt.h.internalIDCounter = maxInternalID
 			}
-			otherMeshInfo.EXPECT().Clone(tt.args.currentFaceCount).Return(ownMeshInfo)
+			otherMeshInfo.EXPECT().clone(tt.args.currentFaceCount).Return(ownMeshInfo)
 			ownMeshInfo.EXPECT().InfoType().Return(reflect.TypeOf((*string)(nil)).Elem())
 			ownMeshInfo.EXPECT().setInternalID(tt.h.internalIDCounter)
 			if err := tt.h.AddInfoFromTable(tt.args.otherHandler, tt.args.currentFaceCount); (err != nil) != tt.wantErr {

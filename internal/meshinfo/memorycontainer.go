@@ -26,7 +26,7 @@ func newmemoryContainer(currentFaceCount uint32, infoType reflect.Type) Containe
 	return m
 }
 
-func (m *memoryContainer) Clone(currentFaceCount uint32) Container {
+func (m *memoryContainer) clone(currentFaceCount uint32) Container {
 	return newmemoryContainer(currentFaceCount, m.infoType)
 }
 

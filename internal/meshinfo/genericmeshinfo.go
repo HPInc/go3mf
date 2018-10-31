@@ -14,9 +14,8 @@ func NewGenericMeshInfo(container Container) *GenericMeshInfo {
 	}
 }
 
-// Clone creates a deep copy of this instance.
-func (b *GenericMeshInfo) Clone(currentFaceCount uint32) MeshInfo {
-	return NewGenericMeshInfo(b.Container.Clone(currentFaceCount))
+func (b *GenericMeshInfo) clone(currentFaceCount uint32) MeshInfo {
+	return NewGenericMeshInfo(b.Container.clone(currentFaceCount))
 }
 
 // FaceHasData checks if the specific face has any associated data.

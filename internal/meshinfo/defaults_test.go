@@ -64,24 +64,3 @@ func TestNewBaseMaterialInfo(t *testing.T) {
 		})
 	}
 }
-
-func Test_newInfo(t *testing.T) {
-	type args struct {
-		currentFaceCount uint32
-		infoType         reflect.Type
-	}
-	tests := []struct {
-		name string
-		args args
-		want MeshInfo
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := newInfo(tt.args.currentFaceCount, tt.args.infoType); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("newInfo() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}

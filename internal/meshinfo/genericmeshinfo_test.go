@@ -135,7 +135,7 @@ func TestGenericMeshInfo_getInternalID(t *testing.T) {
 	}
 }
 
-func TestGenericMeshInfo_Clone(t *testing.T) {
+func TestGenericMeshInfo_clone(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockContainer := NewMockContainer(mockCtrl)
@@ -153,9 +153,9 @@ func TestGenericMeshInfo_Clone(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockContainer.EXPECT().Clone(tt.args.currentFaceCount).Return(mockContainer2)
-			if got := tt.b.Clone(tt.args.currentFaceCount); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GenericMeshInfo.Clone() = %v, want %v", got, tt.want)
+			mockContainer.EXPECT().clone(tt.args.currentFaceCount).Return(mockContainer2)
+			if got := tt.b.clone(tt.args.currentFaceCount); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GenericMeshInfo.clone() = %v, want %v", got, tt.want)
 			}
 		})
 	}

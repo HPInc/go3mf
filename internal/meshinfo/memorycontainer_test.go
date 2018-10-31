@@ -32,7 +32,7 @@ func TestNewmemoryContainer(t *testing.T) {
 	}
 }
 
-func Test_memoryContainer_Clone(t *testing.T) {
+func Test_memoryContainer_clone(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockFaceData := NewMockFaceData(mockCtrl)
@@ -49,8 +49,8 @@ func Test_memoryContainer_Clone(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.m.Clone(tt.args.currentFaceCount); got.GetCurrentFaceCount() != tt.args.currentFaceCount {
-				t.Errorf("memoryContainer.Clone() = %v, want %v", got, tt.want)
+			if got := tt.m.clone(tt.args.currentFaceCount); got.GetCurrentFaceCount() != tt.args.currentFaceCount {
+				t.Errorf("memoryContainer.clone() = %v, want %v", got, tt.want)
 			}
 		})
 	}

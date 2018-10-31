@@ -82,7 +82,7 @@ func (h *Handler) AddInfoFromTable(informer TypedInformer, currentFaceCount uint
 	for _, infoType := range types {
 		otherInfo, _ := informer.getInformationByType(infoType)
 		if _, ok := h.lookup[infoType]; !ok {
-			err := h.addInformation(otherInfo.Clone(currentFaceCount))
+			err := h.addInformation(otherInfo.clone(currentFaceCount))
 			if err != nil {
 				return err
 			}
