@@ -61,7 +61,7 @@ func TestBeamLattice_CapMode(t *testing.T) {
 	tests := []struct {
 		name string
 		b    *BeamLattice
-		want BeamLatticeCapMode
+		want BeamCapMode
 	}{
 		{"new", new(BeamLattice), CapModeSphere},
 		{"base", &BeamLattice{capMode: CapModeHemisphere}, CapModeHemisphere},
@@ -121,13 +121,13 @@ func TestBeamLattice_SetRadius(t *testing.T) {
 
 func TestBeamLattice_SetCapMode(t *testing.T) {
 	type args struct {
-		val BeamLatticeCapMode
+		val BeamCapMode
 	}
 	tests := []struct {
 		name string
 		b    *BeamLattice
 		args args
-		want BeamLatticeCapMode
+		want BeamCapMode
 	}{
 		{"base", new(BeamLattice), args{CapModeHemisphere}, CapModeHemisphere},
 	}

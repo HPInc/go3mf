@@ -4,6 +4,21 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
+// MaxNodeCount is the maximum number of nodes allowed.
+const MaxNodeCount = 2147483646
+
+// MaxEdgeCount is the maximum number of edges allowed.
+const MaxEdgeCount = 2147483646
+
+// MaxFaceCount is the maximum number of faces allowed.
+const MaxFaceCount = 2147483646
+
+// MaxBeamCount is the maximum number of beams allowed.
+const MaxBeamCount = 2147483646
+
+// MaxCoordinate is the maximum value of a coordinate.
+const MaxCoordinate = 1000000000.0
+
 // Node defines a node of a mesh.
 type Node struct {
 	Index    uint32     // Index of the node inside the mesh.
@@ -25,10 +40,10 @@ type BeamSet struct {
 
 // Beam defines a single beam.
 type Beam struct {
-	Index       uint32    // Index of the beam.
-	NodeIndices [2]uint32 // Indices of the two nodes that defines the beam.
-	Radius      float64   // radius of the beam.
-	CapMode     int32     // Capping mode.
+	Index       uint32         // Index of the beam.
+	NodeIndices [2]uint32      // Indices of the two nodes that defines the beam.
+	Radius      [2]float64     // radius of both ends of the beam.
+	CapMode     [2]BeamCapMode // Capping mode.
 }
 
 // SliceNode defines a node of an slice.
@@ -37,12 +52,12 @@ type SliceNode struct {
 	Position mgl32.Vec2 // Coordinates of the node.
 }
 
-// A BeamLatticeCapMode is an enumerable for the different capping modes.
-type BeamLatticeCapMode int
+// A BeamCapMode is an enumerable for the different capping modes.
+type BeamCapMode int
 
 const (
 	// CapModeSphere when the capping is an sphere.
-	CapModeSphere BeamLatticeCapMode = iota
+	CapModeSphere BeamCapMode = iota
 	// CapModeHemisphere when the capping is an hemisphere.
 	CapModeHemisphere
 	// CapModeButt when the capping is an butt.

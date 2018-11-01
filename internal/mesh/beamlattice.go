@@ -5,7 +5,7 @@ type BeamLattice struct {
 	Beams             []*Beam
 	BeamSets          []*BeamSet
 	minLength, radius float64
-	capMode           BeamLatticeCapMode
+	capMode           BeamCapMode
 }
 
 // NewBeamLattice creates a new BeamLattice with default values.
@@ -28,7 +28,7 @@ func (b *BeamLattice) Radius() float64 {
 }
 
 // CapMode gets the default capping mode of a beam in this lattice.
-func (b *BeamLattice) CapMode() BeamLatticeCapMode {
+func (b *BeamLattice) CapMode() BeamCapMode {
 	return b.capMode
 }
 
@@ -43,7 +43,7 @@ func (b *BeamLattice) SetRadius(val float64) {
 }
 
 // SetCapMode sets the default capping mode of a beam in this lattice.
-func (b *BeamLattice) SetCapMode(val BeamLatticeCapMode) {
+func (b *BeamLattice) SetCapMode(val BeamCapMode) {
 	b.capMode = val
 }
 
