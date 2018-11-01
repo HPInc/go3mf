@@ -71,7 +71,6 @@ func Test_memoryContainer_AddFaceData(t *testing.T) {
 		wantVal FaceData
 		wantErr bool
 	}{
-		{"invalid data type", &memoryContainer{nil, 0, reflect.MakeSlice(reflect.SliceOf(reflect.TypeOf(mockFaceData)), 0, 0)}, args{0}, nil, true},
 		{"invalid face number", m, args{0}, nil, true},
 		{"valid face number", m, args{2}, mockFaceData, false},
 	}

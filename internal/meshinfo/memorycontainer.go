@@ -39,9 +39,6 @@ func (m *memoryContainer) InfoType() reflect.Type {
 // The parameter newFaceCount should indicate the faces information stored in the container, including the new one.
 // If the count is not equal to the one returned by GetCurrentFaceCount an error will be returned.
 func (m *memoryContainer) AddFaceData(newFaceCount uint32) (FaceData, error) {
-	if m.infoType == nil {
-		return nil, &InvalidInfoTypeError{m.infoType}
-	}
 	faceData := reflect.New(m.infoType.Elem())
 	m.dataBlocks = reflect.Append(m.dataBlocks, faceData)
 	m.faceCount++

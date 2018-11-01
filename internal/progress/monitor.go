@@ -1,24 +1,25 @@
 package common
 
 import (
+	"math"
+
 	"github.com/qmuntal/go3mf/pkg/semaphore"
 	"github.com/qmuntal/go3mf/pkg/stack"
-	"math"
 )
 
-// ProgressMonitor is the reference implementation for the Progress interface.
+// Monitor is the reference implementation for the Progress interface.
 // It uses semaphores for managing concurrent notification and stacks for managing the process.
-type ProgressMonitor struct {
-	progressCallback   ProgressCallback
+type Monitor struct {
+	progressCallback   progressCallback
 	userData           interface{}
 	lastCallbackResult bool
 	levels             *stack.ItemStack
 	callbackMutex      *semaphore.Semaphore
 }
 
-// NewProgressMonitor creates a default ProgresMonitor.
-func NewProgressMonitor() *ProgressMonitor {
-	return &ProgressMonitor{
+// NewMonitor creates a default ProgresMonitor.
+func NewMonitor() *Monitor {
+	return &Monitor{
 		lastCallbackResult: true,
 		callbackMutex:      semaphore.NewSemaphore(),
 		levels:             stack.NewItemStack(),
@@ -26,13 +27,13 @@ func NewProgressMonitor() *ProgressMonitor {
 }
 
 // QueryCancelled cancels the current process with a ProgressQueryCanceled identifier.
-func (p *ProgressMonitor) QueryCancelled() bool {
-	return p.Progress(-1, ProgressQueryCanceled)
+func (p *Monitor) QueryCancelled() bool {
+	return p.Progress(-1, StageQueryCanceled)
 }
 
 // Progress updates the progress of the current process.
 // If the callback is nil or there is another progress being notified it does nothing and return true.
-func (p *ProgressMonitor) Progress(progress float64, identifier ProgressIdentifier) bool {
+func (p *Monitor) Progress(progress float64, identifier Stage) bool {
 	if p.progressCallback == nil || !p.callbackMutex.CanRun() {
 		return true
 	}
@@ -49,14 +50,14 @@ func (p *ProgressMonitor) Progress(progress float64, identifier ProgressIdentifi
 }
 
 // PushLevel adds a new level to the progress
-func (p *ProgressMonitor) PushLevel(relativeStart float64, relativeEnd float64) {
+func (p *Monitor) PushLevel(relativeStart float64, relativeEnd float64) {
 	curLevel := p.level()
 	curRange := curLevel.B - curLevel.A
 	p.levels.Push(Float64Pair{curLevel.A + curRange*relativeStart, curLevel.A + curRange*relativeEnd})
 }
 
 // PopLevel removes a level from the progress
-func (p *ProgressMonitor) PopLevel() Float64Pair {
+func (p *Monitor) PopLevel() Float64Pair {
 	ret := p.level()
 	if !p.levels.Empty() {
 		p.levels.Pop()
@@ -65,13 +66,13 @@ func (p *ProgressMonitor) PopLevel() Float64Pair {
 }
 
 // ResetLevels empty the level stack
-func (p *ProgressMonitor) ResetLevels() {
+func (p *Monitor) ResetLevels() {
 	for !p.levels.Empty() {
 		p.levels.Pop()
 	}
 }
 
-func (p *ProgressMonitor) level() Float64Pair {
+func (p *Monitor) level() Float64Pair {
 	if p.levels.Empty() {
 		p.levels.Push(Float64Pair{0.0, 1.0})
 	}
@@ -80,7 +81,7 @@ func (p *ProgressMonitor) level() Float64Pair {
 
 // SetProgressCallback restarts the progress and specifies the callback to be executed on every step of the progress.
 // Optionaly usedData can be defined, which will be passed as parameter to the callback.
-func (p *ProgressMonitor) SetProgressCallback(callback ProgressCallback, userData interface{}) {
+func (p *Monitor) SetProgressCallback(callback progressCallback, userData interface{}) {
 	p.progressCallback = callback
 	p.userData = userData
 	p.lastCallbackResult = true
@@ -88,18 +89,18 @@ func (p *ProgressMonitor) SetProgressCallback(callback ProgressCallback, userDat
 }
 
 // ClearProgressCallback restarts the process and clears the progress callback.
-func (p *ProgressMonitor) ClearProgressCallback() {
+func (p *Monitor) ClearProgressCallback() {
 	p.SetProgressCallback(nil, nil)
 }
 
 // WasAborted returns true if the callback asked for aborting the progress, false otherwise.
-func (p *ProgressMonitor) WasAborted() bool {
+func (p *Monitor) WasAborted() bool {
 	return p.lastCallbackResult == false
 }
 
-// GetProgressMessage stringify the progress identifiers.
-func (p *ProgressMonitor) GetProgressMessage(progressIdentifier ProgressIdentifier) string {
-	if val, ok := ProgressMap[progressIdentifier]; ok {
+// ProgressMessage stringify the progress identifiers.
+func (p *Monitor) ProgressMessage(progressIdentifier Stage) string {
+	if val, ok := progressMap[progressIdentifier]; ok {
 		return val
 	}
 	return "Unknown Progress Identifier"

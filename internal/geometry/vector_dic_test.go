@@ -7,85 +7,85 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
-func TestNewTreeVectorDic(t *testing.T) {
+func TestNewVectorDic(t *testing.T) {
 	tests := []struct {
 		name string
-		want *TreeVectorDic
+		want *VectorDic
 	}{
-		{"new", &TreeVectorDic{0.001, map[Vec3I]uint32{}}},
+		{"new", &VectorDic{0.001, map[Vec3I]uint32{}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewTreeVectorDic(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewTreeVectorDic() = %v, want %v", got, tt.want)
+			if got := NewVectorDic(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewVectorDic() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestNewTreeVectorDicWithUnits(t *testing.T) {
+func TestNewVectorDicWithUnits(t *testing.T) {
 	type args struct {
 		units float32
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    *TreeVectorDic
+		want    *VectorDic
 		wantErr bool
 	}{
-		{"zero", args{0.0}, &TreeVectorDic{0.0, map[Vec3I]uint32{}}, true},
-		{"one", args{1.0}, &TreeVectorDic{1.0, map[Vec3I]uint32{}}, false},
-		{"big", args{1001.0}, &TreeVectorDic{0.0, map[Vec3I]uint32{}}, true},
+		{"zero", args{0.0}, &VectorDic{0.0, map[Vec3I]uint32{}}, true},
+		{"one", args{1.0}, &VectorDic{1.0, map[Vec3I]uint32{}}, false},
+		{"big", args{1001.0}, &VectorDic{0.0, map[Vec3I]uint32{}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewTreeVectorDicWithUnits(tt.args.units)
+			got, err := NewVectorDicWithUnits(tt.args.units)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("NewTreeVectorDicWithUnits() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("NewVectorDicWithUnits() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewTreeVectorDicWithUnits() = %v, want %v", got, tt.want)
+				t.Errorf("NewVectorDicWithUnits() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestTreeVectorDic_Units(t *testing.T) {
-	p := NewTreeVectorDic()
+func TestVectorDic_Units(t *testing.T) {
+	p := NewVectorDic()
 	if got := p.Units(); got != VectorDefaultUnits {
-		t.Errorf("TreeVectorDic.Units() = %v, want %v", got, VectorDefaultUnits)
+		t.Errorf("VectorDic.Units() = %v, want %v", got, VectorDefaultUnits)
 	}
 	p.SetUnits(1.0)
 	if got := p.Units(); got != 1.0 {
-		t.Errorf("TreeVectorDic.Units() = %v, want %v", got, VectorDefaultUnits)
+		t.Errorf("VectorDic.Units() = %v, want %v", got, VectorDefaultUnits)
 	}
 }
 
-func TestTreeVectorDic_SetUnits(t *testing.T) {
-	p := NewTreeVectorDic()
+func TestVectorDic_SetUnits(t *testing.T) {
+	p := NewVectorDic()
 	p.AddVector(mgl32.Vec3{}, 1)
 	type args struct {
 		units float32
 	}
 	tests := []struct {
 		name    string
-		t       *TreeVectorDic
+		t       *VectorDic
 		args    args
 		wantErr bool
 	}{
-		{"zero", NewTreeVectorDic(), args{0.0}, true},
-		{"minunitsfail", NewTreeVectorDic(), args{0.000009}, true},
-		{"minunits", NewTreeVectorDic(), args{VectorMinUnits}, false},
-		{"one", NewTreeVectorDic(), args{1.0}, false},
-		{"maxunits", NewTreeVectorDic(), args{VectorMaxUnits}, false},
-		{"maxunitsfail", NewTreeVectorDic(), args{1001.0}, true},
+		{"zero", NewVectorDic(), args{0.0}, true},
+		{"minunitsfail", NewVectorDic(), args{0.000009}, true},
+		{"minunits", NewVectorDic(), args{VectorMinUnits}, false},
+		{"one", NewVectorDic(), args{1.0}, false},
+		{"maxunits", NewVectorDic(), args{VectorMaxUnits}, false},
+		{"maxunitsfail", NewVectorDic(), args{1001.0}, true},
 		{"notempty", p, args{1.0}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := tt.t.SetUnits(tt.args.units); (err != nil) != tt.wantErr {
-				t.Errorf("TreeVectorDic.SetUnits() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("VectorDic.SetUnits() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			want := tt.args.units
@@ -93,21 +93,21 @@ func TestTreeVectorDic_SetUnits(t *testing.T) {
 				want = VectorDefaultUnits
 			}
 			if got := tt.t.Units(); got != want {
-				t.Errorf("TreeVectorDic.Units() = %v, want %v", got, want)
+				t.Errorf("VectorDic.Units() = %v, want %v", got, want)
 			}
 		})
 	}
 }
 
-func TestTreeVectorDic_AddFindVector(t *testing.T) {
-	p := NewTreeVectorDic()
+func TestVectorDic_AddFindVector(t *testing.T) {
+	p := NewVectorDic()
 	type args struct {
 		vec   mgl32.Vec3
 		value uint32
 	}
 	tests := []struct {
 		name string
-		t    *TreeVectorDic
+		t    *VectorDic
 		args args
 	}{
 		{"new", p, args{mgl32.Vec3{10000.3, 20000.2, 1}, 2}},
@@ -121,24 +121,24 @@ func TestTreeVectorDic_AddFindVector(t *testing.T) {
 		})
 		got, ok := p.FindVector(tt.args.vec)
 		if !ok {
-			t.Error("TreeVectorDic.AddMatch() haven't added the match")
+			t.Error("VectorDic.AddMatch() haven't added the match")
 			return
 		}
 		if got != tt.args.value {
-			t.Errorf("TreeVectorDic.FindVector() = %v, want %v", got, tt.args.value)
+			t.Errorf("VectorDic.FindVector() = %v, want %v", got, tt.args.value)
 		}
 	}
 }
 
-func TestTreeVectorDic_RemoveVector(t *testing.T) {
-	p := NewTreeVectorDic()
+func TestVectorDic_RemoveVector(t *testing.T) {
+	p := NewVectorDic()
 	p.AddVector(mgl32.Vec3{1, 2, 5.3}, 1)
 	type args struct {
 		vec mgl32.Vec3
 	}
 	tests := []struct {
 		name string
-		t    *TreeVectorDic
+		t    *VectorDic
 		args args
 	}{
 		{"nil", p, args{mgl32.Vec3{2, 3, 4}}},

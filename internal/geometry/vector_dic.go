@@ -1,30 +1,30 @@
 package geometry
 
 import (
-	"github.com/go-gl/mathgl/mgl32"
-	"github.com/qmuntal/go3mf/internal/common"
 	"math"
+
+	"github.com/go-gl/mathgl/mgl32"
 )
 
-// TreeVectorDic implements a n*log(n) lookup tree class to identify vectors by their position
+// VectorDic implements a n*log(n) lookup tree class to identify vectors by their position
 // The units property defines the units of the vectors, where 1.0 mean meters.
-type TreeVectorDic struct {
+type VectorDic struct {
 	units   float32
 	entries map[Vec3I]uint32
 }
 
-// NewTreeVectorDic creates a default vector
-func NewTreeVectorDic() *TreeVectorDic {
-	return &TreeVectorDic{
+// NewVectorDic creates a default vector
+func NewVectorDic() *VectorDic {
+	return &VectorDic{
 		units:   VectorDefaultUnits,
 		entries: map[Vec3I]uint32{},
 	}
 }
 
-// NewTreeVectorDicWithUnits creates a vector with the desired units
+// NewVectorDicWithUnits creates a vector with the desired units
 // Error cases: See SetUnits
-func NewTreeVectorDicWithUnits(units float32) (*TreeVectorDic, error) {
-	t := &TreeVectorDic{
+func NewVectorDicWithUnits(units float32) (*VectorDic, error) {
+	t := &VectorDic{
 		entries: map[Vec3I]uint32{},
 	}
 	err := t.SetUnits(units)
@@ -32,7 +32,7 @@ func NewTreeVectorDicWithUnits(units float32) (*TreeVectorDic, error) {
 }
 
 // Units returns the used units.
-func (t *TreeVectorDic) Units() float32 {
+func (t *VectorDic) Units() float32 {
 	return t.units
 }
 
@@ -40,30 +40,30 @@ func (t *TreeVectorDic) Units() float32 {
 // Error cases:
 // * ErrorInvalidUnits: ((units < VectorMinUnits) || (units > VectorMaxUnits))
 // * ErrorCouldNotSetUnits: non-empty tree
-func (t *TreeVectorDic) SetUnits(units float32) error {
+func (t *VectorDic) SetUnits(units float32) error {
 	if (units < VectorMinUnits) || (units > VectorMaxUnits) {
-		return common.NewError(common.ErrorInvalidUnits)
+		return &InvalidUnitsError{units}
 	}
 	if len(t.entries) > 0 {
-		return common.NewError(common.ErrorCouldNotSetUnits)
+		return new(UnitsNotSettedError)
 	}
 	t.units = units
 	return nil
 }
 
 // AddVector adds a vector to the dictionary.
-func (t *TreeVectorDic) AddVector(vec mgl32.Vec3, value uint32) {
+func (t *VectorDic) AddVector(vec mgl32.Vec3, value uint32) {
 	t.entries[newVec3IFromVec3(vec, t.units)] = value
 }
 
 // FindVector returns the identifier of the vector.
-func (t *TreeVectorDic) FindVector(vec mgl32.Vec3) (val uint32, ok bool) {
+func (t *VectorDic) FindVector(vec mgl32.Vec3) (val uint32, ok bool) {
 	val, ok = t.entries[newVec3IFromVec3(vec, t.units)]
 	return
 }
 
 // RemoveVector removes the vector from the dictionary.
-func (t *TreeVectorDic) RemoveVector(vec mgl32.Vec3) {
+func (t *VectorDic) RemoveVector(vec mgl32.Vec3) {
 	delete(t.entries, newVec3IFromVec3(vec, t.units))
 }
 

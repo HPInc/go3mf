@@ -14,15 +14,26 @@ type Mesh struct {
 	Nodes              []*Node
 	Faces              []*Face
 	BeamLattice        BeamLattice
-	InformationHandler *meshinfo.Handler
+	informationHandler *meshinfo.Handler
 }
 
 // NewMesh creates a new default Mesh.
 func NewMesh() *Mesh {
 	return &Mesh{
-		BeamLattice:        *NewBeamLattice(),
-		InformationHandler: meshinfo.NewHandler(),
+		BeamLattice: *NewBeamLattice(),
 	}
+}
+
+func (m *Mesh) InformationHandler() *meshinfo.Handler {
+	return m.informationHandler
+}
+
+func (m *Mesh) createInformationHandler() *meshinfo.Handler {
+	if m.informationHandler == nil {
+		m.informationHandler = meshinfo.NewHandler()
+	}
+
+	return m.informationHandler
 }
 
 func (m *Mesh) FaceCount() uint32 {
@@ -60,12 +71,14 @@ func (m *Mesh) AddFace(node1, node2, node3 *Node) *Face {
 		NodeIndices: [3]uint32{node1.Index, node2.Index, node3.Index},
 	}
 	m.Faces = append(m.Faces, face)
-	m.InformationHandler.AddFace(m.FaceCount())
+	if m.informationHandler != nil {
+		m.informationHandler.AddFace(m.FaceCount())
+	}
 	return face
 }
 
 func (m *Mesh) Merge(mesh *Mesh, matrix mgl32.Mat4) {
-	m.InformationHandler.AddInfoFromTable(mesh.InformationHandler, m.FaceCount())
+	m.informationHandler.AddInfoFromTable(mesh.informationHandler, m.FaceCount())
 	nodeCount := mesh.NodeCount()
 	faceCount := mesh.FaceCount()
 	beamCount := mesh.BeamCount()
@@ -85,7 +98,7 @@ func (m *Mesh) Merge(mesh *Mesh, matrix mgl32.Mat4) {
 		for i := 0; i < int(faceCount); i++ {
 			face := mesh.GetFace(uint32(i))
 			newFace := m.AddFace(newNodes[face.NodeIndices[0]], newNodes[face.NodeIndices[1]], newNodes[face.NodeIndices[2]])
-			m.InformationHandler.CloneFaceInfosFrom(newFace.Index, mesh.InformationHandler, face.Index)
+			m.informationHandler.CloneFaceInfosFrom(newFace.Index, mesh.informationHandler, face.Index)
 		}
 	}
 

@@ -5,24 +5,24 @@ import (
 	"testing"
 )
 
-func TestNewTreePairMatch(t *testing.T) {
+func TestNewPairMatch(t *testing.T) {
 	tests := []struct {
 		name string
-		want *TreePairMatch
+		want *PairMatch
 	}{
-		{"new", &TreePairMatch{map[pairEntry]int32{}}},
+		{"new", &PairMatch{map[pairEntry]int32{}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewTreePairMatch(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewTreePairMatch() = %v, want %v", got, tt.want)
+			if got := NewPairMatch(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewPairMatch() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestTreePairMatch_AddMatch(t *testing.T) {
-	p := NewTreePairMatch()
+func TestPairMatch_AddMatch(t *testing.T) {
+	p := NewPairMatch()
 	type args struct {
 		data1 int32
 		data2 int32
@@ -30,7 +30,7 @@ func TestTreePairMatch_AddMatch(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		t    *TreePairMatch
+		t    *PairMatch
 		args args
 	}{
 		{"new", p, args{1, 1, 2}},
@@ -43,18 +43,18 @@ func TestTreePairMatch_AddMatch(t *testing.T) {
 			tt.t.AddMatch(tt.args.data1, tt.args.data2, tt.args.param)
 			got, ok := p.CheckMatch(tt.args.data1, tt.args.data2)
 			if !ok {
-				t.Error("TreePairMatch.AddMatch() haven't added the match")
+				t.Error("PairMatch.AddMatch() haven't added the match")
 				return
 			}
 			if got != tt.args.param {
-				t.Errorf("TreePairMatch.CheckMatch() = %v, want %v", got, tt.args.param)
+				t.Errorf("PairMatch.CheckMatch() = %v, want %v", got, tt.args.param)
 			}
 		})
 	}
 }
 
-func TestTreePairMatch_DeleteMatch(t *testing.T) {
-	p := NewTreePairMatch()
+func TestPairMatch_DeleteMatch(t *testing.T) {
+	p := NewPairMatch()
 	p.AddMatch(1, 2, 5)
 	type args struct {
 		data1 int32
@@ -62,7 +62,7 @@ func TestTreePairMatch_DeleteMatch(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		t    *TreePairMatch
+		t    *PairMatch
 		args args
 	}{
 		{"nil", p, args{2, 3}},
@@ -73,7 +73,7 @@ func TestTreePairMatch_DeleteMatch(t *testing.T) {
 			tt.t.DeleteMatch(tt.args.data1, tt.args.data2)
 			_, ok := p.CheckMatch(tt.args.data1, tt.args.data2)
 			if ok {
-				t.Error("TreePairMatch.DeleteMatch() haven't deleted the match")
+				t.Error("PairMatch.DeleteMatch() haven't deleted the match")
 			}
 		})
 	}
