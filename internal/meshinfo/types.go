@@ -28,23 +28,24 @@ type FaceQuerier interface {
 	GetFaceData(faceIndex uint32) (val FaceData, err error)
 }
 
-// Repository defines an interface for interacting with a mesh information repository.
-type Repository interface {
-	FaceQuerier
+type dataCreator interface {
+	// AddFaceData adds data to the last added face and returns the pointer to the data of the added face.
+	// The parameter newFaceCount should indicate the faces information stored in the container, including the new one.
 	AddFaceData(newFaceCount uint32) (val FaceData, err error)
-	// GetCurrentFaceCount returns the number of faces information stored in the container.
-	GetCurrentFaceCount() uint32
-	// InfoType returns the type of the stored data.
-	InfoType() reflect.Type
-	// Clear removes all the information stored in the container.
-	Clear()
 }
 
 // Container provides a repository for holding information state of a complete mesh structure.
 // It is intended to be used as a low level repository of mesh information,
 // such a thin wrapper around an in memory map or a disk serializer.
 type Container interface {
-	Repository
+	dataCreator
+	FaceQuerier
+	// GetCurrentFaceCount returns the number of faces information stored in the container.
+	GetCurrentFaceCount() uint32
+	// InfoType returns the type of the stored data.
+	InfoType() reflect.Type
+	// Clear removes all the information stored in the container.
+	Clear()
 	// clone creates a copy of the container with all the faces invalidated.
 	clone(currentFaceCount uint32) Container
 }
@@ -63,10 +64,7 @@ type faceModifier interface {
 type Handleable interface {
 	FaceQuerier
 	faceModifier
-	// AddFaceData adds data to the last added face and returns the pointer to the data of the added face.
-	// The parameter newFaceCount should indicate the faces information stored in the container, including the new one.
-	// If the count is not equal to the one returned by GetCurrentFaceCount an error will be returned.
-	AddFaceData(newFaceCount uint32) (val FaceData, err error)
+	dataCreator
 	// InfoType returns the type of the stored data.
 	InfoType() reflect.Type
 	// setInternalID sets an ID for the whole mesh information.

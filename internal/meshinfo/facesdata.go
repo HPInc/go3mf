@@ -1,6 +1,6 @@
 package meshinfo
 
-// FacesData is used as a manager of an specific data of a set of faces.
+// FacesData is used as a manager of a specific data of a set of faces.
 type FacesData struct {
 	Container
 	internalID uint64
