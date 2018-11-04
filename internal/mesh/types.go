@@ -27,3 +27,9 @@ type MergeableBeams interface {
 	// Beam retrieve the beam with the target index.
 	Beam(index uint32) *Beam
 }
+
+type MergeableMesh interface {
+	MergeableNodes
+	MergeableFaces
+	MergeableBeams
+}

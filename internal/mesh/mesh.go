@@ -27,7 +27,7 @@ func NewMesh() *Mesh {
 }
 
 // NewMeshCloned creates a new mesh that is a clone of another mesh.
-func NewMeshCloned(mesh *Mesh) (*Mesh, error) {
+func NewMeshCloned(mesh MergeableMesh) (*Mesh, error) {
 	m := NewMesh()
 	m.Merge(mesh, mgl32.Ident4())
 	return m, nil
@@ -62,7 +62,7 @@ func (m *Mesh) ClearInformationHandler() {
 }
 
 // Merge merges the mesh with another mesh. This includes the nodes, faces, beams and all the informations.
-func (m *Mesh) Merge(mesh *Mesh, matrix mgl32.Mat4) error {
+func (m *Mesh) Merge(mesh MergeableMesh, matrix mgl32.Mat4) error {
 	otherHandler := mesh.InformationHandler()
 	if otherHandler != nil {
 		m.CreateInformationHandler()
