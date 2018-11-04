@@ -38,11 +38,6 @@ func (n *nodeStructure) Node(index uint32) *Node {
 
 // AddNode adds a node the the mesh at the target position.
 func (n *nodeStructure) AddNode(position mgl32.Vec3) (*Node, error) {
-	x, y, z := math.Abs(float64(position.X())), math.Abs(float64(position.Y())), math.Abs(float64(position.Z()))
-	if x > MaxCoordinate || y > MaxCoordinate || z > MaxCoordinate {
-		return nil, &MaxCoordinateError{position}
-	}
-
 	nodeCount := n.NodeCount()
 	if nodeCount > MaxNodeCount {
 		return nil, new(MaxNodeError)
