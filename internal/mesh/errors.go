@@ -26,13 +26,6 @@ func (e *MaxNodeError) Error() string {
 	return fmt.Sprintf("a Node has been tried to add to a mesh with too many nodes (%d)", MaxNodeCount)
 }
 
-type MaxEdgeError struct {
-}
-
-func (e *MaxEdgeError) Error() string {
-	return fmt.Sprintf("an Edge has been tried to add to a mesh with too many edges (%d)", MaxEdgeCount)
-}
-
 type MaxBeamError struct {
 }
 
