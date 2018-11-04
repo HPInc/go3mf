@@ -27,7 +27,7 @@ func Test_NewHandler(t *testing.T) {
 	}
 }
 
-func TestHandler_addInformation(t *testing.T) {
+func TestHandlerAddInformation(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockHandleable := NewMockHandleable(mockCtrl)
@@ -53,8 +53,8 @@ func TestHandler_addInformation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.args.info.EXPECT().InfoType().Return(reflect.TypeOf(""))
 			tt.args.info.EXPECT().setInternalID(tt.expectedInternalID)
-			if err := tt.h.addInformation(tt.args.info); (err != nil) != tt.wantErr {
-				t.Errorf("Handler.addInformation() error = %v, wantErr %v", err, tt.wantErr)
+			if err := tt.h.AddInformation(tt.args.info); (err != nil) != tt.wantErr {
+				t.Errorf("Handler.AddInformation() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
