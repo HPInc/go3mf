@@ -60,12 +60,22 @@ func (f *faceStructure) checkSanity(nodeCount uint32) bool {
 	for i := 0; i < int(faceCount); i++ {
 		face := f.Face(uint32(i))
 		i0, i1, i2 := face.NodeIndices[0], face.NodeIndices[1], face.NodeIndices[2]
-		if i0 == i1 || i0 == i2 || i1 == i2 {
+		if !f.validateIndices(i0, i1, i2, nodeCount) {
 			return false
 		}
-		if i0 < 0 || i1 < 0 || i2 < 0 || i0 >= nodeCount || i1 >= nodeCount || i2 >= nodeCount {
-			return false
-		}
+	}
+	return true
+}
+
+func (f *faceStructure) validateIndices(i0, i1, i2, nodeCount uint32) bool {
+	if i0 == i1 || i0 == i2 || i1 == i2 {
+		return false
+	}
+	if i0 < 0 || i1 < 0 || i2 < 0 {
+		return false
+	}
+	if i0 >= nodeCount || i1 >= nodeCount || i2 >= nodeCount {
+		return false
 	}
 	return true
 }
