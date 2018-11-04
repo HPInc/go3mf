@@ -1,16 +1,11 @@
 package mesh
 
 import (
-	"math"
-
 	"github.com/go-gl/mathgl/mgl32"
 )
 
 // MaxNodeCount is the maximum number of nodes allowed.
 const MaxNodeCount = 2147483646
-
-// MaxCoordinate is the maximum value of a coordinate.
-const MaxCoordinate = 1000000000.0
 
 // Node defines a node of a mesh.
 type Node struct {
@@ -59,11 +54,6 @@ func (n *nodeStructure) checkSanity() bool {
 	for i := 0; i < int(nodeCount); i++ {
 		node := n.Node(uint32(i))
 		if node.Index != uint32(i) {
-			return false
-		}
-		position := node.Position
-		x, y, z := math.Abs(float64(position.X())), math.Abs(float64(position.Y())), math.Abs(float64(position.Z()))
-		if x > MaxCoordinate || y > MaxCoordinate || z > MaxCoordinate {
 			return false
 		}
 	}
