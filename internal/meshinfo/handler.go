@@ -30,8 +30,13 @@ func (h *Handler) InfoTypes() []reflect.Type {
 	return types
 }
 
-// AddInformation adds a new type of information to the handler.
-func (h *Handler) AddInformation(info Handleable) error {
+// AddInformation adds a information to the handler.
+func (h *Handler) AddInformation(info *FacesData) error {
+	return h.addInformation(info)
+}
+
+// addInformation adds a new type of information to the handler.
+func (h *Handler) addInformation(info Handleable) error {
 	infoType := info.InfoType()
 	h.lookup[infoType] = info
 	info.setInternalID(h.internalIDCounter)
@@ -77,7 +82,7 @@ func (h *Handler) AddInfoFrom(informer TypedInformer, currentFaceCount uint32) e
 	for _, infoType := range types {
 		otherInfo, _ := informer.getInformationByType(infoType)
 		if _, ok := h.lookup[infoType]; !ok {
-			err := h.AddInformation(otherInfo.clone(currentFaceCount))
+			err := h.addInformation(otherInfo.clone(currentFaceCount))
 			if err != nil {
 				return err
 			}
