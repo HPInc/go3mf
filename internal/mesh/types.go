@@ -30,6 +30,7 @@ type mergeableBeams interface {
 	Beam(index uint32) *Beam
 }
 
+// MergeableMesh defines a structure that can be merged with another mesh.
 type MergeableMesh interface {
 	mergeableNodes
 	mergeableFaces
