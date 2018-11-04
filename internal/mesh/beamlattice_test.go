@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestNewBeamLattice(t *testing.T) {
+func Test_newBeamLattice(t *testing.T) {
 	tests := []struct {
 		name string
 		want *BeamLattice
@@ -14,8 +14,8 @@ func TestNewBeamLattice(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewBeamLattice(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewBeamLattice() = %v, want %v", got, tt.want)
+			if got := newBeamLattice(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("newBeamLattice() = %v, want %v", got, tt.want)
 			}
 		})
 	}

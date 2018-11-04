@@ -76,8 +76,8 @@ func (h *Handler) GetInformationCount() uint32 {
 	return uint32(len(h.lookup))
 }
 
-// AddInfoFromTable adds the information of the target handler.
-func (h *Handler) AddInfoFromTable(informer TypedInformer, currentFaceCount uint32) error {
+// AddInfoFrom adds the information of the target handler.
+func (h *Handler) AddInfoFrom(informer TypedInformer, currentFaceCount uint32) error {
 	types := informer.InfoTypes()
 	for _, infoType := range types {
 		otherInfo, _ := informer.getInformationByType(infoType)

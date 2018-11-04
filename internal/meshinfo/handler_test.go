@@ -170,7 +170,7 @@ func TestHandler_GetInformationCount(t *testing.T) {
 	}
 }
 
-func TestHandler_AddInfoFromTable(t *testing.T) {
+func TestHandler_AddInfoFrom(t *testing.T) {
 	types := []reflect.Type{reflect.TypeOf((*string)(nil)).Elem(), reflect.TypeOf((*float32)(nil)).Elem(), reflect.TypeOf((*float64)(nil)).Elem()}
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
@@ -205,8 +205,8 @@ func TestHandler_AddInfoFromTable(t *testing.T) {
 			otherHandleable.EXPECT().clone(tt.args.currentFaceCount).Return(ownHandleable)
 			ownHandleable.EXPECT().InfoType().Return(reflect.TypeOf((*string)(nil)).Elem())
 			ownHandleable.EXPECT().setInternalID(tt.h.internalIDCounter)
-			if err := tt.h.AddInfoFromTable(tt.args.otherHandler, tt.args.currentFaceCount); (err != nil) != tt.wantErr {
-				t.Errorf("Handler.AddInfoFromTable() error = %v, wantErr %v", err, tt.wantErr)
+			if err := tt.h.AddInfoFrom(tt.args.otherHandler, tt.args.currentFaceCount); (err != nil) != tt.wantErr {
+				t.Errorf("Handler.AddInfoFrom() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

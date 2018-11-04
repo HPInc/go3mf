@@ -8,8 +8,8 @@ type BeamLattice struct {
 	capMode           BeamCapMode
 }
 
-// NewBeamLattice creates a new BeamLattice with default values.
-func NewBeamLattice() *BeamLattice {
+// newBeamLattice creates a new BeamLattice with default values.
+func newBeamLattice() *BeamLattice {
 	return &BeamLattice{
 		capMode:   CapModeSphere,
 		radius:    1.0,
