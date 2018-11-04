@@ -164,15 +164,13 @@ func Test_beamLattice_ClearBeamLattice(t *testing.T) {
 }
 
 func Test_beamLattice_BeamCount(t *testing.T) {
-	b := new(beamLattice)
-	b.beams = append(b.beams, new(Beam))
 	tests := []struct {
 		name string
 		b    *beamLattice
 		want uint32
 	}{
 		{"zero", new(beamLattice), 0},
-		{"one", b, 1},
+		{"one", &beamLattice{beams: make([]*Beam, 2)}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -269,9 +267,9 @@ func Test_beamLattice_AddBeam(t *testing.T) {
 		want    *Beam
 		wantErr bool
 	}{
+		{"max", &beamLattice{maxBeamCount: 1, beams: []*Beam{new(Beam)}}, args{node1, node2, 1.0, 2.0, CapModeHemisphere, CapModeSphere}, nil, true},
 		{"node1", new(beamLattice), args{node1, node1, 1.0, 2.0, CapModeHemisphere, CapModeSphere}, nil, true},
 		{"node2", new(beamLattice), args{node2, node2, 1.0, 2.0, CapModeHemisphere, CapModeSphere}, nil, true},
-		{"max", &beamLattice{maxBeamCount: 1, beams: []*Beam{new(Beam)}}, args{node1, node2, 1.0, 2.0, CapModeHemisphere, CapModeSphere}, nil, true},
 		{"base", &beamLattice{beams: []*Beam{new(Beam)}}, args{node1, node2, 1.0, 2.0, CapModeHemisphere, CapModeSphere}, &Beam{
 			NodeIndices: [2]uint32{node1.Index, node2.Index},
 			Index:       1,
@@ -322,13 +320,6 @@ func Test_beamLattice_merge(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockMesh := NewMockMergeableMesh(mockCtrl)
-	mockMesh.EXPECT().BeamCount().Return(uint32(2))
-	beam := &Beam{NodeIndices: [2]uint32{0, 1}, Radius: [2]float64{1.0, 2.0}, CapMode: [2]BeamCapMode{CapModeButt, CapModeHemisphere}}
-	mockMesh.EXPECT().Beam(gomock.Any()).Return(beam).Times(2)
-	mockMeshBad := NewMockMergeableMesh(mockCtrl)
-	mockMeshBad.EXPECT().BeamCount().Return(uint32(2))
-	beamBad := &Beam{NodeIndices: [2]uint32{1, 1}}
-	mockMeshBad.EXPECT().Beam(gomock.Any()).Return(beamBad)
 	type args struct {
 		other    mergeableBeams
 		newNodes []*Node
@@ -338,18 +329,22 @@ func Test_beamLattice_merge(t *testing.T) {
 		b       *beamLattice
 		args    args
 		wantErr bool
+		times   uint32
 	}{
-		{"err", new(beamLattice), args{mockMeshBad, []*Node{&Node{Index: 0}, &Node{Index: 1}}}, true},
-		{"zero", new(beamLattice), args{new(beamLattice), make([]*Node, 0)}, false},
-		{"merged", new(beamLattice), args{mockMesh, []*Node{&Node{Index: 0}, &Node{Index: 1}}}, false},
+		{"err", &beamLattice{maxBeamCount: 1, beams: []*Beam{new(Beam)}}, args{mockMesh, []*Node{&Node{Index: 0}, &Node{Index: 1}}}, true, 1},
+		{"zero", new(beamLattice), args{mockMesh, make([]*Node, 0)}, false, 0},
+		{"merged", new(beamLattice), args{mockMesh, []*Node{&Node{Index: 0}, &Node{Index: 1}}}, false, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mockMesh.EXPECT().BeamCount().Return(tt.times)
+			beam := &Beam{NodeIndices: [2]uint32{0, 1}, Radius: [2]float64{1.0, 2.0}, CapMode: [2]BeamCapMode{CapModeButt, CapModeHemisphere}}
+			mockMesh.EXPECT().Beam(gomock.Any()).Return(beam).Times(int(tt.times))
 			if err := tt.b.merge(tt.args.other, tt.args.newNodes); (err != nil) != tt.wantErr {
 				t.Errorf("beamLattice.merge() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if len(tt.b.beams) > 0 && tt.b.beams[0] != nil {
+			if !tt.wantErr && len(tt.b.beams) > 0 && tt.b.beams[0] != nil {
 				for i := 0; i < len(tt.b.beams); i++ {
 					want := *beam
 					want.Index = uint32(i)

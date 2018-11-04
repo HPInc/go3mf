@@ -14,7 +14,8 @@ type Node struct {
 }
 
 type nodeStructure struct {
-	nodes []*Node
+	nodes        []*Node
+	maxNodeCount uint32 // // If 0 MaxNodeCount will be used.
 }
 
 func (n *nodeStructure) clear() {
@@ -34,7 +35,7 @@ func (n *nodeStructure) Node(index uint32) *Node {
 // AddNode adds a node the the mesh at the target position.
 func (n *nodeStructure) AddNode(position mgl32.Vec3) (*Node, error) {
 	nodeCount := n.NodeCount()
-	if nodeCount > MaxNodeCount {
+	if nodeCount >= n.getMaxNodeCount() {
 		return nil, new(MaxNodeError)
 	}
 
@@ -48,7 +49,7 @@ func (n *nodeStructure) AddNode(position mgl32.Vec3) (*Node, error) {
 
 func (n *nodeStructure) checkSanity() bool {
 	nodeCount := n.NodeCount()
-	if nodeCount > MaxNodeCount {
+	if nodeCount > n.getMaxNodeCount() {
 		return false
 	}
 	for i := 0; i < int(nodeCount); i++ {
@@ -77,4 +78,11 @@ func (n *nodeStructure) merge(other mergeableNodes, matrix mgl32.Mat4) ([]*Node,
 		}
 	}
 	return newNodes, nil
+}
+
+func (n *nodeStructure) getMaxNodeCount() uint32 {
+	if n.maxNodeCount == 0 {
+		return MaxNodeCount
+	}
+	return n.maxNodeCount
 }
