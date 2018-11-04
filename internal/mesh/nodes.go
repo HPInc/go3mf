@@ -15,7 +15,7 @@ type Node struct {
 
 type nodeStructure struct {
 	nodes        []*Node
-	maxNodeCount uint32 // // If 0 MaxNodeCount will be used.
+	maxNodeCount uint32 // If 0 MaxNodeCount will be used.
 }
 
 func (n *nodeStructure) clear() {

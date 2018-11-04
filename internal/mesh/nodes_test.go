@@ -19,7 +19,7 @@ func Test_nodeStructure_clear(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.n.clear()
 			if got := tt.n.NodeCount(); got != 0 {
-				t.Errorf("nodeStructure.NodeCount() = %v, want %v", got, 0)
+				t.Errorf("nodeStructure.clear() = %v, want %v", got, 0)
 			}
 		})
 	}

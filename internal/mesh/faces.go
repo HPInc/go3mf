@@ -14,6 +14,7 @@ type Face struct {
 type faceStructure struct {
 	faces              []*Face
 	informationHandler *meshinfo.Handler
+	maxFaceCount       uint32 // If 0 MaxFaceCount will be used.
 }
 
 func (f *faceStructure) clear() {
@@ -37,7 +38,7 @@ func (f *faceStructure) AddFace(node1, node2, node3 *Node) (*Face, error) {
 	}
 
 	faceCount := f.FaceCount()
-	if faceCount > MaxFaceCount {
+	if faceCount >= f.getMaxFaceCount() {
 		return nil, new(MaxFaceError)
 	}
 
@@ -54,7 +55,7 @@ func (f *faceStructure) AddFace(node1, node2, node3 *Node) (*Face, error) {
 
 func (f *faceStructure) checkSanity(nodeCount uint32) bool {
 	faceCount := f.FaceCount()
-	if faceCount > MaxFaceCount {
+	if faceCount > f.getMaxFaceCount() {
 		return false
 	}
 	for i := 0; i < int(faceCount); i++ {
@@ -87,4 +88,11 @@ func (f *faceStructure) merge(other mergeableFaces, newNodes []*Node) error {
 		}
 	}
 	return nil
+}
+
+func (f *faceStructure) getMaxFaceCount() uint32 {
+	if f.maxFaceCount == 0 {
+		return MaxFaceCount
+	}
+	return f.maxFaceCount
 }
