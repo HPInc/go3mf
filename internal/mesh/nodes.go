@@ -75,7 +75,7 @@ func (n *nodeStructure) checkSanity() bool {
 	return true
 }
 
-func (n *nodeStructure) merge(other MergeableNodes, matrix mgl32.Mat4) ([]*Node, error) {
+func (n *nodeStructure) merge(other mergeableNodes, matrix mgl32.Mat4) ([]*Node, error) {
 	nodeCount := other.NodeCount()
 	newNodes := make([]*Node, nodeCount)
 	if nodeCount == 0 {

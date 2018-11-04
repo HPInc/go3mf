@@ -80,7 +80,7 @@ func (f *faceStructure) validateIndices(i0, i1, i2, nodeCount uint32) bool {
 	return true
 }
 
-func (f *faceStructure) merge(other MergeableFaces, newNodes []*Node) error {
+func (f *faceStructure) merge(other mergeableFaces, newNodes []*Node) error {
 	otherHandler := other.InformationHandler()
 	faceCount := other.FaceCount()
 	if faceCount != 0 {

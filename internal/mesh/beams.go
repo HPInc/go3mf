@@ -145,7 +145,7 @@ func (b *beamLattice) checkSanity(nodeCount uint32) bool {
 	return true
 }
 
-func (b *beamLattice) merge(other MergeableBeams, newNodes []*Node) error {
+func (b *beamLattice) merge(other mergeableBeams, newNodes []*Node) error {
 	beamCount := other.BeamCount()
 	if beamCount != 0 {
 		for i := 0; i < int(beamCount); i++ {
