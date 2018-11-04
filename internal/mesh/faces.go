@@ -60,22 +60,12 @@ func (f *faceStructure) checkSanity(nodeCount uint32) bool {
 	for i := 0; i < int(faceCount); i++ {
 		face := f.Face(uint32(i))
 		i0, i1, i2 := face.NodeIndices[0], face.NodeIndices[1], face.NodeIndices[2]
-		if !f.validateIndices(i0, i1, i2, nodeCount) {
+		if i0 == i1 || i0 == i2 || i1 == i2 {
 			return false
 		}
-	}
-	return true
-}
-
-func (f *faceStructure) validateIndices(i0, i1, i2, nodeCount uint32) bool {
-	if i0 == i1 || i0 == i2 || i1 == i2 {
-		return false
-	}
-	if i0 < 0 || i1 < 0 || i2 < 0 {
-		return false
-	}
-	if i0 >= nodeCount || i1 >= nodeCount || i2 >= nodeCount {
-		return false
+		if i0 >= nodeCount || i1 >= nodeCount || i2 >= nodeCount {
+			return false
+		}
 	}
 	return true
 }
@@ -83,16 +73,17 @@ func (f *faceStructure) validateIndices(i0, i1, i2, nodeCount uint32) bool {
 func (f *faceStructure) merge(other mergeableFaces, newNodes []*Node) error {
 	otherHandler := other.InformationHandler()
 	faceCount := other.FaceCount()
-	if faceCount != 0 {
-		for i := 0; i < int(faceCount); i++ {
-			face := other.Face(uint32(i))
-			newFace, err := f.AddFace(newNodes[face.NodeIndices[0]], newNodes[face.NodeIndices[1]], newNodes[face.NodeIndices[2]])
-			if err != nil {
-				return err
-			}
-			if otherHandler != nil {
-				f.informationHandler.CloneFaceInfosFrom(newFace.Index, otherHandler, face.Index)
-			}
+	if faceCount == 0 {
+		return nil
+	}
+	for i := 0; i < int(faceCount); i++ {
+		face := other.Face(uint32(i))
+		newFace, err := f.AddFace(newNodes[face.NodeIndices[0]], newNodes[face.NodeIndices[1]], newNodes[face.NodeIndices[2]])
+		if err != nil {
+			return err
+		}
+		if otherHandler != nil {
+			f.informationHandler.CloneFaceInfosFrom(newFace.Index, otherHandler, face.Index)
 		}
 	}
 	return nil

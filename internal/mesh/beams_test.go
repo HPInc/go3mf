@@ -3,6 +3,8 @@ package mesh
 import (
 	"reflect"
 	"testing"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
 func Test_newbeamLattice(t *testing.T) {
@@ -143,8 +145,8 @@ func Test_beamLattice_SetBeamLatticeCapMode(t *testing.T) {
 
 func Test_beamLattice_ClearBeamLattice(t *testing.T) {
 	b := new(beamLattice)
-	b.Beams = append(b.Beams, new(Beam))
-	b.BeamSets = append(b.BeamSets, new(BeamSet))
+	b.beams = append(b.beams, new(Beam))
+	b.beamSets = append(b.beamSets, new(BeamSet))
 	tests := []struct {
 		name string
 		b    *beamLattice
@@ -154,8 +156,207 @@ func Test_beamLattice_ClearBeamLattice(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.b.ClearBeamLattice()
-			if len(tt.b.Beams) != 0 || len(tt.b.BeamSets) != 0 {
+			if len(tt.b.beams) != 0 || len(tt.b.beamSets) != 0 {
 				t.Error("beamLattice.ClearBeamLattice() have not cleared all the arrays")
+			}
+		})
+	}
+}
+
+func Test_beamLattice_BeamCount(t *testing.T) {
+	b := new(beamLattice)
+	b.beams = append(b.beams, new(Beam))
+	tests := []struct {
+		name string
+		b    *beamLattice
+		want uint32
+	}{
+		{"zero", new(beamLattice), 0},
+		{"one", b, 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.b.BeamCount(); got != tt.want {
+				t.Errorf("beamLattice.BeamCount() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_beamLattice_Beam(t *testing.T) {
+	b := new(beamLattice)
+	b.beams = append(b.beams, new(Beam))
+	b.beams = append(b.beams, new(Beam))
+	type args struct {
+		index uint32
+	}
+	tests := []struct {
+		name string
+		b    *beamLattice
+		args args
+		want *Beam
+	}{
+		{"zero", b, args{0}, b.beams[0]},
+		{"one", b, args{1}, b.beams[1]},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.b.Beam(tt.args.index); got != tt.want {
+				t.Errorf("beamLattice.Beam() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_beamLattice_AddBeamSet(t *testing.T) {
+	tests := []struct {
+		name string
+		b    *beamLattice
+		want *BeamSet
+	}{
+		{"base", new(beamLattice), new(BeamSet)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.b.AddBeamSet(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("beamLattice.AddBeamSet() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_beamLattice_BeamSet(t *testing.T) {
+	b := new(beamLattice)
+	b.beamSets = append(b.beamSets, new(BeamSet))
+	b.beamSets = append(b.beamSets, new(BeamSet))
+	type args struct {
+		index uint32
+	}
+	tests := []struct {
+		name string
+		b    *beamLattice
+		args args
+		want *BeamSet
+	}{
+		{"zero", b, args{0}, b.beamSets[0]},
+		{"one", b, args{1}, b.beamSets[1]},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.b.BeamSet(tt.args.index); got != tt.want {
+				t.Errorf("beamLattice.BeamSet() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_beamLattice_AddBeam(t *testing.T) {
+	node1, node2 := new(Node), new(Node)
+	node1.Index = 1
+	node2.Index = 1
+	type args struct {
+		node1    *Node
+		node2    *Node
+		radius1  float64
+		radius2  float64
+		capMode1 BeamCapMode
+		capMode2 BeamCapMode
+	}
+	tests := []struct {
+		name    string
+		b       *beamLattice
+		args    args
+		want    *Beam
+		wantErr bool
+	}{
+		{"node1", new(beamLattice), args{node1, node1, 1.0, 2.0, CapModeHemisphere, CapModeSphere}, nil, true},
+		{"node2", new(beamLattice), args{node2, node2, 1.0, 2.0, CapModeHemisphere, CapModeSphere}, nil, true},
+		{"max", &beamLattice{maxBeamCount: 1, beams: []*Beam{new(Beam)}}, args{node1, node2, 1.0, 2.0, CapModeHemisphere, CapModeSphere}, nil, true},
+		{"base", &beamLattice{beams: []*Beam{new(Beam)}}, args{node1, node2, 1.0, 2.0, CapModeHemisphere, CapModeSphere}, &Beam{
+			NodeIndices: [2]uint32{node1.Index, node2.Index},
+			Index:       1,
+			Radius:      [2]float64{1.0, 2.0},
+			CapMode:     [2]BeamCapMode{CapModeHemisphere, CapModeSphere},
+		}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.b.AddBeam(tt.args.node1, tt.args.node2, tt.args.radius1, tt.args.radius2, tt.args.capMode1, tt.args.capMode2)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("beamLattice.AddBeam() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("beamLattice.AddBeam() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_beamLattice_checkSanity(t *testing.T) {
+	type args struct {
+		nodeCount uint32
+	}
+	tests := []struct {
+		name string
+		b    *beamLattice
+		args args
+		want bool
+	}{
+		{"max", &beamLattice{maxBeamCount: 1, beams: []*Beam{new(Beam), new(Beam)}}, args{0}, false},
+		{"eq", &beamLattice{beams: []*Beam{&Beam{NodeIndices: [2]uint32{1, 1}}}}, args{0}, false},
+		{"high1", &beamLattice{beams: []*Beam{&Beam{NodeIndices: [2]uint32{2, 1}}}}, args{2}, false},
+		{"high2", &beamLattice{beams: []*Beam{&Beam{NodeIndices: [2]uint32{1, 2}}}}, args{2}, false},
+		{"good", &beamLattice{beams: []*Beam{&Beam{NodeIndices: [2]uint32{1, 2}}}}, args{3}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.b.checkSanity(tt.args.nodeCount); got != tt.want {
+				t.Errorf("beamLattice.checkSanity() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_beamLattice_merge(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockMesh := NewMockMergeableMesh(mockCtrl)
+	mockMesh.EXPECT().BeamCount().Return(uint32(2))
+	beam := &Beam{NodeIndices: [2]uint32{0, 1}, Radius: [2]float64{1.0, 2.0}, CapMode: [2]BeamCapMode{CapModeButt, CapModeHemisphere}}
+	mockMesh.EXPECT().Beam(gomock.Any()).Return(beam).Times(2)
+	mockMeshBad := NewMockMergeableMesh(mockCtrl)
+	mockMeshBad.EXPECT().BeamCount().Return(uint32(2))
+	beamBad := &Beam{NodeIndices: [2]uint32{1, 1}}
+	mockMeshBad.EXPECT().Beam(gomock.Any()).Return(beamBad)
+	type args struct {
+		other    mergeableBeams
+		newNodes []*Node
+	}
+	tests := []struct {
+		name    string
+		b       *beamLattice
+		args    args
+		wantErr bool
+	}{
+		{"err", new(beamLattice), args{mockMeshBad, []*Node{&Node{Index: 0}, &Node{Index: 1}}}, true},
+		{"zero", new(beamLattice), args{new(beamLattice), make([]*Node, 0)}, false},
+		{"merged", new(beamLattice), args{mockMesh, []*Node{&Node{Index: 0}, &Node{Index: 1}}}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.b.merge(tt.args.other, tt.args.newNodes); (err != nil) != tt.wantErr {
+				t.Errorf("beamLattice.merge() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if len(tt.b.beams) > 0 && tt.b.beams[0] != nil {
+				for i := 0; i < len(tt.b.beams); i++ {
+					want := *beam
+					want.Index = uint32(i)
+					if got := tt.b.Beam(uint32(i)); *got != want {
+						t.Errorf("beamLattice.merge() = %v, want %v", got, want)
+					}
+				}
 			}
 		})
 	}
