@@ -3,6 +3,9 @@ package mesh
 import (
 	"reflect"
 	"testing"
+
+	gomock "github.com/golang/mock/gomock"
+	meshinfo "github.com/qmuntal/go3mf/internal/meshinfo"
 )
 
 func Test_faceStructure_clear(t *testing.T) {
@@ -66,6 +69,7 @@ func Test_faceStructure_Face(t *testing.T) {
 }
 
 func Test_faceStructure_AddFace(t *testing.T) {
+	node := new(Node)
 	type args struct {
 		node1 *Node
 		node2 *Node
@@ -78,8 +82,11 @@ func Test_faceStructure_AddFace(t *testing.T) {
 		want    *Face
 		wantErr bool
 	}{
-		{"max", &faceStructure{maxFaceCount: 1, faces: []*Face{new(Face)}}, args{new(Node), new(Node), new(Node)}, nil, true},
-		{"base", &faceStructure{faces: []*Face{new(Face)}}, args{new(Node), new(Node), new(Node)}, &Face{Index: 1}, false},
+		{"max", &faceStructure{maxFaceCount: 1, faces: make([]*Face, 1)}, args{new(Node), new(Node), new(Node)}, nil, true},
+		{"duplicated0-1", new(faceStructure), args{node, node, new(Node)}, nil, true},
+		{"duplicated0-2", new(faceStructure), args{node, new(Node), node}, nil, true},
+		{"duplicated1-2", new(faceStructure), args{new(Node), node, node}, nil, true},
+		{"base", &faceStructure{informationHandler: meshinfo.NewHandler(), faces: []*Face{new(Face)}}, args{new(Node), new(Node), new(Node)}, &Face{Index: 1}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -105,7 +112,14 @@ func Test_faceStructure_checkSanity(t *testing.T) {
 		args args
 		want bool
 	}{
-		// TODO: Add test cases.
+		{"max", &faceStructure{maxFaceCount: 1, faces: make([]*Face, 2)}, args{1}, false},
+		{"i0==i1", &faceStructure{faces: []*Face{&Face{NodeIndices: [3]uint32{1, 1, 2}}}}, args{3}, false},
+		{"i0==i2", &faceStructure{faces: []*Face{&Face{NodeIndices: [3]uint32{1, 2, 1}}}}, args{3}, false},
+		{"i1==i2", &faceStructure{faces: []*Face{&Face{NodeIndices: [3]uint32{2, 1, 1}}}}, args{3}, false},
+		{"i0big", &faceStructure{faces: []*Face{&Face{NodeIndices: [3]uint32{3, 1, 2}}}}, args{3}, false},
+		{"i1big", &faceStructure{faces: []*Face{&Face{NodeIndices: [3]uint32{0, 3, 2}}}}, args{3}, false},
+		{"i2big", &faceStructure{faces: []*Face{&Face{NodeIndices: [3]uint32{0, 1, 3}}}}, args{3}, false},
+		{"good", &faceStructure{faces: []*Face{&Face{NodeIndices: [3]uint32{0, 1, 2}}}}, args{3}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -117,6 +131,10 @@ func Test_faceStructure_checkSanity(t *testing.T) {
 }
 
 func Test_faceStructure_merge(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockMesh := NewMockMergeableMesh(mockCtrl)
+	nodes := []*Node{&Node{Index: 0}, &Node{Index: 1}, &Node{Index: 2}}
 	type args struct {
 		other    mergeableFaces
 		newNodes []*Node
@@ -126,11 +144,18 @@ func Test_faceStructure_merge(t *testing.T) {
 		f       *faceStructure
 		args    args
 		wantErr bool
+		times   uint32
 	}{
-		// TODO: Add test cases.
+		{"err", &faceStructure{maxFaceCount: 1, faces: make([]*Face, 1)}, args{mockMesh, nodes}, true, 1},
+		{"zero", new(faceStructure), args{mockMesh, make([]*Node, 0)}, false, 0},
+		{"merged", new(faceStructure), args{mockMesh, []*Node{&Node{Index: 0}, &Node{Index: 1}, &Node{Index: 2}}}, false, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mockMesh.EXPECT().FaceCount().Return(tt.times)
+			mockMesh.EXPECT().InformationHandler().Return(meshinfo.NewHandler()).MaxTimes(int(tt.times))
+			face := &Face{NodeIndices: [3]uint32{0, 1, 2}}
+			mockMesh.EXPECT().Face(gomock.Any()).Return(face).Times(int(tt.times))
 			if err := tt.f.merge(tt.args.other, tt.args.newNodes); (err != nil) != tt.wantErr {
 				t.Errorf("faceStructure.merge() error = %v, wantErr %v", err, tt.wantErr)
 			}

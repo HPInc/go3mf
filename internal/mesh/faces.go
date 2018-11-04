@@ -72,11 +72,11 @@ func (f *faceStructure) checkSanity(nodeCount uint32) bool {
 }
 
 func (f *faceStructure) merge(other mergeableFaces, newNodes []*Node) error {
-	otherHandler := other.InformationHandler()
 	faceCount := other.FaceCount()
 	if faceCount == 0 {
 		return nil
 	}
+	otherHandler := other.InformationHandler()
 	for i := 0; i < int(faceCount); i++ {
 		face := other.Face(uint32(i))
 		newFace, err := f.AddFace(newNodes[face.NodeIndices[0]], newNodes[face.NodeIndices[1]], newNodes[face.NodeIndices[2]])
