@@ -35,7 +35,7 @@ func NewMeshCloned(mesh MergeableMesh) (*Mesh, error) {
 
 // Clear resets all the mesh nodes, faces, beams and informations.
 func (m *Mesh) Clear() {
-	m.informationHandler = nil
+	m.ClearInformationHandler()
 	m.nodeStructure.clear()
 	m.faceStructure.clear()
 	m.ClearBeamLattice()
