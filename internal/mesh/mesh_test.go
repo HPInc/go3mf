@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/go-gl/mathgl/mgl32"
+	gomock "github.com/golang/mock/gomock"
 	"github.com/qmuntal/go3mf/internal/meshinfo"
 )
 
@@ -36,7 +37,7 @@ func TestNewMeshCloned(t *testing.T) {
 		want    *Mesh
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{"base", args{NewMesh()}, NewMesh(), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -57,7 +58,7 @@ func TestMesh_Clear(t *testing.T) {
 		name string
 		m    *Mesh
 	}{
-		// TODO: Add test cases.
+		{"base", new(Mesh)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -119,20 +120,32 @@ func TestMesh_ClearInformationHandler(t *testing.T) {
 }
 
 func TestMesh_Merge(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
 	type args struct {
-		mesh   MergeableMesh
+		mesh   *MockMergeableMesh
 		matrix mgl32.Mat4
 	}
 	tests := []struct {
 		name    string
 		m       *Mesh
 		args    args
+		nodes   uint32
+		faces   uint32
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{"base", new(Mesh), args{NewMockMergeableMesh(mockCtrl), mgl32.Ident4()}, 0, 0, false},
+		{"base", new(Mesh), args{NewMockMergeableMesh(mockCtrl), mgl32.Ident4()}, 1, 0, false},
+		{"base", new(Mesh), args{NewMockMergeableMesh(mockCtrl), mgl32.Ident4()}, 1, 1, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			tt.args.mesh.EXPECT().InformationHandler().Return(meshinfo.NewHandler()).MaxTimes(2)
+			tt.args.mesh.EXPECT().NodeCount().Return(tt.nodes)
+			tt.args.mesh.EXPECT().Node(gomock.Any()).Return(new(Node)).Times(int(tt.nodes))
+			tt.args.mesh.EXPECT().FaceCount().Return(tt.faces).MaxTimes(2)
+			tt.args.mesh.EXPECT().Face(gomock.Any()).Return(new(Face)).Times(int(tt.faces))
+			tt.args.mesh.EXPECT().BeamCount().Return(uint32(0)).MaxTimes(1)
 			if err := tt.m.Merge(tt.args.mesh, tt.args.matrix); (err != nil) != tt.wantErr {
 				t.Errorf("Mesh.Merge() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -146,7 +159,10 @@ func TestMesh_CheckSanity(t *testing.T) {
 		m    *Mesh
 		want bool
 	}{
-		// TODO: Add test cases.
+		{"new", NewMesh(), true},
+		{"nodefail", &Mesh{nodeStructure: nodeStructure{maxNodeCount: 1, nodes: make([]*Node, 2)}}, false},
+		{"facefail", &Mesh{faceStructure: faceStructure{maxFaceCount: 1, faces: make([]*Face, 2)}}, false},
+		{"beamfail", &Mesh{beamLattice: beamLattice{maxBeamCount: 1, beams: make([]*Beam, 2)}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
