@@ -26,7 +26,7 @@ const (
 type Beam struct {
 	Index       uint32         // Index of the beam.
 	NodeIndices [2]uint32      // Indices of the two nodes that defines the beam.
-	Radius      [2]float64     // Radius of both ends of the beam.
+	Radius1      [2]float64     // Radius of both ends of the beam.
 	CapMode     [2]BeamCapMode // Capping mode.
 }
 
