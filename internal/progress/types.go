@@ -48,8 +48,8 @@ const (
 	StageWriteSlices
 )
 
-// A Float64Pair is a tuple of two float64 values
-type Float64Pair struct {
+// A float64Pair is a tuple of two float64 values
+type float64Pair struct {
 	A float64 // the first element of the tuple
 	B float64 // the second element of the tuple
 }

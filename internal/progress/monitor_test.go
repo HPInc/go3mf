@@ -150,16 +150,16 @@ func TestMonitor_PopLevel(t *testing.T) {
 	tests := []struct {
 		name string
 		p    *Monitor
-		want Float64Pair
+		want float64Pair
 	}{
-		{"2", p, Float64Pair{0.2, 1.0}},
-		{"1", p, Float64Pair{0.0, 1.0}},
-		{"0", p, Float64Pair{0.0, 1.0}},
+		{"2", p, float64Pair{0.2, 1.0}},
+		{"1", p, float64Pair{0.0, 1.0}},
+		{"0", p, float64Pair{0.0, 1.0}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.PopLevel(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Monitor.PopLevel() = %v, want %v", got, tt.want)
+			if a, b := tt.p.PopLevel(); a != tt.want.A || b != tt.want.B {
+				t.Errorf("Monitor.PopLevel() = %v, %v, want %v", a, b, tt.want)
 			}
 		})
 	}
@@ -178,8 +178,8 @@ func TestMonitor_ResetLevels_Empty(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.p.ResetLevels()
-			if got := tt.p.level(); !reflect.DeepEqual(got, Float64Pair{0.0, 1.0}) {
-				t.Errorf("expect initial values but got %f - %f", got, Float64Pair{0.0, 1.0})
+			if got := tt.p.level(); !reflect.DeepEqual(got, float64Pair{0.0, 1.0}) {
+				t.Errorf("expect initial values but got %f - %f", got, float64Pair{0.0, 1.0})
 			}
 		})
 	}
@@ -200,15 +200,15 @@ func TestMonitor_ResetLevels(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.p.ResetLevels()
-			if got := tt.p.level(); !reflect.DeepEqual(got, Float64Pair{0.0, 1.0}) {
-				t.Errorf("expect initial values but got %f - %f", got, Float64Pair{0.0, 1.0})
+			if got := tt.p.level(); !reflect.DeepEqual(got, float64Pair{0.0, 1.0}) {
+				t.Errorf("expect initial values but got %f - %f", got, float64Pair{0.0, 1.0})
 			}
 		})
 	}
 }
 
 func TestMonitor_SetProgressCallback(t *testing.T) {
-	pr := Float64Pair{0.0, 1.0}
+	pr := float64Pair{0.0, 1.0}
 	type args struct {
 		callback progressCallback
 		userData interface{}

@@ -53,16 +53,16 @@ func (p *Monitor) Progress(progress float64, identifier Stage) bool {
 func (p *Monitor) PushLevel(relativeStart float64, relativeEnd float64) {
 	curLevel := p.level()
 	curRange := curLevel.B - curLevel.A
-	p.levels.Push(Float64Pair{curLevel.A + curRange*relativeStart, curLevel.A + curRange*relativeEnd})
+	p.levels.Push(float64Pair{curLevel.A + curRange*relativeStart, curLevel.A + curRange*relativeEnd})
 }
 
 // PopLevel removes a level from the progress
-func (p *Monitor) PopLevel() Float64Pair {
+func (p *Monitor) PopLevel() (a, b float64) {
 	ret := p.level()
 	if !p.levels.Empty() {
 		p.levels.Pop()
 	}
-	return ret
+	return ret.A, ret.B
 }
 
 // ResetLevels empty the level stack
@@ -72,11 +72,11 @@ func (p *Monitor) ResetLevels() {
 	}
 }
 
-func (p *Monitor) level() Float64Pair {
+func (p *Monitor) level() float64Pair {
 	if p.levels.Empty() {
-		p.levels.Push(Float64Pair{0.0, 1.0})
+		p.levels.Push(float64Pair{0.0, 1.0})
 	}
-	return (*p.levels.Top()).(Float64Pair)
+	return (*p.levels.Top()).(float64Pair)
 }
 
 // SetProgressCallback restarts the progress and specifies the callback to be executed on every step of the progress.
