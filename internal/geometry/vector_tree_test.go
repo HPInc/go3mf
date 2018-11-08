@@ -7,85 +7,61 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
-func TestNewVectorDic(t *testing.T) {
+func TestNewVectorTree(t *testing.T) {
 	tests := []struct {
 		name string
-		want *VectorDic
+		want *VectorTree
 	}{
-		{"new", &VectorDic{0.001, map[Vec3I]uint32{}}},
+		{"new", &VectorTree{0.001, map[Vec3I]uint32{}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewVectorDic(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewVectorDic() = %v, want %v", got, tt.want)
+			if got := NewVectorTree(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewVectorTree() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestNewVectorDicWithUnits(t *testing.T) {
-	type args struct {
-		units float32
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    *VectorDic
-		wantErr bool
-	}{
-		{"zero", args{0.0}, &VectorDic{0.0, map[Vec3I]uint32{}}, true},
-		{"one", args{1.0}, &VectorDic{1.0, map[Vec3I]uint32{}}, false},
-		{"big", args{1001.0}, &VectorDic{0.0, map[Vec3I]uint32{}}, true},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewVectorDicWithUnits(tt.args.units)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("NewVectorDicWithUnits() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewVectorDicWithUnits() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestVectorDic_Units(t *testing.T) {
-	p := NewVectorDic()
+func TestVectorTree_Units(t *testing.T) {
+	p := NewVectorTree()
 	if got := p.Units(); got != VectorDefaultUnits {
-		t.Errorf("VectorDic.Units() = %v, want %v", got, VectorDefaultUnits)
+		t.Errorf("VectorTree.Units() = %v, want %v", got, VectorDefaultUnits)
+	}
+	p.SetUnits(0)
+	if got := p.Units(); got != VectorDefaultUnits {
+		t.Errorf("VectorTree.Units() = %v, want %v", got, VectorDefaultUnits)
 	}
 	p.SetUnits(1.0)
 	if got := p.Units(); got != 1.0 {
-		t.Errorf("VectorDic.Units() = %v, want %v", got, VectorDefaultUnits)
+		t.Errorf("VectorTree.Units() = %v, want %v", got, VectorDefaultUnits)
 	}
 }
 
-func TestVectorDic_SetUnits(t *testing.T) {
-	p := NewVectorDic()
+func TestVectorTree_SetUnits(t *testing.T) {
+	p := NewVectorTree()
 	p.AddVector(mgl32.Vec3{}, 1)
 	type args struct {
 		units float32
 	}
 	tests := []struct {
 		name    string
-		t       *VectorDic
+		t       *VectorTree
 		args    args
 		wantErr bool
 	}{
-		{"zero", NewVectorDic(), args{0.0}, true},
-		{"minunitsfail", NewVectorDic(), args{0.000009}, true},
-		{"minunits", NewVectorDic(), args{VectorMinUnits}, false},
-		{"one", NewVectorDic(), args{1.0}, false},
-		{"maxunits", NewVectorDic(), args{VectorMaxUnits}, false},
-		{"maxunitsfail", NewVectorDic(), args{1001.0}, true},
+		{"zero", NewVectorTree(), args{0.0}, true},
+		{"minunitsfail", NewVectorTree(), args{0.000009}, true},
+		{"minunits", NewVectorTree(), args{VectorMinUnits}, false},
+		{"one", NewVectorTree(), args{1.0}, false},
+		{"maxunits", NewVectorTree(), args{VectorMaxUnits}, false},
+		{"maxunitsfail", NewVectorTree(), args{1001.0}, true},
 		{"notempty", p, args{1.0}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := tt.t.SetUnits(tt.args.units); (err != nil) != tt.wantErr {
-				t.Errorf("VectorDic.SetUnits() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("VectorTree.SetUnits() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			want := tt.args.units
@@ -93,21 +69,21 @@ func TestVectorDic_SetUnits(t *testing.T) {
 				want = VectorDefaultUnits
 			}
 			if got := tt.t.Units(); got != want {
-				t.Errorf("VectorDic.Units() = %v, want %v", got, want)
+				t.Errorf("VectorTree.Units() = %v, want %v", got, want)
 			}
 		})
 	}
 }
 
-func TestVectorDic_AddFindVector(t *testing.T) {
-	p := NewVectorDic()
+func TestVectorTree_AddFindVector(t *testing.T) {
+	p := NewVectorTree()
 	type args struct {
 		vec   mgl32.Vec3
 		value uint32
 	}
 	tests := []struct {
 		name string
-		t    *VectorDic
+		t    *VectorTree
 		args args
 	}{
 		{"new", p, args{mgl32.Vec3{10000.3, 20000.2, 1}, 2}},
@@ -121,24 +97,24 @@ func TestVectorDic_AddFindVector(t *testing.T) {
 		})
 		got, ok := p.FindVector(tt.args.vec)
 		if !ok {
-			t.Error("VectorDic.AddMatch() haven't added the match")
+			t.Error("VectorTree.AddMatch() haven't added the match")
 			return
 		}
 		if got != tt.args.value {
-			t.Errorf("VectorDic.FindVector() = %v, want %v", got, tt.args.value)
+			t.Errorf("VectorTree.FindVector() = %v, want %v", got, tt.args.value)
 		}
 	}
 }
 
-func TestVectorDic_RemoveVector(t *testing.T) {
-	p := NewVectorDic()
+func TestVectorTree_RemoveVector(t *testing.T) {
+	p := NewVectorTree()
 	p.AddVector(mgl32.Vec3{1, 2, 5.3}, 1)
 	type args struct {
 		vec mgl32.Vec3
 	}
 	tests := []struct {
 		name string
-		t    *VectorDic
+		t    *VectorTree
 		args args
 	}{
 		{"nil", p, args{mgl32.Vec3{2, 3, 4}}},

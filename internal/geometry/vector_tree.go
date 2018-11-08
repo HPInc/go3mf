@@ -6,33 +6,26 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
-// VectorDic implements a n*log(n) lookup tree class to identify vectors by their position
+// VectorTree implements a n*log(n) lookup tree class to identify vectors by their position
 // The units property defines the units of the vectors, where 1.0 mean meters.
-type VectorDic struct {
+type VectorTree struct {
 	units   float32
 	entries map[Vec3I]uint32
 }
 
-// NewVectorDic creates a default vector
-func NewVectorDic() *VectorDic {
-	return &VectorDic{
+// NewVectorTree creates a default vector
+func NewVectorTree() *VectorTree {
+	return &VectorTree{
 		units:   VectorDefaultUnits,
 		entries: map[Vec3I]uint32{},
 	}
 }
 
-// NewVectorDicWithUnits creates a vector with the desired units
-// Error cases: See SetUnits
-func NewVectorDicWithUnits(units float32) (*VectorDic, error) {
-	t := &VectorDic{
-		entries: map[Vec3I]uint32{},
-	}
-	err := t.SetUnits(units)
-	return t, err
-}
-
 // Units returns the used units.
-func (t *VectorDic) Units() float32 {
+func (t *VectorTree) Units() float32 {
+	if t.units == 0 {
+		return VectorDefaultUnits
+	}
 	return t.units
 }
 
@@ -40,7 +33,7 @@ func (t *VectorDic) Units() float32 {
 // Error cases:
 // * ErrorInvalidUnits: ((units < VectorMinUnits) || (units > VectorMaxUnits))
 // * ErrorCouldNotSetUnits: non-empty tree
-func (t *VectorDic) SetUnits(units float32) error {
+func (t *VectorTree) SetUnits(units float32) error {
 	if (units < VectorMinUnits) || (units > VectorMaxUnits) {
 		return &InvalidUnitsError{units}
 	}
@@ -52,19 +45,19 @@ func (t *VectorDic) SetUnits(units float32) error {
 }
 
 // AddVector adds a vector to the dictionary.
-func (t *VectorDic) AddVector(vec mgl32.Vec3, value uint32) {
-	t.entries[newVec3IFromVec3(vec, t.units)] = value
+func (t *VectorTree) AddVector(vec mgl32.Vec3, value uint32) {
+	t.entries[newVec3IFromVec3(vec, t.Units())] = value
 }
 
 // FindVector returns the identifier of the vector.
-func (t *VectorDic) FindVector(vec mgl32.Vec3) (val uint32, ok bool) {
-	val, ok = t.entries[newVec3IFromVec3(vec, t.units)]
+func (t *VectorTree) FindVector(vec mgl32.Vec3) (val uint32, ok bool) {
+	val, ok = t.entries[newVec3IFromVec3(vec, t.Units())]
 	return
 }
 
 // RemoveVector removes the vector from the dictionary.
-func (t *VectorDic) RemoveVector(vec mgl32.Vec3) {
-	delete(t.entries, newVec3IFromVec3(vec, t.units))
+func (t *VectorTree) RemoveVector(vec mgl32.Vec3) {
+	delete(t.entries, newVec3IFromVec3(vec, t.Units()))
 }
 
 func newVec3IFromVec3(vec mgl32.Vec3, units float32) Vec3I {
