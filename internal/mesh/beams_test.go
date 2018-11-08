@@ -302,10 +302,10 @@ func Test_beamLattice_checkSanity(t *testing.T) {
 		want bool
 	}{
 		{"max", &beamLattice{maxBeamCount: 1, beams: []*Beam{new(Beam), new(Beam)}}, args{0}, false},
-		{"eq", &beamLattice{beams: []*Beam{&Beam{NodeIndices: [2]uint32{1, 1}}}}, args{0}, false},
-		{"high1", &beamLattice{beams: []*Beam{&Beam{NodeIndices: [2]uint32{2, 1}}}}, args{2}, false},
-		{"high2", &beamLattice{beams: []*Beam{&Beam{NodeIndices: [2]uint32{1, 2}}}}, args{2}, false},
-		{"good", &beamLattice{beams: []*Beam{&Beam{NodeIndices: [2]uint32{1, 2}}}}, args{3}, true},
+		{"eq", &beamLattice{beams: []*Beam{{NodeIndices: [2]uint32{1, 1}}}}, args{0}, false},
+		{"high1", &beamLattice{beams: []*Beam{{NodeIndices: [2]uint32{2, 1}}}}, args{2}, false},
+		{"high2", &beamLattice{beams: []*Beam{{NodeIndices: [2]uint32{1, 2}}}}, args{2}, false},
+		{"good", &beamLattice{beams: []*Beam{{NodeIndices: [2]uint32{1, 2}}}}, args{3}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -331,9 +331,9 @@ func Test_beamLattice_merge(t *testing.T) {
 		wantErr bool
 		times   uint32
 	}{
-		{"err", &beamLattice{maxBeamCount: 1, beams: []*Beam{new(Beam)}}, args{mockMesh, []*Node{&Node{Index: 0}, &Node{Index: 1}}}, true, 1},
+		{"err", &beamLattice{maxBeamCount: 1, beams: []*Beam{new(Beam)}}, args{mockMesh, []*Node{{Index: 0}, {Index: 1}}}, true, 1},
 		{"zero", new(beamLattice), args{mockMesh, make([]*Node, 0)}, false, 0},
-		{"merged", new(beamLattice), args{mockMesh, []*Node{&Node{Index: 0}, &Node{Index: 1}}}, false, 2},
+		{"merged", new(beamLattice), args{mockMesh, []*Node{{Index: 0}, {Index: 1}}}, false, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

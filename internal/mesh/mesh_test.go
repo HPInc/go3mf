@@ -134,8 +134,8 @@ func TestMesh_Merge(t *testing.T) {
 		faces   uint32
 		wantErr bool
 	}{
-		{"base", new(Mesh), args{NewMockMergeableMesh(mockCtrl), mgl32.Ident4()}, 0, 0, false},
-		{"base", new(Mesh), args{NewMockMergeableMesh(mockCtrl), mgl32.Ident4()}, 1, 0, false},
+		{"error1", new(Mesh), args{NewMockMergeableMesh(mockCtrl), mgl32.Ident4()}, 0, 0, false},
+		{"error2", new(Mesh), args{NewMockMergeableMesh(mockCtrl), mgl32.Ident4()}, 1, 0, false},
 		{"base", new(Mesh), args{NewMockMergeableMesh(mockCtrl), mgl32.Ident4()}, 1, 1, true},
 	}
 	for _, tt := range tests {

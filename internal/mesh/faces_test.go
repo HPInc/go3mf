@@ -113,13 +113,13 @@ func Test_faceStructure_checkSanity(t *testing.T) {
 		want bool
 	}{
 		{"max", &faceStructure{maxFaceCount: 1, faces: make([]*Face, 2)}, args{1}, false},
-		{"i0==i1", &faceStructure{faces: []*Face{&Face{NodeIndices: [3]uint32{1, 1, 2}}}}, args{3}, false},
-		{"i0==i2", &faceStructure{faces: []*Face{&Face{NodeIndices: [3]uint32{1, 2, 1}}}}, args{3}, false},
-		{"i1==i2", &faceStructure{faces: []*Face{&Face{NodeIndices: [3]uint32{2, 1, 1}}}}, args{3}, false},
-		{"i0big", &faceStructure{faces: []*Face{&Face{NodeIndices: [3]uint32{3, 1, 2}}}}, args{3}, false},
-		{"i1big", &faceStructure{faces: []*Face{&Face{NodeIndices: [3]uint32{0, 3, 2}}}}, args{3}, false},
-		{"i2big", &faceStructure{faces: []*Face{&Face{NodeIndices: [3]uint32{0, 1, 3}}}}, args{3}, false},
-		{"good", &faceStructure{faces: []*Face{&Face{NodeIndices: [3]uint32{0, 1, 2}}}}, args{3}, true},
+		{"i0==i1", &faceStructure{faces: []*Face{{NodeIndices: [3]uint32{1, 1, 2}}}}, args{3}, false},
+		{"i0==i2", &faceStructure{faces: []*Face{{NodeIndices: [3]uint32{1, 2, 1}}}}, args{3}, false},
+		{"i1==i2", &faceStructure{faces: []*Face{{NodeIndices: [3]uint32{2, 1, 1}}}}, args{3}, false},
+		{"i0big", &faceStructure{faces: []*Face{{NodeIndices: [3]uint32{3, 1, 2}}}}, args{3}, false},
+		{"i1big", &faceStructure{faces: []*Face{{NodeIndices: [3]uint32{0, 3, 2}}}}, args{3}, false},
+		{"i2big", &faceStructure{faces: []*Face{{NodeIndices: [3]uint32{0, 1, 3}}}}, args{3}, false},
+		{"good", &faceStructure{faces: []*Face{{NodeIndices: [3]uint32{0, 1, 2}}}}, args{3}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -134,7 +134,7 @@ func Test_faceStructure_merge(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockMesh := NewMockMergeableMesh(mockCtrl)
-	nodes := []*Node{&Node{Index: 0}, &Node{Index: 1}, &Node{Index: 2}}
+	nodes := []*Node{{Index: 0}, {Index: 1}, {Index: 2}}
 	type args struct {
 		other    mergeableFaces
 		newNodes []*Node
@@ -148,7 +148,7 @@ func Test_faceStructure_merge(t *testing.T) {
 	}{
 		{"err", &faceStructure{maxFaceCount: 1, faces: make([]*Face, 1)}, args{mockMesh, nodes}, true, 1},
 		{"zero", new(faceStructure), args{mockMesh, make([]*Node, 0)}, false, 0},
-		{"merged", new(faceStructure), args{mockMesh, []*Node{&Node{Index: 0}, &Node{Index: 1}, &Node{Index: 2}}}, false, 2},
+		{"merged", new(faceStructure), args{mockMesh, []*Node{{Index: 0}, {Index: 1}, {Index: 2}}}, false, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

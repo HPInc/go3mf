@@ -34,7 +34,7 @@ func TestTextureCoords_Copy(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockData := NewMockFaceData(mockCtrl)
-	test := &TextureCoords{2, [3]mgl32.Vec2{mgl32.Vec2{1.0, 2.0}, mgl32.Vec2{5.0, 3.0}, mgl32.Vec2{6.0, 4.0}}}
+	test := &TextureCoords{2, [3]mgl32.Vec2{{1.0, 2.0}, {5.0, 3.0}, {6.0, 4.0}}}
 	type args struct {
 		from interface{}
 	}
@@ -65,7 +65,7 @@ func TestTextureCoords_HasData(t *testing.T) {
 		want bool
 	}{
 		{"nodata", new(TextureCoords), false},
-		{"data", &TextureCoords{2, [3]mgl32.Vec2{mgl32.Vec2{1.0, 2.0}, mgl32.Vec2{5.0, 3.0}, mgl32.Vec2{6.0, 4.0}}}, true},
+		{"data", &TextureCoords{2, [3]mgl32.Vec2{{1.0, 2.0}, {5.0, 3.0}, {6.0, 4.0}}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -77,7 +77,7 @@ func TestTextureCoords_HasData(t *testing.T) {
 }
 
 func TestTextureCoords_Permute(t *testing.T) {
-	test := &TextureCoords{2, [3]mgl32.Vec2{mgl32.Vec2{1.0, 2.0}, mgl32.Vec2{5.0, 3.0}, mgl32.Vec2{6.0, 4.0}}}
+	test := &TextureCoords{2, [3]mgl32.Vec2{{1.0, 2.0}, {5.0, 3.0}, {6.0, 4.0}}}
 	type args struct {
 		index1 uint32
 		index2 uint32
@@ -92,8 +92,8 @@ func TestTextureCoords_Permute(t *testing.T) {
 		{"big1", test, args{3, 1, 0}, test},
 		{"big2", test, args{2, 3, 0}, test},
 		{"big3", test, args{2, 1, 3}, test},
-		{"success1", test, args{2, 1, 0}, &TextureCoords{2, [3]mgl32.Vec2{mgl32.Vec2{6.0, 4.0}, mgl32.Vec2{5.0, 3.0}, mgl32.Vec2{1.0, 2.0}}}},
-		{"success2", test, args{1, 2, 0}, &TextureCoords{2, [3]mgl32.Vec2{mgl32.Vec2{5.0, 3.0}, mgl32.Vec2{6.0, 4.0}, mgl32.Vec2{1.0, 2.0}}}},
+		{"success1", test, args{2, 1, 0}, &TextureCoords{2, [3]mgl32.Vec2{{6.0, 4.0}, {5.0, 3.0}, {1.0, 2.0}}}},
+		{"success2", test, args{1, 2, 0}, &TextureCoords{2, [3]mgl32.Vec2{{5.0, 3.0}, {6.0, 4.0}, {1.0, 2.0}}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

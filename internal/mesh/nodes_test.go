@@ -106,8 +106,8 @@ func Test_nodeStructure_checkSanity(t *testing.T) {
 		want bool
 	}{
 		{"max", &nodeStructure{maxNodeCount: 1, nodes: []*Node{new(Node), new(Node)}}, false},
-		{"badindex", &nodeStructure{nodes: []*Node{new(Node), &Node{Index: 2}}}, false},
-		{"good", &nodeStructure{nodes: []*Node{new(Node), &Node{Index: 1}}}, true},
+		{"badindex", &nodeStructure{nodes: []*Node{new(Node), {Index: 2}}}, false},
+		{"good", &nodeStructure{nodes: []*Node{new(Node), {Index: 1}}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -137,8 +137,8 @@ func Test_nodeStructure_merge(t *testing.T) {
 		{"zero", new(nodeStructure), args{mockMesh, mgl32.Ident4()}, make([]*Node, 0), false, 0},
 		{"err", &nodeStructure{maxNodeCount: 1, nodes: []*Node{new(Node)}}, args{mockMesh, mgl32.Ident4()}, nil, true, 1},
 		{"merged", new(nodeStructure), args{mockMesh, mgl32.Translate3D(1.0, 2.0, 3.0)}, []*Node{
-			&Node{Index: 0, Position: mgl32.Vec3{1.0, 2.0, 3.0}},
-			&Node{Index: 1, Position: mgl32.Vec3{1.0, 2.0, 3.0}}},
+			{Index: 0, Position: mgl32.Vec3{1.0, 2.0, 3.0}},
+			{Index: 1, Position: mgl32.Vec3{1.0, 2.0, 3.0}}},
 			false, 2},
 	}
 	for _, tt := range tests {
