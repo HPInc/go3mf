@@ -26,11 +26,10 @@ func NewMesh() *Mesh {
 	return m
 }
 
-// NewMeshCloned creates a new mesh that is a clone of another mesh.
-func NewMeshCloned(mesh MergeableMesh) (*Mesh, error) {
-	m := NewMesh()
-	err := m.Merge(mesh, mgl32.Ident4())
-	return m, err
+func (m *Mesh) Clone() (*Mesh, error) {
+	new := NewMesh()
+	err := new.Merge(m, mgl32.Ident4())
+	return new, err
 }
 
 // Clear resets all the mesh nodes, faces, beams and informations.

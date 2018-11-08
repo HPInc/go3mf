@@ -27,27 +27,24 @@ func TestNewMesh(t *testing.T) {
 	}
 }
 
-func TestNewMeshCloned(t *testing.T) {
-	type args struct {
-		mesh MergeableMesh
-	}
+func TestMesh_Clone(t *testing.T) {
 	tests := []struct {
 		name    string
-		args    args
+		m       *Mesh
 		want    *Mesh
 		wantErr bool
 	}{
-		{"base", args{NewMesh()}, NewMesh(), false},
+		{"base", NewMesh(), NewMesh(), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewMeshCloned(tt.args.mesh)
+			got, err := tt.m.Clone()
 			if (err != nil) != tt.wantErr {
-				t.Errorf("NewMeshCloned() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Mesh.Clone() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewMeshCloned() = %v, want %v", got, tt.want)
+				t.Errorf("Mesh.Clone() = %v, want %v", got, tt.want)
 			}
 		})
 	}
