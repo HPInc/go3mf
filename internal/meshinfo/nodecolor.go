@@ -1,16 +1,20 @@
 package meshinfo
 
+import (
+	"image/color"
+)
+
 // NodeColor informs about the color of a node.
 // A node have three colors, one for each vertex of its associated face.
 type NodeColor struct {
-	Colors [3]Color // Colors of every vertex in a node.
+	Colors [3]color.RGBA // Colors of every vertex in a node.
 }
 
 // Invalidate sets to zero all the properties.
 func (n *NodeColor) Invalidate() {
-	n.Colors[0] = 0x00000000
-	n.Colors[1] = 0x00000000
-	n.Colors[2] = 0x00000000
+	n.Colors[0] = color.RGBA{}
+	n.Colors[1] = color.RGBA{}
+	n.Colors[2] = color.RGBA{}
 }
 
 // Copy copy the properties of another node color.
@@ -24,7 +28,7 @@ func (n *NodeColor) Copy(from interface{}) {
 
 // HasData returns true if the any of the colors is different from zero.
 func (n *NodeColor) HasData() bool {
-	return (n.Colors[0] != 0) || (n.Colors[1] != 0) || (n.Colors[2] != 0)
+	return (n.Colors[0] != color.RGBA{}) || (n.Colors[1] != color.RGBA{}) || (n.Colors[2] != color.RGBA{})
 }
 
 // Permute swap the colors using the given indexes. Do nothing if any of the indexes is bigger than 2.

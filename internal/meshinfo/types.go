@@ -4,9 +4,6 @@ package meshinfo
 
 import "reflect"
 
-// Color represents a RGB color.
-type Color = uint32
-
 // FaceData defines a generic information of a face.
 type FaceData interface {
 	// Invalidate sets the data with its default values.
