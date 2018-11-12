@@ -3,15 +3,12 @@ package meshimporter
 import (
 	"bytes"
 	"encoding/binary"
-	"image/color"
 	"io"
-	"strings"
 	"unsafe"
 	"github.com/go-gl/mathgl/mgl32"
 
 	"github.com/qmuntal/go3mf/internal/geometry"
 	"github.com/qmuntal/go3mf/internal/mesh"
-	"github.com/qmuntal/go3mf/internal/meshinfo"
 )
 
 type stlBinaryFace struct {
@@ -25,9 +22,9 @@ type stlBinaryFace struct {
 type STLBinary struct {
 	Units              float32 // Units of the stream where 1.0 mean meters.
 	IgnoreInvalidFaces bool    // True to ignore invalid faces, false to do a fast fail.
-	ImportColors       bool    // True to import colors, false to ignore them.
 }
 
+// LoadMesh loads a binary stl from a io.Reader.
 func (s *STLBinary) LoadMesh(stream io.Reader) (*mesh.Mesh, error) {
 	newMesh := mesh.NewMesh()
 	vectorTree := geometry.NewVectorTree()
@@ -35,24 +32,20 @@ func (s *STLBinary) LoadMesh(stream io.Reader) (*mesh.Mesh, error) {
 	if err != nil {
 		return nil, err
 	}
-	var meshColorsInfo *meshinfo.FacesData
-	if s.ImportColors {
-		handler := newMesh.CreateInformationHandler()
-		meshColorsInfo = meshinfo.NewNodeColorFacesData(0)
-		handler.AddInformation(meshColorsInfo)
-	}
 
-	globalColor, err := s.readHeader(stream)
+	// Read header
+	buff := make([]byte, 80)
+	_, err = stream.Read(buff)
 	if err != nil {
 		return nil, err
 	}
+
 	var faceCount uint32
 	err = s.readBytes(stream, faceCount)
 	if err != nil {
 		return nil, err
 	}
 
-	const attrToColor = 255.0 / 31.0
 	for nFace := 0; nFace < int(faceCount); nFace++ {
 		var facet stlBinaryFace 
 		err = s.readBytes(stream, facet)
@@ -73,45 +66,13 @@ func (s *STLBinary) LoadMesh(stream io.Reader) (*mesh.Mesh, error) {
 			}
 		}
 
-		face, err := newMesh.AddFace(nodes[0], nodes[1], nodes[2])
+		_, err := newMesh.AddFace(nodes[0], nodes[1], nodes[2])
 		if err != nil && !s.IgnoreInvalidFaces {
 			return nil, err
-		}
-		if meshColorsInfo != nil {
-			red := uint8(float32(facet.attribute & 0x1) / attrToColor)
-			green := uint8(float32((facet.attribute >> 5) & 0x1) / attrToColor)
-			blue := uint8(float32((facet.attribute >> 10) & 0x1) / attrToColor)
-			faceInfo := meshColorsInfo.GetFaceData(face.Index).(*meshinfo.NodeColor)
-			if ((facet.attribute & 0x8000) == 0) {
-				faceInfo.Colors[0] = color.RGBA{red, green, blue, 0xff}
-			} else {
-				faceInfo.Colors[0] = globalColor;
-			}
-			faceInfo.Colors[1], faceInfo.Colors[2] = faceInfo.Colors[0], faceInfo.Colors[0]
 		}
 	}
 
 	return newMesh, nil
-}
-
-func (s *STLBinary) readHeader(stream io.Reader) (globalColor color.RGBA, err error) {
-	globalColor = color.RGBA{}
-	buff := make([]byte, 80)
-	_, err = stream.Read(buff)
-	if err != nil {
-		return
-	}
-	var header string
-	buf := bytes.NewReader(buff)
-	err = binary.Read(buf, binary.LittleEndian, &header)
-	if err != nil {
-		return
-	}
-	index := strings.Index(header, "COLOR=")
-	if index != -1 && index <= 76 {
-		globalColor = color.RGBA{header[index + 6], header[index + 7], header[index + 8], header[index + 9]}
-	}
-	return
 }
 
 func (s *STLBinary) readBytes(stream io.Reader, data interface{}) error {
