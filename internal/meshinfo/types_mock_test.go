@@ -200,29 +200,16 @@ func (m *MockTypedInformer) EXPECT() *MockTypedInformerMockRecorder {
 	return m.recorder
 }
 
-// InfoTypes mocks base method
-func (m *MockTypedInformer) InfoTypes() []reflect.Type {
-	ret := m.ctrl.Call(m, "InfoTypes")
+// infoTypes mocks base method
+func (m *MockTypedInformer) infoTypes() []reflect.Type {
+	ret := m.ctrl.Call(m, "infoTypes")
 	ret0, _ := ret[0].([]reflect.Type)
 	return ret0
 }
 
-// InfoTypes indicates an expected call of InfoTypes
-func (mr *MockTypedInformerMockRecorder) InfoTypes() *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InfoTypes", reflect.TypeOf((*MockTypedInformer)(nil).InfoTypes))
-}
-
-// InformationByType mocks base method
-func (m *MockTypedInformer) InformationByType(arg0 reflect.Type) (*FacesData, bool) {
-	ret := m.ctrl.Call(m, "InformationByType", arg0)
-	ret0, _ := ret[0].(*FacesData)
-	ret1, _ := ret[1].(bool)
-	return ret0, ret1
-}
-
-// InformationByType indicates an expected call of InformationByType
-func (mr *MockTypedInformerMockRecorder) InformationByType(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InformationByType", reflect.TypeOf((*MockTypedInformer)(nil).InformationByType), arg0)
+// infoTypes indicates an expected call of infoTypes
+func (mr *MockTypedInformerMockRecorder) infoTypes() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "infoTypes", reflect.TypeOf((*MockTypedInformer)(nil).infoTypes))
 }
 
 // informationByType mocks base method
@@ -344,14 +331,14 @@ func (mr *MockHandleableMockRecorder) clone(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "clone", reflect.TypeOf((*MockHandleable)(nil).clone), arg0)
 }
 
-// cloneFaceInfosFrom mocks base method
-func (m *MockHandleable) cloneFaceInfosFrom(arg0 uint32, arg1 FaceQuerier, arg2 uint32) {
-	m.ctrl.Call(m, "cloneFaceInfosFrom", arg0, arg1, arg2)
+// copyFaceInfosFrom mocks base method
+func (m *MockHandleable) copyFaceInfosFrom(arg0 uint32, arg1 FaceQuerier, arg2 uint32) {
+	m.ctrl.Call(m, "copyFaceInfosFrom", arg0, arg1, arg2)
 }
 
-// cloneFaceInfosFrom indicates an expected call of cloneFaceInfosFrom
-func (mr *MockHandleableMockRecorder) cloneFaceInfosFrom(arg0, arg1, arg2 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "cloneFaceInfosFrom", reflect.TypeOf((*MockHandleable)(nil).cloneFaceInfosFrom), arg0, arg1, arg2)
+// copyFaceInfosFrom indicates an expected call of copyFaceInfosFrom
+func (mr *MockHandleableMockRecorder) copyFaceInfosFrom(arg0, arg1, arg2 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "copyFaceInfosFrom", reflect.TypeOf((*MockHandleable)(nil).copyFaceInfosFrom), arg0, arg1, arg2)
 }
 
 // permuteNodeInformation mocks base method

@@ -21,8 +21,8 @@ func NewHandler() *Handler {
 	return handler
 }
 
-// InfoTypes returns the types of informations stored in the handler.
-func (h *Handler) InfoTypes() []reflect.Type {
+// infoTypes returns the types of informations stored in the handler.
+func (h *Handler) infoTypes() []reflect.Type {
 	types := make([]reflect.Type, 0, len(h.lookup))
 	for infoType := range h.lookup {
 		types = append(types, infoType)
@@ -73,7 +73,7 @@ func (h *Handler) InformationCount() uint32 {
 
 // AddInfoFrom adds the information of the target handler.
 func (h *Handler) AddInfoFrom(informer TypedInformer, currentFaceCount uint32) {
-	types := informer.InfoTypes()
+	types := informer.infoTypes()
 	for _, infoType := range types {
 		otherInfo, _ := informer.informationByType(infoType)
 		if _, ok := h.lookup[infoType]; !ok {
@@ -82,14 +82,14 @@ func (h *Handler) AddInfoFrom(informer TypedInformer, currentFaceCount uint32) {
 	}
 }
 
-// CloneFaceInfosFrom clones the data from another face.
-func (h *Handler) CloneFaceInfosFrom(faceIndex uint32, informer TypedInformer, otherFaceIndex uint32) {
-	types := informer.InfoTypes()
+// CopyFaceInfosFrom clones the data from another face.
+func (h *Handler) CopyFaceInfosFrom(faceIndex uint32, informer TypedInformer, otherFaceIndex uint32) {
+	types := informer.infoTypes()
 	for _, infoType := range types {
 		otherInfo, _ := informer.informationByType(infoType)
 		info, ok := h.lookup[infoType]
 		if ok {
-			info.cloneFaceInfosFrom(faceIndex, otherInfo, otherFaceIndex)
+			info.copyFaceInfosFrom(faceIndex, otherInfo, otherFaceIndex)
 		}
 	}
 }

@@ -62,7 +62,7 @@ func TestHandler_addInformation(t *testing.T) {
 	}
 }
 
-func TestHandler_InfoTypes(t *testing.T) {
+func TestHandler_infoTypes(t *testing.T) {
 	h := NewHandler()
 	h.lookup[reflect.TypeOf((*string)(nil)).Elem()] = nil
 	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = nil
@@ -76,8 +76,8 @@ func TestHandler_InfoTypes(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.h.InfoTypes(); !sameTypeSlice(got, tt.want) {
-				t.Errorf("Handler.InfoTypes() = %v, want %v", got, tt.want)
+			if got := tt.h.infoTypes(); !sameTypeSlice(got, tt.want) {
+				t.Errorf("Handler.infoTypes() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -187,7 +187,7 @@ func TestHandler_AddInfoFrom(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.args.otherHandler.EXPECT().InfoTypes().Return(types)
+			tt.args.otherHandler.EXPECT().infoTypes().Return(types)
 			tt.args.otherHandler.EXPECT().informationByType(gomock.Any()).Return(otherHandleable, true).MaxTimes(3)
 			otherHandleable.EXPECT().clone(tt.args.currentFaceCount).Return(ownHandleable)
 			ownHandleable.EXPECT().InfoType().Return(reflect.TypeOf((*string)(nil)).Elem())
@@ -197,7 +197,7 @@ func TestHandler_AddInfoFrom(t *testing.T) {
 	}
 }
 
-func TestHandler_CloneFaceInfosFrom(t *testing.T) {
+func TestHandler_CopyFaceInfosFrom(t *testing.T) {
 	types := []reflect.Type{reflect.TypeOf((*string)(nil)).Elem(), reflect.TypeOf((*float32)(nil)).Elem(), reflect.TypeOf((*float64)(nil)).Elem()}
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
@@ -220,10 +220,10 @@ func TestHandler_CloneFaceInfosFrom(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.args.otherHandler.EXPECT().InfoTypes().Return(types)
+			tt.args.otherHandler.EXPECT().infoTypes().Return(types)
 			tt.args.otherHandler.EXPECT().informationByType(gomock.Any()).Return(otherHandleable, true).MaxTimes(3)
-			ownHandleable.EXPECT().cloneFaceInfosFrom(tt.args.faceIndex, ownHandleable, tt.args.otherFaceIndex).MaxTimes(2)
-			tt.h.CloneFaceInfosFrom(tt.args.faceIndex, tt.args.otherHandler, tt.args.otherFaceIndex)
+			ownHandleable.EXPECT().copyFaceInfosFrom(tt.args.faceIndex, ownHandleable, tt.args.otherFaceIndex).MaxTimes(2)
+			tt.h.CopyFaceInfosFrom(tt.args.faceIndex, tt.args.otherHandler, tt.args.otherFaceIndex)
 		})
 	}
 }

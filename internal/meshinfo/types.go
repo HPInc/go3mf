@@ -51,8 +51,8 @@ type Container interface {
 type faceModifier interface {
 	// resetFaceInformation clears the data of an specific face.
 	resetFaceInformation(faceIndex uint32)
-	// cloneFaceInfosFrom clones the data from another face.
-	cloneFaceInfosFrom(faceIndex uint32, otherInfo FaceQuerier, otherFaceIndex uint32)
+	// copyFaceInfosFrom clones the data from another face.
+	copyFaceInfosFrom(faceIndex uint32, otherInfo FaceQuerier, otherFaceIndex uint32)
 	// permuteNodeInformation swap the data of the target mesh.
 	permuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3 uint32)
 }
@@ -72,10 +72,8 @@ type Handleable interface {
 
 // TypedInformer inform about specific types of information.
 type TypedInformer interface {
-	// InformationByType retrieves the information of the desired type.
-	InformationByType(infoType reflect.Type) (*FacesData, bool)
-	// InfoTypes returns the types of informations stored in the handler.
-	InfoTypes() []reflect.Type
+	// infoTypes returns the types of informations stored in the handler.
+	infoTypes() []reflect.Type
 	// informationByType retrieves the information of the desired type.
 	informationByType(infoType reflect.Type) (Handleable, bool)
 }

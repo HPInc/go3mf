@@ -36,8 +36,8 @@ func (b *FacesData) resetFaceInformation(faceIndex uint32) {
 	b.GetFaceData(faceIndex).Invalidate()
 }
 
-// cloneFaceInfosFrom clones the data from another face.
-func (b *FacesData) cloneFaceInfosFrom(faceIndex uint32, otherInfo FaceQuerier, otherFaceIndex uint32) {
+// copyFaceInfosFrom clones the data from another face.
+func (b *FacesData) copyFaceInfosFrom(faceIndex uint32, otherInfo FaceQuerier, otherFaceIndex uint32) {
 	b.GetFaceData(faceIndex).Copy(otherInfo.GetFaceData(otherFaceIndex))
 }
 

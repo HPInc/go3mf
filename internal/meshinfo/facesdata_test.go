@@ -148,7 +148,7 @@ func TestFacesData_clone(t *testing.T) {
 	}
 }
 
-func TestFacesData_cloneFaceInfosFrom(t *testing.T) {
+func TestFacesData_copyFaceInfosFrom(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockContainer := NewMockContainer(mockCtrl)
@@ -171,7 +171,7 @@ func TestFacesData_cloneFaceInfosFrom(t *testing.T) {
 			mockContainer.EXPECT().GetFaceData(tt.args.faceIndex).Return(tt.data1)
 			tt.args.otherInfo.EXPECT().GetFaceData(tt.args.otherFaceIndex).Return(tt.data2)
 			tt.data1.EXPECT().Copy(tt.data2)
-			tt.b.cloneFaceInfosFrom(tt.args.faceIndex, tt.args.otherInfo, tt.args.otherFaceIndex)
+			tt.b.copyFaceInfosFrom(tt.args.faceIndex, tt.args.otherInfo, tt.args.otherFaceIndex)
 		})
 	}
 }

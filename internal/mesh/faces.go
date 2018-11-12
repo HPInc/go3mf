@@ -84,7 +84,7 @@ func (f *faceStructure) merge(other mergeableFaces, newNodes []*Node) error {
 			return err
 		}
 		if otherHandler != nil {
-			f.informationHandler.CloneFaceInfosFrom(newFace.Index, otherHandler, face.Index)
+			f.informationHandler.CopyFaceInfosFrom(newFace.Index, otherHandler, face.Index)
 		}
 	}
 	return nil
