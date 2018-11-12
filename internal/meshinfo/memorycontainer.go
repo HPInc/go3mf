@@ -37,7 +37,7 @@ func (m *memoryContainer) InfoType() reflect.Type {
 
 // AddFaceData adds data to the last added face and returns the pointer to the data of the added face.
 // The parameter newFaceCount should indicate the faces information stored in the container, including the new one.
-// If the count is not equal to the one returned by GetCurrentFaceCount an error will be returned.
+// If the count is not equal to the one returned by FaceCount an error will be returned.
 func (m *memoryContainer) AddFaceData(newFaceCount uint32) (FaceData, error) {
 	faceData := reflect.New(m.infoType.Elem())
 	m.dataBlocks = reflect.Append(m.dataBlocks, faceData)
@@ -48,15 +48,11 @@ func (m *memoryContainer) AddFaceData(newFaceCount uint32) (FaceData, error) {
 	return faceData.Interface().(FaceData), nil
 }
 
-func (m *memoryContainer) GetFaceData(faceIndex uint32) (FaceData, error) {
-	if faceIndex >= m.faceCount {
-		return nil, &FaceDataIndexError{m.faceCount, faceIndex}
-	}
-
-	return m.dataBlocks.Index(int(faceIndex)).Interface().(FaceData), nil
+func (m *memoryContainer) GetFaceData(faceIndex uint32) FaceData {
+	return m.dataBlocks.Index(int(faceIndex)).Interface().(FaceData)
 }
 
-func (m *memoryContainer) GetCurrentFaceCount() uint32 {
+func (m *memoryContainer) FaceCount() uint32 {
 	return m.faceCount
 }
 

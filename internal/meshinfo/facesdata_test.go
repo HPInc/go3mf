@@ -1,7 +1,6 @@
 package meshinfo
 
 import (
-	"errors"
 	"reflect"
 	"testing"
 
@@ -41,29 +40,17 @@ func TestFacesData_resetFaceInformation(t *testing.T) {
 		faceIndex uint32
 	}
 	tests := []struct {
-		name    string
-		b       *FacesData
-		args    args
-		wantErr bool
+		name string
+		b    *FacesData
+		args args
 	}{
-		{"error", newFacesData(mockContainer), args{2}, true},
-		{"success", newFacesData(mockContainer), args{4}, false},
+		{"success", newFacesData(mockContainer), args{4}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockInvalidator := NewMockFaceData(mockCtrl)
-			var (
-				err   error
-				times int
-			)
-			if tt.wantErr {
-				err = errors.New("")
-			} else {
-				times = 1
-			}
-
-			mockContainer.EXPECT().GetFaceData(tt.args.faceIndex).Return(mockInvalidator, err)
-			mockInvalidator.EXPECT().Invalidate().Times(times)
+			mockContainer.EXPECT().GetFaceData(tt.args.faceIndex).Return(mockInvalidator)
+			mockInvalidator.EXPECT().Invalidate()
 			tt.b.resetFaceInformation(tt.args.faceIndex)
 		})
 	}
@@ -85,8 +72,8 @@ func TestFacesData_Clear(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockInvalidator := NewMockFaceData(mockCtrl)
-			mockContainer.EXPECT().GetCurrentFaceCount().Return(tt.faceNum)
-			mockContainer.EXPECT().GetFaceData(gomock.Any()).Return(mockInvalidator, nil).Times(int(tt.faceNum))
+			mockContainer.EXPECT().FaceCount().Return(tt.faceNum)
+			mockContainer.EXPECT().GetFaceData(gomock.Any()).Return(mockInvalidator).Times(int(tt.faceNum))
 			mockInvalidator.EXPECT().Invalidate().Times(int(tt.faceNum))
 			tt.b.Clear()
 		})
@@ -176,21 +163,14 @@ func TestFacesData_cloneFaceInfosFrom(t *testing.T) {
 		b            *FacesData
 		args         args
 		data1, data2 *MockFaceData
-		err1, err2   error
 	}{
-		{"err1", newFacesData(mockContainer), args{1, NewMockHandleable(mockCtrl), 2}, NewMockFaceData(mockCtrl), NewMockFaceData(mockCtrl), errors.New(""), nil},
-		{"err2", newFacesData(mockContainer), args{1, NewMockHandleable(mockCtrl), 2}, NewMockFaceData(mockCtrl), NewMockFaceData(mockCtrl), nil, errors.New("")},
-		{"success", newFacesData(mockContainer), args{1, NewMockHandleable(mockCtrl), 2}, NewMockFaceData(mockCtrl), NewMockFaceData(mockCtrl), nil, nil},
+		{"success", newFacesData(mockContainer), args{1, NewMockHandleable(mockCtrl), 2}, NewMockFaceData(mockCtrl), NewMockFaceData(mockCtrl)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockContainer.EXPECT().GetFaceData(tt.args.faceIndex).Return(tt.data1, tt.err1)
-			if tt.err1 == nil {
-				tt.args.otherInfo.EXPECT().GetFaceData(tt.args.otherFaceIndex).Return(tt.data2, tt.err2)
-			}
-			if tt.err1 == nil && tt.err2 == nil {
-				tt.data1.EXPECT().Copy(tt.data2)
-			}
+			mockContainer.EXPECT().GetFaceData(tt.args.faceIndex).Return(tt.data1)
+			tt.args.otherInfo.EXPECT().GetFaceData(tt.args.otherFaceIndex).Return(tt.data2)
+			tt.data1.EXPECT().Copy(tt.data2)
 			tt.b.cloneFaceInfosFrom(tt.args.faceIndex, tt.args.otherInfo, tt.args.otherFaceIndex)
 		})
 	}
@@ -211,17 +191,13 @@ func TestFacesData_permuteNodeInformation(t *testing.T) {
 		b    *FacesData
 		args args
 		data *MockFaceData
-		err  error
 	}{
-		{"err", newFacesData(mockContainer), args{1, 2, 3, 4}, NewMockFaceData(mockCtrl), errors.New("")},
-		{"success", newFacesData(mockContainer), args{1, 2, 3, 4}, NewMockFaceData(mockCtrl), nil},
+		{"success", newFacesData(mockContainer), args{1, 2, 3, 4}, NewMockFaceData(mockCtrl)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockContainer.EXPECT().GetFaceData(tt.args.faceIndex).Return(tt.data, tt.err)
-			if tt.err == nil {
-				tt.data.EXPECT().Permute(tt.args.nodeIndex1, tt.args.nodeIndex2, tt.args.nodeIndex3)
-			}
+			mockContainer.EXPECT().GetFaceData(tt.args.faceIndex).Return(tt.data)
+			tt.data.EXPECT().Permute(tt.args.nodeIndex1, tt.args.nodeIndex2, tt.args.nodeIndex3)
 			tt.b.permuteNodeInformation(tt.args.faceIndex, tt.args.nodeIndex1, tt.args.nodeIndex2, tt.args.nodeIndex3)
 		})
 	}
@@ -239,19 +215,15 @@ func TestFacesData_FaceHasData(t *testing.T) {
 		b    *FacesData
 		args args
 		data *MockFaceData
-		err  error
 		want bool
 	}{
-		{"err", newFacesData(mockContainer), args{1}, NewMockFaceData(mockCtrl), errors.New(""), false},
-		{"false", newFacesData(mockContainer), args{1}, NewMockFaceData(mockCtrl), nil, false},
-		{"true", newFacesData(mockContainer), args{1}, NewMockFaceData(mockCtrl), nil, true},
+		{"false", newFacesData(mockContainer), args{1}, NewMockFaceData(mockCtrl), false},
+		{"true", newFacesData(mockContainer), args{1}, NewMockFaceData(mockCtrl), true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockContainer.EXPECT().GetFaceData(tt.args.faceIndex).Return(tt.data, tt.err)
-			if tt.err == nil {
-				tt.data.EXPECT().HasData().Return(tt.want)
-			}
+			mockContainer.EXPECT().GetFaceData(tt.args.faceIndex).Return(tt.data)
+			tt.data.EXPECT().HasData().Return(tt.want)
 			if got := tt.b.FaceHasData(tt.args.faceIndex); got != tt.want {
 				t.Errorf("FacesData.FaceHasData() = %v, want %v", got, tt.want)
 			}

@@ -28,7 +28,7 @@ func TestVectorTree_Units(t *testing.T) {
 	if got := p.Units(); got != VectorDefaultUnits {
 		t.Errorf("VectorTree.Units() = %v, want %v", got, VectorDefaultUnits)
 	}
-	p.SetUnits(0)
+	p.units = 0
 	if got := p.Units(); got != VectorDefaultUnits {
 		t.Errorf("VectorTree.Units() = %v, want %v", got, VectorDefaultUnits)
 	}

@@ -49,7 +49,7 @@ func Test_memoryContainer_clone(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.m.clone(tt.args.currentFaceCount); got.GetCurrentFaceCount() != tt.args.currentFaceCount {
+			if got := tt.m.clone(tt.args.currentFaceCount); got.FaceCount() != tt.args.currentFaceCount {
 				t.Errorf("memoryContainer.clone() = %v, want %v", got, tt.want)
 			}
 		})
@@ -102,28 +102,20 @@ func Test_memoryContainer_GetFaceData(t *testing.T) {
 		m       *memoryContainer
 		args    args
 		wantVal FaceData
-		wantErr bool
 	}{
-		{"invalid index", m, args{1}, nil, true},
-		{"valid index", m, args{0}, mockFaceData, false},
+		{"valid index", m, args{0}, mockFaceData},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotVal, err := tt.m.GetFaceData(tt.args.index)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("memoryContainer.GetFaceData() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !tt.wantErr {
-				if !reflect.DeepEqual(gotVal, initial) {
-					t.Errorf("memoryContainer.GetFaceData() = %v, want %v", gotVal, initial)
-				}
+			gotVal := tt.m.GetFaceData(tt.args.index)
+			if !reflect.DeepEqual(gotVal, initial) {
+				t.Errorf("memoryContainer.GetFaceData() = %v, want %v", gotVal, initial)
 			}
 		})
 	}
 }
 
-func Test_memoryContainer_GetCurrentFaceCount(t *testing.T) {
+func Test_memoryContainer_FaceCount(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockFaceData := NewMockFaceData(mockCtrl)
@@ -140,8 +132,8 @@ func Test_memoryContainer_GetCurrentFaceCount(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.m.GetCurrentFaceCount(); got != tt.want {
-				t.Errorf("memoryContainer.GetCurrentFaceCount() = %v, want %v", got, tt.want)
+			if got := tt.m.FaceCount(); got != tt.want {
+				t.Errorf("memoryContainer.FaceCount() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -162,7 +154,7 @@ func Test_memoryContainer_Clear(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.m.Clear()
-			if got := tt.m.GetCurrentFaceCount(); got != 0 {
+			if got := tt.m.FaceCount(); got != 0 {
 				t.Errorf("memoryContainer.Clear() = %v, want %v", got, 0)
 			}
 		})

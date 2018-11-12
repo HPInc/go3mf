@@ -20,16 +20,12 @@ func (b *FacesData) clone(currentFaceCount uint32) Handleable {
 
 // FaceHasData checks if the specific face has any associated data.
 func (b *FacesData) FaceHasData(faceIndex uint32) bool {
-	data, err := b.GetFaceData(faceIndex)
-	if err != nil {
-		return false
-	}
-	return data.HasData()
+	return b.GetFaceData(faceIndex).HasData()
 }
 
 // Clear removes all the information stored in the container.
 func (b *FacesData) Clear() {
-	count := int(b.GetCurrentFaceCount())
+	count := int(b.FaceCount())
 	for i := 0; i < count; i++ {
 		b.resetFaceInformation(uint32(i))
 	}
@@ -37,33 +33,17 @@ func (b *FacesData) Clear() {
 
 // resetFaceInformation clears the data of an specific face.
 func (b *FacesData) resetFaceInformation(faceIndex uint32) {
-	data, err := b.GetFaceData(faceIndex)
-	if err != nil {
-		return
-	}
-	data.Invalidate()
+	b.GetFaceData(faceIndex).Invalidate()
 }
 
 // cloneFaceInfosFrom clones the data from another face.
 func (b *FacesData) cloneFaceInfosFrom(faceIndex uint32, otherInfo FaceQuerier, otherFaceIndex uint32) {
-	targetData, err := b.GetFaceData(faceIndex)
-	if err != nil {
-		return
-	}
-	sourceData, err := otherInfo.GetFaceData(otherFaceIndex)
-	if err != nil {
-		return
-	}
-	targetData.Copy(sourceData)
+	b.GetFaceData(faceIndex).Copy(otherInfo.GetFaceData(otherFaceIndex))
 }
 
 // permuteNodeInformation swap the data of the target mesh.
 func (b *FacesData) permuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3 uint32) {
-	data, err := b.GetFaceData(faceIndex)
-	if err != nil {
-		return
-	}
-	data.Permute(nodeIndex1, nodeIndex2, nodeIndex3)
+	b.GetFaceData(faceIndex).Permute(nodeIndex1, nodeIndex2, nodeIndex3)
 }
 
 // setInternalID sets an ID for the whole mesh information.

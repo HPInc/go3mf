@@ -130,24 +130,23 @@ func (mr *MockContainerMockRecorder) Clear() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clear", reflect.TypeOf((*MockContainer)(nil).Clear))
 }
 
-// GetCurrentFaceCount mocks base method
-func (m *MockContainer) GetCurrentFaceCount() uint32 {
-	ret := m.ctrl.Call(m, "GetCurrentFaceCount")
+// FaceCount mocks base method
+func (m *MockContainer) FaceCount() uint32 {
+	ret := m.ctrl.Call(m, "FaceCount")
 	ret0, _ := ret[0].(uint32)
 	return ret0
 }
 
-// GetCurrentFaceCount indicates an expected call of GetCurrentFaceCount
-func (mr *MockContainerMockRecorder) GetCurrentFaceCount() *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentFaceCount", reflect.TypeOf((*MockContainer)(nil).GetCurrentFaceCount))
+// FaceCount indicates an expected call of FaceCount
+func (mr *MockContainerMockRecorder) FaceCount() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FaceCount", reflect.TypeOf((*MockContainer)(nil).FaceCount))
 }
 
 // GetFaceData mocks base method
-func (m *MockContainer) GetFaceData(arg0 uint32) (FaceData, error) {
+func (m *MockContainer) GetFaceData(arg0 uint32) FaceData {
 	ret := m.ctrl.Call(m, "GetFaceData", arg0)
 	ret0, _ := ret[0].(FaceData)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	return ret0
 }
 
 // GetFaceData indicates an expected call of GetFaceData
@@ -264,11 +263,10 @@ func (m *MockFaceQuerier) EXPECT() *MockFaceQuerierMockRecorder {
 }
 
 // GetFaceData mocks base method
-func (m *MockFaceQuerier) GetFaceData(arg0 uint32) (FaceData, error) {
+func (m *MockFaceQuerier) GetFaceData(arg0 uint32) FaceData {
 	ret := m.ctrl.Call(m, "GetFaceData", arg0)
 	ret0, _ := ret[0].(FaceData)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	return ret0
 }
 
 // GetFaceData indicates an expected call of GetFaceData
@@ -313,11 +311,10 @@ func (mr *MockHandleableMockRecorder) AddFaceData(arg0 interface{}) *gomock.Call
 }
 
 // GetFaceData mocks base method
-func (m *MockHandleable) GetFaceData(arg0 uint32) (FaceData, error) {
+func (m *MockHandleable) GetFaceData(arg0 uint32) FaceData {
 	ret := m.ctrl.Call(m, "GetFaceData", arg0)
 	ret0, _ := ret[0].(FaceData)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	return ret0
 }
 
 // GetFaceData indicates an expected call of GetFaceData

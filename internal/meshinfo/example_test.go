@@ -36,10 +36,7 @@ func Example() {
 
 	fmt.Println(data.HasData())
 
-	newData, err := materialInfo.GetFaceData(0)
-	if err != nil {
-		panic(err)
-	}
+	newData := materialInfo.GetFaceData(0)
 	fmt.Println(newData)
 
 	// Output:

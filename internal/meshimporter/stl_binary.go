@@ -84,17 +84,13 @@ func (s *STLBinary) LoadMesh(stream io.Reader) (*mesh.Mesh, error) {
 			red := uint8(float32(facet.attribute & 0x1) / attrToColor)
 			green := uint8(float32((facet.attribute >> 5) & 0x1) / attrToColor)
 			blue := uint8(float32((facet.attribute >> 10) & 0x1) / attrToColor)
-			faceInfo, err := meshColorsInfo.GetFaceData(face.Index)
-			if err != nil && !s.IgnoreInvalidFaces {
-				return nil, err
-			}
-			colorInfo := faceInfo.(*meshinfo.NodeColor)
+			faceInfo := meshColorsInfo.GetFaceData(face.Index).(*meshinfo.NodeColor)
 			if ((facet.attribute & 0x8000) == 0) {
-				colorInfo.Colors[0] = color.RGBA{red, green, blue, 0xff}
+				faceInfo.Colors[0] = color.RGBA{red, green, blue, 0xff}
 			} else {
-				colorInfo.Colors[0] = globalColor;
+				faceInfo.Colors[0] = globalColor;
 			}
-			colorInfo.Colors[1], colorInfo.Colors[2] = colorInfo.Colors[0], colorInfo.Colors[0]
+			faceInfo.Colors[1], faceInfo.Colors[2] = faceInfo.Colors[0], faceInfo.Colors[0]
 		}
 	}
 

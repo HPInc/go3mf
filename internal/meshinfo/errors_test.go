@@ -38,20 +38,3 @@ func TestFaceCountMissmatchError_Error(t *testing.T) {
 		})
 	}
 }
-
-func TestFaceDataIndexError_Error(t *testing.T) {
-	tests := []struct {
-		name string
-		e    *FaceDataIndexError
-		want string
-	}{
-		{"error", &FaceDataIndexError{1, 2}, fmt.Sprintf("could not access face data (%d > %d)", 2, 1)},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.Error(); got != tt.want {
-				t.Errorf("FaceDataIndexError.Error() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}

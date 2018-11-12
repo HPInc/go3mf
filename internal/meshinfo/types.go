@@ -22,7 +22,7 @@ type FaceData interface {
 // FaceQuerier can query information for an indexed face.
 type FaceQuerier interface {
 	// GetFaceData returns the data of the face with the target index.
-	GetFaceData(faceIndex uint32) (val FaceData, err error)
+	GetFaceData(faceIndex uint32) FaceData
 }
 
 type dataCreator interface {
@@ -37,8 +37,8 @@ type dataCreator interface {
 type Container interface {
 	dataCreator
 	FaceQuerier
-	// GetCurrentFaceCount returns the number of faces information stored in the container.
-	GetCurrentFaceCount() uint32
+	// FaceCount returns the number of faces information stored in the container.
+	FaceCount() uint32
 	// InfoType returns the type of the stored data.
 	InfoType() reflect.Type
 	// Clear removes all the information stored in the container.
