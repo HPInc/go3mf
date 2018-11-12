@@ -67,10 +67,7 @@ func (s *STLBinary) LoadMesh(stream io.Reader) (*mesh.Mesh, error) {
 			if index, ok := vectorTree.FindVector(vec); ok {
 				nodes[nVertex] = newMesh.Node(index)
 			} else {
-				newNode, err := newMesh.AddNode(vec)
-				if err != nil && !s.IgnoreInvalidFaces {
-					return nil, err
-				}
+				newNode := newMesh.AddNode(vec)
 				vectorTree.AddVector(newNode.Position, newNode.Index)
 				nodes[nVertex] = newNode
 			}

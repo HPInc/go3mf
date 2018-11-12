@@ -39,7 +39,7 @@ func (f *faceStructure) AddFace(node1, node2, node3 *Node) (*Face, error) {
 
 	faceCount := f.FaceCount()
 	if faceCount >= f.getMaxFaceCount() {
-		return nil, new(MaxFaceError)
+		panic(new(MaxFaceError))
 	}
 
 	face := &Face{

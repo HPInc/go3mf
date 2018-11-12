@@ -73,11 +73,11 @@ func Test_nodeStructure_AddNode(t *testing.T) {
 		position mgl32.Vec3
 	}
 	tests := []struct {
-		name    string
-		n       *nodeStructure
-		args    args
-		want    *Node
-		wantErr bool
+		name      string
+		n         *nodeStructure
+		args      args
+		want      *Node
+		wantPanic bool
 	}{
 		{"max", &nodeStructure{maxNodeCount: 1, nodes: []*Node{new(Node)}}, args{mgl32.Vec3{}}, nil, true},
 		{"base", &nodeStructure{nodes: []*Node{new(Node)}}, args{mgl32.Vec3{1.0, 2.0, 3.0}}, &Node{
@@ -87,11 +87,12 @@ func Test_nodeStructure_AddNode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.n.AddNode(tt.args.position)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("nodeStructure.AddNode() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			defer func() {
+				if r := recover(); tt.wantPanic && r == nil {
+					t.Error("nodeStructure.AddNode() want panic")
+				}
+			}()
+			got := tt.n.AddNode(tt.args.position)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("nodeStructure.AddNode() = %v, want %v", got, tt.want)
 			}
@@ -127,29 +128,24 @@ func Test_nodeStructure_merge(t *testing.T) {
 		matrix mgl32.Mat4
 	}
 	tests := []struct {
-		name    string
-		n       *nodeStructure
-		args    args
-		want    []*Node
-		wantErr bool
-		times   uint32
+		name  string
+		n     *nodeStructure
+		args  args
+		want  []*Node
+		times uint32
 	}{
-		{"zero", new(nodeStructure), args{mockMesh, mgl32.Ident4()}, make([]*Node, 0), false, 0},
-		{"err", &nodeStructure{maxNodeCount: 1, nodes: []*Node{new(Node)}}, args{mockMesh, mgl32.Ident4()}, nil, true, 1},
+		{"zero", new(nodeStructure), args{mockMesh, mgl32.Ident4()}, make([]*Node, 0), 0},
 		{"merged", new(nodeStructure), args{mockMesh, mgl32.Translate3D(1.0, 2.0, 3.0)}, []*Node{
 			{Index: 0, Position: mgl32.Vec3{1.0, 2.0, 3.0}},
 			{Index: 1, Position: mgl32.Vec3{1.0, 2.0, 3.0}}},
-			false, 2},
+			2,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockMesh.EXPECT().NodeCount().Return(tt.times)
 			mockMesh.EXPECT().Node(gomock.Any()).Return(new(Node)).Times(int(tt.times))
-			got, err := tt.n.merge(tt.args.other, tt.args.matrix)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("nodeStructure.merge() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			got := tt.n.merge(tt.args.other, tt.args.matrix)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("nodeStructure.merge() = %v, want %v", got, tt.want)
 			}

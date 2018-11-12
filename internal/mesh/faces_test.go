@@ -76,20 +76,26 @@ func Test_faceStructure_AddFace(t *testing.T) {
 		node3 *Node
 	}
 	tests := []struct {
-		name    string
-		f       *faceStructure
-		args    args
-		want    *Face
-		wantErr bool
+		name      string
+		f         *faceStructure
+		args      args
+		want      *Face
+		wantErr   bool
+		wantPanic bool
 	}{
-		{"max", &faceStructure{maxFaceCount: 1, faces: make([]*Face, 1)}, args{new(Node), new(Node), new(Node)}, nil, true},
-		{"duplicated0-1", new(faceStructure), args{node, node, new(Node)}, nil, true},
-		{"duplicated0-2", new(faceStructure), args{node, new(Node), node}, nil, true},
-		{"duplicated1-2", new(faceStructure), args{new(Node), node, node}, nil, true},
-		{"base", &faceStructure{informationHandler: meshinfo.NewHandler(), faces: []*Face{new(Face)}}, args{new(Node), new(Node), new(Node)}, &Face{Index: 1}, false},
+		{"max", &faceStructure{maxFaceCount: 1, faces: make([]*Face, 1)}, args{new(Node), new(Node), new(Node)}, nil, false, true},
+		{"duplicated0-1", new(faceStructure), args{node, node, new(Node)}, nil, true, false},
+		{"duplicated0-2", new(faceStructure), args{node, new(Node), node}, nil, true, false},
+		{"duplicated1-2", new(faceStructure), args{new(Node), node, node}, nil, true, false},
+		{"base", &faceStructure{informationHandler: meshinfo.NewHandler(), faces: []*Face{new(Face)}}, args{new(Node), new(Node), new(Node)}, &Face{Index: 1}, false, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				if r := recover(); tt.wantPanic && r == nil {
+					t.Error("faceStructure.AddFace() want panic")
+				}
+			}()
 			got, err := tt.f.AddFace(tt.args.node1, tt.args.node2, tt.args.node3)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("faceStructure.AddFace() error = %v, wantErr %v", err, tt.wantErr)
@@ -152,6 +158,11 @@ func Test_faceStructure_merge(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				if r := recover(); tt.wantErr && r == nil {
+					t.Error("faceStructure.merge() want panic")
+				}
+			}()
 			mockMesh.EXPECT().FaceCount().Return(tt.times)
 			mockMesh.EXPECT().InformationHandler().Return(meshinfo.NewHandler()).MaxTimes(int(tt.times))
 			face := &Face{NodeIndices: [3]uint32{0, 1, 2}}

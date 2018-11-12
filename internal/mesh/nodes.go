@@ -33,10 +33,10 @@ func (n *nodeStructure) Node(index uint32) *Node {
 }
 
 // AddNode adds a node the the mesh at the target position.
-func (n *nodeStructure) AddNode(position mgl32.Vec3) (*Node, error) {
+func (n *nodeStructure) AddNode(position mgl32.Vec3) *Node {
 	nodeCount := n.NodeCount()
 	if nodeCount >= n.getMaxNodeCount() {
-		return nil, new(MaxNodeError)
+		panic(new(MaxNodeError))
 	}
 
 	node := &Node{
@@ -44,7 +44,7 @@ func (n *nodeStructure) AddNode(position mgl32.Vec3) (*Node, error) {
 		Position: position,
 	}
 	n.nodes = append(n.nodes, node)
-	return node, nil
+	return node
 }
 
 func (n *nodeStructure) checkSanity() bool {
@@ -61,23 +61,19 @@ func (n *nodeStructure) checkSanity() bool {
 	return true
 }
 
-func (n *nodeStructure) merge(other mergeableNodes, matrix mgl32.Mat4) ([]*Node, error) {
+func (n *nodeStructure) merge(other mergeableNodes, matrix mgl32.Mat4) []*Node {
 	nodeCount := other.NodeCount()
 	newNodes := make([]*Node, nodeCount)
 	if nodeCount == 0 {
-		return newNodes, nil
+		return newNodes
 	}
 
-	var err error
 	for i := 0; i < int(nodeCount); i++ {
 		node := other.Node(uint32(i))
 		position := mgl32.TransformCoordinate(node.Position, matrix)
-		newNodes[i], err = n.AddNode(position)
-		if err != nil {
-			return nil, err
-		}
+		newNodes[i] = n.AddNode(position)
 	}
-	return newNodes, nil
+	return newNodes
 }
 
 func (n *nodeStructure) getMaxNodeCount() uint32 {

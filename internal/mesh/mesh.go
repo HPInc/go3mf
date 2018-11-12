@@ -68,12 +68,12 @@ func (m *Mesh) Merge(mesh MergeableMesh, matrix mgl32.Mat4) error {
 		m.informationHandler.AddInfoFrom(otherHandler, m.FaceCount())
 	}
 
-	newNodes, err := m.nodeStructure.merge(mesh, matrix)
-	if len(newNodes) == 0 || err != nil {
-		return err
+	newNodes := m.nodeStructure.merge(mesh, matrix)
+	if len(newNodes) == 0 {
+		return nil
 	}
 
-	err = m.faceStructure.merge(mesh, newNodes)
+	err := m.faceStructure.merge(mesh, newNodes)
 	if err != nil {
 		return err
 	}
