@@ -261,24 +261,30 @@ func Test_beamLattice_AddBeam(t *testing.T) {
 		capMode2 BeamCapMode
 	}
 	tests := []struct {
-		name    string
-		b       *beamLattice
-		args    args
-		want    *Beam
-		wantErr bool
+		name      string
+		b         *beamLattice
+		args      args
+		want      *Beam
+		wantErr   bool
+		wantPanic bool
 	}{
-		{"max", &beamLattice{maxBeamCount: 1, beams: []*Beam{new(Beam)}}, args{node1, node2, 1.0, 2.0, CapModeHemisphere, CapModeSphere}, nil, true},
-		{"node1", new(beamLattice), args{node1, node1, 1.0, 2.0, CapModeHemisphere, CapModeSphere}, nil, true},
-		{"node2", new(beamLattice), args{node2, node2, 1.0, 2.0, CapModeHemisphere, CapModeSphere}, nil, true},
+		{"max", &beamLattice{maxBeamCount: 1, beams: []*Beam{new(Beam)}}, args{node1, node2, 1.0, 2.0, CapModeHemisphere, CapModeSphere}, nil, false, true},
+		{"node1", new(beamLattice), args{node1, node1, 1.0, 2.0, CapModeHemisphere, CapModeSphere}, nil, true, false},
+		{"node2", new(beamLattice), args{node2, node2, 1.0, 2.0, CapModeHemisphere, CapModeSphere}, nil, true, false},
 		{"base", &beamLattice{beams: []*Beam{new(Beam)}}, args{node1, node2, 1.0, 2.0, CapModeHemisphere, CapModeSphere}, &Beam{
 			NodeIndices: [2]uint32{node1.Index, node2.Index},
 			Index:       1,
 			Radius:      [2]float64{1.0, 2.0},
 			CapMode:     [2]BeamCapMode{CapModeHemisphere, CapModeSphere},
-		}, false},
+		}, false, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				if r := recover(); tt.wantPanic && r == nil {
+					t.Error("beamLattice.AddBeam() want panic")
+				}
+			}()
 			got, err := tt.b.AddBeam(tt.args.node1, tt.args.node2, tt.args.radius1, tt.args.radius2, tt.args.capMode1, tt.args.capMode2)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("beamLattice.AddBeam() error = %v, wantErr %v", err, tt.wantErr)
@@ -320,6 +326,7 @@ func Test_beamLattice_merge(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockMesh := NewMockMergeableMesh(mockCtrl)
+	dummyNode := new(Node)
 	type args struct {
 		other    mergeableBeams
 		newNodes []*Node
@@ -331,7 +338,7 @@ func Test_beamLattice_merge(t *testing.T) {
 		wantErr bool
 		times   uint32
 	}{
-		{"err", &beamLattice{maxBeamCount: 1, beams: []*Beam{new(Beam)}}, args{mockMesh, []*Node{{Index: 0}, {Index: 1}}}, true, 1},
+		{"err", &beamLattice{beams: []*Beam{new(Beam)}}, args{mockMesh, []*Node{dummyNode, dummyNode}}, true, 1},
 		{"zero", new(beamLattice), args{mockMesh, make([]*Node, 0)}, false, 0},
 		{"merged", new(beamLattice), args{mockMesh, []*Node{{Index: 0}, {Index: 1}}}, false, 2},
 	}

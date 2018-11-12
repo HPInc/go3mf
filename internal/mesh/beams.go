@@ -114,7 +114,7 @@ func (b *beamLattice) AddBeam(node1, node2 *Node, radius1, radius2 float64, capM
 
 	beamCount := b.BeamCount()
 	if beamCount >= b.getMaxBeamCount() {
-		return nil, new(MaxBeamError)
+		panic(new(MaxBeamError))
 	}
 
 	beam := &Beam{
