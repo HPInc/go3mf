@@ -25,10 +25,7 @@ func Example() {
 		panic(ok)
 	}
 
-	data, err := materialInfo.AddFaceData(1)
-	if err != nil {
-		panic(err)
-	}
+	data := materialInfo.AddFaceData(1)
 	fmt.Println(data.HasData())
 
 	data.(*BaseMaterial).GroupID = 2

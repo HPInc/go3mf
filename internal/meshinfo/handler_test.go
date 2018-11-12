@@ -1,7 +1,6 @@
 package meshinfo
 
 import (
-	"errors"
 	"reflect"
 	"testing"
 
@@ -91,25 +90,18 @@ func TestHandler_AddFace(t *testing.T) {
 		newFaceCount uint32
 	}
 	tests := []struct {
-		name    string
-		h       *Handler
-		args    args
-		data    *MockFaceData
-		err     error
-		wantErr bool
+		name string
+		h    *Handler
+		args args
+		data *MockFaceData
 	}{
-		{"err1", h, args{3}, NewMockFaceData(mockCtrl), errors.New(""), true},
-		{"success", h, args{3}, NewMockFaceData(mockCtrl), nil, false},
+		{"success", h, args{3}, NewMockFaceData(mockCtrl)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			handleable.EXPECT().AddFaceData(tt.args.newFaceCount).Return(tt.data, tt.err)
-			if tt.err == nil {
-				tt.data.EXPECT().Invalidate().Return()
-			}
-			if err := tt.h.AddFace(tt.args.newFaceCount); (err != nil) != tt.wantErr {
-				t.Errorf("Handler.AddFace() error = %v, wantErr %v", err, tt.wantErr)
-			}
+			handleable.EXPECT().AddFaceData(tt.args.newFaceCount).Return(tt.data)
+			tt.data.EXPECT().Invalidate().Return()
+			tt.h.AddFace(tt.args.newFaceCount)
 		})
 	}
 }

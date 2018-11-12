@@ -65,23 +65,24 @@ func Test_memoryContainer_AddFaceData(t *testing.T) {
 		newFaceCount uint32
 	}
 	tests := []struct {
-		name    string
-		m       *memoryContainer
-		args    args
-		wantVal FaceData
-		wantErr bool
+		name      string
+		m         *memoryContainer
+		args      args
+		wantVal   FaceData
+		wantPanic bool
 	}{
-		{"invalid face number", m, args{0}, nil, true},
-		{"valid face number", m, args{2}, mockFaceData, false},
+		{"invalid face number", m, args{2}, mockFaceData, true},
+		{"valid face number", m, args{1}, mockFaceData, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotVal, err := tt.m.AddFaceData(tt.args.newFaceCount)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("memoryContainer.AddFaceData() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !tt.wantErr && reflect.TypeOf(gotVal) == reflect.TypeOf(&tt.wantVal) {
+			defer func() {
+				if r := recover(); tt.wantPanic && r == nil {
+					t.Error("memoryContainer.AddFaceData() want panic")
+				}
+			}()
+			gotVal := tt.m.AddFaceData(tt.args.newFaceCount)
+			if reflect.TypeOf(gotVal) == reflect.TypeOf(&tt.wantVal) {
 				t.Errorf("memoryContainer.AddFaceData() = %v, want %v", gotVal, tt.wantVal)
 			}
 		})
@@ -93,7 +94,7 @@ func Test_memoryContainer_GetFaceData(t *testing.T) {
 	defer mockCtrl.Finish()
 	mockFaceData := NewMockFaceData(mockCtrl)
 	m := newmemoryContainer(0, reflect.TypeOf(mockFaceData)).(*memoryContainer)
-	initial, _ := m.AddFaceData(1)
+	initial := m.AddFaceData(1)
 	type args struct {
 		index uint32
 	}

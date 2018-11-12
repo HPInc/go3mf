@@ -108,11 +108,10 @@ func (m *MockContainer) EXPECT() *MockContainerMockRecorder {
 }
 
 // AddFaceData mocks base method
-func (m *MockContainer) AddFaceData(arg0 uint32) (FaceData, error) {
+func (m *MockContainer) AddFaceData(arg0 uint32) FaceData {
 	ret := m.ctrl.Call(m, "AddFaceData", arg0)
 	ret0, _ := ret[0].(FaceData)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	return ret0
 }
 
 // AddFaceData indicates an expected call of AddFaceData
@@ -298,11 +297,10 @@ func (m *MockHandleable) EXPECT() *MockHandleableMockRecorder {
 }
 
 // AddFaceData mocks base method
-func (m *MockHandleable) AddFaceData(arg0 uint32) (FaceData, error) {
+func (m *MockHandleable) AddFaceData(arg0 uint32) FaceData {
 	ret := m.ctrl.Call(m, "AddFaceData", arg0)
 	ret0, _ := ret[0].(FaceData)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	return ret0
 }
 
 // AddFaceData indicates an expected call of AddFaceData

@@ -48,15 +48,11 @@ func (h *Handler) addInformation(info Handleable) error {
 }
 
 // AddFace adds a new face to the handler.
-func (h *Handler) AddFace(newFaceCount uint32) error {
+func (h *Handler) AddFace(newFaceCount uint32) {
 	for _, info := range h.lookup {
-		data, err := info.AddFaceData(newFaceCount)
-		if err != nil {
-			return err
-		}
+		data := info.AddFaceData(newFaceCount)
 		data.Invalidate()
 	}
-	return nil
 }
 
 // GetInformationByType retrieves the information of the desried type.

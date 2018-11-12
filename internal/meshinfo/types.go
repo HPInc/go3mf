@@ -28,7 +28,7 @@ type FaceQuerier interface {
 type dataCreator interface {
 	// AddFaceData adds data to the last added face and returns the pointer to the data of the added face.
 	// The parameter newFaceCount should indicate the faces information stored in the container, including the new one.
-	AddFaceData(newFaceCount uint32) (val FaceData, err error)
+	AddFaceData(newFaceCount uint32) FaceData
 }
 
 // Container provides a repository for holding information state of a complete mesh structure.
