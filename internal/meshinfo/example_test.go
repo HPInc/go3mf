@@ -9,9 +9,9 @@ func Example() {
 	handler.AddInformation(NewBaseMaterialFacesData(0))
 	handler.AddInformation(NewNodeColorFacesData(0))
 	handler.AddInformation(NewTextureCoordsFacesData(0))
-	fmt.Println(handler.GetInformationCount())
+	fmt.Println(handler.InformationCount())
 
-	materialInfo, ok := handler.GetInformationByType(BaseMaterialType)
+	materialInfo, ok := handler.InformationByType(BaseMaterialType)
 	if !ok {
 		panic(ok)
 	}

@@ -72,10 +72,10 @@ type Handleable interface {
 
 // TypedInformer inform about specific types of information.
 type TypedInformer interface {
-	// GetInformationByType retrieves the information of the desired type.
-	GetInformationByType(infoType reflect.Type) (*FacesData, bool)
+	// InformationByType retrieves the information of the desired type.
+	InformationByType(infoType reflect.Type) (*FacesData, bool)
 	// InfoTypes returns the types of informations stored in the handler.
 	InfoTypes() []reflect.Type
-	// getInformationByType retrieves the information of the desired type.
-	getInformationByType(infoType reflect.Type) (Handleable, bool)
+	// informationByType retrieves the information of the desired type.
+	informationByType(infoType reflect.Type) (Handleable, bool)
 }

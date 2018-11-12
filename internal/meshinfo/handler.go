@@ -54,20 +54,20 @@ func (h *Handler) AddFace(newFaceCount uint32) {
 	}
 }
 
-// GetInformationByType retrieves the information of the desried type.
-func (h *Handler) GetInformationByType(infoType reflect.Type) (*FacesData, bool) {
+// InformationByType retrieves the information of the desried type.
+func (h *Handler) InformationByType(infoType reflect.Type) (*FacesData, bool) {
 	info, ok := h.lookup[infoType]
 	return info.(*FacesData), ok
 }
 
-// getInformationByType retrieves the information of the desried type.
-func (h *Handler) getInformationByType(infoType reflect.Type) (Handleable, bool) {
+// informationByType retrieves the information of the desried type.
+func (h *Handler) informationByType(infoType reflect.Type) (Handleable, bool) {
 	info, ok := h.lookup[infoType]
 	return info, ok
 }
 
-// GetInformationCount returns the number of informations added to the handler.
-func (h *Handler) GetInformationCount() uint32 {
+// InformationCount returns the number of informations added to the handler.
+func (h *Handler) InformationCount() uint32 {
 	return uint32(len(h.lookup))
 }
 
@@ -75,7 +75,7 @@ func (h *Handler) GetInformationCount() uint32 {
 func (h *Handler) AddInfoFrom(informer TypedInformer, currentFaceCount uint32) {
 	types := informer.InfoTypes()
 	for _, infoType := range types {
-		otherInfo, _ := informer.getInformationByType(infoType)
+		otherInfo, _ := informer.informationByType(infoType)
 		if _, ok := h.lookup[infoType]; !ok {
 			h.addInformation(otherInfo.clone(currentFaceCount))
 		}
@@ -86,7 +86,7 @@ func (h *Handler) AddInfoFrom(informer TypedInformer, currentFaceCount uint32) {
 func (h *Handler) CloneFaceInfosFrom(faceIndex uint32, informer TypedInformer, otherFaceIndex uint32) {
 	types := informer.InfoTypes()
 	for _, infoType := range types {
-		otherInfo, _ := informer.getInformationByType(infoType)
+		otherInfo, _ := informer.informationByType(infoType)
 		info, ok := h.lookup[infoType]
 		if ok {
 			info.cloneFaceInfosFrom(faceIndex, otherInfo, otherFaceIndex)

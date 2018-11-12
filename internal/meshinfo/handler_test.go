@@ -109,7 +109,7 @@ func TestHandler_AddFace(t *testing.T) {
 	}
 }
 
-func TestHandler_getInformationByType(t *testing.T) {
+func TestHandler_informationByType(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	h := NewHandler()
@@ -133,18 +133,18 @@ func TestHandler_getInformationByType(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := tt.h.getInformationByType(tt.args.infoType)
+			got, got1 := tt.h.informationByType(tt.args.infoType)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Handler.getInformationByType() got = %v, want %v", got, tt.want)
+				t.Errorf("Handler.informationByType() got = %v, want %v", got, tt.want)
 			}
 			if got1 != tt.want1 {
-				t.Errorf("Handler.getInformationByType() got1 = %v, want %v", got1, tt.want1)
+				t.Errorf("Handler.informationByType() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}
 }
 
-func TestHandler_GetInformationCount(t *testing.T) {
+func TestHandler_InformationCount(t *testing.T) {
 	h := NewHandler()
 	h.lookup[reflect.TypeOf((*string)(nil)).Elem()] = nil
 	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = nil
@@ -158,8 +158,8 @@ func TestHandler_GetInformationCount(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.h.GetInformationCount(); got != tt.want {
-				t.Errorf("Handler.GetInformationCount() = %v, want %v", got, tt.want)
+			if got := tt.h.InformationCount(); got != tt.want {
+				t.Errorf("Handler.InformationCount() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -188,7 +188,7 @@ func TestHandler_AddInfoFrom(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.args.otherHandler.EXPECT().InfoTypes().Return(types)
-			tt.args.otherHandler.EXPECT().getInformationByType(gomock.Any()).Return(otherHandleable, true).MaxTimes(3)
+			tt.args.otherHandler.EXPECT().informationByType(gomock.Any()).Return(otherHandleable, true).MaxTimes(3)
 			otherHandleable.EXPECT().clone(tt.args.currentFaceCount).Return(ownHandleable)
 			ownHandleable.EXPECT().InfoType().Return(reflect.TypeOf((*string)(nil)).Elem())
 			ownHandleable.EXPECT().setInternalID(tt.h.internalIDCounter)
@@ -221,7 +221,7 @@ func TestHandler_CloneFaceInfosFrom(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.args.otherHandler.EXPECT().InfoTypes().Return(types)
-			tt.args.otherHandler.EXPECT().getInformationByType(gomock.Any()).Return(otherHandleable, true).MaxTimes(3)
+			tt.args.otherHandler.EXPECT().informationByType(gomock.Any()).Return(otherHandleable, true).MaxTimes(3)
 			ownHandleable.EXPECT().cloneFaceInfosFrom(tt.args.faceIndex, ownHandleable, tt.args.otherFaceIndex).MaxTimes(2)
 			tt.h.CloneFaceInfosFrom(tt.args.faceIndex, tt.args.otherHandler, tt.args.otherFaceIndex)
 		})
