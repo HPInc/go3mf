@@ -31,20 +31,19 @@ func (h *Handler) InfoTypes() []reflect.Type {
 }
 
 // AddInformation adds a information to the handler.
-func (h *Handler) AddInformation(info *FacesData) error {
-	return h.addInformation(info)
+func (h *Handler) AddInformation(info *FacesData) {
+	h.addInformation(info)
 }
 
 // addInformation adds a new type of information to the handler.
-func (h *Handler) addInformation(info Handleable) error {
+func (h *Handler) addInformation(info Handleable) {
 	infoType := info.InfoType()
 	h.lookup[infoType] = info
 	info.setInternalID(h.internalIDCounter)
 	h.internalIDCounter++
 	if h.internalIDCounter > maxInternalID {
-		return new(HandlerOverflowError)
+		panic(new(HandlerOverflowError))
 	}
-	return nil
 }
 
 // AddFace adds a new face to the handler.
@@ -73,18 +72,14 @@ func (h *Handler) GetInformationCount() uint32 {
 }
 
 // AddInfoFrom adds the information of the target handler.
-func (h *Handler) AddInfoFrom(informer TypedInformer, currentFaceCount uint32) error {
+func (h *Handler) AddInfoFrom(informer TypedInformer, currentFaceCount uint32) {
 	types := informer.InfoTypes()
 	for _, infoType := range types {
 		otherInfo, _ := informer.getInformationByType(infoType)
 		if _, ok := h.lookup[infoType]; !ok {
-			err := h.addInformation(otherInfo.clone(currentFaceCount))
-			if err != nil {
-				return err
-			}
+			h.addInformation(otherInfo.clone(currentFaceCount))
 		}
 	}
-	return nil
 }
 
 // CloneFaceInfosFrom clones the data from another face.

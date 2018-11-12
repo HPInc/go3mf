@@ -6,18 +6,9 @@ import (
 
 func Example() {
 	handler := NewHandler()
-	err := handler.AddInformation(NewBaseMaterialFacesData(0))
-	if err != nil {
-		panic(err)
-	}
-	err = handler.AddInformation(NewNodeColorFacesData(0))
-	if err != nil {
-		panic(err)
-	}
-	err = handler.AddInformation(NewTextureCoordsFacesData(0))
-	if err != nil {
-		panic(err)
-	}
+	handler.AddInformation(NewBaseMaterialFacesData(0))
+	handler.AddInformation(NewNodeColorFacesData(0))
+	handler.AddInformation(NewTextureCoordsFacesData(0))
 	fmt.Println(handler.GetInformationCount())
 
 	materialInfo, ok := handler.GetInformationByType(BaseMaterialType)

@@ -40,7 +40,7 @@ func TestHandler_addInformation(t *testing.T) {
 		name               string
 		h                  *Handler
 		args               args
-		wantErr            bool
+		wantPanic          bool
 		expectedInternalID uint64
 	}{
 		{"1", h, args{mockHandleable}, false, 1},
@@ -50,11 +50,14 @@ func TestHandler_addInformation(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				if r := recover(); tt.wantPanic && r == nil {
+					t.Error("Handler.addInformation() want panic")
+				}
+			}()
 			tt.args.info.EXPECT().InfoType().Return(reflect.TypeOf(""))
 			tt.args.info.EXPECT().setInternalID(tt.expectedInternalID)
-			if err := tt.h.addInformation(tt.args.info); (err != nil) != tt.wantErr {
-				t.Errorf("Handler.addInformation() error = %v, wantErr %v", err, tt.wantErr)
-			}
+			tt.h.addInformation(tt.args.info)
 		})
 	}
 }
@@ -168,9 +171,6 @@ func TestHandler_AddInfoFrom(t *testing.T) {
 	defer mockCtrl.Finish()
 	otherHandleable := NewMockHandleable(mockCtrl)
 	ownHandleable := NewMockHandleable(mockCtrl)
-	herr := NewHandler()
-	herr.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = ownHandleable
-	herr.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = ownHandleable
 	h := NewHandler()
 	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = ownHandleable
 	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = ownHandleable
@@ -179,27 +179,20 @@ func TestHandler_AddInfoFrom(t *testing.T) {
 		currentFaceCount uint32
 	}
 	tests := []struct {
-		name    string
-		h       *Handler
-		args    args
-		wantErr bool
+		name string
+		h    *Handler
+		args args
 	}{
-		{"error", herr, args{NewMockTypedInformer(mockCtrl), 3}, true},
-		{"added", h, args{NewMockTypedInformer(mockCtrl), 3}, false},
+		{"added", h, args{NewMockTypedInformer(mockCtrl), 3}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.args.otherHandler.EXPECT().InfoTypes().Return(types)
 			tt.args.otherHandler.EXPECT().getInformationByType(gomock.Any()).Return(otherHandleable, true).MaxTimes(3)
-			if tt.wantErr {
-				tt.h.internalIDCounter = maxInternalID
-			}
 			otherHandleable.EXPECT().clone(tt.args.currentFaceCount).Return(ownHandleable)
 			ownHandleable.EXPECT().InfoType().Return(reflect.TypeOf((*string)(nil)).Elem())
 			ownHandleable.EXPECT().setInternalID(tt.h.internalIDCounter)
-			if err := tt.h.AddInfoFrom(tt.args.otherHandler, tt.args.currentFaceCount); (err != nil) != tt.wantErr {
-				t.Errorf("Handler.AddInfoFrom() error = %v, wantErr %v", err, tt.wantErr)
-			}
+			tt.h.AddInfoFrom(tt.args.otherHandler, tt.args.currentFaceCount)
 		})
 	}
 }
