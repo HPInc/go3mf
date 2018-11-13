@@ -42,29 +42,6 @@ func TestSTLBinary_LoadMesh(t *testing.T) {
 	}
 }
 
-func TestSTLBinary_readBytes(t *testing.T) {
-	type args struct {
-		stream io.Reader
-		n      int
-		data   interface{}
-	}
-	tests := []struct {
-		name    string
-		s       *STLBinary
-		args    args
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.s.readBytes(tt.args.stream, tt.args.n, tt.args.data); (err != nil) != tt.wantErr {
-				t.Errorf("STLBinary.readBytes() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
 func createMeshTriangle() *mesh.Mesh {
 	m := mesh.NewMesh()
 	n1 := m.AddNode(mgl32.Vec3{-20.0, -20.0, 0.0})

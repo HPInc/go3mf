@@ -1,7 +1,6 @@
 package meshimporter
 
 import (
-	"bytes"
 	"encoding/binary"
 	"github.com/go-gl/mathgl/mgl32"
 	"io"
@@ -10,10 +9,15 @@ import (
 	"github.com/qmuntal/go3mf/internal/mesh"
 )
 
+type stlBinaryHeader struct {
+	_ [80]byte
+	FaceCount uint32
+}
+
 type stlBinaryFace struct {
-	Normal    [3]float32
+	_    [3]float32
 	Vertices  [3][3]float32
-	Attribute uint16
+	_ uint16
 }
 
 // STLBinary can create a Mesh from a Read stream that is feeded with a binary STL.
@@ -32,22 +36,15 @@ func (s *STLBinary) LoadMesh(stream io.Reader) (*mesh.Mesh, error) {
 		return nil, err
 	}
 
-	// Read header
-	buff := make([]byte, 80)
-	_, err = stream.Read(buff)
+	header := stlBinaryHeader{}
+	err = binary.Read(stream, binary.LittleEndian, &header)
 	if err != nil {
 		return nil, err
 	}
 
-	var faceCount uint32
-	err = s.readBytes(stream, 4, &faceCount)
-	if err != nil {
-		return nil, err
-	}
-
-	for nFace := 0; nFace < int(faceCount); nFace++ {
+	for nFace := 0; nFace < int(header.FaceCount); nFace++ {
 		var facet stlBinaryFace
-		err = s.readBytes(stream, 50, &facet)
+		err = binary.Read(stream, binary.LittleEndian, &facet)
 		if err != nil {
 			return nil, err
 		}
@@ -72,13 +69,4 @@ func (s *STLBinary) LoadMesh(stream io.Reader) (*mesh.Mesh, error) {
 	}
 
 	return newMesh, nil
-}
-
-func (s *STLBinary) readBytes(stream io.Reader, n int, data interface{}) error {
-	buff := make([]byte, n)
-	_, err := stream.Read(buff)
-	if err != nil {
-		return err
-	}
-	return binary.Read(bytes.NewReader(buff), binary.LittleEndian, data)
 }
