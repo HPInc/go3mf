@@ -21,11 +21,6 @@ func newgenericHandler() *genericHandler {
 	return handler
 }
 
-// AddInformation adds a information to the handler.
-func (h *genericHandler) AddInformation(info *FacesData) {
-	h.addInformation(info)
-}
-
 // AddFace adds a new face to the handler.
 func (h *genericHandler) AddFace(newFaceCount uint32) {
 	for _, info := range h.lookup {

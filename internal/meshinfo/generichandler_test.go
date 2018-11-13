@@ -309,6 +309,27 @@ func TestHandler_PermuteNodeInformation(t *testing.T) {
 	}
 }
 
+func Test_genericHandler_RemoveAllInformations(t *testing.T) {
+	h := newgenericHandler()
+	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = nil
+	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = nil
+	tests := []struct {
+		name string
+		h    *genericHandler
+	}{
+		{"empty", newgenericHandler()},
+		{"notempty", h},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.h.RemoveAllInformations()
+			if got := len(tt.h.lookup); got != 0 {
+				t.Errorf("genericHandler.removeInformation() want = %v, got %v", 0, got)
+			}
+		})
+	}
+}
+
 func sameTypeSlice(x, y []reflect.Type) bool {
 	if len(x) != len(y) {
 		return false

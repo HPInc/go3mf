@@ -165,6 +165,7 @@ func Test_faceStructure_merge(t *testing.T) {
 			}()
 			mockMesh.EXPECT().FaceCount().Return(tt.times)
 			mockMesh.EXPECT().InformationHandler().Return(meshinfo.NewHandler()).MaxTimes(int(tt.times))
+			tt.f.informationHandler = meshinfo.NewHandler()
 			face := &Face{NodeIndices: [3]uint32{0, 1, 2}}
 			mockMesh.EXPECT().Face(gomock.Any()).Return(face).Times(int(tt.times))
 			if err := tt.f.merge(tt.args.other, tt.args.newNodes); (err != nil) != tt.wantErr {
