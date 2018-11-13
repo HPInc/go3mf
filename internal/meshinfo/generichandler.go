@@ -59,6 +59,7 @@ func (h *genericHandler) PermuteNodeInformation(faceIndex, nodeIndex1, nodeIndex
 	}
 }
 
+// RemoveAllInformations clears all the data from the handler.
 func (h *genericHandler) RemoveAllInformations() {
 	for infoType := range h.lookup {
 		h.removeInformation(infoType)

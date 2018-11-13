@@ -41,10 +41,6 @@ func (h *Handler) AddNodeColorInfo(currentFaceCount uint32) *FacesData {
 	return f
 }
 
-func (h *Handler) newInfo(currentFaceCount uint32, infoType reflect.Type) *FacesData {
-	return newFacesData(newmemoryContainer(currentFaceCount, infoType))
-}
-
 // BaseMaterialInfo returns the base material information. If it is not created the second parameters will be false.
 func (h *Handler) BaseMaterialInfo() (*FacesData, bool) {
 	info, ok := h.lookup[baseMaterialType]
@@ -61,4 +57,8 @@ func (h *Handler) TextureCoordsInfo() (*FacesData, bool) {
 func (h *Handler) NodeColorInfo() (*FacesData, bool) {
 	info, ok := h.lookup[nodeColorType]
 	return info.(*FacesData), ok
+}
+
+func (h *Handler) newInfo(currentFaceCount uint32, infoType reflect.Type) *FacesData {
+	return newFacesData(newmemoryContainer(currentFaceCount, infoType))
 }

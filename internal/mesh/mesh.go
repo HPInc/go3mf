@@ -53,11 +53,10 @@ func (m *Mesh) ClearInformationHandler() {
 	m.informationHandler.RemoveAllInformations()
 }
 
+// Equal compares the geometry of two meshes to check if they are equal.
 func (m *Mesh) Equal(mesh *Mesh) bool {
-	if len(m.nodes) != len(mesh.nodes) {
-		return false
-	}
-	if len(m.faces) != len(mesh.faces) {
+	// Fast fail
+	if len(m.nodes) != len(mesh.nodes) || len(m.faces) != len(mesh.faces) || len(m.beams) != len(mesh.beams) {
 		return false
 	}
 	for i := 0; i < len(m.nodes); i++ {
