@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-gl/mathgl/mgl32"
 	gomock "github.com/golang/mock/gomock"
+	"github.com/qmuntal/go3mf/internal/geometry"
 )
 
 func Test_nodeStructure_clear(t *testing.T) {
@@ -69,6 +70,9 @@ func Test_nodeStructure_Node(t *testing.T) {
 }
 
 func Test_nodeStructure_AddNode(t *testing.T) {
+	pos := mgl32.Vec3{1.0, 2.0, 3.0}
+	existingStruct := &nodeStructure{vectorTree: geometry.NewVectorTree()}
+	existingStruct.AddNode(pos)
 	type args struct {
 		position mgl32.Vec3
 	}
@@ -79,6 +83,7 @@ func Test_nodeStructure_AddNode(t *testing.T) {
 		want      *Node
 		wantPanic bool
 	}{
+		{"existing", existingStruct, args{pos}, &Node{Index: 0, Position: pos}, false},
 		{"max", &nodeStructure{maxNodeCount: 1, nodes: []*Node{new(Node)}}, args{mgl32.Vec3{}}, nil, true},
 		{"base", &nodeStructure{nodes: []*Node{new(Node)}}, args{mgl32.Vec3{1.0, 2.0, 3.0}}, &Node{
 			Index:    1,

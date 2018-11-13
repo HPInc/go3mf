@@ -176,3 +176,46 @@ func TestMesh_ApproxEqual(t *testing.T) {
 		})
 	}
 }
+
+func TestMesh_StartCreation(t *testing.T) {
+	type args struct {
+		units float32
+	}
+	tests := []struct {
+		name    string
+		m       *Mesh
+		args    args
+		wantErr bool
+	}{
+		{"err", NewMesh(), args{-1.0}, true},
+		{"base", NewMesh(), args{0.0}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.m.StartCreation(tt.args.units); (err != nil) != tt.wantErr {
+				t.Errorf("Mesh.StartCreation() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if !tt.wantErr && tt.m.nodeStructure.vectorTree == nil {
+				t.Error("Mesh.StartCreation() should have created the vector tree")
+			}
+		})
+	}
+}
+
+func TestMesh_EndCreation(t *testing.T) {
+	tests := []struct {
+		name string
+		m    *Mesh
+	}{
+		{"base", NewMesh()},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.m.StartCreation(0.0)
+			tt.m.EndCreation()
+			if tt.m.nodeStructure.vectorTree != nil {
+				t.Error("Mesh.StartCreation() should have deleted the vector tree")
+			}
+		})
+	}
+}

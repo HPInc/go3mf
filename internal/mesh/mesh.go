@@ -3,6 +3,7 @@ package mesh
 import (
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/qmuntal/go3mf/internal/meshinfo"
+	"github.com/qmuntal/go3mf/internal/geometry"
 )
 
 // Mesh is not really a mesh, since it lacks the component edges and the
@@ -42,8 +43,20 @@ func (m *Mesh) Clear() {
 	m.ClearBeamLattice()
 }
 
+// StartCreation can be called before populating the mesh. 
+// If so, the connectivity will be autmatically calculated but producing and speed penalty.
+// When the creationg process is finished EndCreation() must be called in order to clean temporary data.
+func (m *Mesh) StartCreation(units float32) error {
+	m.nodeStructure.vectorTree = geometry.NewVectorTree()
+	return m.nodeStructure.vectorTree.SetUnits(units)
+}
+
+// EndCreation cleans temporary data associated to creating a mesh.
+func (m *Mesh) EndCreation() {
+	m.nodeStructure.vectorTree = nil
+}
+
 // InformationHandler returns the information handler of the mesh.
-// If CreateInformationHandler() has not been called, it will always be nil.
 func (m *Mesh) InformationHandler() *meshinfo.Handler {
 	return &m.informationHandler
 }

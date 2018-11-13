@@ -1,6 +1,7 @@
 package mesh
 
 import (
+	"github.com/qmuntal/go3mf/internal/geometry"
 	"github.com/go-gl/mathgl/mgl32"
 )
 
@@ -14,6 +15,7 @@ type Node struct {
 }
 
 type nodeStructure struct {
+	vectorTree *geometry.VectorTree
 	nodes        []*Node
 	maxNodeCount uint32 // If 0 MaxNodeCount will be used.
 }
@@ -34,6 +36,11 @@ func (n *nodeStructure) Node(index uint32) *Node {
 
 // AddNode adds a node the the mesh at the target position.
 func (n *nodeStructure) AddNode(position mgl32.Vec3) *Node {
+	if n.vectorTree != nil {
+		if index, ok := n.vectorTree.FindVector(position); ok {
+			return n.Node(index)
+		}
+	}
 	nodeCount := n.NodeCount()
 	if nodeCount >= n.getMaxNodeCount() {
 		panic(new(MaxNodeError))
@@ -44,6 +51,9 @@ func (n *nodeStructure) AddNode(position mgl32.Vec3) *Node {
 		Position: position,
 	}
 	n.nodes = append(n.nodes, node)
+	if n.vectorTree != nil {
+		n.vectorTree.AddVector(node.Position, node.Index)
+	}
 	return node
 }
 

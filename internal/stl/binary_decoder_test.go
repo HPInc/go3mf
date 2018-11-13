@@ -2,41 +2,35 @@ package meshimporter
 
 import (
 	"bytes"
-	"io"
 	"testing"
 
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/qmuntal/go3mf/internal/mesh"
 )
 
-func TestSTLBinary_LoadMesh(t *testing.T) {
+func Test_stlBinaryDecoder_Decode(t *testing.T) {
 	triangle := createBinaryTriangle()
-	type args struct {
-		stream io.Reader
-	}
 	tests := []struct {
 		name    string
-		s       *STLBinary
-		args    args
+		d       *stlBinaryDecoder
 		want    *mesh.Mesh
 		wantErr bool
 	}{
-		{"base", new(STLBinary), args{bytes.NewReader(triangle)}, createMeshTriangle(), false},
-		{"wrongunits", &STLBinary{Units: -1.0}, args{bytes.NewReader(make([]byte, 0))}, nil, true},
-		{"eof", new(STLBinary), args{bytes.NewReader(make([]byte, 0))}, nil, true},
-		{"onlyheader", new(STLBinary), args{bytes.NewReader(make([]byte, 80))}, nil, true},
-		{"invalidface", new(STLBinary), args{bytes.NewReader(triangle[:100])}, nil, true},
-		{"invalidface2", &STLBinary{IgnoreInvalidFaces: true}, args{bytes.NewReader(triangle[:100])}, nil, true},
+		{"base", &stlBinaryDecoder{r: bytes.NewReader(triangle)}, createMeshTriangle(), false},
+		{"wrongunits", &stlBinaryDecoder{r: bytes.NewReader(make([]byte, 0)), units: -1.0}, nil, true},
+		{"eof", &stlBinaryDecoder{r: bytes.NewReader(make([]byte, 0))}, nil, true},
+		{"onlyheader", &stlBinaryDecoder{r: bytes.NewReader(make([]byte, 80))}, nil, true},
+		{"invalidface", &stlBinaryDecoder{r: bytes.NewReader(triangle[:100])}, nil, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.s.LoadMesh(tt.args.stream)
+			got, err := tt.d.Decode()
 			if (err != nil) != tt.wantErr {
-				t.Errorf("STLBinary.LoadMesh() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("stlBinaryDecoder.Decode() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !tt.wantErr && !got.ApproxEqual(tt.want) {
-				t.Errorf("STLBinary.LoadMesh() = %v, want %v", got, tt.want)
+				t.Errorf("stlBinaryDecoder.Decode() = %v, want %v", got, tt.want)
 			}
 		})
 	}
