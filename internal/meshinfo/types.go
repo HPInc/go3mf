@@ -57,7 +57,7 @@ type faceModifier interface {
 	permuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3 uint32)
 }
 
-// Handleable defines an interface than can be handled by Handler.
+// Handleable defines an interface than can be handled by genericHandler.
 type Handleable interface {
 	FaceQuerier
 	faceModifier

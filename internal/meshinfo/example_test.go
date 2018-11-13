@@ -6,12 +6,12 @@ import (
 
 func Example() {
 	handler := NewHandler()
-	handler.AddInformation(NewBaseMaterialFacesData(0))
-	handler.AddInformation(NewNodeColorFacesData(0))
-	handler.AddInformation(NewTextureCoordsFacesData(0))
+	handler.AddBaseMaterialInfo(0)
+	handler.AddTextureCoordsInfo(0)
+	handler.AddNodeColorInfo(0)
 	fmt.Println(handler.InformationCount())
 
-	materialInfo, ok := handler.InformationByType(BaseMaterialType)
+	materialInfo, ok := handler.BaseMaterialInfo()
 	if !ok {
 		panic(ok)
 	}

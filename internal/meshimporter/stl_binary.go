@@ -37,9 +37,8 @@ func (s *STLBinary) LoadMesh(stream io.Reader) (*mesh.Mesh, error) {
 	}
 	var meshColorsInfo *meshinfo.FacesData
 	if s.ImportColors {
-		handler := newMesh.CreateInformationHandler()
-		meshColorsInfo = meshinfo.NewNodeColorFacesData(0)
-		handler.AddInformation(meshColorsInfo)
+		handler := newMesh.InformationHandler()
+		meshColorsInfo = handler.AddNodeColorInfo(0)
 	}
 
 	globalColor, err := s.readHeader(stream)

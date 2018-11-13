@@ -1,116 +1,64 @@
 package meshinfo
 
-import (
-	"reflect"
+import "reflect"
+
+var (
+	baseMaterialType  = reflect.TypeOf((*BaseMaterial)(nil))
+	textureCoordsType = reflect.TypeOf((*TextureCoords)(nil))
+	nodeColorType     = reflect.TypeOf((*NodeColor)(nil))
 )
 
-const maxInternalID = 9223372036854775808
-
-// Handler allows to include different kinds of information in one mesh (like Textures AND colors).
+// Handler allows to include specific types of information in one mesh (like Textures AND colors).
 type Handler struct {
-	lookup            map[reflect.Type]Handleable
-	internalIDCounter uint64
+	genericHandler
 }
 
-// NewHandler creates a new lookup handler.
+// NewHandler creates a new handler.
 func NewHandler() *Handler {
-	handler := &Handler{
-		lookup:            make(map[reflect.Type]Handleable, 0),
-		internalIDCounter: 1,
-	}
-	return handler
-}
-
-// infoTypes returns the types of informations stored in the handler.
-func (h *Handler) infoTypes() []reflect.Type {
-	types := make([]reflect.Type, 0, len(h.lookup))
-	for infoType := range h.lookup {
-		types = append(types, infoType)
-	}
-	return types
-}
-
-// AddInformation adds a information to the handler.
-func (h *Handler) AddInformation(info *FacesData) {
-	h.addInformation(info)
-}
-
-// addInformation adds a new type of information to the handler.
-func (h *Handler) addInformation(info Handleable) {
-	infoType := info.InfoType()
-	h.lookup[infoType] = info
-	info.setInternalID(h.internalIDCounter)
-	h.internalIDCounter++
-	if h.internalIDCounter > maxInternalID {
-		panic(new(HandlerOverflowError))
+	return &Handler{
+		genericHandler: *newgenericHandler(),
 	}
 }
 
-// AddFace adds a new face to the handler.
-func (h *Handler) AddFace(newFaceCount uint32) {
-	for _, info := range h.lookup {
-		data := info.AddFaceData(newFaceCount)
-		data.Invalidate()
-	}
+// AddBaseMaterialInfo adds a BaseMaterialInfo to the handler.
+func (h *Handler) AddBaseMaterialInfo(currentFaceCount uint32) *FacesData {
+	f := h.newInfo(currentFaceCount, baseMaterialType)
+	h.addInformation(f)
+	return f
 }
 
-// InformationByType retrieves the information of the desried type.
-func (h *Handler) InformationByType(infoType reflect.Type) (*FacesData, bool) {
-	info, ok := h.lookup[infoType]
+// AddTextureCoordsInfo adds a TextureCoordsInfo to the handler.
+func (h *Handler) AddTextureCoordsInfo(currentFaceCount uint32) *FacesData {
+	f := h.newInfo(currentFaceCount, textureCoordsType)
+	h.addInformation(f)
+	return f
+}
+
+// AddNodeColorInfo adds a NodeColorInfo to the handler.
+func (h *Handler) AddNodeColorInfo(currentFaceCount uint32) *FacesData {
+	f := h.newInfo(currentFaceCount, nodeColorType)
+	h.addInformation(f)
+	return f
+}
+
+func (h *Handler) newInfo(currentFaceCount uint32, infoType reflect.Type) *FacesData {
+	return newFacesData(newmemoryContainer(currentFaceCount, infoType))
+}
+
+// BaseMaterialInfo returns the base material information. If it is not created the second parameters will be false.
+func (h *Handler) BaseMaterialInfo() (*FacesData, bool) {
+	info, ok := h.lookup[baseMaterialType]
 	return info.(*FacesData), ok
 }
 
-// informationByType retrieves the information of the desried type.
-func (h *Handler) informationByType(infoType reflect.Type) (Handleable, bool) {
-	info, ok := h.lookup[infoType]
-	return info, ok
+// TextureCoordsInfo returns the texture coords information. If it is not created the second parameters will be false.
+func (h *Handler) TextureCoordsInfo() (*FacesData, bool) {
+	info, ok := h.lookup[textureCoordsType]
+	return info.(*FacesData), ok
 }
 
-// InformationCount returns the number of informations added to the handler.
-func (h *Handler) InformationCount() uint32 {
-	return uint32(len(h.lookup))
-}
-
-// AddInfoFrom adds the information of the target handler.
-func (h *Handler) AddInfoFrom(informer TypedInformer, currentFaceCount uint32) {
-	types := informer.infoTypes()
-	for _, infoType := range types {
-		otherInfo, _ := informer.informationByType(infoType)
-		if _, ok := h.lookup[infoType]; !ok {
-			h.addInformation(otherInfo.clone(currentFaceCount))
-		}
-	}
-}
-
-// CopyFaceInfosFrom clones the data from another face.
-func (h *Handler) CopyFaceInfosFrom(faceIndex uint32, informer TypedInformer, otherFaceIndex uint32) {
-	types := informer.infoTypes()
-	for _, infoType := range types {
-		otherInfo, _ := informer.informationByType(infoType)
-		info, ok := h.lookup[infoType]
-		if ok {
-			info.copyFaceInfosFrom(faceIndex, otherInfo, otherFaceIndex)
-		}
-	}
-}
-
-// ResetFaceInformation clears the data of an specific face.
-func (h *Handler) ResetFaceInformation(faceIndex uint32) {
-	for _, info := range h.lookup {
-		info.resetFaceInformation(faceIndex)
-	}
-}
-
-// RemoveInformation removes the information of the target type.
-func (h *Handler) RemoveInformation(infoType reflect.Type) {
-	if _, ok := h.lookup[infoType]; ok {
-		delete(h.lookup, infoType)
-	}
-}
-
-// PermuteNodeInformation swap the data of the target mesh.
-func (h *Handler) PermuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3 uint32) {
-	for _, info := range h.lookup {
-		info.permuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3)
-	}
+// NodeColorInfo returns the node color information. If it is not created the second parameters will be false.
+func (h *Handler) NodeColorInfo() (*FacesData, bool) {
+	info, ok := h.lookup[nodeColorType]
+	return info.(*FacesData), ok
 }

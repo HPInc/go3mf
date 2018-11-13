@@ -14,18 +14,20 @@ type Mesh struct {
 	nodeStructure
 	faceStructure
 	beamLattice
-	informationHandler *meshinfo.Handler
+	informationHandler meshinfo.Handler
 }
 
 // NewMesh creates a new default Mesh.
 func NewMesh() *Mesh {
 	m := &Mesh{
 		beamLattice: *newbeamLattice(),
+		informationHandler: *meshinfo.NewHandler(),
 	}
-	m.faceStructure.informationHandler = m.informationHandler
+	m.faceStructure.informationHandler = &m.informationHandler
 	return m
 }
 
+// Clone creates a deep clone of the mesh.
 func (m *Mesh) Clone() (*Mesh, error) {
 	new := NewMesh()
 	err := new.Merge(m, mgl32.Ident4())
@@ -43,30 +45,17 @@ func (m *Mesh) Clear() {
 // InformationHandler returns the information handler of the mesh.
 // If CreateInformationHandler() has not been called, it will always be nil.
 func (m *Mesh) InformationHandler() *meshinfo.Handler {
-	return m.informationHandler
-}
-
-// CreateInformationHandler creates a new information handler if it has not been created yet.
-func (m *Mesh) CreateInformationHandler() *meshinfo.Handler {
-	if m.informationHandler == nil {
-		m.informationHandler = meshinfo.NewHandler()
-	}
-
-	return m.informationHandler
+	return &m.informationHandler
 }
 
 // ClearInformationHandler sets the information handler to nil.
 func (m *Mesh) ClearInformationHandler() {
-	m.informationHandler = nil
+	m.informationHandler.RemoveAllInformations()
 }
 
 // Merge merges the mesh with another mesh. This includes the nodes, faces, beams and all the informations.
 func (m *Mesh) Merge(mesh MergeableMesh, matrix mgl32.Mat4) error {
-	otherHandler := mesh.InformationHandler()
-	if otherHandler != nil {
-		m.CreateInformationHandler()
-		m.informationHandler.AddInfoFrom(otherHandler, m.FaceCount())
-	}
+	m.informationHandler.AddInfoFrom(mesh.InformationHandler(), m.FaceCount())
 
 	newNodes := m.nodeStructure.merge(mesh, matrix)
 	if len(newNodes) == 0 {

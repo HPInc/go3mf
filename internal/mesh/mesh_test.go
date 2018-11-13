@@ -16,10 +16,12 @@ func TestNewMesh(t *testing.T) {
 	}{
 		{"base", &Mesh{
 			beamLattice: *newbeamLattice(),
+			informationHandler: *meshinfo.NewHandler(),
 		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			tt.want.faceStructure.informationHandler = &tt.want.informationHandler
 			if got := NewMesh(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewMesh() = %v, want %v", got, tt.want)
 			}
@@ -68,32 +70,14 @@ func TestMesh_InformationHandler(t *testing.T) {
 	tests := []struct {
 		name string
 		m    *Mesh
-		want *meshinfo.Handler
+		want meshinfo.Handler
 	}{
-		{"nil", NewMesh(), nil},
-		{"created", &Mesh{informationHandler: meshinfo.NewHandler()}, meshinfo.NewHandler()},
+		{"created", &Mesh{informationHandler: *meshinfo.NewHandler()}, *meshinfo.NewHandler()},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.m.InformationHandler(); !reflect.DeepEqual(got, tt.want) {
+			if got := *tt.m.InformationHandler(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Mesh.InformationHandler() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestMesh_CreateInformationHandler(t *testing.T) {
-	tests := []struct {
-		name string
-		m    *Mesh
-		want *meshinfo.Handler
-	}{
-		{"base", NewMesh(), meshinfo.NewHandler()},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.m.CreateInformationHandler(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Mesh.CreateInformationHandler() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -104,12 +88,14 @@ func TestMesh_ClearInformationHandler(t *testing.T) {
 		name string
 		m    *Mesh
 	}{
-		{"base", &Mesh{informationHandler: meshinfo.NewHandler()}},
+		{"base", &Mesh{informationHandler: *meshinfo.NewHandler()}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			tt.m.informationHandler.AddBaseMaterialInfo(0)
+			tt.m.informationHandler.AddNodeColorInfo(0)
 			tt.m.ClearInformationHandler()
-			if tt.m.informationHandler != nil {
+			if tt.m.informationHandler.InformationCount() != 0 {
 				t.Error("Mesh.ClearInformationHandler expected to clear the handler")
 			}
 		})

@@ -7,20 +7,20 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-func Test_NewHandler(t *testing.T) {
+func Test_newgenericHandler(t *testing.T) {
 	tests := []struct {
 		name string
-		want *Handler
+		want *genericHandler
 	}{
-		{"new", &Handler{
+		{"new", &genericHandler{
 			internalIDCounter: 1,
 			lookup:            map[reflect.Type]Handleable{},
 		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewHandler(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewHandler() = %v, want %v", got, tt.want)
+			if got := newgenericHandler(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("newgenericHandler() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -30,15 +30,15 @@ func TestHandler_addInformation(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockHandleable := NewMockHandleable(mockCtrl)
-	h := NewHandler()
-	herr := NewHandler()
+	h := newgenericHandler()
+	herr := newgenericHandler()
 	herr.internalIDCounter = maxInternalID
 	type args struct {
 		info *MockHandleable
 	}
 	tests := []struct {
 		name               string
-		h                  *Handler
+		h                  *genericHandler
 		args               args
 		wantPanic          bool
 		expectedInternalID uint64
@@ -52,7 +52,7 @@ func TestHandler_addInformation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			defer func() {
 				if r := recover(); tt.wantPanic && r == nil {
-					t.Error("Handler.addInformation() want panic")
+					t.Error("genericHandler.addInformation() want panic")
 				}
 			}()
 			tt.args.info.EXPECT().InfoType().Return(reflect.TypeOf(""))
@@ -63,13 +63,13 @@ func TestHandler_addInformation(t *testing.T) {
 }
 
 func TestHandler_infoTypes(t *testing.T) {
-	h := NewHandler()
+	h := newgenericHandler()
 	h.lookup[reflect.TypeOf((*string)(nil)).Elem()] = nil
 	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = nil
 	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = nil
 	tests := []struct {
 		name string
-		h    *Handler
+		h    *genericHandler
 		want []reflect.Type
 	}{
 		{"types", h, []reflect.Type{reflect.TypeOf((*string)(nil)).Elem(), reflect.TypeOf((*float32)(nil)).Elem(), reflect.TypeOf((*float64)(nil)).Elem()}},
@@ -77,7 +77,7 @@ func TestHandler_infoTypes(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.h.infoTypes(); !sameTypeSlice(got, tt.want) {
-				t.Errorf("Handler.infoTypes() = %v, want %v", got, tt.want)
+				t.Errorf("genericHandler.infoTypes() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -86,7 +86,7 @@ func TestHandler_infoTypes(t *testing.T) {
 func TestHandler_AddFace(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	h := NewHandler()
+	h := newgenericHandler()
 	handleable := NewMockHandleable(mockCtrl)
 	h.lookup[reflect.TypeOf((*string)(nil)).Elem()] = handleable
 	type args struct {
@@ -94,7 +94,7 @@ func TestHandler_AddFace(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		h    *Handler
+		h    *genericHandler
 		args args
 		data *MockFaceData
 	}{
@@ -112,7 +112,7 @@ func TestHandler_AddFace(t *testing.T) {
 func TestHandler_informationByType(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	h := NewHandler()
+	h := newgenericHandler()
 	handleable1 := NewMockHandleable(mockCtrl)
 	handleable2 := NewMockHandleable(mockCtrl)
 	h.lookup[reflect.TypeOf((*string)(nil)).Elem()] = handleable1
@@ -122,7 +122,7 @@ func TestHandler_informationByType(t *testing.T) {
 	}
 	tests := []struct {
 		name  string
-		h     *Handler
+		h     *genericHandler
 		args  args
 		want  Handleable
 		want1 bool
@@ -135,31 +135,31 @@ func TestHandler_informationByType(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, got1 := tt.h.informationByType(tt.args.infoType)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Handler.informationByType() got = %v, want %v", got, tt.want)
+				t.Errorf("genericHandler.informationByType() got = %v, want %v", got, tt.want)
 			}
 			if got1 != tt.want1 {
-				t.Errorf("Handler.informationByType() got1 = %v, want %v", got1, tt.want1)
+				t.Errorf("genericHandler.informationByType() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}
 }
 
 func TestHandler_InformationCount(t *testing.T) {
-	h := NewHandler()
+	h := newgenericHandler()
 	h.lookup[reflect.TypeOf((*string)(nil)).Elem()] = nil
 	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = nil
 	tests := []struct {
 		name string
-		h    *Handler
+		h    *genericHandler
 		want uint32
 	}{
-		{"empty", new(Handler), 0},
+		{"empty", new(genericHandler), 0},
 		{"withdata", h, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.h.InformationCount(); got != tt.want {
-				t.Errorf("Handler.InformationCount() = %v, want %v", got, tt.want)
+				t.Errorf("genericHandler.InformationCount() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -171,7 +171,7 @@ func TestHandler_AddInfoFrom(t *testing.T) {
 	defer mockCtrl.Finish()
 	otherHandleable := NewMockHandleable(mockCtrl)
 	ownHandleable := NewMockHandleable(mockCtrl)
-	h := NewHandler()
+	h := newgenericHandler()
 	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = ownHandleable
 	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = ownHandleable
 	type args struct {
@@ -180,7 +180,7 @@ func TestHandler_AddInfoFrom(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		h    *Handler
+		h    *genericHandler
 		args args
 	}{
 		{"added", h, args{NewMockTypedInformer(mockCtrl), 3}},
@@ -203,7 +203,7 @@ func TestHandler_CopyFaceInfosFrom(t *testing.T) {
 	defer mockCtrl.Finish()
 	otherHandleable := NewMockHandleable(mockCtrl)
 	ownHandleable := NewMockHandleable(mockCtrl)
-	h := NewHandler()
+	h := newgenericHandler()
 	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = ownHandleable
 	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = ownHandleable
 	type args struct {
@@ -213,7 +213,7 @@ func TestHandler_CopyFaceInfosFrom(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		h    *Handler
+		h    *genericHandler
 		args args
 	}{
 		{"base", h, args{2, NewMockTypedInformer(mockCtrl), 3}},
@@ -232,7 +232,7 @@ func TestHandler_ResetFaceInformation(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	handleable := NewMockHandleable(mockCtrl)
-	h := NewHandler()
+	h := newgenericHandler()
 	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = handleable
 	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = handleable
 	type args struct {
@@ -240,7 +240,7 @@ func TestHandler_ResetFaceInformation(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		h    *Handler
+		h    *genericHandler
 		args args
 	}{
 		{"base", h, args{2}},
@@ -253,8 +253,8 @@ func TestHandler_ResetFaceInformation(t *testing.T) {
 	}
 }
 
-func TestHandler_RemoveInformation(t *testing.T) {
-	h := NewHandler()
+func TestHandler_removeInformation(t *testing.T) {
+	h := newgenericHandler()
 	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = nil
 	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = nil
 	type args struct {
@@ -262,7 +262,7 @@ func TestHandler_RemoveInformation(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		h    *Handler
+		h    *genericHandler
 		args args
 		want int
 	}{
@@ -273,9 +273,9 @@ func TestHandler_RemoveInformation(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.h.RemoveInformation(tt.args.infoType)
+			tt.h.removeInformation(tt.args.infoType)
 			if got := len(tt.h.lookup); got != tt.want {
-				t.Errorf("Handler.RemoveInformation() want = %v, got %v", tt.want, got)
+				t.Errorf("genericHandler.removeInformation() want = %v, got %v", tt.want, got)
 			}
 		})
 	}
@@ -285,7 +285,7 @@ func TestHandler_PermuteNodeInformation(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	handleable := NewMockHandleable(mockCtrl)
-	h := NewHandler()
+	h := newgenericHandler()
 	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = handleable
 	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = handleable
 	type args struct {
@@ -296,7 +296,7 @@ func TestHandler_PermuteNodeInformation(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		h    *Handler
+		h    *genericHandler
 		args args
 	}{
 		{"base", h, args{1, 2, 3, 4}},
