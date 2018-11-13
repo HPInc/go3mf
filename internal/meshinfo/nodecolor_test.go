@@ -13,7 +13,7 @@ func TestNodeColor_Invalidate(t *testing.T) {
 		name string
 		n    *NodeColor
 	}{
-		{"base", &NodeColor{[3]color.RGBA{color.RGBA{}, color.RGBA{}, color.RGBA{}}}},
+		{"base", &NodeColor{[3]color.RGBA{{}, {}, {}}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -30,7 +30,7 @@ func TestNodeColor_Copy(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockData := NewMockFaceData(mockCtrl)
-	targetColor := [3]color.RGBA{color.RGBA{1, 2, 3, 4}, color.RGBA{3, 1, 2, 3}, color.RGBA{1, 2, 34, 3}}
+	targetColor := [3]color.RGBA{{1, 2, 3, 4}, {3, 1, 2, 3}, {1, 2, 34, 3}}
 	type args struct {
 		from interface{}
 	}
@@ -61,9 +61,9 @@ func TestNodeColor_HasData(t *testing.T) {
 		want bool
 	}{
 		{"nodata", new(NodeColor), false},
-		{"data1", &NodeColor{[3]color.RGBA{color.RGBA{1, 2, 3, 4}, color.RGBA{}, color.RGBA{}}}, true},
-		{"data2", &NodeColor{[3]color.RGBA{color.RGBA{}, color.RGBA{1, 2, 3, 4}, color.RGBA{}}}, true},
-		{"data3", &NodeColor{[3]color.RGBA{color.RGBA{}, color.RGBA{}, color.RGBA{1, 2, 3, 4}}}, true},
+		{"data1", &NodeColor{[3]color.RGBA{{1, 2, 3, 4}, {}, {}}}, true},
+		{"data2", &NodeColor{[3]color.RGBA{{}, {1, 2, 3, 4}, {}}}, true},
+		{"data3", &NodeColor{[3]color.RGBA{{}, {}, {1, 2, 3, 4}}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

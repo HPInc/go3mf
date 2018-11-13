@@ -34,7 +34,9 @@ func (t *VectorTree) Units() float32 {
 // * ErrorInvalidUnits: ((units < VectorMinUnits) || (units > VectorMaxUnits))
 // * ErrorCouldNotSetUnits: non-empty tree
 func (t *VectorTree) SetUnits(units float32) error {
-	if (units < VectorMinUnits) || (units > VectorMaxUnits) {
+	if units == 0 {
+		units = VectorDefaultUnits
+	} else if (units < VectorMinUnits) || (units > VectorMaxUnits) {
 		return &InvalidUnitsError{units}
 	}
 	if len(t.entries) > 0 {
