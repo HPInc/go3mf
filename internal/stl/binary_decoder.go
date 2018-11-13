@@ -2,31 +2,31 @@ package stl
 
 import (
 	"encoding/binary"
-	"github.com/go-gl/mathgl/mgl32"
 	"io"
 
+	"github.com/go-gl/mathgl/mgl32"
 	"github.com/qmuntal/go3mf/internal/mesh"
 )
 
 type binaryHeader struct {
-	_ [80]byte
+	_         [80]byte
 	FaceCount uint32
 }
 
 type binaryFace struct {
-	_    [3]float32
-	Vertices  [3][3]float32
-	_ uint16
+	_        [3]float32
+	Vertices [3][3]float32
+	_        uint16
 }
 
 // binaryDecoder can create a Mesh from a Read stream that is feeded with a binary STL.
 type binaryDecoder struct {
-	r io.Reader
-	units              float32 // Units of the stream where 1.0 mean meters.
+	r     io.Reader
+	units float32 // Units of the stream where 1.0 mean meters.
 }
 
-// LoadMesh loads a binary stl from a io.Reader.
-func (d *binaryDecoder) Decode() (*mesh.Mesh, error) {
+// decode loads a binary stl from a io.Reader.
+func (d *binaryDecoder) decode() (*mesh.Mesh, error) {
 	newMesh := mesh.NewMesh()
 	err := newMesh.StartCreation(d.units)
 	defer newMesh.EndCreation()

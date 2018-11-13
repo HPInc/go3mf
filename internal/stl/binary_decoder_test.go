@@ -8,7 +8,7 @@ import (
 	"github.com/qmuntal/go3mf/internal/mesh"
 )
 
-func Test_binaryDecoder_Decode(t *testing.T) {
+func Test_binaryDecoder_decode(t *testing.T) {
 	triangle := createBinaryTriangle()
 	tests := []struct {
 		name    string
@@ -24,13 +24,13 @@ func Test_binaryDecoder_Decode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.d.Decode()
+			got, err := tt.d.decode()
 			if (err != nil) != tt.wantErr {
-				t.Errorf("binaryDecoder.Decode() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("binaryDecoder.decode() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !tt.wantErr && !got.ApproxEqual(tt.want) {
-				t.Errorf("binaryDecoder.Decode() = %v, want %v", got, tt.want)
+				t.Errorf("binaryDecoder.decode() = %v, want %v", got, tt.want)
 			}
 		})
 	}
