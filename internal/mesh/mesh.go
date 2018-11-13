@@ -60,6 +60,28 @@ func (m *Mesh) ClearInformationHandler() {
 	m.informationHandler = nil
 }
 
+func (m *Mesh) Equal(mesh *Mesh) bool {
+	if len(m.nodes) != len(mesh.nodes) {
+		return false
+	}
+	if len(m.faces) != len(mesh.faces) {
+		return false
+	}
+	for i := 0; i < len(m.nodes); i++ {
+		if !m.nodes[i].Position.ApproxEqualThreshold(mesh.nodes[i].Position, 0.0001) {
+			return false
+		}
+	}
+	for i := 0; i < len(m.faces); i++ {
+		indices := m.faces[i].NodeIndices
+		other := mesh.faces[i].NodeIndices
+		if indices[0] != other[0] || indices[1] != other[1] || indices[2] != other[2] {
+			return false
+		}
+	}
+	return true
+}
+
 // Merge merges the mesh with another mesh. This includes the nodes, faces, beams and all the informations.
 func (m *Mesh) Merge(mesh MergeableMesh, matrix mgl32.Mat4) error {
 	otherHandler := mesh.InformationHandler()

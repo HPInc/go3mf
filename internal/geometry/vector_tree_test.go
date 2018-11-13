@@ -50,7 +50,7 @@ func TestVectorTree_SetUnits(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"zero", NewVectorTree(), args{0.0}, true},
+		{"zero", NewVectorTree(), args{0.0}, false},
 		{"minunitsfail", NewVectorTree(), args{0.000009}, true},
 		{"minunits", NewVectorTree(), args{VectorMinUnits}, false},
 		{"one", NewVectorTree(), args{1.0}, false},
@@ -65,7 +65,7 @@ func TestVectorTree_SetUnits(t *testing.T) {
 				return
 			}
 			want := tt.args.units
-			if tt.wantErr {
+			if want == 0 || tt.wantErr {
 				want = VectorDefaultUnits
 			}
 			if got := tt.t.Units(); got != want {
