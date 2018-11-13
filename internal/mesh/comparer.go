@@ -5,9 +5,6 @@ type comparer struct {
 
 // CompareGeometry compares the geometry of two meshes to check if they are equal.
 func (c comparer) CompareGeometry(m1, m2 *Mesh) bool {
-	if m1 == m2 {
-		return true
-	}
 	if !c.fastCheck(m1, m2) {
 		return false
 	}
@@ -15,6 +12,12 @@ func (c comparer) CompareGeometry(m1, m2 *Mesh) bool {
 }
 
 func (c comparer) fastCheck(m1, m2 *Mesh) bool {
+	if m1 == nil || m2 == nil {
+		return false
+	}
+	if m1 == m2 {
+		return true
+	}
 	return len(m1.nodes) == len(m2.nodes) && len(m1.faces) == len(m2.faces) && len(m1.beams) == len(m2.beams)
 }
 
