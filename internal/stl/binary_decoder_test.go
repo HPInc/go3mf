@@ -1,4 +1,4 @@
-package meshimporter
+package stl
 
 import (
 	"bytes"
@@ -8,29 +8,29 @@ import (
 	"github.com/qmuntal/go3mf/internal/mesh"
 )
 
-func Test_stlBinaryDecoder_Decode(t *testing.T) {
+func Test_binaryDecoder_Decode(t *testing.T) {
 	triangle := createBinaryTriangle()
 	tests := []struct {
 		name    string
-		d       *stlBinaryDecoder
+		d       *binaryDecoder
 		want    *mesh.Mesh
 		wantErr bool
 	}{
-		{"base", &stlBinaryDecoder{r: bytes.NewReader(triangle)}, createMeshTriangle(), false},
-		{"wrongunits", &stlBinaryDecoder{r: bytes.NewReader(make([]byte, 0)), units: -1.0}, nil, true},
-		{"eof", &stlBinaryDecoder{r: bytes.NewReader(make([]byte, 0))}, nil, true},
-		{"onlyheader", &stlBinaryDecoder{r: bytes.NewReader(make([]byte, 80))}, nil, true},
-		{"invalidface", &stlBinaryDecoder{r: bytes.NewReader(triangle[:100])}, nil, true},
+		{"base", &binaryDecoder{r: bytes.NewReader(triangle)}, createMeshTriangle(), false},
+		{"wrongunits", &binaryDecoder{r: bytes.NewReader(make([]byte, 0)), units: -1.0}, nil, true},
+		{"eof", &binaryDecoder{r: bytes.NewReader(make([]byte, 0))}, nil, true},
+		{"onlyheader", &binaryDecoder{r: bytes.NewReader(make([]byte, 80))}, nil, true},
+		{"invalidface", &binaryDecoder{r: bytes.NewReader(triangle[:100])}, nil, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := tt.d.Decode()
 			if (err != nil) != tt.wantErr {
-				t.Errorf("stlBinaryDecoder.Decode() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("binaryDecoder.Decode() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !tt.wantErr && !got.ApproxEqual(tt.want) {
-				t.Errorf("stlBinaryDecoder.Decode() = %v, want %v", got, tt.want)
+				t.Errorf("binaryDecoder.Decode() = %v, want %v", got, tt.want)
 			}
 		})
 	}
