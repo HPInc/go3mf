@@ -21,12 +21,12 @@ func TestSTLBinary_LoadMesh(t *testing.T) {
 		want    *mesh.Mesh
 		wantErr bool
 	}{
+		{"base", new(STLBinary), args{bytes.NewReader(triangle)}, createMeshTriangle(), false},
 		{"wrongunits", &STLBinary{Units: -1.0}, args{bytes.NewReader(make([]byte, 0))}, nil, true},
 		{"eof", new(STLBinary), args{bytes.NewReader(make([]byte, 0))}, nil, true},
 		{"onlyheader", new(STLBinary), args{bytes.NewReader(make([]byte, 80))}, nil, true},
 		{"invalidface", new(STLBinary), args{bytes.NewReader(triangle[:100])}, nil, true},
 		{"invalidface2", &STLBinary{IgnoreInvalidFaces: true}, args{bytes.NewReader(triangle[:100])}, nil, true},
-		{"base", new(STLBinary), args{bytes.NewReader(triangle)}, createMeshTriangle(), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -35,7 +35,7 @@ func TestSTLBinary_LoadMesh(t *testing.T) {
 				t.Errorf("STLBinary.LoadMesh() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !tt.wantErr && !got.Equal(tt.want) {
+			if !tt.wantErr && !got.ApproxEqual(tt.want) {
 				t.Errorf("STLBinary.LoadMesh() = %v, want %v", got, tt.want)
 			}
 		})

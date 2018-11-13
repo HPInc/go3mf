@@ -53,25 +53,9 @@ func (m *Mesh) ClearInformationHandler() {
 	m.informationHandler.RemoveAllInformations()
 }
 
-// Equal compares the geometry of two meshes to check if they are equal.
-func (m *Mesh) Equal(mesh *Mesh) bool {
-	// Fast fail
-	if len(m.nodes) != len(mesh.nodes) || len(m.faces) != len(mesh.faces) || len(m.beams) != len(mesh.beams) {
-		return false
-	}
-	for i := 0; i < len(m.nodes); i++ {
-		if !m.nodes[i].Position.ApproxEqualThreshold(mesh.nodes[i].Position, 0.0001) {
-			return false
-		}
-	}
-	for i := 0; i < len(m.faces); i++ {
-		indices := m.faces[i].NodeIndices
-		other := mesh.faces[i].NodeIndices
-		if indices[0] != other[0] || indices[1] != other[1] || indices[2] != other[2] {
-			return false
-		}
-	}
-	return true
+// ApproxEqual compares the geometry of two meshes to check if they are equal.The mesh properties are not compared.
+func (m *Mesh) ApproxEqual(mesh *Mesh) bool {
+	return comparer{}.CompareGeometry(m, mesh)
 }
 
 // Merge merges the mesh with another mesh. This includes the nodes, faces, beams and all the informations.
