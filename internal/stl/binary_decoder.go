@@ -9,7 +9,7 @@ import (
 )
 
 type binaryHeader struct {
-	_         [80]byte
+	_   [80]byte
 	FaceCount uint32
 }
 
@@ -34,7 +34,7 @@ func (d *binaryDecoder) decode() (*mesh.Mesh, error) {
 		return nil, err
 	}
 
-	header := binaryHeader{}
+	var header binaryHeader
 	err = binary.Read(d.r, binary.LittleEndian, &header)
 	if err != nil {
 		return nil, err
