@@ -61,3 +61,27 @@ func (d *binaryDecoder) decodeFace(facet *binaryFace, newMesh *mesh.Mesh) {
 
 	newMesh.AddFace(nodes[0], nodes[1], nodes[2])
 }
+
+type binaryEncoder struct {
+	w io.Writer
+}
+
+func (e *binaryEncoder) encode(m *mesh.Mesh) error {
+	faceCount := m.FaceCount()
+	header := binaryHeader{FaceCount: faceCount}
+	err := binary.Write(e.w, binary.LittleEndian, header)
+	if err != nil {
+		return err
+	}
+
+	for i := 0; i < int(faceCount); i++ {
+		n1, n2, n3 := m.FaceCoordinates(uint32(i))
+		//normal := m.FaceNormal(uint32(i))
+		facet := binaryFace{Vertices: [3][3]float32{[3]float32{n1.X(), n1.Y(), n1.Z()}, [3]float32{n2.X(), n2.Y(), n2.Z()}, [3]float32{n3.X(), n3.Y(), n3.Z()}}}
+		err := binary.Write(e.w, binary.LittleEndian, facet)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
