@@ -15,7 +15,7 @@ func TestBaseMaterial_ColotString(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.m.ColotString(); got != tt.want {
+			if got := tt.m.ColorString(); got != tt.want {
 				t.Errorf("BaseMaterial.ColotString() = %v, want %v", got, tt.want)
 			}
 		})
