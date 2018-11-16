@@ -219,3 +219,64 @@ func TestMesh_EndCreation(t *testing.T) {
 		})
 	}
 }
+
+func TestMesh_FaceCoordinates(t *testing.T) {
+	m := NewMesh()
+	n1 := m.AddNode(mgl32.Vec3{0.0, 0.0, 0.0})
+	n2 := m.AddNode(mgl32.Vec3{20.0, -20.0, 0.0})
+	n3 := m.AddNode(mgl32.Vec3{0.0019989014, 0.0019989014, 0.0})
+	m.AddFace(n1, n2, n3)
+	type args struct {
+		i uint32
+	}
+	tests := []struct {
+		name   string
+		m      *Mesh
+		args   args
+		wantN1 mgl32.Vec3
+		wantN2 mgl32.Vec3
+		wantN3 mgl32.Vec3
+	}{
+		{"base", m, args{0}, mgl32.Vec3{0.0, 0.0, 0.0}, mgl32.Vec3{20.0, -20.0, 0.0}, mgl32.Vec3{0.0019989014, 0.0019989014, 0.0}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotN1, gotN2, gotN3 := tt.m.FaceCoordinates(tt.args.i)
+			if !reflect.DeepEqual(gotN1, tt.wantN1) {
+				t.Errorf("Mesh.FaceCoordinates() gotN1 = %v, want %v", gotN1, tt.wantN1)
+			}
+			if !reflect.DeepEqual(gotN2, tt.wantN2) {
+				t.Errorf("Mesh.FaceCoordinates() gotN2 = %v, want %v", gotN2, tt.wantN2)
+			}
+			if !reflect.DeepEqual(gotN3, tt.wantN3) {
+				t.Errorf("Mesh.FaceCoordinates() gotN3 = %v, want %v", gotN3, tt.wantN3)
+			}
+		})
+	}
+}
+
+func TestMesh_FaceNormal(t *testing.T) {
+	m := NewMesh()
+	n1 := m.AddNode(mgl32.Vec3{0.0, 0.0, 0.0})
+	n2 := m.AddNode(mgl32.Vec3{20.0, -20.0, 0.0})
+	n3 := m.AddNode(mgl32.Vec3{0.0019989014, 0.0019989014, 0.0})
+	m.AddFace(n1, n2, n3)
+	type args struct {
+		i uint32
+	}
+	tests := []struct {
+		name string
+		m    *Mesh
+		args args
+		want mgl32.Vec3
+	}{
+		{"base", m, args{0}, mgl32.Vec3{0,0,1}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.FaceNormal(tt.args.i); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Mesh.FaceNormal() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

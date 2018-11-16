@@ -14,7 +14,7 @@ type binaryHeader struct {
 }
 
 type binaryFace struct {
-	_        [3]float32
+	Normal        [3]float32
 	Vertices [3][3]float32
 	_        uint16
 }
@@ -76,8 +76,11 @@ func (e *binaryEncoder) encode(m *mesh.Mesh) error {
 
 	for i := 0; i < int(faceCount); i++ {
 		n1, n2, n3 := m.FaceCoordinates(uint32(i))
-		//normal := m.FaceNormal(uint32(i))
-		facet := binaryFace{Vertices: [3][3]float32{[3]float32{n1.X(), n1.Y(), n1.Z()}, [3]float32{n2.X(), n2.Y(), n2.Z()}, [3]float32{n3.X(), n3.Y(), n3.Z()}}}
+		normal := m.FaceNormal(uint32(i))
+		facet := binaryFace{
+			Normal: [3]float32{normal.X(), normal.Y(), normal.Z()},
+			Vertices: [3][3]float32{[3]float32{n1.X(), n1.Y(), n1.Z()}, [3]float32{n2.X(), n2.Y(), n2.Z()}, [3]float32{n3.X(), n3.Y(), n3.Z()}},
+		}
 		err := binary.Write(e.w, binary.LittleEndian, facet)
 		if err != nil {
 			return err

@@ -2,6 +2,7 @@ package stl
 
 import (
 	"bytes"
+	"errors"
 	"testing"
 
 	"github.com/go-gl/mathgl/mgl32"
@@ -34,6 +35,51 @@ func Test_binaryDecoder_decode(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_binaryEncoder_encode(t *testing.T) {
+	triangle := createMeshTriangle()
+	type args struct {
+		m *mesh.Mesh
+	}
+	tests := []struct {
+		name    string
+		e       *binaryEncoder
+		args    args
+		wantErr bool
+	}{
+		{"errorHeader", &binaryEncoder{w: new(errorWriter)}, args{triangle}, true},
+		{"errorFace", &binaryEncoder{w: &errorWriter{max: 1}}, args{triangle}, true},
+		{"base", &binaryEncoder{w: new(bytes.Buffer)}, args{triangle}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.e.encode(tt.args.m); (err != nil) != tt.wantErr {
+				t.Errorf("binaryEncoder.encode() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr {
+				decoder := &binaryDecoder{r: tt.e.w.(*bytes.Buffer)}
+				got, _ := decoder.decode()
+				if !got.ApproxEqual(tt.args.m) {
+					t.Errorf("binaryDecoder.encode() = %v, want %v", got, tt.args.m)
+				}
+			}
+		})
+	}
+}
+
+type errorWriter struct {
+	max int // writes before failing
+	current int
+}
+
+func (w *errorWriter) Write(p []byte) (n int, err error) {
+	if w.current >= w.max {
+		return 0, errors.New("")
+	}
+	w.current++
+	return 0, nil
 }
 
 func createMeshTriangle() *mesh.Mesh {
