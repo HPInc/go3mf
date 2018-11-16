@@ -18,7 +18,8 @@ func DecodeUnits(r io.Reader, units float32) (*mesh.Mesh, error) {
 		return nil, err
 	}
 	if ascii {
-		return nil, nil
+		d := asciiDecoder{r: b, units: units}
+		return d.decode()
 	}
 	d := binaryDecoder{r: b}
 	return d.decode()
