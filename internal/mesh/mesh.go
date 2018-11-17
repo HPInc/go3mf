@@ -99,14 +99,8 @@ func (m *Mesh) CheckSanity() bool {
 	return m.beamLattice.checkSanity(m.NodeCount())
 }
 
-// FaceCoordinates returns the coordinates of each node of a face
-func (m *Mesh) FaceCoordinates(i uint32) (n1, n2, n3 mgl32.Vec3) {
+// FaceNodes returns the three nodes of a face
+func (m *Mesh) FaceNodes(i uint32) (*Node, *Node, *Node) {
 	face := m.Face(uint32(i))
-	return m.Node(face.NodeIndices[0]).Position, m.Node(face.NodeIndices[1]).Position, m.Node(face.NodeIndices[2]).Position
-}
-
-// FaceNormal returns the normal of a face
-func (m *Mesh) FaceNormal(i uint32) mgl32.Vec3 {
-	n1, n2, n3 := m.FaceCoordinates(i)
-	return n2.Sub(n1).Cross(n3.Sub(n1)).Normalize()
+	return m.Node(face.NodeIndices[0]), m.Node(face.NodeIndices[1]), m.Node(face.NodeIndices[2])
 }

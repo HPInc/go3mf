@@ -9,19 +9,41 @@ import (
 	"golang.org/x/exp/utf8string"
 )
 
-const sizeOfHeader = 300 // minimum size of a closed mesh in binary is 384 bytes, corresponding to a triangle
+const sizeOfHeader = 300 // minimum size of a closed mesh in binary is 384 bytes, corresponding to a triangle.
 
-func DecodeUnits(r io.Reader, units float32) (*mesh.Mesh, error) {
-	b := bufio.NewReader(r)
-	ascii, err := isASCII(b)
+// Decoder can decode an stl to a mesh.
+// It supports automatic detection of binary or ascii stl encoding.
+type Decoder struct {
+	r     io.Reader
+	units float32
+}
+
+// NewDecoder creates a new decoder with default units.
+func NewDecoder(r io.Reader) *Decoder {
+	return &Decoder{
+		r: r,
+	}
+}
+
+// NewDecoderUnits creates a new decoder with the desired units.
+func NewDecoderUnits(r io.Reader, units float32) *Decoder {
+	d := NewDecoder(r)
+	d.units = units
+	return d
+}
+
+// Decode creates a mesh from a read stream.
+func (d *Decoder) Decode() (*mesh.Mesh, error) {
+	b := bufio.NewReader(d.r)
+	encodingASCII, err := isASCII(b)
 	if err != nil {
 		return nil, err
 	}
-	if ascii {
+	if encodingASCII {
 		return nil, nil
 	}
-	d := binaryDecoder{r: b}
-	return d.decode()
+	decoder := binaryDecoder{r: b, units: d.units}
+	return decoder.decode()
 }
 
 func isASCII(r *bufio.Reader) (bool, error) {
