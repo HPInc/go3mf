@@ -18,7 +18,6 @@ func Test_binaryDecoder_decode(t *testing.T) {
 		wantErr bool
 	}{
 		{"base", &binaryDecoder{r: bytes.NewReader(triangle)}, createMeshTriangle(), false},
-		{"wrongunits", &binaryDecoder{r: bytes.NewReader(make([]byte, 0)), units: -1.0}, nil, true},
 		{"eof", &binaryDecoder{r: bytes.NewReader(make([]byte, 0))}, nil, true},
 		{"onlyheader", &binaryDecoder{r: bytes.NewReader(make([]byte, 80))}, nil, true},
 		{"invalidface", &binaryDecoder{r: bytes.NewReader(triangle[:100])}, nil, true},

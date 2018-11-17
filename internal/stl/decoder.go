@@ -14,22 +14,14 @@ const sizeOfHeader = 300 // minimum size of a closed mesh in binary is 384 bytes
 // Decoder can decode an stl to a mesh.
 // It supports automatic detection of binary or ascii stl encoding.
 type Decoder struct {
-	r     io.Reader
-	units float32
+	r io.Reader
 }
 
-// NewDecoder creates a new decoder with default units.
+// NewDecoder creates a new decoder.
 func NewDecoder(r io.Reader) *Decoder {
 	return &Decoder{
 		r: r,
 	}
-}
-
-// NewDecoderUnits creates a new decoder with the desired units.
-func NewDecoderUnits(r io.Reader, units float32) *Decoder {
-	d := NewDecoder(r)
-	d.units = units
-	return d
 }
 
 // Decode creates a mesh from a read stream.
@@ -42,7 +34,7 @@ func (d *Decoder) Decode() (*mesh.Mesh, error) {
 	if encodingASCII {
 		return nil, nil
 	}
-	decoder := binaryDecoder{r: b, units: d.units}
+	decoder := binaryDecoder{r: b}
 	return decoder.decode()
 }
 

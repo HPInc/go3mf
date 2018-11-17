@@ -6,6 +6,14 @@ import (
 	"github.com/qmuntal/go3mf/internal/geometry"
 )
 
+// CreationOptions defines a set of options for helping in the mesh creation process
+type CreationOptions struct {
+	// True to automatically check if a node with the same coordinates already exists in the mesh
+	// when calling AddNode. If it exists, the return value will be the existing node and no node will be added.
+	// Using this option produces an speed penalty.
+	CalculateConnectivity bool
+}
+
 // Mesh is not really a mesh, since it lacks the component edges and the
 // topological information. It only holds the nodes and the faces (triangles).
 // Each node,  and face have a ID, which allows to identify them. Each face have an
@@ -44,11 +52,12 @@ func (m *Mesh) Clear() {
 }
 
 // StartCreation can be called before populating the mesh. 
-// If so, the connectivity will be autmatically calculated but producing and speed penalty.
+// If so, the connectivity will be automatically calculated but producing and speed penalty.
 // When the creationg process is finished EndCreation() must be called in order to clean temporary data.
-func (m *Mesh) StartCreation(units float32) error {
-	m.nodeStructure.vectorTree = geometry.NewVectorTree()
-	return m.nodeStructure.vectorTree.SetUnits(units)
+func (m *Mesh) StartCreation(opts CreationOptions) {
+	if opts.CalculateConnectivity {
+		m.nodeStructure.vectorTree = geometry.NewVectorTree()
+	}
 }
 
 // EndCreation cleans temporary data associated to creating a mesh.

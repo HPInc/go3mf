@@ -179,24 +179,26 @@ func TestMesh_ApproxEqual(t *testing.T) {
 
 func TestMesh_StartCreation(t *testing.T) {
 	type args struct {
-		units float32
+		opts CreationOptions
 	}
 	tests := []struct {
-		name    string
-		m       *Mesh
-		args    args
-		wantErr bool
+		name string
+		m    *Mesh
+		args args
 	}{
-		{"err", NewMesh(), args{-1.0}, true},
-		{"base", NewMesh(), args{0.0}, false},
+		{"default", NewMesh(), args{CreationOptions{CalculateConnectivity: false}}},
+		{"connectivity", NewMesh(), args{CreationOptions{CalculateConnectivity: true}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.m.StartCreation(tt.args.units); (err != nil) != tt.wantErr {
-				t.Errorf("Mesh.StartCreation() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			if !tt.wantErr && tt.m.nodeStructure.vectorTree == nil {
+			tt.m.StartCreation(tt.args.opts)
+			if tt.args.opts.CalculateConnectivity && tt.m.nodeStructure.vectorTree == nil {
 				t.Error("Mesh.StartCreation() should have created the vector tree")
+				return
+			}
+			if !tt.args.opts.CalculateConnectivity && tt.m.nodeStructure.vectorTree != nil {
+				t.Error("Mesh.StartCreation() shouldn't have created the vector tree")
+				return
 			}
 		})
 	}
@@ -211,7 +213,7 @@ func TestMesh_EndCreation(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.m.StartCreation(0.0)
+			tt.m.StartCreation(CreationOptions{CalculateConnectivity: true})
 			tt.m.EndCreation()
 			if tt.m.nodeStructure.vectorTree != nil {
 				t.Error("Mesh.StartCreation() should have deleted the vector tree")

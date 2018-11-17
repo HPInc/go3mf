@@ -18,33 +18,12 @@ func TestNewDecoder(t *testing.T) {
 		args args
 		want *Decoder
 	}{
-		{"base", args{new(bytes.Buffer)}, &Decoder{r: new(bytes.Buffer), units: 0.0}},
+		{"base", args{new(bytes.Buffer)}, &Decoder{r: new(bytes.Buffer)}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := NewDecoder(tt.args.r); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewDecoder() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestNewDecoderUnits(t *testing.T) {
-	type args struct {
-		r     io.Reader
-		units float32
-	}
-	tests := []struct {
-		name string
-		args args
-		want *Decoder
-	}{
-		{"base", args{new(bytes.Buffer), 0.1}, &Decoder{r: new(bytes.Buffer), units: 0.1}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewDecoderUnits(tt.args.r, tt.args.units); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewDecoderUnits() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -74,7 +53,7 @@ func TestDecoder_Decode(t *testing.T) {
 				return
 			}
 			if !tt.wantErr && !got.ApproxEqual(tt.want) {
-				t.Errorf("DecodeUnits() = %v, want %v", got, tt.want)
+				t.Errorf("Decoder.Decode() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -23,20 +23,15 @@ type binaryFace struct {
 // binaryDecoder can create a Mesh from a Read stream that is feeded with a binary STL.
 type binaryDecoder struct {
 	r     io.Reader
-	units float32 // Units of the stream where 1.0 mean meters.
 }
 
 // decode loads a binary stl from a io.Reader.
 func (d *binaryDecoder) decode() (*mesh.Mesh, error) {
 	newMesh := mesh.NewMesh()
-	err := newMesh.StartCreation(d.units)
+	newMesh.StartCreation(mesh.CreationOptions{CalculateConnectivity: true})
 	defer newMesh.EndCreation()
-	if err != nil {
-		return nil, err
-	}
-
 	var header binaryHeader
-	err = binary.Read(d.r, binary.LittleEndian, &header)
+	err := binary.Read(d.r, binary.LittleEndian, &header)
 	if err != nil {
 		return nil, err
 	}
