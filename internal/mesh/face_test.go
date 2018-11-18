@@ -69,11 +69,10 @@ func Test_faceStructure_Face(t *testing.T) {
 }
 
 func Test_faceStructure_AddFace(t *testing.T) {
-	node := new(Node)
 	type args struct {
-		node1 *Node
-		node2 *Node
-		node3 *Node
+		node1 uint32
+		node2 uint32
+		node3 uint32
 	}
 	tests := []struct {
 		name      string
@@ -83,11 +82,11 @@ func Test_faceStructure_AddFace(t *testing.T) {
 		wantErr   bool
 		wantPanic bool
 	}{
-		{"max", &faceStructure{maxFaceCount: 1, faces: make([]*Face, 1)}, args{new(Node), new(Node), new(Node)}, nil, false, true},
-		{"duplicated0-1", new(faceStructure), args{node, node, new(Node)}, nil, true, false},
-		{"duplicated0-2", new(faceStructure), args{node, new(Node), node}, nil, true, false},
-		{"duplicated1-2", new(faceStructure), args{new(Node), node, node}, nil, true, false},
-		{"base", &faceStructure{informationHandler: meshinfo.NewHandler(), faces: []*Face{new(Face)}}, args{new(Node), new(Node), new(Node)}, &Face{Index: 1}, false, false},
+		{"max", &faceStructure{maxFaceCount: 1, faces: make([]*Face, 1)}, args{0, 1, 2}, nil, false, true},
+		{"duplicated0-1", new(faceStructure), args{1, 1, 2}, nil, true, false},
+		{"duplicated0-2", new(faceStructure), args{1, 2, 1}, nil, true, false},
+		{"duplicated1-2", new(faceStructure), args{2, 1, 1}, nil, true, false},
+		{"base", &faceStructure{informationHandler: meshinfo.NewHandler(), faces: []*Face{new(Face)}}, args{0, 1, 2}, &Face{Index: 1, NodeIndices: [3]uint32{0, 1, 2}}, false, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -140,10 +139,9 @@ func Test_faceStructure_merge(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockMesh := NewMockMergeableMesh(mockCtrl)
-	nodes := []*Node{{Index: 0}, {Index: 1}, {Index: 2}}
 	type args struct {
 		other    mergeableFaces
-		newNodes []*Node
+		newNodes []uint32
 	}
 	tests := []struct {
 		name    string
@@ -152,9 +150,9 @@ func Test_faceStructure_merge(t *testing.T) {
 		wantErr bool
 		times   uint32
 	}{
-		{"err", &faceStructure{maxFaceCount: 1, faces: make([]*Face, 1)}, args{mockMesh, nodes}, true, 1},
-		{"zero", new(faceStructure), args{mockMesh, make([]*Node, 0)}, false, 0},
-		{"merged", new(faceStructure), args{mockMesh, []*Node{{Index: 0}, {Index: 1}, {Index: 2}}}, false, 2},
+		{"err", &faceStructure{maxFaceCount: 1, faces: make([]*Face, 1)}, args{mockMesh, []uint32{0, 1, 2}}, true, 1},
+		{"zero", new(faceStructure), args{mockMesh, make([]uint32, 0)}, false, 0},
+		{"merged", new(faceStructure), args{mockMesh, []uint32{0, 1, 2}}, false, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

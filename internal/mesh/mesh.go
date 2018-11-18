@@ -82,6 +82,8 @@ func (m *Mesh) ApproxEqual(mesh *Mesh) bool {
 
 // Merge merges the mesh with another mesh. This includes the nodes, faces, beams and all the informations.
 func (m *Mesh) Merge(mesh MergeableMesh, matrix mgl32.Mat4) error {
+	m.StartCreation(CreationOptions{CalculateConnectivity: true})
+	defer m.EndCreation()
 	m.informationHandler.AddInfoFrom(mesh.InformationHandler(), m.FaceCount())
 
 	newNodes := m.nodeStructure.merge(mesh, matrix)

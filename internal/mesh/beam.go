@@ -107,7 +107,7 @@ func (b *beamLattice) BeamSet(index uint32) *BeamSet {
 }
 
 // AddBeam adds a beam to the mesh with the desried parameters.
-func (b *beamLattice) AddBeam(node1, node2 *Node, radius1, radius2 float64, capMode1, capMode2 BeamCapMode) (*Beam, error) {
+func (b *beamLattice) AddBeam(node1, node2 uint32, radius1, radius2 float64, capMode1, capMode2 BeamCapMode) (*Beam, error) {
 	if node1 == node2 {
 		return nil, new(DuplicatedNodeError)
 	}
@@ -119,7 +119,7 @@ func (b *beamLattice) AddBeam(node1, node2 *Node, radius1, radius2 float64, capM
 
 	beam := &Beam{
 		Index:       beamCount,
-		NodeIndices: [2]uint32{node1.Index, node2.Index},
+		NodeIndices: [2]uint32{node1, node2},
 		Radius:      [2]float64{radius1, radius2},
 		CapMode:     [2]BeamCapMode{capMode1, capMode2},
 	}
@@ -146,7 +146,7 @@ func (b *beamLattice) checkSanity(nodeCount uint32) bool {
 	return true
 }
 
-func (b *beamLattice) merge(other mergeableBeams, newNodes []*Node) error {
+func (b *beamLattice) merge(other mergeableBeams, newNodes []uint32) error {
 	beamCount := other.BeamCount()
 	if beamCount == 0 {
 		return nil

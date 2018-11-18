@@ -227,7 +227,7 @@ func TestMesh_FaceNodes(t *testing.T) {
 	n1 := m.AddNode(mgl32.Vec3{0.0, 0.0, 0.0})
 	n2 := m.AddNode(mgl32.Vec3{20.0, -20.0, 0.0})
 	n3 := m.AddNode(mgl32.Vec3{0.0019989014, 0.0019989014, 0.0})
-	m.AddFace(n1, n2, n3)
+	m.AddFace(n1.Index, n2.Index, n3.Index)
 	type args struct {
 		i uint32
 	}
