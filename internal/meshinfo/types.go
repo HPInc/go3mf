@@ -21,8 +21,8 @@ type FaceData interface {
 
 // FaceQuerier can query information for an indexed face.
 type FaceQuerier interface {
-	// GetFaceData returns the data of the face with the target index.
-	GetFaceData(faceIndex uint32) FaceData
+	// FaceData returns the data of the face with the target index.
+	FaceData(faceIndex uint32) FaceData
 }
 
 type dataCreator interface {

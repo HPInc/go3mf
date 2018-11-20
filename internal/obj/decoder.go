@@ -12,6 +12,7 @@ import (
 	"github.com/qmuntal/go3mf/internal/meshinfo"
 )
 
+// Decoder can decode a mesh from an stream
 type Decoder struct {
 	r io.Reader
 	// placeholder
@@ -24,9 +25,17 @@ type Decoder struct {
 	textureCoordsInfo *meshinfo.FacesData
 }
 
-func (d *Decoder) decode() (*mesh.Mesh, error) {
+// NewDecoder creates a new decoder.
+func NewDecoder(r io.Reader) *Decoder {
+	return &Decoder{r: r}
+}
+
+// Decode creates a new mesh from an stream
+func (d *Decoder) Decode() (*mesh.Mesh, error) {
 	scanner := bufio.NewScanner(d.r)
 	d.m = mesh.NewMesh()
+	d.m.StartCreation(mesh.CreationOptions{CalculateConnectivity: true})
+	defer d.m.EndCreation()
 	d.vertices = make([]mgl32.Vec3, 1, 1024)  // 1-based indexing
 	d.verticesCoord = make([]mgl32.Vec2, 1, 1024)   // 1-based indexing
 	d.verticesColor = make(map[int]color.RGBA, 0)
@@ -93,7 +102,7 @@ func (d *Decoder) addTextureCoords(i1,i2,i3 int) {
 		if d.textureCoordsInfo == nil {
 			d.textureCoordsInfo = d.m.InformationHandler().AddTextureCoordsInfo(d.m.FaceCount())
 		}
-		data := d.textureCoordsInfo.AddFaceData(d.m.FaceCount()).(*meshinfo.TextureCoords)
+		data := d.textureCoordsInfo.FaceData(d.m.FaceCount() - 1).(*meshinfo.TextureCoords)
 		data.Coords = coords
 	}
 }
@@ -104,7 +113,7 @@ func (d *Decoder) addFaceColors(i1,i2,i3 int) {
 		if d.colorInfo == nil {
 			d.colorInfo = d.m.InformationHandler().AddNodeColorInfo(d.m.FaceCount())
 		}
-		data := d.colorInfo.AddFaceData(d.m.FaceCount()).(*meshinfo.NodeColor)
+		data := d.colorInfo.FaceData(d.m.FaceCount() - 1).(*meshinfo.NodeColor)
 		data.Colors = colors
 	}
 }
@@ -140,7 +149,7 @@ func (d *Decoder) getFaceColor(i1,i2,i3 int) (colors [3]color.RGBA, withColor bo
 	if colors[1], ok = d.verticesColor[i2]; ok {
 		withColor = true
 	}
-	if colors[2], ok = d.verticesColor[i2]; ok {
+	if colors[2], ok = d.verticesColor[i3]; ok {
 		withColor = true
 	}
 	return

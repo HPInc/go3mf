@@ -108,9 +108,9 @@ func Test_memoryContainer_GetFaceData(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotVal := tt.m.GetFaceData(tt.args.index)
+			gotVal := tt.m.FaceData(tt.args.index)
 			if !reflect.DeepEqual(gotVal, initial) {
-				t.Errorf("memoryContainer.GetFaceData() = %v, want %v", gotVal, initial)
+				t.Errorf("memoryContainer.FaceData() = %v, want %v", gotVal, initial)
 			}
 		})
 	}

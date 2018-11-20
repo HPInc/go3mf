@@ -49,7 +49,7 @@ func TestFacesData_resetFaceInformation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockInvalidator := NewMockFaceData(mockCtrl)
-			mockContainer.EXPECT().GetFaceData(tt.args.faceIndex).Return(mockInvalidator)
+			mockContainer.EXPECT().FaceData(tt.args.faceIndex).Return(mockInvalidator)
 			mockInvalidator.EXPECT().Invalidate()
 			tt.b.resetFaceInformation(tt.args.faceIndex)
 		})
@@ -73,7 +73,7 @@ func TestFacesData_Clear(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockInvalidator := NewMockFaceData(mockCtrl)
 			mockContainer.EXPECT().FaceCount().Return(tt.faceNum)
-			mockContainer.EXPECT().GetFaceData(gomock.Any()).Return(mockInvalidator).Times(int(tt.faceNum))
+			mockContainer.EXPECT().FaceData(gomock.Any()).Return(mockInvalidator).Times(int(tt.faceNum))
 			mockInvalidator.EXPECT().Invalidate().Times(int(tt.faceNum))
 			tt.b.Clear()
 		})
@@ -168,8 +168,8 @@ func TestFacesData_copyFaceInfosFrom(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockContainer.EXPECT().GetFaceData(tt.args.faceIndex).Return(tt.data1)
-			tt.args.otherInfo.EXPECT().GetFaceData(tt.args.otherFaceIndex).Return(tt.data2)
+			mockContainer.EXPECT().FaceData(tt.args.faceIndex).Return(tt.data1)
+			tt.args.otherInfo.EXPECT().FaceData(tt.args.otherFaceIndex).Return(tt.data2)
 			tt.data1.EXPECT().Copy(tt.data2)
 			tt.b.copyFaceInfosFrom(tt.args.faceIndex, tt.args.otherInfo, tt.args.otherFaceIndex)
 		})
@@ -196,7 +196,7 @@ func TestFacesData_permuteNodeInformation(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockContainer.EXPECT().GetFaceData(tt.args.faceIndex).Return(tt.data)
+			mockContainer.EXPECT().FaceData(tt.args.faceIndex).Return(tt.data)
 			tt.data.EXPECT().Permute(tt.args.nodeIndex1, tt.args.nodeIndex2, tt.args.nodeIndex3)
 			tt.b.permuteNodeInformation(tt.args.faceIndex, tt.args.nodeIndex1, tt.args.nodeIndex2, tt.args.nodeIndex3)
 		})
@@ -222,7 +222,7 @@ func TestFacesData_FaceHasData(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockContainer.EXPECT().GetFaceData(tt.args.faceIndex).Return(tt.data)
+			mockContainer.EXPECT().FaceData(tt.args.faceIndex).Return(tt.data)
 			tt.data.EXPECT().HasData().Return(tt.want)
 			if got := tt.b.FaceHasData(tt.args.faceIndex); got != tt.want {
 				t.Errorf("FacesData.FaceHasData() = %v, want %v", got, tt.want)

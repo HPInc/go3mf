@@ -48,7 +48,7 @@ func (m *memoryContainer) AddFaceData(newFaceCount uint32) FaceData {
 	return faceData.Interface().(FaceData)
 }
 
-func (m *memoryContainer) GetFaceData(faceIndex uint32) FaceData {
+func (m *memoryContainer) FaceData(faceIndex uint32) FaceData {
 	return m.dataBlocks.Index(int(faceIndex)).Interface().(FaceData)
 }
 
