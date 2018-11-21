@@ -53,21 +53,24 @@ type asciiEncoder struct {
 	w io.Writer
 }
 
-func (e *asciiEncoder) encode(m *mesh.Mesh) {
-	faceCount := m.FaceCount()
+const pstr = "solid\nfacet normal %f %f %f\nouter loop\nvertex %f %f %f\nvertex %f %f %f\nvertex %f %f %f\nendloop\nendfacet\nendsolid\n"
 
+func (e *asciiEncoder) encode(m *mesh.Mesh) error {
+	faceCount := m.FaceCount()
 	for i := 0; i < int(faceCount); i++ {				
 		// First we start by calculating the normal
-		normal := m.FaceNormal(uint32(i))
+		n := m.FaceNormal(uint32(i))
 
 		// Secondly we catch the vertexes
-		node1, node2, node3 := m.FaceCoordinates(uint32(i))
+		n1, n2, n3 := m.FaceCoordinates(uint32(i))
 
 		// Lastly we print all the components
-		io.WriteString(e.w, fmt.Sprintf("solid\nfacet normal %f %f %f\nouter loop\n", normal.X(), normal.Y(), normal.Z()))
-		io.WriteString(e.w, fmt.Sprintf("vertex %f %f %f\n", node1.X(), node1.Y(), node1.Z()))
-		io.WriteString(e.w, fmt.Sprintf("vertex %f %f %f\n", node2.X(), node2.Y(), node2.Z()))
-		io.WriteString(e.w, fmt.Sprintf("vertex %f %f %f\n", node3.X(), node3.Y(), node3.Z()))
-		io.WriteString(e.w, "endloop\nendfacet\nendsolid\n")
+		_, err := io.WriteString(e.w, fmt.Sprintf(pstr, n.X(), n.Y(), n.Z(), n1.X(), n1.Y(), n1.Z(), n2.X(), n2.Y(), n2.Z(), n3.X(), n3.Y(), n3.Z()))
+
+		if err != nil {
+			return err
+		}
 	}
+
+	return nil
 }
