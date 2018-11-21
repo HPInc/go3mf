@@ -1,8 +1,8 @@
 package mesh
 
 import (
-	"github.com/qmuntal/go3mf/internal/geometry"
 	"github.com/go-gl/mathgl/mgl32"
+	"github.com/qmuntal/go3mf/internal/geometry"
 )
 
 // MaxNodeCount is the maximum number of nodes allowed.
@@ -15,7 +15,7 @@ type Node struct {
 }
 
 type nodeStructure struct {
-	vectorTree *geometry.VectorTree
+	vectorTree   *geometry.VectorTree
 	nodes        []*Node
 	maxNodeCount uint32 // If 0 MaxNodeCount will be used.
 }
@@ -71,9 +71,9 @@ func (n *nodeStructure) checkSanity() bool {
 	return true
 }
 
-func (n *nodeStructure) merge(other mergeableNodes, matrix mgl32.Mat4) []*Node {
+func (n *nodeStructure) merge(other mergeableNodes, matrix mgl32.Mat4) []uint32 {
 	nodeCount := other.NodeCount()
-	newNodes := make([]*Node, nodeCount)
+	newNodes := make([]uint32, nodeCount)
 	if nodeCount == 0 {
 		return newNodes
 	}
@@ -81,7 +81,7 @@ func (n *nodeStructure) merge(other mergeableNodes, matrix mgl32.Mat4) []*Node {
 	for i := 0; i < int(nodeCount); i++ {
 		node := other.Node(uint32(i))
 		position := mgl32.TransformCoordinate(node.Position, matrix)
-		newNodes[i] = n.AddNode(position)
+		newNodes[i] = n.AddNode(position).Index
 	}
 	return newNodes
 }

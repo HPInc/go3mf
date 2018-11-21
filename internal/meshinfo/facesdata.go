@@ -20,7 +20,7 @@ func (b *FacesData) clone(currentFaceCount uint32) Handleable {
 
 // FaceHasData checks if the specific face has any associated data.
 func (b *FacesData) FaceHasData(faceIndex uint32) bool {
-	return b.GetFaceData(faceIndex).HasData()
+	return b.FaceData(faceIndex).HasData()
 }
 
 // Clear removes all the information stored in the container.
@@ -33,17 +33,17 @@ func (b *FacesData) Clear() {
 
 // resetFaceInformation clears the data of an specific face.
 func (b *FacesData) resetFaceInformation(faceIndex uint32) {
-	b.GetFaceData(faceIndex).Invalidate()
+	b.FaceData(faceIndex).Invalidate()
 }
 
 // copyFaceInfosFrom clones the data from another face.
 func (b *FacesData) copyFaceInfosFrom(faceIndex uint32, otherInfo FaceQuerier, otherFaceIndex uint32) {
-	b.GetFaceData(faceIndex).Copy(otherInfo.GetFaceData(otherFaceIndex))
+	b.FaceData(faceIndex).Copy(otherInfo.FaceData(otherFaceIndex))
 }
 
 // permuteNodeInformation swap the data of the target mesh.
 func (b *FacesData) permuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3 uint32) {
-	b.GetFaceData(faceIndex).Permute(nodeIndex1, nodeIndex2, nodeIndex3)
+	b.FaceData(faceIndex).Permute(nodeIndex1, nodeIndex2, nodeIndex3)
 }
 
 // setInternalID sets an ID for the whole mesh information.

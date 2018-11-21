@@ -136,15 +136,11 @@ func Test_nodeStructure_merge(t *testing.T) {
 		name  string
 		n     *nodeStructure
 		args  args
-		want  []*Node
+		want  []uint32
 		times uint32
 	}{
-		{"zero", new(nodeStructure), args{mockMesh, mgl32.Ident4()}, make([]*Node, 0), 0},
-		{"merged", new(nodeStructure), args{mockMesh, mgl32.Translate3D(1.0, 2.0, 3.0)}, []*Node{
-			{Index: 0, Position: mgl32.Vec3{1.0, 2.0, 3.0}},
-			{Index: 1, Position: mgl32.Vec3{1.0, 2.0, 3.0}}},
-			2,
-		},
+		{"zero", new(nodeStructure), args{mockMesh, mgl32.Ident4()}, make([]uint32, 0), 0},
+		{"merged", new(nodeStructure), args{mockMesh, mgl32.Translate3D(1.0, 2.0, 3.0)}, []uint32{0, 1}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

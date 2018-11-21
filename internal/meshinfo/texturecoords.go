@@ -6,8 +6,10 @@ import (
 
 // TextureCoords informs about the coordinates of a texture.
 type TextureCoords struct {
-	TextureID uint32        // Identifier of the texture.
-	Coords    [3]mgl32.Vec2 // Coordinates of the boundaries of the texture.
+	TextureID uint32 // Identifier of the texture.
+	// Each texture coordinate is, at a minimum, a (U,V) pair,
+	// which is the horizontal and vertical location in texture space, respectively.
+	Coords [3]mgl32.Vec2 // Coordinates of the boundaries of the texture.
 }
 
 // Invalidate sets to zero all the properties.

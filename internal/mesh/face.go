@@ -32,7 +32,7 @@ func (f *faceStructure) Face(index uint32) *Face {
 }
 
 // AddFace adds a face to the mesh that has the target nodes.
-func (f *faceStructure) AddFace(node1, node2, node3 *Node) (*Face, error) {
+func (f *faceStructure) AddFace(node1, node2, node3 uint32) (*Face, error) {
 	if (node1 == node2) || (node1 == node3) || (node2 == node3) {
 		return nil, new(DuplicatedNodeError)
 	}
@@ -44,7 +44,7 @@ func (f *faceStructure) AddFace(node1, node2, node3 *Node) (*Face, error) {
 
 	face := &Face{
 		Index:       faceCount,
-		NodeIndices: [3]uint32{node1.Index, node2.Index, node3.Index},
+		NodeIndices: [3]uint32{node1, node2, node3},
 	}
 	f.faces = append(f.faces, face)
 	if f.informationHandler != nil {
@@ -71,7 +71,7 @@ func (f *faceStructure) checkSanity(nodeCount uint32) bool {
 	return true
 }
 
-func (f *faceStructure) merge(other mergeableFaces, newNodes []*Node) error {
+func (f *faceStructure) merge(other mergeableFaces, newNodes []uint32) error {
 	faceCount := other.FaceCount()
 	if faceCount == 0 {
 		return nil

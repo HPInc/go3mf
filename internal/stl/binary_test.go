@@ -18,7 +18,6 @@ func Test_binaryDecoder_decode(t *testing.T) {
 		wantErr bool
 	}{
 		{"base", &binaryDecoder{r: bytes.NewReader(triangle)}, createMeshTriangle(), false},
-		{"wrongunits", &binaryDecoder{r: bytes.NewReader(make([]byte, 0)), units: -1.0}, nil, true},
 		{"eof", &binaryDecoder{r: bytes.NewReader(make([]byte, 0))}, nil, true},
 		{"onlyheader", &binaryDecoder{r: bytes.NewReader(make([]byte, 80))}, nil, true},
 		{"invalidface", &binaryDecoder{r: bytes.NewReader(triangle[:100])}, nil, true},
@@ -90,12 +89,12 @@ func createMeshTriangle() *mesh.Mesh {
 	n4 := m.AddNode(mgl32.Vec3{-20.0, 20.0, 0.0})
 	n5 := m.AddNode(mgl32.Vec3{0.0, 0.0019989014, 39.998})
 	n6 := m.AddNode(mgl32.Vec3{20.0, 20.0, 0.0})
-	m.AddFace(n1, n2, n3)
-	m.AddFace(n4, n2, n1)
-	m.AddFace(n1, n5, n4)
-	m.AddFace(n2, n6, n3)
-	m.AddFace(n6, n4, n3)
-	m.AddFace(n6, n2, n4)
+	m.AddFace(n1.Index, n2.Index, n3.Index)
+	m.AddFace(n4.Index, n2.Index, n1.Index)
+	m.AddFace(n1.Index, n5.Index, n4.Index)
+	m.AddFace(n2.Index, n6.Index, n3.Index)
+	m.AddFace(n6.Index, n4.Index, n3.Index)
+	m.AddFace(n6.Index, n2.Index, n4.Index)
 	return m
 }
 

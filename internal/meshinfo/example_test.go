@@ -24,7 +24,7 @@ func Example() {
 
 	fmt.Println(data.HasData())
 
-	newData := materialInfo.GetFaceData(0)
+	newData := materialInfo.FaceData(0)
 	fmt.Println(newData)
 
 	// Output:

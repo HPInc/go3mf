@@ -141,16 +141,16 @@ func (mr *MockContainerMockRecorder) FaceCount() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FaceCount", reflect.TypeOf((*MockContainer)(nil).FaceCount))
 }
 
-// GetFaceData mocks base method
-func (m *MockContainer) GetFaceData(arg0 uint32) FaceData {
-	ret := m.ctrl.Call(m, "GetFaceData", arg0)
+// FaceData mocks base method
+func (m *MockContainer) FaceData(arg0 uint32) FaceData {
+	ret := m.ctrl.Call(m, "FaceData", arg0)
 	ret0, _ := ret[0].(FaceData)
 	return ret0
 }
 
-// GetFaceData indicates an expected call of GetFaceData
-func (mr *MockContainerMockRecorder) GetFaceData(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFaceData", reflect.TypeOf((*MockContainer)(nil).GetFaceData), arg0)
+// FaceData indicates an expected call of FaceData
+func (mr *MockContainerMockRecorder) FaceData(arg0 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FaceData", reflect.TypeOf((*MockContainer)(nil).FaceData), arg0)
 }
 
 // InfoType mocks base method
@@ -248,16 +248,16 @@ func (m *MockFaceQuerier) EXPECT() *MockFaceQuerierMockRecorder {
 	return m.recorder
 }
 
-// GetFaceData mocks base method
-func (m *MockFaceQuerier) GetFaceData(arg0 uint32) FaceData {
-	ret := m.ctrl.Call(m, "GetFaceData", arg0)
+// FaceData mocks base method
+func (m *MockFaceQuerier) FaceData(arg0 uint32) FaceData {
+	ret := m.ctrl.Call(m, "FaceData", arg0)
 	ret0, _ := ret[0].(FaceData)
 	return ret0
 }
 
-// GetFaceData indicates an expected call of GetFaceData
-func (mr *MockFaceQuerierMockRecorder) GetFaceData(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFaceData", reflect.TypeOf((*MockFaceQuerier)(nil).GetFaceData), arg0)
+// FaceData indicates an expected call of FaceData
+func (mr *MockFaceQuerierMockRecorder) FaceData(arg0 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FaceData", reflect.TypeOf((*MockFaceQuerier)(nil).FaceData), arg0)
 }
 
 // MockHandleable is a mock of Handleable interface
@@ -295,16 +295,16 @@ func (mr *MockHandleableMockRecorder) AddFaceData(arg0 interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddFaceData", reflect.TypeOf((*MockHandleable)(nil).AddFaceData), arg0)
 }
 
-// GetFaceData mocks base method
-func (m *MockHandleable) GetFaceData(arg0 uint32) FaceData {
-	ret := m.ctrl.Call(m, "GetFaceData", arg0)
+// FaceData mocks base method
+func (m *MockHandleable) FaceData(arg0 uint32) FaceData {
+	ret := m.ctrl.Call(m, "FaceData", arg0)
 	ret0, _ := ret[0].(FaceData)
 	return ret0
 }
 
-// GetFaceData indicates an expected call of GetFaceData
-func (mr *MockHandleableMockRecorder) GetFaceData(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFaceData", reflect.TypeOf((*MockHandleable)(nil).GetFaceData), arg0)
+// FaceData indicates an expected call of FaceData
+func (mr *MockHandleableMockRecorder) FaceData(arg0 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FaceData", reflect.TypeOf((*MockHandleable)(nil).FaceData), arg0)
 }
 
 // InfoType mocks base method
