@@ -44,6 +44,7 @@ func Test_asciiEncoder_encode(t *testing.T) {
 		wantErr bool
 	}{
 		{"base", &asciiEncoder{w: new(bytes.Buffer)}, args{triangle}, false},
+		{"error", &asciiEncoder{w: new(errorWriter)}, args{triangle}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

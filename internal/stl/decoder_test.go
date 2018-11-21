@@ -30,6 +30,7 @@ func TestNewDecoder(t *testing.T) {
 }
 
 func TestDecoder_Decode(t *testing.T) {
+	triangleASCII := createASCIITriangle()
 	triangle := createBinaryTriangle()
 	triangle[0] = 0x73
 	triangle[1] = 0x6f
@@ -44,6 +45,7 @@ func TestDecoder_Decode(t *testing.T) {
 	}{
 		{"empty", NewDecoder(new(bytes.Buffer)), nil, true},
 		{"binary", NewDecoder(bytes.NewReader(triangle)), createMeshTriangle(), false},
+		{"ascii", NewDecoder(bytes.NewBufferString(triangleASCII)), createMeshTriangle(), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

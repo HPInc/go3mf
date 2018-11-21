@@ -27,22 +27,21 @@ func NewDecoder(r io.Reader) *Decoder {
 // Decode creates a mesh from a read stream.
 func (d *Decoder) Decode() (*mesh.Mesh, error) {
 	b := bufio.NewReader(d.r)
-	encodingASCII, err := isASCII(b)
+	isASCII, err := d.isASCII(b)
 	if err != nil {
 		return nil, err
 	}
-	/*if ascii {
-		d := asciiDecoder{r: b, units: units}
-		return d.decode()
-	}*/
-	if encodingASCII {
-		return nil, nil
+	if isASCII {
+		decoder := asciiDecoder{r: b}
+		if m, err := decoder.decode(); err == nil {
+			return m, nil
+		}
 	}
 	decoder := binaryDecoder{r: b}
 	return decoder.decode()
 }
 
-func isASCII(r *bufio.Reader) (bool, error) {
+func (d *Decoder) isASCII(r *bufio.Reader) (bool, error) {
 	var header string
 	for {
 		buff, err := r.Peek(sizeOfHeader)

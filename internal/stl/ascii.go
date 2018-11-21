@@ -22,10 +22,6 @@ func (d* asciiDecoder) decode() (*mesh.Mesh, error) {
 	newMesh := mesh.NewMesh()
 	newMesh.StartCreation(mesh.CreationOptions{CalculateConnectivity: true})
 	defer newMesh.EndCreation()
-	/*if err != nil {
-		return nil, err
-	}*/
-
 	position := 0
 	var nodes [3]*mesh.Node
 	scanner := bufio.NewScanner(d.r)
@@ -64,7 +60,6 @@ func (e *asciiEncoder) encode(m *mesh.Mesh) error {
 		n1, n2, n3 := node1.Position, node2.Position, node3.Position
 		n := geometry.FaceNormal(n1, n2, n3)
 
-		// Lastly we print all the components
 		_, err := io.WriteString(e.w, fmt.Sprintf(pstr, n.X(), n.Y(), n.Z(), n1.X(), n1.Y(), n1.Z(), n2.X(), n2.Y(), n2.Z(), n3.X(), n3.Y(), n3.Z()))
 
 		if err != nil {
