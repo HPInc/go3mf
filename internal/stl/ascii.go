@@ -46,7 +46,7 @@ func (d* asciiDecoder) decode() (*mesh.Mesh, error) {
 		}
 	}
 
-	return newMesh, err
+	return newMesh, scanner.Err()
 }
 
 type asciiEncoder struct {
@@ -64,10 +64,10 @@ func (e *asciiEncoder) encode(m *mesh.Mesh) {
 		node1, node2, node3 := m.FaceCoordinates(uint32(i))
 
 		// Lastly we print all the components
-		io.WriteString(e.w, fmt.Sprintf("facet normal %f %f %f\nouter loop\n", normal.X(), normal.Y(), normal.Z()))
+		io.WriteString(e.w, fmt.Sprintf("solid\nfacet normal %f %f %f\nouter loop\n", normal.X(), normal.Y(), normal.Z()))
 		io.WriteString(e.w, fmt.Sprintf("vertex %f %f %f\n", node1.X(), node1.Y(), node1.Z()))
 		io.WriteString(e.w, fmt.Sprintf("vertex %f %f %f\n", node2.X(), node2.Y(), node2.Z()))
 		io.WriteString(e.w, fmt.Sprintf("vertex %f %f %f\n", node3.X(), node3.Y(), node3.Z()))
-		io.WriteString(e.w, "endloop\nendfacet\n")
+		io.WriteString(e.w, "endloop\nendfacet\nendsolid\n")
 	}
 }
