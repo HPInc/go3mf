@@ -1,6 +1,8 @@
 package model
 
-import "image/color"
+import (
+	"image/color"
+)
 
 // DefaultBaseMaterial defines the default base material property.
 type DefaultBaseMaterial struct {

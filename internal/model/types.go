@@ -12,6 +12,6 @@ const (
 	ClipNone ClipMode = iota
 	// ClipInside defines a beam lattice with clipping inside.
 	ClipInside
-	// ClipNone defines a beam lattice with clipping outside.
+	// ClipOutside defines a beam lattice with clipping outside.
 	ClipOutside
 )
