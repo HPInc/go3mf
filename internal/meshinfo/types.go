@@ -1,5 +1,3 @@
-//go:generate mockgen -destination types_mock_test.go -package meshinfo -self_package github.com/qmuntal/go3mf/internal/meshinfo github.com/qmuntal/go3mf/internal/meshinfo FaceData,Container,TypedInformer,FaceQuerier,Handleable
-
 package meshinfo
 
 // FaceData defines a generic information of a face.
@@ -68,7 +66,6 @@ type Handleable interface {
 	clone(currentFaceCount uint32) Handleable
 }
 
-// TypedInformer inform about specific types of information.
 type TypedInformer interface {
 	// infoTypes returns the types of informations stored in the handler.
 	infoTypes() []dataType

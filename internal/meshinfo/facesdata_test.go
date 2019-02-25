@@ -4,13 +4,11 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/mock"
 )
 
 func Test_newFacesData(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-	mockContainer := NewMockContainer(mockCtrl)
+	mockContainer := new(MockContainer)
 	type args struct {
 		container Container
 	}
@@ -32,10 +30,6 @@ func Test_newFacesData(t *testing.T) {
 }
 
 func TestFacesData_resetFaceInformation(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-	mockContainer := NewMockContainer(mockCtrl)
-
 	type args struct {
 		faceIndex uint32
 	}
@@ -44,38 +38,44 @@ func TestFacesData_resetFaceInformation(t *testing.T) {
 		b    *FacesData
 		args args
 	}{
-		{"success", newFacesData(mockContainer), args{4}},
+		{"success", new(FacesData), args{4}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockInvalidator := NewMockFaceData(mockCtrl)
-			mockContainer.EXPECT().FaceData(tt.args.faceIndex).Return(mockInvalidator)
-			mockInvalidator.EXPECT().Invalidate()
+			mockContainer := new(MockContainer)
+			tt.b.Container = mockContainer
+			mockInvalidator := new(MockFaceData)
+			mockContainer.On("FaceData", tt.args.faceIndex).Return(mockInvalidator)
+			mockInvalidator.On("Invalidate")
 			tt.b.resetFaceInformation(tt.args.faceIndex)
+			mockInvalidator.AssertExpectations(t)
+			mockContainer.AssertExpectations(t)
+
 		})
 	}
 }
 
 func TestFacesData_Clear(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-	mockContainer := NewMockContainer(mockCtrl)
 	tests := []struct {
 		name    string
 		b       *FacesData
 		faceNum uint32
 	}{
-		{"empty", newFacesData(mockContainer), 0},
-		{"one", newFacesData(mockContainer), 1},
-		{"two", newFacesData(mockContainer), 2},
+		{"empty", new(FacesData), 0},
+		{"one", new(FacesData), 1},
+		{"two", new(FacesData), 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockInvalidator := NewMockFaceData(mockCtrl)
-			mockContainer.EXPECT().FaceCount().Return(tt.faceNum)
-			mockContainer.EXPECT().FaceData(gomock.Any()).Return(mockInvalidator).Times(int(tt.faceNum))
-			mockInvalidator.EXPECT().Invalidate().Times(int(tt.faceNum))
+			mockContainer := new(MockContainer)
+			tt.b.Container = mockContainer
+			mockInvalidator := new(MockFaceData)
+			mockContainer.On("FaceCount").Return(tt.faceNum)
+			mockContainer.On("FaceData", mock.Anything).Maybe().Return(mockInvalidator).Times(int(tt.faceNum))
+			mockInvalidator.On("Invalidate").Maybe().Times(int(tt.faceNum))
 			tt.b.Clear()
+			mockInvalidator.AssertExpectations(t)
+			mockContainer.AssertExpectations(t)
 		})
 	}
 }
@@ -123,10 +123,6 @@ func TestFacesData_getInternalID(t *testing.T) {
 }
 
 func TestFacesData_clone(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-	mockContainer := NewMockContainer(mockCtrl)
-	mockContainer2 := NewMockContainer(mockCtrl)
 	type args struct {
 		currentFaceCount uint32
 	}
@@ -136,23 +132,25 @@ func TestFacesData_clone(t *testing.T) {
 		args args
 		want *FacesData
 	}{
-		{"base", newFacesData(mockContainer), args{2}, newFacesData(mockContainer2)},
+		{"base", new(FacesData), args{2}, new(FacesData)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockContainer.EXPECT().clone(tt.args.currentFaceCount).Return(mockContainer2)
+			mockContainer := new(MockContainer)
+			mockContainer2 := new(MockContainer)
+			tt.b.Container = mockContainer
+			tt.want.Container = mockContainer2
+			mockContainer.On("clone", tt.args.currentFaceCount).Return(mockContainer2)
 			if got := tt.b.clone(tt.args.currentFaceCount); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("FacesData.clone() = %v, want %v", got, tt.want)
 			}
+			mockContainer.AssertExpectations(t)
+			mockContainer2.AssertExpectations(t)
 		})
 	}
 }
 
 func TestFacesData_copyFaceInfosFrom(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-	mockContainer := NewMockContainer(mockCtrl)
-
 	type args struct {
 		faceIndex      uint32
 		otherInfo      *MockHandleable
@@ -164,22 +162,24 @@ func TestFacesData_copyFaceInfosFrom(t *testing.T) {
 		args         args
 		data1, data2 *MockFaceData
 	}{
-		{"success", newFacesData(mockContainer), args{1, NewMockHandleable(mockCtrl), 2}, NewMockFaceData(mockCtrl), NewMockFaceData(mockCtrl)},
+		{"success", new(FacesData), args{1, new(MockHandleable), 2}, new(MockFaceData), new(MockFaceData)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockContainer.EXPECT().FaceData(tt.args.faceIndex).Return(tt.data1)
-			tt.args.otherInfo.EXPECT().FaceData(tt.args.otherFaceIndex).Return(tt.data2)
-			tt.data1.EXPECT().Copy(tt.data2)
+			mockContainer := new(MockContainer)
+			tt.b.Container = mockContainer
+			mockContainer.On("FaceData", tt.args.faceIndex).Return(tt.data1)
+			tt.args.otherInfo.On("FaceData", tt.args.otherFaceIndex).Return(tt.data2)
+			tt.data1.On("Copy", tt.data2)
 			tt.b.copyFaceInfosFrom(tt.args.faceIndex, tt.args.otherInfo, tt.args.otherFaceIndex)
+			tt.args.otherInfo.AssertExpectations(t)
+			tt.data1.AssertExpectations(t)
+			mockContainer.AssertExpectations(t)
 		})
 	}
 }
 
 func TestFacesData_permuteNodeInformation(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-	mockContainer := NewMockContainer(mockCtrl)
 	type args struct {
 		faceIndex  uint32
 		nodeIndex1 uint32
@@ -192,21 +192,22 @@ func TestFacesData_permuteNodeInformation(t *testing.T) {
 		args args
 		data *MockFaceData
 	}{
-		{"success", newFacesData(mockContainer), args{1, 2, 3, 4}, NewMockFaceData(mockCtrl)},
+		{"success", new(FacesData), args{1, 2, 3, 4}, new(MockFaceData)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockContainer.EXPECT().FaceData(tt.args.faceIndex).Return(tt.data)
-			tt.data.EXPECT().Permute(tt.args.nodeIndex1, tt.args.nodeIndex2, tt.args.nodeIndex3)
+			mockContainer := new(MockContainer)
+			tt.b.Container = mockContainer
+			mockContainer.On("FaceData", tt.args.faceIndex).Return(tt.data)
+			tt.data.On("Permute", tt.args.nodeIndex1, tt.args.nodeIndex2, tt.args.nodeIndex3)
 			tt.b.permuteNodeInformation(tt.args.faceIndex, tt.args.nodeIndex1, tt.args.nodeIndex2, tt.args.nodeIndex3)
+			tt.data.AssertExpectations(t)
+			mockContainer.AssertExpectations(t)
 		})
 	}
 }
 
 func TestFacesData_FaceHasData(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-	mockContainer := NewMockContainer(mockCtrl)
 	type args struct {
 		faceIndex uint32
 	}
@@ -217,16 +218,21 @@ func TestFacesData_FaceHasData(t *testing.T) {
 		data *MockFaceData
 		want bool
 	}{
-		{"false", newFacesData(mockContainer), args{1}, NewMockFaceData(mockCtrl), false},
-		{"true", newFacesData(mockContainer), args{1}, NewMockFaceData(mockCtrl), true},
+		{"false", new(FacesData), args{1}, new(MockFaceData), false},
+		{"true", new(FacesData), args{1}, new(MockFaceData), true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockContainer.EXPECT().FaceData(tt.args.faceIndex).Return(tt.data)
-			tt.data.EXPECT().HasData().Return(tt.want)
+			mockContainer := new(MockContainer)
+			tt.b.Container = mockContainer
+			mockContainer.On("FaceData", tt.args.faceIndex).Return(tt.data)
+			tt.data.On("HasData").Return(tt.want)
 			if got := tt.b.FaceHasData(tt.args.faceIndex); got != tt.want {
 				t.Errorf("FacesData.FaceHasData() = %v, want %v", got, tt.want)
+				return
 			}
+			tt.data.AssertExpectations(t)
+			mockContainer.AssertExpectations(t)
 		})
 	}
 }

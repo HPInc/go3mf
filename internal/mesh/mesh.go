@@ -2,8 +2,8 @@ package mesh
 
 import (
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/qmuntal/go3mf/internal/meshinfo"
 	"github.com/qmuntal/go3mf/internal/geometry"
+	"github.com/qmuntal/go3mf/internal/meshinfo"
 )
 
 // CreationOptions defines a set of options for helping in the mesh creation process
@@ -29,7 +29,7 @@ type Mesh struct {
 // NewMesh creates a new default Mesh.
 func NewMesh() *Mesh {
 	m := &Mesh{
-		beamLattice: *newbeamLattice(),
+		beamLattice:        *newbeamLattice(),
 		informationHandler: *meshinfo.NewHandler(),
 	}
 	m.faceStructure.informationHandler = &m.informationHandler
@@ -51,7 +51,7 @@ func (m *Mesh) Clear() {
 	m.ClearBeamLattice()
 }
 
-// StartCreation can be called before populating the mesh. 
+// StartCreation can be called before populating the mesh.
 // If so, the connectivity will be automatically calculated but producing and speed penalty.
 // When the creationg process is finished EndCreation() must be called in order to clean temporary data.
 func (m *Mesh) StartCreation(opts CreationOptions) {

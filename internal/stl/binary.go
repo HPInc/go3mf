@@ -5,24 +5,24 @@ import (
 	"io"
 
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/qmuntal/go3mf/internal/mesh"
 	"github.com/qmuntal/go3mf/internal/geometry"
+	"github.com/qmuntal/go3mf/internal/mesh"
 )
 
 type binaryHeader struct {
-	_   [80]byte
+	_         [80]byte
 	FaceCount uint32
 }
 
 type binaryFace struct {
-	Normal        [3]float32
+	Normal   [3]float32
 	Vertices [3][3]float32
 	_        uint16
 }
 
 // binaryDecoder can create a Mesh from a Read stream that is feeded with a binary STL.
 type binaryDecoder struct {
-	r     io.Reader
+	r io.Reader
 }
 
 // decode loads a binary stl from a io.Reader.
@@ -75,7 +75,7 @@ func (e *binaryEncoder) encode(m *mesh.Mesh) error {
 		n1, n2, n3 := node1.Position, node2.Position, node3.Position
 		normal := geometry.FaceNormal(n1, n2, n3)
 		facet := binaryFace{
-			Normal: [3]float32{normal.X(), normal.Y(), normal.Z()},
+			Normal:   [3]float32{normal.X(), normal.Y(), normal.Z()},
 			Vertices: [3][3]float32{[3]float32{n1.X(), n1.Y(), n1.Z()}, [3]float32{n2.X(), n2.Y(), n2.Z()}, [3]float32{n3.X(), n3.Y(), n3.Z()}},
 		}
 		err := binary.Write(e.w, binary.LittleEndian, facet)

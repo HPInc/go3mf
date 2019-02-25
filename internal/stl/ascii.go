@@ -1,24 +1,24 @@
 package stl
 
 import (
-	"io"
 	"bufio"
-	"strings"
-	"strconv"
 	"fmt"
+	"io"
+	"strconv"
+	"strings"
 
-	"github.com/qmuntal/go3mf/internal/mesh"
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/qmuntal/go3mf/internal/geometry"
+	"github.com/qmuntal/go3mf/internal/mesh"
 )
 
 // asciiDecoder can create a Mesh from a Read stream that is feeded with a ASCII STL.
 type asciiDecoder struct {
-	r 	io.Reader
-	units	float32
+	r     io.Reader
+	units float32
 }
 
-func (d* asciiDecoder) decode() (*mesh.Mesh, error) {
+func (d *asciiDecoder) decode() (*mesh.Mesh, error) {
 	newMesh := mesh.NewMesh()
 	newMesh.StartCreation(mesh.CreationOptions{CalculateConnectivity: true})
 	defer newMesh.EndCreation()
@@ -29,7 +29,7 @@ func (d* asciiDecoder) decode() (*mesh.Mesh, error) {
 		line := scanner.Text()
 		fields := strings.Fields(line)
 		if len(fields) == 4 && fields[0] == "vertex" {
-			var f[3] float64
+			var f [3]float64
 			f[0], _ = strconv.ParseFloat(fields[1], 32)
 			f[1], _ = strconv.ParseFloat(fields[2], 32)
 			f[2], _ = strconv.ParseFloat(fields[3], 32)
@@ -37,8 +37,8 @@ func (d* asciiDecoder) decode() (*mesh.Mesh, error) {
 			nodes[position] = newMesh.AddNode(mgl32.Vec3{float32(f[0]), float32(f[1]), float32(f[2])})
 			position++
 
-			if (position == 3) {
-				position = 0 
+			if position == 3 {
+				position = 0
 				newMesh.AddFace(nodes[0].Index, nodes[1].Index, nodes[2].Index)
 			}
 		}
@@ -55,7 +55,7 @@ const pstr = "solid\nfacet normal %f %f %f\nouter loop\nvertex %f %f %f\nvertex 
 
 func (e *asciiEncoder) encode(m *mesh.Mesh) error {
 	faceCount := m.FaceCount()
-	for i := 0; i < int(faceCount); i++ {		
+	for i := 0; i < int(faceCount); i++ {
 		node1, node2, node3 := m.FaceNodes(uint32(i))
 		n1, n2, n3 := node1.Position, node2.Position, node3.Position
 		n := geometry.FaceNormal(n1, n2, n3)

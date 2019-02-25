@@ -99,12 +99,12 @@ func Test_comparer_compareFaces(t *testing.T) {
 		want bool
 	}{
 		{"diff", comparer{}, args{
-			&Mesh{faceStructure: faceStructure{faces: []*Face{&Face{NodeIndices: [3]uint32{0,1,2}}}}},
-			&Mesh{faceStructure: faceStructure{faces: []*Face{&Face{NodeIndices: [3]uint32{0,1,3}}}}},
+			&Mesh{faceStructure: faceStructure{faces: []*Face{&Face{NodeIndices: [3]uint32{0, 1, 2}}}}},
+			&Mesh{faceStructure: faceStructure{faces: []*Face{&Face{NodeIndices: [3]uint32{0, 1, 3}}}}},
 		}, false},
 		{"same", comparer{}, args{
-			&Mesh{faceStructure: faceStructure{faces: []*Face{&Face{NodeIndices: [3]uint32{0,1,2}}}}},
-			&Mesh{faceStructure: faceStructure{faces: []*Face{&Face{NodeIndices: [3]uint32{0,1,2}}}}},
+			&Mesh{faceStructure: faceStructure{faces: []*Face{&Face{NodeIndices: [3]uint32{0, 1, 2}}}}},
+			&Mesh{faceStructure: faceStructure{faces: []*Face{&Face{NodeIndices: [3]uint32{0, 1, 2}}}}},
 		}, true},
 	}
 	for _, tt := range tests {
@@ -128,12 +128,12 @@ func Test_comparer_compareBeams(t *testing.T) {
 		want bool
 	}{
 		{"diff", comparer{}, args{
-			&Mesh{beamLattice: beamLattice{beams: []*Beam{&Beam{NodeIndices: [2]uint32{0,1}}}}},
-			&Mesh{beamLattice: beamLattice{beams: []*Beam{&Beam{NodeIndices: [2]uint32{0,2}}}}},
+			&Mesh{beamLattice: beamLattice{beams: []*Beam{&Beam{NodeIndices: [2]uint32{0, 1}}}}},
+			&Mesh{beamLattice: beamLattice{beams: []*Beam{&Beam{NodeIndices: [2]uint32{0, 2}}}}},
 		}, false},
 		{"same", comparer{}, args{
-			&Mesh{beamLattice: beamLattice{beams: []*Beam{&Beam{NodeIndices: [2]uint32{0,1}}}}},
-			&Mesh{beamLattice: beamLattice{beams: []*Beam{&Beam{NodeIndices: [2]uint32{0,1}}}}},
+			&Mesh{beamLattice: beamLattice{beams: []*Beam{&Beam{NodeIndices: [2]uint32{0, 1}}}}},
+			&Mesh{beamLattice: beamLattice{beams: []*Beam{&Beam{NodeIndices: [2]uint32{0, 1}}}}},
 		}, true},
 	}
 	for _, tt := range tests {

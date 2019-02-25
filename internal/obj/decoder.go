@@ -2,10 +2,10 @@ package obj
 
 import (
 	"bufio"
+	"image/color"
 	"io"
 	"strconv"
 	"strings"
-	"image/color"
 
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/qmuntal/go3mf/internal/mesh"
@@ -16,12 +16,12 @@ import (
 type Decoder struct {
 	r io.Reader
 	// placeholder
-	m *mesh.Mesh
-	vertices []mgl32.Vec3
-	verticesCoord []mgl32.Vec2
-	verticesColor map[int]color.RGBA
-	addedNodes map[int]bool
-	colorInfo *meshinfo.FacesData
+	m                 *mesh.Mesh
+	vertices          []mgl32.Vec3
+	verticesCoord     []mgl32.Vec2
+	verticesColor     map[int]color.RGBA
+	addedNodes        map[int]bool
+	colorInfo         *meshinfo.FacesData
 	textureCoordsInfo *meshinfo.FacesData
 }
 
@@ -36,8 +36,8 @@ func (d *Decoder) Decode() (*mesh.Mesh, error) {
 	d.m = mesh.NewMesh()
 	d.m.StartCreation(mesh.CreationOptions{CalculateConnectivity: true})
 	defer d.m.EndCreation()
-	d.vertices = make([]mgl32.Vec3, 1, 1024)  // 1-based indexing
-	d.verticesCoord = make([]mgl32.Vec2, 1, 1024)   // 1-based indexing
+	d.vertices = make([]mgl32.Vec3, 1, 1024)      // 1-based indexing
+	d.verticesCoord = make([]mgl32.Vec2, 1, 1024) // 1-based indexing
 	d.verticesColor = make(map[int]color.RGBA, 0)
 	d.addedNodes = make(map[int]bool, 0)
 	for scanner.Scan() {
@@ -71,9 +71,9 @@ func (d *Decoder) parseFace(args []string) {
 		i1, i2, i3 := 0, i, i+1
 		fi1, fi2, fi3 := fvs[i1], fvs[i2], fvs[i3]
 		d.addNodes(fi1, fi2, fi3)
-		d.m.AddFace(uint32(fi1)-1,uint32(fi2)-1,uint32(fi3)-1)
-		d.addFaceColors(fi1,fi2,fi3)
-		d.addTextureCoords(fvts[i1], fvts[i2], fvts[i3])				
+		d.m.AddFace(uint32(fi1)-1, uint32(fi2)-1, uint32(fi3)-1)
+		d.addFaceColors(fi1, fi2, fi3)
+		d.addTextureCoords(fvts[i1], fvts[i2], fvts[i3])
 	}
 }
 
@@ -92,11 +92,11 @@ func (d *Decoder) parseVertex(args []string) {
 		d.vertices = append(d.vertices, mgl32.Vec3{f[0] / w, f[1] / w, f[2] / w})
 	case 6:
 		d.vertices = append(d.vertices, mgl32.Vec3{f[0], f[1], f[2]})
-		d.verticesColor[len(d.vertices)] = color.RGBA{uint8(f[3]), uint8(f[4]), uint8(f[5]), 255}				
+		d.verticesColor[len(d.vertices)] = color.RGBA{uint8(f[3]), uint8(f[4]), uint8(f[5]), 255}
 	}
 }
 
-func (d *Decoder) addTextureCoords(i1,i2,i3 int) {
+func (d *Decoder) addTextureCoords(i1, i2, i3 int) {
 	coords, ok := d.getTextureCoords(i1, i2, i3)
 	if ok {
 		if d.textureCoordsInfo == nil {
@@ -107,7 +107,7 @@ func (d *Decoder) addTextureCoords(i1,i2,i3 int) {
 	}
 }
 
-func (d *Decoder) addFaceColors(i1,i2,i3 int) {
+func (d *Decoder) addFaceColors(i1, i2, i3 int) {
 	colors, ok := d.getFaceColor(i1, i2, i3)
 	if ok {
 		if d.colorInfo == nil {
@@ -118,7 +118,7 @@ func (d *Decoder) addFaceColors(i1,i2,i3 int) {
 	}
 }
 
-func (d *Decoder) addNodes(i1,i2,i3 int) {
+func (d *Decoder) addNodes(i1, i2, i3 int) {
 	if _, ok := d.addedNodes[i1]; !ok {
 		d.m.AddNode(d.vertices[i1])
 		d.addedNodes[i1] = true
@@ -133,7 +133,7 @@ func (d *Decoder) addNodes(i1,i2,i3 int) {
 	}
 }
 
-func (d *Decoder) getTextureCoords(i1,i2,i3 int) (colors [3]mgl32.Vec2, withTexture bool) {
+func (d *Decoder) getTextureCoords(i1, i2, i3 int) (colors [3]mgl32.Vec2, withTexture bool) {
 	if i1 != 0 || i2 != 0 || i3 != 0 {
 		colors = [3]mgl32.Vec2{d.verticesCoord[i1], d.verticesCoord[i2], d.verticesCoord[i3]}
 		withTexture = true
@@ -141,7 +141,7 @@ func (d *Decoder) getTextureCoords(i1,i2,i3 int) (colors [3]mgl32.Vec2, withText
 	return
 }
 
-func (d *Decoder) getFaceColor(i1,i2,i3 int) (colors [3]color.RGBA, withColor bool) {
+func (d *Decoder) getFaceColor(i1, i2, i3 int) (colors [3]color.RGBA, withColor bool) {
 	var ok bool
 	if colors[0], ok = d.verticesColor[i1]; ok {
 		withColor = true

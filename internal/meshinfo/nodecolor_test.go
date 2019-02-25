@@ -4,8 +4,6 @@ import (
 	"image/color"
 	"reflect"
 	"testing"
-
-	gomock "github.com/golang/mock/gomock"
 )
 
 func TestNodeColor_Invalidate(t *testing.T) {
@@ -27,9 +25,6 @@ func TestNodeColor_Invalidate(t *testing.T) {
 }
 
 func TestNodeColor_Copy(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-	mockData := NewMockFaceData(mockCtrl)
 	targetColor := [3]color.RGBA{{1, 2, 3, 4}, {3, 1, 2, 3}, {1, 2, 34, 3}}
 	type args struct {
 		from interface{}
@@ -41,7 +36,7 @@ func TestNodeColor_Copy(t *testing.T) {
 		want *NodeColor
 	}{
 		{"nil", new(NodeColor), args{nil}, new(NodeColor)},
-		{"othertype", new(NodeColor), args{mockData}, new(NodeColor)},
+		{"othertype", new(NodeColor), args{new(BaseMaterial)}, new(NodeColor)},
 		{"copied", new(NodeColor), args{&NodeColor{targetColor}}, &NodeColor{targetColor}},
 	}
 	for _, tt := range tests {

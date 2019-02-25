@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/go-gl/mathgl/mgl32"
-	gomock "github.com/golang/mock/gomock"
 )
 
 func TestTextureCoords_Invalidate(t *testing.T) {
@@ -31,9 +30,6 @@ func TestTextureCoords_Invalidate(t *testing.T) {
 }
 
 func TestTextureCoords_Copy(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-	mockData := NewMockFaceData(mockCtrl)
 	test := &TextureCoords{2, [3]mgl32.Vec2{{1.0, 2.0}, {5.0, 3.0}, {6.0, 4.0}}}
 	type args struct {
 		from interface{}
@@ -45,7 +41,7 @@ func TestTextureCoords_Copy(t *testing.T) {
 		want *TextureCoords
 	}{
 		{"nil", new(TextureCoords), args{nil}, new(TextureCoords)},
-		{"othertype", new(TextureCoords), args{mockData}, new(TextureCoords)},
+		{"othertype", new(TextureCoords), args{new(BaseMaterial)}, new(TextureCoords)},
 		{"copied", new(TextureCoords), args{test}, test},
 	}
 	for _, tt := range tests {
@@ -185,10 +181,10 @@ func Test_textureCoordsContainer_AddFaceData(t *testing.T) {
 		newFaceCount uint32
 	}
 	tests := []struct {
-		name string
-		m    *textureCoordsContainer
-		args args
-		want FaceData
+		name      string
+		m         *textureCoordsContainer
+		args      args
+		want      FaceData
 		wantPanic bool
 	}{
 		{"invalid face number", new(textureCoordsContainer), args{2}, new(TextureCoords), true},

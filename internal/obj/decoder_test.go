@@ -1,11 +1,11 @@
 package obj
 
 import (
-	"testing"
 	"bytes"
+	"testing"
 
-	"github.com/qmuntal/go3mf/internal/mesh"
 	"github.com/go-gl/mathgl/mgl32"
+	"github.com/qmuntal/go3mf/internal/mesh"
 )
 
 func TestDecoderDecode(t *testing.T) {
@@ -48,7 +48,7 @@ func createMeshTriangle() *mesh.Mesh {
 }
 
 func objMesh() string {
-return `
+	return `
 # Exported from 3D Builder
 mtllib Piràmide.mtl
 

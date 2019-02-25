@@ -69,7 +69,7 @@ func Test_binaryEncoder_encode(t *testing.T) {
 }
 
 type errorWriter struct {
-	max int // writes before failing
+	max     int // writes before failing
 	current int
 }
 
