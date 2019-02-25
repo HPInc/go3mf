@@ -1,5 +1,3 @@
-//go:generate mockgen -destination types_mock_test.go -package mesh -self_package github.com/qmuntal/go3mf/internal/mesh github.com/qmuntal/go3mf/internal/mesh MergeableMesh
-
 package mesh
 
 import "github.com/qmuntal/go3mf/internal/meshinfo"
