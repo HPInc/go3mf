@@ -42,13 +42,15 @@ func (t *Texture2DResource) Box() (u, v, width, height float32, hasBox bool) {
 }
 
 // SetBox sets the box for the texture.
-func (t *Texture2DResource) SetBox(u, v, width, height float32) {
+func (t *Texture2DResource) SetBox(u, v, width, height float32) *Texture2DResource {
 	t.boxU, t.boxV, t.boxWidth, t.boxHeight = u, v, width, height
 	t.HasBox = true
+	return t
 }
 
 // ClearBox remove the box from the texture.
-func (t *Texture2DResource) ClearBox() {
+func (t *Texture2DResource) ClearBox() *Texture2DResource {
 	t.boxU, t.boxV, t.boxWidth, t.boxHeight = 0, 0, 1, 1
 	t.HasBox = false
+	return t
 }
