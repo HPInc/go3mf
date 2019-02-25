@@ -107,3 +107,145 @@ func TestBaseMaterial_Merge(t *testing.T) {
 		})
 	}
 }
+
+func Test_newbaseMaterialContainer(t *testing.T) {
+	type args struct {
+		currentFaceCount uint32
+	}
+	tests := []struct {
+		name string
+		args args
+		want *baseMaterialContainer
+	}{
+		{"zero", args{0}, &baseMaterialContainer{0, make([]*BaseMaterial, 0)}},
+		{"one", args{1}, &baseMaterialContainer{1, []*BaseMaterial{new(BaseMaterial)}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := newbaseMaterialContainer(tt.args.currentFaceCount); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("newbaseMaterialContainer() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_baseMaterialContainer_clone(t *testing.T) {
+	type args struct {
+		currentFaceCount uint32
+	}
+	tests := []struct {
+		name string
+		m    *baseMaterialContainer
+		args args
+		want Container
+	}{
+		{"zero", &baseMaterialContainer{0, make([]*BaseMaterial, 0)}, args{0}, &baseMaterialContainer{0, make([]*BaseMaterial, 0)}},
+		{"one", &baseMaterialContainer{1, []*BaseMaterial{new(BaseMaterial)}}, args{1}, &baseMaterialContainer{1, []*BaseMaterial{new(BaseMaterial)}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.clone(tt.args.currentFaceCount); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("baseMaterialContainer.clone() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_baseMaterialContainer_InfoType(t *testing.T) {
+	tests := []struct {
+		name string
+		m    *baseMaterialContainer
+		want reflect.Type
+	}{
+		{"base", new(baseMaterialContainer), baseMaterialType},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.InfoType(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("baseMaterialContainer.InfoType() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_baseMaterialContainer_AddFaceData(t *testing.T) {
+	type args struct {
+		newFaceCount uint32
+	}
+	tests := []struct {
+		name      string
+		m         *baseMaterialContainer
+		args      args
+		want      FaceData
+		wantPanic bool
+	}{
+		{"invalid face number", new(baseMaterialContainer), args{2}, new(BaseMaterial), true},
+		{"valid face number", new(baseMaterialContainer), args{1}, new(BaseMaterial), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				if r := recover(); tt.wantPanic && r == nil {
+					t.Error("memoryContainer.AddFaceData() want panic")
+				}
+			}()
+			if got := tt.m.AddFaceData(tt.args.newFaceCount); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("baseMaterialContainer.AddFaceData() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_baseMaterialContainer_FaceData(t *testing.T) {
+	type args struct {
+		faceIndex uint32
+	}
+	tests := []struct {
+		name string
+		m    *baseMaterialContainer
+		args args
+		want FaceData
+	}{
+		{"valid index", newbaseMaterialContainer(1), args{0}, new(BaseMaterial)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.FaceData(tt.args.faceIndex); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("baseMaterialContainer.FaceData() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_baseMaterialContainer_FaceCount(t *testing.T) {
+	tests := []struct {
+		name string
+		m    *baseMaterialContainer
+		want uint32
+	}{
+		{"empty", new(baseMaterialContainer), 0},
+		{"1", newbaseMaterialContainer(1), 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.FaceCount(); got != tt.want {
+				t.Errorf("baseMaterialContainer.FaceCount() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_baseMaterialContainer_Clear(t *testing.T) {
+	tests := []struct {
+		name string
+		m    *baseMaterialContainer
+	}{
+		{"base", new(baseMaterialContainer)},
+		{"1", newbaseMaterialContainer(1)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.m.Clear()
+		})
+	}
+}

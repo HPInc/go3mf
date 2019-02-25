@@ -119,3 +119,145 @@ func TestTextureCoords_Merge(t *testing.T) {
 		})
 	}
 }
+
+func Test_newtextureCoordsContainer(t *testing.T) {
+	type args struct {
+		currentFaceCount uint32
+	}
+	tests := []struct {
+		name string
+		args args
+		want *textureCoordsContainer
+	}{
+		{"zero", args{0}, &textureCoordsContainer{0, make([]*TextureCoords, 0)}},
+		{"one", args{1}, &textureCoordsContainer{1, []*TextureCoords{new(TextureCoords)}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := newtextureCoordsContainer(tt.args.currentFaceCount); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("newtextureCoordsContainer() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_textureCoordsContainer_clone(t *testing.T) {
+	type args struct {
+		currentFaceCount uint32
+	}
+	tests := []struct {
+		name string
+		m    *textureCoordsContainer
+		args args
+		want Container
+	}{
+		{"zero", &textureCoordsContainer{0, make([]*TextureCoords, 0)}, args{0}, &textureCoordsContainer{0, make([]*TextureCoords, 0)}},
+		{"one", &textureCoordsContainer{1, []*TextureCoords{new(TextureCoords)}}, args{1}, &textureCoordsContainer{1, []*TextureCoords{new(TextureCoords)}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.clone(tt.args.currentFaceCount); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("textureCoordsContainer.clone() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_textureCoordsContainer_InfoType(t *testing.T) {
+	tests := []struct {
+		name string
+		m    *textureCoordsContainer
+		want reflect.Type
+	}{
+		{"base", new(textureCoordsContainer), textureCoordsType},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.InfoType(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("textureCoordsContainer.InfoType() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_textureCoordsContainer_AddFaceData(t *testing.T) {
+	type args struct {
+		newFaceCount uint32
+	}
+	tests := []struct {
+		name string
+		m    *textureCoordsContainer
+		args args
+		want FaceData
+		wantPanic bool
+	}{
+		{"invalid face number", new(textureCoordsContainer), args{2}, new(TextureCoords), true},
+		{"valid face number", new(textureCoordsContainer), args{1}, new(TextureCoords), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				if r := recover(); tt.wantPanic && r == nil {
+					t.Error("memoryContainer.AddFaceData() want panic")
+				}
+			}()
+			if got := tt.m.AddFaceData(tt.args.newFaceCount); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("textureCoordsContainer.AddFaceData() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_textureCoordsContainer_FaceData(t *testing.T) {
+	type args struct {
+		faceIndex uint32
+	}
+	tests := []struct {
+		name string
+		m    *textureCoordsContainer
+		args args
+		want FaceData
+	}{
+		{"valid index", newtextureCoordsContainer(1), args{0}, new(TextureCoords)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.FaceData(tt.args.faceIndex); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("textureCoordsContainer.FaceData() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_textureCoordsContainer_FaceCount(t *testing.T) {
+	tests := []struct {
+		name string
+		m    *textureCoordsContainer
+		want uint32
+	}{
+		{"empty", new(textureCoordsContainer), 0},
+		{"1", newtextureCoordsContainer(1), 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.FaceCount(); got != tt.want {
+				t.Errorf("textureCoordsContainer.FaceCount() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_textureCoordsContainer_Clear(t *testing.T) {
+	tests := []struct {
+		name string
+		m    *textureCoordsContainer
+	}{
+		{"base", new(textureCoordsContainer)},
+		{"1", newtextureCoordsContainer(1)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.m.Clear()
+		})
+	}
+}

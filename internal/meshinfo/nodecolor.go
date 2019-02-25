@@ -2,6 +2,7 @@ package meshinfo
 
 import (
 	"image/color"
+	"reflect"
 )
 
 // NodeColor informs about the color of a node.
@@ -42,4 +43,50 @@ func (n *NodeColor) Permute(index1, index2, index3 uint32) {
 // Merge is not necessary for a node color.
 func (n *NodeColor) Merge(other interface{}) {
 	// nothing to merge
+}
+
+type nodeColorContainer struct {
+	faceCount  uint32
+	dataBlocks []*NodeColor
+}
+
+func newnodeColorContainer(currentFaceCount uint32) *nodeColorContainer {
+	m := &nodeColorContainer{
+		dataBlocks: make([]*NodeColor, 0, int(currentFaceCount)),
+	}
+	for i := 1; i <= int(currentFaceCount); i++ {
+		m.AddFaceData(uint32(i))
+	}
+	return m
+}
+
+func (m *nodeColorContainer) clone(currentFaceCount uint32) Container {
+	return newnodeColorContainer(currentFaceCount)
+}
+
+func (m *nodeColorContainer) InfoType() reflect.Type {
+	return nodeColorType
+}
+
+func (m *nodeColorContainer) AddFaceData(newFaceCount uint32) FaceData {
+	faceData := new(NodeColor)
+	m.dataBlocks = append(m.dataBlocks, faceData)
+	m.faceCount++
+	if m.faceCount != newFaceCount {
+		panic(&FaceCountMissmatchError{m.faceCount, newFaceCount})
+	}
+	return faceData
+}
+
+func (m *nodeColorContainer) FaceData(faceIndex uint32) FaceData {
+	return m.dataBlocks[int(faceIndex)]
+}
+
+func (m *nodeColorContainer) FaceCount() uint32 {
+	return m.faceCount
+}
+
+func (m *nodeColorContainer) Clear() {
+	m.dataBlocks = m.dataBlocks[:0]
+	m.faceCount = 0
 }

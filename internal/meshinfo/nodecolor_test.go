@@ -123,3 +123,148 @@ func TestNodeColor_Merge(t *testing.T) {
 		})
 	}
 }
+
+func Test_newnodeColorContainer(t *testing.T) {
+	type args struct {
+		currentFaceCount uint32
+	}
+	tests := []struct {
+		name string
+		args args
+		want *nodeColorContainer
+	}{
+		{"zero", args{0}, &nodeColorContainer{0, make([]*NodeColor, 0)}},
+		{"one", args{1}, &nodeColorContainer{1, []*NodeColor{new(NodeColor)}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := newnodeColorContainer(tt.args.currentFaceCount); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("newnodeColorContainer() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_nodeColorContainer_clone(t *testing.T) {
+	type args struct {
+		currentFaceCount uint32
+	}
+	tests := []struct {
+		name string
+		m    *nodeColorContainer
+		args args
+		want Container
+	}{
+		{"zero", &nodeColorContainer{0, make([]*NodeColor, 0)}, args{0}, &nodeColorContainer{0, make([]*NodeColor, 0)}},
+		{"one", &nodeColorContainer{1, []*NodeColor{new(NodeColor)}}, args{1}, &nodeColorContainer{1, []*NodeColor{new(NodeColor)}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.clone(tt.args.currentFaceCount); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("nodeColorContainer.clone() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_nodeColorContainer_InfoType(t *testing.T) {
+	tests := []struct {
+		name string
+		m    *nodeColorContainer
+		want reflect.Type
+	}{
+		{"base", new(nodeColorContainer), nodeColorType},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.InfoType(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("nodeColorContainer.InfoType() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_nodeColorContainer_AddFaceData(t *testing.T) {
+	type args struct {
+		newFaceCount uint32
+	}
+	tests := []struct {
+		name      string
+		m         *nodeColorContainer
+		args      args
+		want      FaceData
+		wantPanic bool
+	}{
+		{"invalid face number", new(nodeColorContainer), args{2}, new(NodeColor), true},
+		{"valid face number", new(nodeColorContainer), args{1}, new(NodeColor), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				if r := recover(); tt.wantPanic && r == nil {
+					t.Error("memoryContainer.AddFaceData() want panic")
+				}
+			}()
+			if got := tt.m.AddFaceData(tt.args.newFaceCount); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("nodeColorContainer.AddFaceData() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_nodeColorContainer_FaceData(t *testing.T) {
+	type args struct {
+		faceIndex uint32
+	}
+	tests := []struct {
+		name string
+		m    *nodeColorContainer
+		args args
+		want FaceData
+	}{
+		{"valid index", newnodeColorContainer(1), args{0}, new(NodeColor)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.FaceData(tt.args.faceIndex); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("nodeColorContainer.FaceData() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_nodeColorContainer_FaceCount(t *testing.T) {
+	tests := []struct {
+		name string
+		m    *nodeColorContainer
+		want uint32
+	}{
+		{"empty", new(nodeColorContainer), 0},
+		{"1", newnodeColorContainer(1), 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.FaceCount(); got != tt.want {
+				t.Errorf("nodeColorContainer.FaceCount() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_nodeColorContainer_Clear(t *testing.T) {
+	tests := []struct {
+		name string
+		m    *nodeColorContainer
+	}{
+		{"base", new(nodeColorContainer)},
+		{"1", newnodeColorContainer(1)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.m.Clear()
+			if got := tt.m.FaceCount(); got != 0 {
+				t.Errorf("nodeColorContainer.Clear() = %v, want 0", got)
+			}
+		})
+	}
+}

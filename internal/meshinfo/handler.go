@@ -22,21 +22,21 @@ func NewHandler() *Handler {
 
 // AddBaseMaterialInfo adds a BaseMaterialInfo to the handler.
 func (h *Handler) AddBaseMaterialInfo(currentFaceCount uint32) *FacesData {
-	f := h.newInfo(currentFaceCount, baseMaterialType)
+	f := newFacesData(newbaseMaterialContainer(currentFaceCount))
 	h.addInformation(f)
 	return f
 }
 
 // AddTextureCoordsInfo adds a TextureCoordsInfo to the handler.
 func (h *Handler) AddTextureCoordsInfo(currentFaceCount uint32) *FacesData {
-	f := h.newInfo(currentFaceCount, textureCoordsType)
+	f := newFacesData(newtextureCoordsContainer(currentFaceCount))
 	h.addInformation(f)
 	return f
 }
 
 // AddNodeColorInfo adds a NodeColorInfo to the handler.
 func (h *Handler) AddNodeColorInfo(currentFaceCount uint32) *FacesData {
-	f := h.newInfo(currentFaceCount, nodeColorType)
+	f := newFacesData(newnodeColorContainer(currentFaceCount))
 	h.addInformation(f)
 	return f
 }
@@ -57,8 +57,4 @@ func (h *Handler) TextureCoordsInfo() (*FacesData, bool) {
 func (h *Handler) NodeColorInfo() (*FacesData, bool) {
 	info, ok := h.lookup[nodeColorType]
 	return info.(*FacesData), ok
-}
-
-func (h *Handler) newInfo(currentFaceCount uint32, infoType reflect.Type) *FacesData {
-	return newFacesData(newmemoryContainer(currentFaceCount, infoType))
 }

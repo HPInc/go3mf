@@ -2,6 +2,7 @@ package meshinfo
 
 import (
 	"github.com/go-gl/mathgl/mgl32"
+	"reflect"
 )
 
 // TextureCoords informs about the coordinates of a texture.
@@ -46,4 +47,50 @@ func (t *TextureCoords) Permute(index1, index2, index3 uint32) {
 // Merge is not necessary for a tetxure coords.
 func (t *TextureCoords) Merge(other interface{}) {
 	// nothing to merge
+}
+
+type textureCoordsContainer struct {
+	faceCount  uint32
+	dataBlocks []*TextureCoords
+}
+
+func newtextureCoordsContainer(currentFaceCount uint32) *textureCoordsContainer {
+	m := &textureCoordsContainer{
+		dataBlocks: make([]*TextureCoords, 0, int(currentFaceCount)),
+	}
+	for i := 1; i <= int(currentFaceCount); i++ {
+		m.AddFaceData(uint32(i))
+	}
+	return m
+}
+
+func (m *textureCoordsContainer) clone(currentFaceCount uint32) Container {
+	return newtextureCoordsContainer(currentFaceCount)
+}
+
+func (m *textureCoordsContainer) InfoType() reflect.Type {
+	return textureCoordsType
+}
+
+func (m *textureCoordsContainer) AddFaceData(newFaceCount uint32) FaceData {
+	faceData := new(TextureCoords)
+	m.dataBlocks = append(m.dataBlocks, faceData)
+	m.faceCount++
+	if m.faceCount != newFaceCount {
+		panic(&FaceCountMissmatchError{m.faceCount, newFaceCount})
+	}
+	return faceData
+}
+
+func (m *textureCoordsContainer) FaceData(faceIndex uint32) FaceData {
+	return m.dataBlocks[int(faceIndex)]
+}
+
+func (m *textureCoordsContainer) FaceCount() uint32 {
+	return m.faceCount
+}
+
+func (m *textureCoordsContainer) Clear() {
+	m.dataBlocks = m.dataBlocks[:0]
+	m.faceCount = 0
 }
