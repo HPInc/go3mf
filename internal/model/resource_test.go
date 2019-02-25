@@ -90,7 +90,7 @@ func TestPackageResourceID_UniqueID(t *testing.T) {
 	}
 }
 
-func TestnewResourceHandler(t *testing.T) {
+func Test_newResourceHandler(t *testing.T) {
 	tests := []struct {
 		name string
 		want *ResourceHandler
