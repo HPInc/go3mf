@@ -1,9 +1,9 @@
 package model
 
-import (	
-	"github.com/go-gl/mathgl/mgl32"
+import (
 	"errors"
 	"fmt"
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 // Slice defines the resource object for slices.
@@ -21,7 +21,7 @@ func (s *Slice) BeginPolygon() int {
 
 // AddVertex adds a new vertex to the slice and returns its index.
 func (s *Slice) AddVertex(x, y float32) int {
-	s.Vertices = append(s.Vertices, mgl32.Vec2{x,y})
+	s.Vertices = append(s.Vertices, mgl32.Vec2{x, y})
 	return len(s.Vertices) - 1
 }
 
@@ -46,7 +46,7 @@ func (s *Slice) AddPolygonIndex(polygonIndex, index int) error {
 // AllPolygonsAreClosed returns true if all the polygons are closed.
 func (s *Slice) AllPolygonsAreClosed() bool {
 	for _, p := range s.Polygons {
-		if len(p) > 1 && p[0] != p[len(p) - 1] {
+		if len(p) > 1 && p[0] != p[len(p)-1] {
 			return false
 		}
 	}
@@ -64,15 +64,15 @@ func (s *Slice) IsPolygonValid(index int) bool {
 
 // SliceStack defines an stack of slices
 type SliceStack struct {
-	BottomZ float32
-	Slices []*Slice
+	BottomZ      float32
+	Slices       []*Slice
 	UsesSliceRef bool
 }
 
 // AddSlice adds an slice to the stack and returns its index.
 func (s *SliceStack) AddSlice(slice *Slice) (int, error) {
 	if slice.TopZ < s.BottomZ || (len(s.Slices) != 0 && slice.TopZ < s.Slices[0].TopZ) {
-		return 0,errors.New("go3mf: The z-coordinates of slices within a slicestack are not increasing")
+		return 0, errors.New("go3mf: The z-coordinates of slices within a slicestack are not increasing")
 	}
 	s.Slices = append(s.Slices, slice)
 	return len(s.Slices) - 1, nil

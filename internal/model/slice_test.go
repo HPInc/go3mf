@@ -112,9 +112,9 @@ func TestSlice_IsPolygonValid(t *testing.T) {
 		want bool
 	}{
 		{"empty", new(Slice), args{0}, false},
-		{"invalid1",  &Slice{Polygons: [][]int{{0}}}, args{0}, false},
-		{"invalid2",  &Slice{Polygons: [][]int{{0, 1}}}, args{0}, false},
-		{"valid",  &Slice{Polygons: [][]int{{0, 1, 2}}}, args{0}, true},
+		{"invalid1", &Slice{Polygons: [][]int{{0}}}, args{0}, false},
+		{"invalid2", &Slice{Polygons: [][]int{{0, 1}}}, args{0}, false},
+		{"valid", &Slice{Polygons: [][]int{{0, 1, 2}}}, args{0}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
