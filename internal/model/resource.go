@@ -2,9 +2,6 @@ package model
 
 import "errors"
 
-// ErrDuplicatedResourceID happens when attempting to create a new resource ID that already exists.
-var ErrDuplicatedResourceID = errors.New("duplicate Resource ID")
-
 // PackageResourceID defines the Package Resource ID.
 type PackageResourceID struct {
 	path     string
@@ -38,8 +35,7 @@ type ResourceHandler struct {
 	resourceIDs map[uint64]*PackageResourceID
 }
 
-// NewResourceHandler creates a new resource handler.
-func NewResourceHandler() *ResourceHandler {
+func newResourceHandler() *ResourceHandler {
 	return &ResourceHandler{
 		resourceIDs: make(map[uint64]*PackageResourceID, 0),
 	}
@@ -67,7 +63,10 @@ func (r *ResourceHandler) FindResourceIDByID(path string, id uint64) (val *Packa
 // NewResourceID creates a new unique resource ID.
 func (r *ResourceHandler) NewResourceID(path string, id uint64) (*PackageResourceID, error) {
 	if _, ok := r.FindResourceIDByID(path, id); ok {
-		return nil, ErrDuplicatedResourceID
+		return nil, errors.New("go3mf: Duplicate Resource ID")
+	}
+	if len(r.resourceIDs) == 0 {
+		r.resourceIDs = make(map[uint64]*PackageResourceID, 0)
 	}
 	p := &PackageResourceID{
 		path:     path,
@@ -87,4 +86,15 @@ func (r *ResourceHandler) Clear() {
 type Resource struct {
 	Model      *Model
 	ResourceID *PackageResourceID
+}
+
+func newResource(model *Model, id uint64) (*Resource, error) {
+	packageID, err := model.generatePackageResourceID(id)
+	if err != nil {
+		return nil, err
+	}
+	return &Resource{
+		Model:      model,
+		ResourceID: packageID,
+	}, nil
 }

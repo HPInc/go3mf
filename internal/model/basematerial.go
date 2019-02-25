@@ -24,6 +24,17 @@ type BaseMaterials struct {
 	Materials []*BaseMaterial
 }
 
+// NewBaseMaterials returns a new texture 2D resource.
+func NewBaseMaterials(id uint64, model *Model) (*BaseMaterials, error) {
+	r, err := newResource(model, id)
+	if err != nil {
+		return nil, err
+	}
+	return &BaseMaterials{
+		Resource: *r,
+	}, nil
+}
+
 // Merge appends all the other base materials.
 func (ms *BaseMaterials) Merge(other []*BaseMaterial) {
 	for _, m := range other {

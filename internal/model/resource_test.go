@@ -90,7 +90,7 @@ func TestPackageResourceID_UniqueID(t *testing.T) {
 	}
 }
 
-func TestNewResourceHandler(t *testing.T) {
+func TestnewResourceHandler(t *testing.T) {
 	tests := []struct {
 		name string
 		want *ResourceHandler
@@ -101,15 +101,15 @@ func TestNewResourceHandler(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewResourceHandler(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewResourceHandler() = %v, want %v", got, tt.want)
+			if got := newResourceHandler(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("newResourceHandler() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
 func TestResourceHandler_FindResourceID(t *testing.T) {
-	rh := NewResourceHandler()
+	rh := newResourceHandler()
 	r1, _ := rh.NewResourceID("a", 11)
 	r2, _ := rh.NewResourceID("b", 12)
 	type args struct {
@@ -140,7 +140,7 @@ func TestResourceHandler_FindResourceID(t *testing.T) {
 }
 
 func TestResourceHandler_FindResourceIDByID(t *testing.T) {
-	rh := NewResourceHandler()
+	rh := newResourceHandler()
 	r1, _ := rh.NewResourceID("a", 11)
 	r2, _ := rh.NewResourceID("b", 12)
 	type args struct {
@@ -172,7 +172,7 @@ func TestResourceHandler_FindResourceIDByID(t *testing.T) {
 }
 
 func TestResourceHandler_NewResourceID(t *testing.T) {
-	rh := NewResourceHandler()
+	rh := newResourceHandler()
 	type args struct {
 		path string
 		id   uint64
@@ -203,14 +203,14 @@ func TestResourceHandler_NewResourceID(t *testing.T) {
 }
 
 func TestResourceHandler_Clear(t *testing.T) {
-	rh := NewResourceHandler()
+	rh := newResourceHandler()
 	rh.NewResourceID("a", 11)
 	rh.NewResourceID("b", 12)
 	tests := []struct {
 		name string
 		r    *ResourceHandler
 	}{
-		{"new", NewResourceHandler()},
+		{"new", newResourceHandler()},
 		{"base", rh},
 	}
 	for _, tt := range tests {

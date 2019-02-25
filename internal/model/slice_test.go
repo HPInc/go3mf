@@ -155,13 +155,15 @@ func TestSliceStack_AddSlice(t *testing.T) {
 }
 
 func TestSliceStackResource_ReferencePath(t *testing.T) {
+	s1, _ := NewSliceStackResource(0, new(Model), new(SliceStack))
+	s2, _ := NewSliceStackResource(0, new(Model), &SliceStack{UsesSliceRef: true})
 	tests := []struct {
 		name string
 		s    *SliceStackResource
 		want string
 	}{
-		{"noref", NewSliceStackResource(new(SliceStack), nil), ""},
-		{"ref", NewSliceStackResource(&SliceStack{UsesSliceRef: true}, new(PackageResourceID)), "/2D/2dmodel_0.model"},
+		{"noref", s1, ""},
+		{"ref", s2, "/2D/2dmodel_1.model"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

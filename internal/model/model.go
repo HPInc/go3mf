@@ -7,5 +7,12 @@ type Metadata struct {
 	Value string
 }
 
+// A Model is an in memory representation of the 3MF file.
 type Model struct {
+	Path            string
+	resourceHandler ResourceHandler
+}
+
+func (m *Model) generatePackageResourceID(id uint64) (*PackageResourceID, error) {
+	return m.resourceHandler.NewResourceID(m.Path, id)
 }

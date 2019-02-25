@@ -86,8 +86,12 @@ type SliceStackResource struct {
 }
 
 // NewSliceStackResource returns a new SliceStackResource.
-func NewSliceStackResource(stack *SliceStack, resourceID *PackageResourceID) *SliceStackResource {
-	return &SliceStackResource{SliceStack: stack, Resource: Resource{ResourceID: resourceID}}
+func NewSliceStackResource(id uint64, model *Model, stack *SliceStack) (*SliceStackResource, error) {
+	r, err := newResource(model, id)
+	if err != nil {
+		return nil, err
+	}
+	return &SliceStackResource{SliceStack: stack, Resource: *r}, nil
 }
 
 // ReferencePath returns the path to the file defining the slice stack and
