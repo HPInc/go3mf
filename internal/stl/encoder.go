@@ -38,10 +38,12 @@ func NewEncoderType(w io.Writer, encodingType EncodingType) *Encoder {
 	}
 }
 
+// Encode encodes a mesh to the writer.
 func (e *Encoder) Encode(m *mesh.Mesh) error {
 	switch e.encodingType {
 	case ASCII:
-		return nil
+		encoder := asciiEncoder{w: e.w}
+		return encoder.encode(m)
 	default:
 		encoder := binaryEncoder{w: e.w}
 		return encoder.encode(m)
