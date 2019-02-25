@@ -18,25 +18,25 @@ func (m *BaseMaterial) ColorString() string {
 	return fmt.Sprintf("#%x%x%x%x", m.Color.R, m.Color.G, m.Color.B, m.Color.A)
 }
 
-// BaseMaterials defines a slice of BaseMaterial.
-type BaseMaterials struct {
+// BaseMaterialsResource defines a slice of BaseMaterial.
+type BaseMaterialsResource struct {
 	Resource
 	Materials []*BaseMaterial
 }
 
-// NewBaseMaterials returns a new texture 2D resource.
-func NewBaseMaterials(id uint64, model *Model) (*BaseMaterials, error) {
+// NewBaseMaterialsResource returns a new texture 2D resource.
+func NewBaseMaterialsResource(id uint64, model *Model) (*BaseMaterialsResource, error) {
 	r, err := newResource(model, id)
 	if err != nil {
 		return nil, err
 	}
-	return &BaseMaterials{
+	return &BaseMaterialsResource{
 		Resource: *r,
 	}, nil
 }
 
 // Merge appends all the other base materials.
-func (ms *BaseMaterials) Merge(other []*BaseMaterial) {
+func (ms *BaseMaterialsResource) Merge(other []*BaseMaterial) {
 	for _, m := range other {
 		ms.Materials = append(ms.Materials, &BaseMaterial{m.Name, m.Color})
 	}

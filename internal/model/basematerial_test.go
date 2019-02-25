@@ -23,16 +23,16 @@ func TestBaseMaterial_ColotString(t *testing.T) {
 	}
 }
 
-func TestBaseMaterials_Merge(t *testing.T) {
+func TestBaseMaterialsResource_Merge(t *testing.T) {
 	type args struct {
 		other []*BaseMaterial
 	}
 	tests := []struct {
 		name string
-		ms   *BaseMaterials
+		ms   *BaseMaterialsResource
 		args args
 	}{
-		{"base", &BaseMaterials{Materials: []*BaseMaterial{{Name: "1", Color: color.RGBA{200, 250, 60, 80}}}}, args{
+		{"base", &BaseMaterialsResource{Materials: []*BaseMaterial{{Name: "1", Color: color.RGBA{200, 250, 60, 80}}}}, args{
 			[]*BaseMaterial{{Name: "2", Color: color.RGBA{200, 250, 60, 80}}},
 		}},
 	}
@@ -41,7 +41,7 @@ func TestBaseMaterials_Merge(t *testing.T) {
 			want := append(tt.ms.Materials, tt.args.other...)
 			tt.ms.Merge(tt.args.other)
 			if !reflect.DeepEqual(tt.ms.Materials, want) {
-				t.Errorf("BaseMaterials.Merge() = %v, want %v", tt.ms.Materials, want)
+				t.Errorf("BaseMaterialsResource.Merge() = %v, want %v", tt.ms.Materials, want)
 			}
 		})
 	}
