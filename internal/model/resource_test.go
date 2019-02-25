@@ -1,4 +1,4 @@
-package go3mf
+package model
 
 import (
 	"reflect"

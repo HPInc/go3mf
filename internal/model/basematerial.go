@@ -1,4 +1,4 @@
-package go3mf
+package model
 
 import (
 	"fmt"
@@ -18,9 +18,15 @@ func (m *BaseMaterial) ColorString() string {
 	return fmt.Sprintf("#%x%x%x%x", m.Color.R, m.Color.G, m.Color.B, m.Color.A)
 }
 
-// BaseMaterials defines the Model Base Material Resource.
-// A model material resource is an in memory representation of the 3MF
-// material resource object.
+// BaseMaterials defines a slice of BaseMaterial.
 type BaseMaterials struct {
-	materials []BaseMaterial
+	Resource
+	Materials []*BaseMaterial
+}
+
+// Merge appends all the other base materials.
+func (ms *BaseMaterials) Merge(other []*BaseMaterial) {
+	for _, m := range other {
+		ms.Materials = append(ms.Materials, &BaseMaterial{m.Name, m.Color})
+	}
 }

@@ -1,4 +1,4 @@
-package go3mf
+package model
 
 import "errors"
 
@@ -81,4 +81,10 @@ func (r *ResourceHandler) NewResourceID(path string, id uint64) (*PackageResourc
 // Clear resets the internal map of resource IDs.
 func (r *ResourceHandler) Clear() {
 	r.resourceIDs = make(map[uint64]*PackageResourceID, 0)
+}
+
+// A Resource is an in memory representation of the 3MF resource object
+type Resource struct {
+	Model      *Model
+	ResourceID *PackageResourceID
 }

@@ -1,24 +1,11 @@
-package go3mf
+package model
 
 import "io"
 
 // Attachement defines the Model Attachment.
 type Attachement struct {
+	Model            *Model
 	Stream           io.Reader
 	RelationshipType string
-	uri              string
-}
-
-// NewAttachement creates a new attachement.
-func NewAttachement(stream io.Reader, relType, uri string) *Attachement {
-	return &Attachement{
-		Stream:           stream,
-		RelationshipType: relType,
-		uri:              uri,
-	}
-}
-
-// URI returns the attachement uri.
-func (a *Attachement) URI() string {
-	return a.uri
+	URI              string
 }
