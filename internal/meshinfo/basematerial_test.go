@@ -3,8 +3,6 @@ package meshinfo
 import (
 	"reflect"
 	"testing"
-
-	gomock "github.com/golang/mock/gomock"
 )
 
 func TestBaseMaterial_Invalidate(t *testing.T) {
@@ -26,9 +24,6 @@ func TestBaseMaterial_Invalidate(t *testing.T) {
 }
 
 func TestBaseMaterial_Copy(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-	mockData := NewMockFaceData(mockCtrl)
 	type args struct {
 		from interface{}
 	}
@@ -39,7 +34,7 @@ func TestBaseMaterial_Copy(t *testing.T) {
 		want *BaseMaterial
 	}{
 		{"nil", new(BaseMaterial), args{nil}, new(BaseMaterial)},
-		{"othertype", new(BaseMaterial), args{mockData}, new(BaseMaterial)},
+		{"othertype", new(BaseMaterial), args{new(NodeColor)}, new(BaseMaterial)},
 		{"copied", new(BaseMaterial), args{&BaseMaterial{2, 3}}, &BaseMaterial{2, 3}},
 	}
 	for _, tt := range tests {
@@ -155,7 +150,7 @@ func Test_baseMaterialContainer_InfoType(t *testing.T) {
 	tests := []struct {
 		name string
 		m    *baseMaterialContainer
-		want reflect.Type
+		want dataType
 	}{
 		{"base", new(baseMaterialContainer), baseMaterialType},
 	}

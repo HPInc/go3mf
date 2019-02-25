@@ -2,7 +2,6 @@ package meshinfo
 
 import (
 	"image/color"
-	"reflect"
 )
 
 // NodeColor informs about the color of a node.
@@ -64,7 +63,7 @@ func (m *nodeColorContainer) clone(currentFaceCount uint32) Container {
 	return newnodeColorContainer(currentFaceCount)
 }
 
-func (m *nodeColorContainer) InfoType() reflect.Type {
+func (m *nodeColorContainer) InfoType() dataType {
 	return nodeColorType
 }
 

@@ -2,8 +2,6 @@
 
 package meshinfo
 
-import "reflect"
-
 // FaceData defines a generic information of a face.
 type FaceData interface {
 	// Invalidate sets the data with its default values.
@@ -40,7 +38,7 @@ type Container interface {
 	// FaceCount returns the number of faces information stored in the container.
 	FaceCount() uint32
 	// InfoType returns the type of the stored data.
-	InfoType() reflect.Type
+	InfoType() dataType
 	// Clear removes all the information stored in the container.
 	Clear()
 	// clone creates a copy of the container with all the faces invalidated.
@@ -63,7 +61,7 @@ type Handleable interface {
 	faceModifier
 	dataCreator
 	// InfoType returns the type of the stored data.
-	InfoType() reflect.Type
+	InfoType() dataType
 	// setInternalID sets an ID for the whole mesh information.
 	setInternalID(internalID uint64)
 	// clone creates a deep copy of this instance.
@@ -73,7 +71,7 @@ type Handleable interface {
 // TypedInformer inform about specific types of information.
 type TypedInformer interface {
 	// infoTypes returns the types of informations stored in the handler.
-	infoTypes() []reflect.Type
+	infoTypes() []dataType
 	// informationByType retrieves the information of the desired type.
-	informationByType(infoType reflect.Type) (Handleable, bool)
+	informationByType(infoType dataType) (Handleable, bool)
 }

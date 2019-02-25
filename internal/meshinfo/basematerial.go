@@ -1,7 +1,5 @@
 package meshinfo
 
-import "reflect"
-
 // BaseMaterial informs about a base material.
 type BaseMaterial struct {
 	GroupID uint32 // Identifier of the group.
@@ -58,7 +56,7 @@ func (m *baseMaterialContainer) clone(currentFaceCount uint32) Container {
 	return newbaseMaterialContainer(currentFaceCount)
 }
 
-func (m *baseMaterialContainer) InfoType() reflect.Type {
+func (m *baseMaterialContainer) InfoType() dataType {
 	return baseMaterialType
 }
 

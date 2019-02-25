@@ -14,7 +14,7 @@ func Test_newgenericHandler(t *testing.T) {
 	}{
 		{"new", &genericHandler{
 			internalIDCounter: 1,
-			lookup:            map[reflect.Type]Handleable{},
+			lookup:            map[dataType]Handleable{},
 		}},
 	}
 	for _, tt := range tests {
@@ -55,24 +55,47 @@ func TestHandler_addInformation(t *testing.T) {
 					t.Error("genericHandler.addInformation() want panic")
 				}
 			}()
-			tt.args.info.EXPECT().InfoType().Return(reflect.TypeOf(""))
+			tt.args.info.EXPECT().InfoType().Return(nodeColorType)
 			tt.args.info.EXPECT().setInternalID(tt.expectedInternalID)
 			tt.h.addInformation(tt.args.info)
 		})
 	}
 }
 
+func sameTypeSlice(x, y []dataType) bool {
+	if len(x) != len(y) {
+		return false
+	}
+	diff := make(map[dataType]int, len(x))
+	for _, _x := range x {
+		diff[_x]++
+	}
+	for _, _y := range y {
+		if _, ok := diff[_y]; !ok {
+			return false
+		}
+		diff[_y]--
+		if diff[_y] == 0 {
+			delete(diff, _y)
+		}
+	}
+	if len(diff) == 0 {
+		return true
+	}
+	return false
+}
+
 func TestHandler_infoTypes(t *testing.T) {
 	h := newgenericHandler()
-	h.lookup[reflect.TypeOf((*string)(nil)).Elem()] = nil
-	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = nil
-	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = nil
+	h.lookup[nodeColorType] = nil
+	h.lookup[textureCoordsType] = nil
+	h.lookup[baseMaterialType] = nil
 	tests := []struct {
 		name string
 		h    *genericHandler
-		want []reflect.Type
+		want []dataType
 	}{
-		{"types", h, []reflect.Type{reflect.TypeOf((*string)(nil)).Elem(), reflect.TypeOf((*float32)(nil)).Elem(), reflect.TypeOf((*float64)(nil)).Elem()}},
+		{"types", h, []dataType{nodeColorType, textureCoordsType, baseMaterialType}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -88,7 +111,7 @@ func TestHandler_AddFace(t *testing.T) {
 	defer mockCtrl.Finish()
 	h := newgenericHandler()
 	handleable := NewMockHandleable(mockCtrl)
-	h.lookup[reflect.TypeOf((*string)(nil)).Elem()] = handleable
+	h.lookup[nodeColorType] = handleable
 	type args struct {
 		newFaceCount uint32
 	}
@@ -115,10 +138,10 @@ func TestHandler_informationByType(t *testing.T) {
 	h := newgenericHandler()
 	handleable1 := NewMockHandleable(mockCtrl)
 	handleable2 := NewMockHandleable(mockCtrl)
-	h.lookup[reflect.TypeOf((*string)(nil)).Elem()] = handleable1
-	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = handleable2
+	h.lookup[nodeColorType] = handleable1
+	h.lookup[baseMaterialType] = handleable2
 	type args struct {
-		infoType reflect.Type
+		infoType dataType
 	}
 	tests := []struct {
 		name  string
@@ -127,9 +150,8 @@ func TestHandler_informationByType(t *testing.T) {
 		want  Handleable
 		want1 bool
 	}{
-		{"nil", h, args{nil}, nil, false},
-		{"valid1", h, args{reflect.TypeOf((*string)(nil)).Elem()}, handleable1, true},
-		{"valid1", h, args{reflect.TypeOf((*float32)(nil)).Elem()}, handleable2, true},
+		{"valid1", h, args{nodeColorType}, handleable1, true},
+		{"valid1", h, args{baseMaterialType}, handleable2, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -146,8 +168,8 @@ func TestHandler_informationByType(t *testing.T) {
 
 func TestHandler_InformationCount(t *testing.T) {
 	h := newgenericHandler()
-	h.lookup[reflect.TypeOf((*string)(nil)).Elem()] = nil
-	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = nil
+	h.lookup[nodeColorType] = nil
+	h.lookup[textureCoordsType] = nil
 	tests := []struct {
 		name string
 		h    *genericHandler
@@ -166,14 +188,14 @@ func TestHandler_InformationCount(t *testing.T) {
 }
 
 func TestHandler_AddInfoFrom(t *testing.T) {
-	types := []reflect.Type{reflect.TypeOf((*string)(nil)).Elem(), reflect.TypeOf((*float32)(nil)).Elem(), reflect.TypeOf((*float64)(nil)).Elem()}
+	types := []dataType{nodeColorType, textureCoordsType, baseMaterialType}
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	otherHandleable := NewMockHandleable(mockCtrl)
 	ownHandleable := NewMockHandleable(mockCtrl)
 	h := newgenericHandler()
-	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = ownHandleable
-	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = ownHandleable
+	h.lookup[textureCoordsType] = ownHandleable
+	h.lookup[baseMaterialType] = ownHandleable
 	type args struct {
 		otherHandler     *MockTypedInformer
 		currentFaceCount uint32
@@ -190,7 +212,7 @@ func TestHandler_AddInfoFrom(t *testing.T) {
 			tt.args.otherHandler.EXPECT().infoTypes().Return(types)
 			tt.args.otherHandler.EXPECT().informationByType(gomock.Any()).Return(otherHandleable, true).MaxTimes(3)
 			otherHandleable.EXPECT().clone(tt.args.currentFaceCount).Return(ownHandleable)
-			ownHandleable.EXPECT().InfoType().Return(reflect.TypeOf((*string)(nil)).Elem())
+			ownHandleable.EXPECT().InfoType().Return(nodeColorType)
 			ownHandleable.EXPECT().setInternalID(tt.h.internalIDCounter)
 			tt.h.AddInfoFrom(tt.args.otherHandler, tt.args.currentFaceCount)
 		})
@@ -198,14 +220,14 @@ func TestHandler_AddInfoFrom(t *testing.T) {
 }
 
 func TestHandler_CopyFaceInfosFrom(t *testing.T) {
-	types := []reflect.Type{reflect.TypeOf((*string)(nil)).Elem(), reflect.TypeOf((*float32)(nil)).Elem(), reflect.TypeOf((*float64)(nil)).Elem()}
+	types := []dataType{nodeColorType, textureCoordsType, baseMaterialType}
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	otherHandleable := NewMockHandleable(mockCtrl)
 	ownHandleable := NewMockHandleable(mockCtrl)
 	h := newgenericHandler()
-	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = ownHandleable
-	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = ownHandleable
+	h.lookup[textureCoordsType] = ownHandleable
+	h.lookup[baseMaterialType] = ownHandleable
 	type args struct {
 		faceIndex      uint32
 		otherHandler   *MockTypedInformer
@@ -233,8 +255,8 @@ func TestHandler_ResetFaceInformation(t *testing.T) {
 	defer mockCtrl.Finish()
 	handleable := NewMockHandleable(mockCtrl)
 	h := newgenericHandler()
-	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = handleable
-	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = handleable
+	h.lookup[textureCoordsType] = handleable
+	h.lookup[baseMaterialType] = handleable
 	type args struct {
 		faceIndex uint32
 	}
@@ -255,10 +277,10 @@ func TestHandler_ResetFaceInformation(t *testing.T) {
 
 func TestHandler_removeInformation(t *testing.T) {
 	h := newgenericHandler()
-	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = nil
-	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = nil
+	h.lookup[textureCoordsType] = nil
+	h.lookup[baseMaterialType] = nil
 	type args struct {
-		infoType reflect.Type
+		infoType dataType
 	}
 	tests := []struct {
 		name string
@@ -266,10 +288,10 @@ func TestHandler_removeInformation(t *testing.T) {
 		args args
 		want int
 	}{
-		{"other", h, args{reflect.TypeOf((*string)(nil)).Elem()}, 2},
-		{"1", h, args{reflect.TypeOf((*float64)(nil)).Elem()}, 1},
-		{"0", h, args{reflect.TypeOf((*float32)(nil)).Elem()}, 0},
-		{"empty", h, args{reflect.TypeOf((*float32)(nil)).Elem()}, 0},
+		{"other", h, args{nodeColorType}, 2},
+		{"1", h, args{baseMaterialType}, 1},
+		{"0", h, args{textureCoordsType}, 0},
+		{"empty", h, args{textureCoordsType}, 0},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -286,8 +308,8 @@ func TestHandler_PermuteNodeInformation(t *testing.T) {
 	defer mockCtrl.Finish()
 	handleable := NewMockHandleable(mockCtrl)
 	h := newgenericHandler()
-	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = handleable
-	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = handleable
+	h.lookup[textureCoordsType] = handleable
+	h.lookup[baseMaterialType] = handleable
 	type args struct {
 		faceIndex  uint32
 		nodeIndex1 uint32
@@ -311,8 +333,8 @@ func TestHandler_PermuteNodeInformation(t *testing.T) {
 
 func Test_genericHandler_RemoveAllInformations(t *testing.T) {
 	h := newgenericHandler()
-	h.lookup[reflect.TypeOf((*float32)(nil)).Elem()] = nil
-	h.lookup[reflect.TypeOf((*float64)(nil)).Elem()] = nil
+	h.lookup[textureCoordsType] = nil
+	h.lookup[baseMaterialType] = nil
 	tests := []struct {
 		name string
 		h    *genericHandler
@@ -328,27 +350,4 @@ func Test_genericHandler_RemoveAllInformations(t *testing.T) {
 			}
 		})
 	}
-}
-
-func sameTypeSlice(x, y []reflect.Type) bool {
-	if len(x) != len(y) {
-		return false
-	}
-	diff := make(map[reflect.Type]int, len(x))
-	for _, _x := range x {
-		diff[_x]++
-	}
-	for _, _y := range y {
-		if _, ok := diff[_y]; !ok {
-			return false
-		}
-		diff[_y]--
-		if diff[_y] == 0 {
-			delete(diff, _y)
-		}
-	}
-	if len(diff) == 0 {
-		return true
-	}
-	return false
 }

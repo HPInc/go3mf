@@ -5,8 +5,9 @@
 package meshinfo
 
 import (
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockFaceData is a mock of FaceData interface
@@ -154,9 +155,9 @@ func (mr *MockContainerMockRecorder) FaceData(arg0 interface{}) *gomock.Call {
 }
 
 // InfoType mocks base method
-func (m *MockContainer) InfoType() reflect.Type {
+func (m *MockContainer) InfoType() dataType {
 	ret := m.ctrl.Call(m, "InfoType")
-	ret0, _ := ret[0].(reflect.Type)
+	ret0, _ := ret[0].(dataType)
 	return ret0
 }
 
@@ -201,9 +202,9 @@ func (m *MockTypedInformer) EXPECT() *MockTypedInformerMockRecorder {
 }
 
 // infoTypes mocks base method
-func (m *MockTypedInformer) infoTypes() []reflect.Type {
+func (m *MockTypedInformer) infoTypes() []dataType {
 	ret := m.ctrl.Call(m, "infoTypes")
-	ret0, _ := ret[0].([]reflect.Type)
+	ret0, _ := ret[0].([]dataType)
 	return ret0
 }
 
@@ -213,7 +214,7 @@ func (mr *MockTypedInformerMockRecorder) infoTypes() *gomock.Call {
 }
 
 // informationByType mocks base method
-func (m *MockTypedInformer) informationByType(arg0 reflect.Type) (Handleable, bool) {
+func (m *MockTypedInformer) informationByType(arg0 dataType) (Handleable, bool) {
 	ret := m.ctrl.Call(m, "informationByType", arg0)
 	ret0, _ := ret[0].(Handleable)
 	ret1, _ := ret[1].(bool)
@@ -308,9 +309,9 @@ func (mr *MockHandleableMockRecorder) FaceData(arg0 interface{}) *gomock.Call {
 }
 
 // InfoType mocks base method
-func (m *MockHandleable) InfoType() reflect.Type {
+func (m *MockHandleable) InfoType() dataType {
 	ret := m.ctrl.Call(m, "InfoType")
-	ret0, _ := ret[0].(reflect.Type)
+	ret0, _ := ret[0].(dataType)
 	return ret0
 }
 

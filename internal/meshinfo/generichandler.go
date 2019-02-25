@@ -1,21 +1,17 @@
 package meshinfo
 
-import (
-	"reflect"
-)
-
 const maxInternalID = 9223372036854775808
 
 // genericHandler allows to include different kinds of information in one mesh (like Textures AND colors).
 type genericHandler struct {
-	lookup            map[reflect.Type]Handleable
+	lookup            map[dataType]Handleable
 	internalIDCounter uint64
 }
 
 // newGenericHandler creates a new generic handler.
 func newgenericHandler() *genericHandler {
 	handler := &genericHandler{
-		lookup:            make(map[reflect.Type]Handleable, 0),
+		lookup:            make(map[dataType]Handleable, 0),
 		internalIDCounter: 1,
 	}
 	return handler
@@ -67,8 +63,8 @@ func (h *genericHandler) RemoveAllInformations() {
 }
 
 // infoTypes returns the types of informations stored in the handler.
-func (h *genericHandler) infoTypes() []reflect.Type {
-	types := make([]reflect.Type, 0, len(h.lookup))
+func (h *genericHandler) infoTypes() []dataType {
+	types := make([]dataType, 0, len(h.lookup))
 	for infoType := range h.lookup {
 		types = append(types, infoType)
 	}
@@ -87,13 +83,13 @@ func (h *genericHandler) addInformation(info Handleable) {
 }
 
 // informationByType retrieves the information of the desried type.
-func (h *genericHandler) informationByType(infoType reflect.Type) (Handleable, bool) {
+func (h *genericHandler) informationByType(infoType dataType) (Handleable, bool) {
 	info, ok := h.lookup[infoType]
 	return info, ok
 }
 
 // removeInformation removes the information of the target type.
-func (h *genericHandler) removeInformation(infoType reflect.Type) {
+func (h *genericHandler) removeInformation(infoType dataType) {
 	if _, ok := h.lookup[infoType]; ok {
 		delete(h.lookup, infoType)
 	}

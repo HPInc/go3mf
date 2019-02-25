@@ -1,11 +1,11 @@
 package meshinfo
 
-import "reflect"
+type dataType int
 
-var (
-	baseMaterialType  = reflect.TypeOf((*BaseMaterial)(nil))
-	textureCoordsType = reflect.TypeOf((*TextureCoords)(nil))
-	nodeColorType     = reflect.TypeOf((*NodeColor)(nil))
+const (
+	baseMaterialType dataType = iota
+	textureCoordsType
+	nodeColorType
 )
 
 // Handler allows to include specific types of information in one mesh (like Textures AND colors).

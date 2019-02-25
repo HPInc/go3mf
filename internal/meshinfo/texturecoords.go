@@ -2,7 +2,6 @@ package meshinfo
 
 import (
 	"github.com/go-gl/mathgl/mgl32"
-	"reflect"
 )
 
 // TextureCoords informs about the coordinates of a texture.
@@ -68,7 +67,7 @@ func (m *textureCoordsContainer) clone(currentFaceCount uint32) Container {
 	return newtextureCoordsContainer(currentFaceCount)
 }
 
-func (m *textureCoordsContainer) InfoType() reflect.Type {
+func (m *textureCoordsContainer) InfoType() dataType {
 	return textureCoordsType
 }
 

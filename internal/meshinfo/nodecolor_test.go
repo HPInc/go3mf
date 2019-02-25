@@ -171,7 +171,7 @@ func Test_nodeColorContainer_InfoType(t *testing.T) {
 	tests := []struct {
 		name string
 		m    *nodeColorContainer
-		want reflect.Type
+		want dataType
 	}{
 		{"base", new(nodeColorContainer), nodeColorType},
 	}

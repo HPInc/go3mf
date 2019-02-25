@@ -167,7 +167,7 @@ func Test_textureCoordsContainer_InfoType(t *testing.T) {
 	tests := []struct {
 		name string
 		m    *textureCoordsContainer
-		want reflect.Type
+		want dataType
 	}{
 		{"base", new(textureCoordsContainer), textureCoordsType},
 	}
