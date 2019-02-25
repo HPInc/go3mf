@@ -56,8 +56,8 @@ func (m *baseMaterialContainer) clone(currentFaceCount uint32) Container {
 	return newbaseMaterialContainer(currentFaceCount)
 }
 
-func (m *baseMaterialContainer) InfoType() dataType {
-	return baseMaterialType
+func (m *baseMaterialContainer) InfoType() DataType {
+	return BaseMaterialType
 }
 
 func (m *baseMaterialContainer) AddFaceData(newFaceCount uint32) FaceData {

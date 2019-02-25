@@ -14,7 +14,7 @@ func Test_newgenericHandler(t *testing.T) {
 	}{
 		{"new", &genericHandler{
 			internalIDCounter: 1,
-			lookup:            map[dataType]Handleable{},
+			lookup:            map[DataType]Handleable{},
 		}},
 	}
 	for _, tt := range tests {
@@ -49,7 +49,7 @@ func TestHandler_addInformation(t *testing.T) {
 				}
 			}()
 			mockHandleable := new(MockHandleable)
-			mockHandleable.On("InfoType").Return(nodeColorType)
+			mockHandleable.On("InfoType").Return(NodeColorType)
 			mockHandleable.On("setInternalID", tt.expectedInternalID)
 			tt.h.addInformation(mockHandleable)
 			mockHandleable.AssertExpectations(t)
@@ -57,11 +57,11 @@ func TestHandler_addInformation(t *testing.T) {
 	}
 }
 
-func sameTypeSlice(x, y []dataType) bool {
+func sameTypeSlice(x, y []DataType) bool {
 	if len(x) != len(y) {
 		return false
 	}
-	diff := make(map[dataType]int, len(x))
+	diff := make(map[DataType]int, len(x))
 	for _, _x := range x {
 		diff[_x]++
 	}
@@ -82,20 +82,20 @@ func sameTypeSlice(x, y []dataType) bool {
 
 func TestHandler_infoTypes(t *testing.T) {
 	h := newgenericHandler()
-	h.lookup[nodeColorType] = nil
-	h.lookup[textureCoordsType] = nil
-	h.lookup[baseMaterialType] = nil
+	h.lookup[NodeColorType] = nil
+	h.lookup[TextureCoordsType] = nil
+	h.lookup[BaseMaterialType] = nil
 	tests := []struct {
 		name string
 		h    *genericHandler
-		want []dataType
+		want []DataType
 	}{
-		{"types", h, []dataType{nodeColorType, textureCoordsType, baseMaterialType}},
+		{"types", h, []DataType{NodeColorType, TextureCoordsType, BaseMaterialType}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.h.infoTypes(); !sameTypeSlice(got, tt.want) {
-				t.Errorf("genericHandler.infoTypes() = %v, want %v", got, tt.want)
+			if got := tt.h.InfoTypes(); !sameTypeSlice(got, tt.want) {
+				t.Errorf("genericHandler.InfoTypes() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -116,7 +116,7 @@ func TestHandler_AddFace(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			handleable := new(MockHandleable)
-			tt.h.lookup[nodeColorType] = handleable
+			tt.h.lookup[NodeColorType] = handleable
 			handleable.On("AddFaceData", tt.args.newFaceCount).Return(tt.data)
 			tt.data.On("Invalidate")
 			tt.h.AddFace(tt.args.newFaceCount)
@@ -130,10 +130,10 @@ func TestHandler_informationByType(t *testing.T) {
 	h := newgenericHandler()
 	handleable1 := new(MockHandleable)
 	handleable2 := new(MockHandleable)
-	h.lookup[nodeColorType] = handleable1
-	h.lookup[baseMaterialType] = handleable2
+	h.lookup[NodeColorType] = handleable1
+	h.lookup[BaseMaterialType] = handleable2
 	type args struct {
-		infoType dataType
+		infoType DataType
 	}
 	tests := []struct {
 		name  string
@@ -142,17 +142,17 @@ func TestHandler_informationByType(t *testing.T) {
 		want  Handleable
 		want1 bool
 	}{
-		{"valid1", h, args{nodeColorType}, handleable1, true},
-		{"valid1", h, args{baseMaterialType}, handleable2, true},
+		{"valid1", h, args{NodeColorType}, handleable1, true},
+		{"valid1", h, args{BaseMaterialType}, handleable2, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := tt.h.informationByType(tt.args.infoType)
+			got, got1 := tt.h.InformationByType(tt.args.infoType)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("genericHandler.informationByType() got = %v, want %v", got, tt.want)
+				t.Errorf("genericHandler.InformationByType() got = %v, want %v", got, tt.want)
 			}
 			if got1 != tt.want1 {
-				t.Errorf("genericHandler.informationByType() got1 = %v, want %v", got1, tt.want1)
+				t.Errorf("genericHandler.InformationByType() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}
@@ -162,8 +162,8 @@ func TestHandler_informationByType(t *testing.T) {
 
 func TestHandler_InformationCount(t *testing.T) {
 	h := newgenericHandler()
-	h.lookup[nodeColorType] = nil
-	h.lookup[textureCoordsType] = nil
+	h.lookup[NodeColorType] = nil
+	h.lookup[TextureCoordsType] = nil
 	tests := []struct {
 		name string
 		h    *genericHandler
@@ -182,7 +182,7 @@ func TestHandler_InformationCount(t *testing.T) {
 }
 
 func TestHandler_AddInfoFrom(t *testing.T) {
-	types := []dataType{nodeColorType, textureCoordsType, baseMaterialType}
+	types := []DataType{NodeColorType, TextureCoordsType, BaseMaterialType}
 	type args struct {
 		otherHandler     *MockTypedInformer
 		currentFaceCount uint32
@@ -198,12 +198,12 @@ func TestHandler_AddInfoFrom(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			otherHandleable := new(MockHandleable)
 			ownHandleable := new(MockHandleable)
-			tt.h.lookup[textureCoordsType] = ownHandleable
-			tt.h.lookup[baseMaterialType] = ownHandleable
-			tt.args.otherHandler.On("infoTypes").Return(types)
-			tt.args.otherHandler.On("informationByType", mock.Anything).Return(otherHandleable, true).Times(3)
+			tt.h.lookup[TextureCoordsType] = ownHandleable
+			tt.h.lookup[BaseMaterialType] = ownHandleable
+			tt.args.otherHandler.On("InfoTypes").Return(types)
+			tt.args.otherHandler.On("InformationByType", mock.Anything).Return(otherHandleable, true).Times(3)
 			otherHandleable.On("clone", tt.args.currentFaceCount).Return(ownHandleable)
-			ownHandleable.On("InfoType").Return(nodeColorType)
+			ownHandleable.On("InfoType").Return(NodeColorType)
 			ownHandleable.On("setInternalID", tt.h.internalIDCounter)
 			tt.h.AddInfoFrom(tt.args.otherHandler, tt.args.currentFaceCount)
 			tt.args.otherHandler.AssertExpectations(t)
@@ -214,7 +214,7 @@ func TestHandler_AddInfoFrom(t *testing.T) {
 }
 
 func TestHandler_CopyFaceInfosFrom(t *testing.T) {
-	types := []dataType{nodeColorType, textureCoordsType, baseMaterialType}
+	types := []DataType{NodeColorType, TextureCoordsType, BaseMaterialType}
 	type args struct {
 		faceIndex      uint32
 		otherHandler   *MockTypedInformer
@@ -231,10 +231,10 @@ func TestHandler_CopyFaceInfosFrom(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			otherHandleable := new(MockHandleable)
 			ownHandleable := new(MockHandleable)
-			tt.h.lookup[textureCoordsType] = ownHandleable
-			tt.h.lookup[baseMaterialType] = ownHandleable
-			tt.args.otherHandler.On("infoTypes").Return(types)
-			tt.args.otherHandler.On("informationByType", mock.Anything).Return(otherHandleable, true).Times(3)
+			tt.h.lookup[TextureCoordsType] = ownHandleable
+			tt.h.lookup[BaseMaterialType] = ownHandleable
+			tt.args.otherHandler.On("InfoTypes").Return(types)
+			tt.args.otherHandler.On("InformationByType", mock.Anything).Return(otherHandleable, true).Times(3)
 			ownHandleable.On("copyFaceInfosFrom", tt.args.faceIndex, otherHandleable, tt.args.otherFaceIndex).Times(2)
 			tt.h.CopyFaceInfosFrom(tt.args.faceIndex, tt.args.otherHandler, tt.args.otherFaceIndex)
 			tt.args.otherHandler.AssertExpectations(t)
@@ -247,8 +247,8 @@ func TestHandler_CopyFaceInfosFrom(t *testing.T) {
 func TestHandler_ResetFaceInformation(t *testing.T) {
 	handleable := new(MockHandleable)
 	h := newgenericHandler()
-	h.lookup[textureCoordsType] = handleable
-	h.lookup[baseMaterialType] = handleable
+	h.lookup[TextureCoordsType] = handleable
+	h.lookup[BaseMaterialType] = handleable
 	type args struct {
 		faceIndex uint32
 	}
@@ -270,10 +270,10 @@ func TestHandler_ResetFaceInformation(t *testing.T) {
 
 func TestHandler_removeInformation(t *testing.T) {
 	h := newgenericHandler()
-	h.lookup[textureCoordsType] = nil
-	h.lookup[baseMaterialType] = nil
+	h.lookup[TextureCoordsType] = nil
+	h.lookup[BaseMaterialType] = nil
 	type args struct {
-		infoType dataType
+		infoType DataType
 	}
 	tests := []struct {
 		name string
@@ -281,10 +281,10 @@ func TestHandler_removeInformation(t *testing.T) {
 		args args
 		want int
 	}{
-		{"other", h, args{nodeColorType}, 2},
-		{"1", h, args{baseMaterialType}, 1},
-		{"0", h, args{textureCoordsType}, 0},
-		{"empty", h, args{textureCoordsType}, 0},
+		{"other", h, args{NodeColorType}, 2},
+		{"1", h, args{BaseMaterialType}, 1},
+		{"0", h, args{TextureCoordsType}, 0},
+		{"empty", h, args{TextureCoordsType}, 0},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -299,8 +299,8 @@ func TestHandler_removeInformation(t *testing.T) {
 func TestHandler_PermuteNodeInformation(t *testing.T) {
 	handleable := new(MockHandleable)
 	h := newgenericHandler()
-	h.lookup[textureCoordsType] = handleable
-	h.lookup[baseMaterialType] = handleable
+	h.lookup[TextureCoordsType] = handleable
+	h.lookup[BaseMaterialType] = handleable
 	type args struct {
 		faceIndex  uint32
 		nodeIndex1 uint32
@@ -325,8 +325,8 @@ func TestHandler_PermuteNodeInformation(t *testing.T) {
 
 func Test_genericHandler_RemoveAllInformations(t *testing.T) {
 	h := newgenericHandler()
-	h.lookup[textureCoordsType] = nil
-	h.lookup[baseMaterialType] = nil
+	h.lookup[TextureCoordsType] = nil
+	h.lookup[BaseMaterialType] = nil
 	tests := []struct {
 		name string
 		h    *genericHandler

@@ -4,14 +4,14 @@ const maxInternalID = 9223372036854775808
 
 // genericHandler allows to include different kinds of information in one mesh (like Textures AND colors).
 type genericHandler struct {
-	lookup            map[dataType]Handleable
+	lookup            map[DataType]Handleable
 	internalIDCounter uint64
 }
 
 // newGenericHandler creates a new generic handler.
 func newgenericHandler() *genericHandler {
 	handler := &genericHandler{
-		lookup:            make(map[dataType]Handleable, 0),
+		lookup:            make(map[DataType]Handleable, 0),
 		internalIDCounter: 1,
 	}
 	return handler
@@ -32,9 +32,9 @@ func (h *genericHandler) InformationCount() uint32 {
 
 // AddInfoFrom adds the information of the target handler.
 func (h *genericHandler) AddInfoFrom(informer TypedInformer, currentFaceCount uint32) {
-	types := informer.infoTypes()
+	types := informer.InfoTypes()
 	for _, infoType := range types {
-		otherInfo, _ := informer.informationByType(infoType)
+		otherInfo, _ := informer.InformationByType(infoType)
 		if _, ok := h.lookup[infoType]; !ok {
 			h.addInformation(otherInfo.clone(currentFaceCount))
 		}
@@ -62,9 +62,9 @@ func (h *genericHandler) RemoveAllInformations() {
 	}
 }
 
-// infoTypes returns the types of informations stored in the handler.
-func (h *genericHandler) infoTypes() []dataType {
-	types := make([]dataType, 0, len(h.lookup))
+// InfoTypes returns the types of informations stored in the handler.
+func (h *genericHandler) InfoTypes() []DataType {
+	types := make([]DataType, 0, len(h.lookup))
 	for infoType := range h.lookup {
 		types = append(types, infoType)
 	}
@@ -82,14 +82,14 @@ func (h *genericHandler) addInformation(info Handleable) {
 	}
 }
 
-// informationByType retrieves the information of the desried type.
-func (h *genericHandler) informationByType(infoType dataType) (Handleable, bool) {
+// InformationByType retrieves the information of the desried type.
+func (h *genericHandler) InformationByType(infoType DataType) (Handleable, bool) {
 	info, ok := h.lookup[infoType]
 	return info, ok
 }
 
 // removeInformation removes the information of the target type.
-func (h *genericHandler) removeInformation(infoType dataType) {
+func (h *genericHandler) removeInformation(infoType DataType) {
 	if _, ok := h.lookup[infoType]; ok {
 		delete(h.lookup, infoType)
 	}
@@ -97,9 +97,9 @@ func (h *genericHandler) removeInformation(infoType dataType) {
 
 // CopyFaceInfosFrom clones the data from another face.
 func (h *genericHandler) CopyFaceInfosFrom(faceIndex uint32, informer TypedInformer, otherFaceIndex uint32) {
-	types := informer.infoTypes()
+	types := informer.InfoTypes()
 	for _, infoType := range types {
-		otherInfo, _ := informer.informationByType(infoType)
+		otherInfo, _ := informer.InformationByType(infoType)
 		info, ok := h.lookup[infoType]
 		if ok {
 			info.copyFaceInfosFrom(faceIndex, otherInfo, otherFaceIndex)

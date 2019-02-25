@@ -36,7 +36,7 @@ type Container interface {
 	// FaceCount returns the number of faces information stored in the container.
 	FaceCount() uint32
 	// InfoType returns the type of the stored data.
-	InfoType() dataType
+	InfoType() DataType
 	// Clear removes all the information stored in the container.
 	Clear()
 	// clone creates a copy of the container with all the faces invalidated.
@@ -59,16 +59,17 @@ type Handleable interface {
 	faceModifier
 	dataCreator
 	// InfoType returns the type of the stored data.
-	InfoType() dataType
+	InfoType() DataType
 	// setInternalID sets an ID for the whole mesh information.
 	setInternalID(internalID uint64)
 	// clone creates a deep copy of this instance.
 	clone(currentFaceCount uint32) Handleable
 }
 
+// TypedInformer inform about specific types of information.
 type TypedInformer interface {
-	// infoTypes returns the types of informations stored in the handler.
-	infoTypes() []dataType
-	// informationByType retrieves the information of the desired type.
-	informationByType(infoType dataType) (Handleable, bool)
+	// InfoTypes returns the types of informations stored in the handler.
+	InfoTypes() []DataType
+	// InformationByType retrieves the information of the desired type.
+	InformationByType(infoType DataType) (Handleable, bool)
 }

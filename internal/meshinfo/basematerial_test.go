@@ -150,9 +150,9 @@ func Test_baseMaterialContainer_InfoType(t *testing.T) {
 	tests := []struct {
 		name string
 		m    *baseMaterialContainer
-		want dataType
+		want DataType
 	}{
-		{"base", new(baseMaterialContainer), baseMaterialType},
+		{"base", new(baseMaterialContainer), BaseMaterialType},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -163,9 +163,9 @@ func Test_textureCoordsContainer_InfoType(t *testing.T) {
 	tests := []struct {
 		name string
 		m    *textureCoordsContainer
-		want dataType
+		want DataType
 	}{
-		{"base", new(textureCoordsContainer), textureCoordsType},
+		{"base", new(textureCoordsContainer), TextureCoordsType},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

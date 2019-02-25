@@ -1,11 +1,12 @@
 package meshinfo
 
-type dataType int
+// DataType represents a type of data.
+type DataType int
 
 const (
-	baseMaterialType dataType = iota
-	textureCoordsType
-	nodeColorType
+	BaseMaterialType DataType = iota
+	TextureCoordsType
+	NodeColorType
 )
 
 // Handler allows to include specific types of information in one mesh (like Textures AND colors).
@@ -43,18 +44,18 @@ func (h *Handler) AddNodeColorInfo(currentFaceCount uint32) *FacesData {
 
 // BaseMaterialInfo returns the base material information. If it is not created the second parameters will be false.
 func (h *Handler) BaseMaterialInfo() (*FacesData, bool) {
-	info, ok := h.lookup[baseMaterialType]
+	info, ok := h.lookup[BaseMaterialType]
 	return info.(*FacesData), ok
 }
 
 // TextureCoordsInfo returns the texture coords information. If it is not created the second parameters will be false.
 func (h *Handler) TextureCoordsInfo() (*FacesData, bool) {
-	info, ok := h.lookup[textureCoordsType]
+	info, ok := h.lookup[TextureCoordsType]
 	return info.(*FacesData), ok
 }
 
 // NodeColorInfo returns the node color information. If it is not created the second parameters will be false.
 func (h *Handler) NodeColorInfo() (*FacesData, bool) {
-	info, ok := h.lookup[nodeColorType]
+	info, ok := h.lookup[NodeColorType]
 	return info.(*FacesData), ok
 }

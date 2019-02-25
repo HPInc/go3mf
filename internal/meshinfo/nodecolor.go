@@ -63,8 +63,8 @@ func (m *nodeColorContainer) clone(currentFaceCount uint32) Container {
 	return newnodeColorContainer(currentFaceCount)
 }
 
-func (m *nodeColorContainer) InfoType() dataType {
-	return nodeColorType
+func (m *nodeColorContainer) InfoType() DataType {
+	return NodeColorType
 }
 
 func (m *nodeColorContainer) AddFaceData(newFaceCount uint32) FaceData {

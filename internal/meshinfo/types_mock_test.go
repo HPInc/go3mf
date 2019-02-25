@@ -64,9 +64,9 @@ func (m *MockContainer) FaceData(arg0 uint32) FaceData {
 }
 
 // InfoType mocks base method
-func (m *MockContainer) InfoType() dataType {
+func (m *MockContainer) InfoType() DataType {
 	args := m.Called()
-	return args.Get(0).(dataType)
+	return args.Get(0).(DataType)
 }
 
 // clone mocks base method
@@ -80,14 +80,14 @@ type MockTypedInformer struct {
 	mock.Mock
 }
 
-// infoTypes mocks base method
-func (m *MockTypedInformer) infoTypes() []dataType {
+// InfoTypes mocks base method
+func (m *MockTypedInformer) InfoTypes() []DataType {
 	args := m.Called()
-	return args.Get(0).([]dataType)
+	return args.Get(0).([]DataType)
 }
 
-// informationByType mocks base method
-func (m *MockTypedInformer) informationByType(arg0 dataType) (Handleable, bool) {
+// InformationByType mocks base method
+func (m *MockTypedInformer) InformationByType(arg0 DataType) (Handleable, bool) {
 	args := m.Called(arg0)
 	return args.Get(0).(Handleable), args.Bool(1)
 }
@@ -121,9 +121,9 @@ func (m *MockHandleable) FaceData(arg0 uint32) FaceData {
 }
 
 // InfoType mocks base method
-func (m *MockHandleable) InfoType() dataType {
+func (m *MockHandleable) InfoType() DataType {
 	args := m.Called()
-	return args.Get(0).(dataType)
+	return args.Get(0).(DataType)
 }
 
 // clone mocks base method

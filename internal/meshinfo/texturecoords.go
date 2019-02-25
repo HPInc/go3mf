@@ -67,8 +67,8 @@ func (m *textureCoordsContainer) clone(currentFaceCount uint32) Container {
 	return newtextureCoordsContainer(currentFaceCount)
 }
 
-func (m *textureCoordsContainer) InfoType() dataType {
-	return textureCoordsType
+func (m *textureCoordsContainer) InfoType() DataType {
+	return TextureCoordsType
 }
 
 func (m *textureCoordsContainer) AddFaceData(newFaceCount uint32) FaceData {

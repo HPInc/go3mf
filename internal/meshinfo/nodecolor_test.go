@@ -166,9 +166,9 @@ func Test_nodeColorContainer_InfoType(t *testing.T) {
 	tests := []struct {
 		name string
 		m    *nodeColorContainer
-		want dataType
+		want DataType
 	}{
-		{"base", new(nodeColorContainer), nodeColorType},
+		{"base", new(nodeColorContainer), NodeColorType},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
