@@ -25,7 +25,7 @@ func TestBaseMaterial_Invalidate(t *testing.T) {
 
 func TestBaseMaterial_Copy(t *testing.T) {
 	type args struct {
-		from interface{}
+		from FaceData
 	}
 	tests := []struct {
 		name string
@@ -87,7 +87,7 @@ func TestBaseMaterial_Permute(t *testing.T) {
 
 func TestBaseMaterial_Merge(t *testing.T) {
 	type args struct {
-		other interface{}
+		other FaceData
 	}
 	tests := []struct {
 		name string

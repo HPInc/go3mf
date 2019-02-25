@@ -32,7 +32,7 @@ func TestTextureCoords_Invalidate(t *testing.T) {
 func TestTextureCoords_Copy(t *testing.T) {
 	test := &TextureCoords{2, [3]mgl32.Vec2{{1.0, 2.0}, {5.0, 3.0}, {6.0, 4.0}}}
 	type args struct {
-		from interface{}
+		from FaceData
 	}
 	tests := []struct {
 		name string
@@ -100,7 +100,7 @@ func TestTextureCoords_Permute(t *testing.T) {
 
 func TestTextureCoords_Merge(t *testing.T) {
 	type args struct {
-		other interface{}
+		other FaceData
 	}
 	tests := []struct {
 		name string

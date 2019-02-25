@@ -10,7 +10,7 @@ type MockFaceData struct {
 }
 
 // Copy mocks base method
-func (m *MockFaceData) Copy(arg0 interface{}) {
+func (m *MockFaceData) Copy(arg0 FaceData) {
 	m.Called(arg0)
 }
 
@@ -26,7 +26,7 @@ func (m *MockFaceData) Invalidate() {
 }
 
 // Merge mocks base method
-func (m *MockFaceData) Merge(arg0 interface{}) {
+func (m *MockFaceData) Merge(arg0 FaceData) {
 	m.Called(arg0)
 }
 

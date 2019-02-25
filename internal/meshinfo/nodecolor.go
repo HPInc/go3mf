@@ -18,7 +18,7 @@ func (n *NodeColor) Invalidate() {
 }
 
 // Copy copy the properties of another node color.
-func (n *NodeColor) Copy(from interface{}) {
+func (n *NodeColor) Copy(from FaceData) {
 	other, ok := from.(*NodeColor)
 	if !ok {
 		return
@@ -40,7 +40,7 @@ func (n *NodeColor) Permute(index1, index2, index3 uint32) {
 }
 
 // Merge is not necessary for a node color.
-func (n *NodeColor) Merge(other interface{}) {
+func (n *NodeColor) Merge(other FaceData) {
 	// nothing to merge
 }
 

@@ -13,7 +13,7 @@ func (b *BaseMaterial) Invalidate() {
 }
 
 // Copy copy the properties of another base material.
-func (b *BaseMaterial) Copy(from interface{}) {
+func (b *BaseMaterial) Copy(from FaceData) {
 	other, ok := from.(*BaseMaterial)
 	if !ok {
 		return
@@ -33,7 +33,7 @@ func (b *BaseMaterial) Permute(index1, index2, index3 uint32) {
 }
 
 // Merge is not necessary for a base material.
-func (b *BaseMaterial) Merge(other interface{}) {
+func (b *BaseMaterial) Merge(other FaceData) {
 	// nothing to merge
 }
 

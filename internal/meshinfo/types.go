@@ -5,12 +5,12 @@ type FaceData interface {
 	// Invalidate sets the data with its default values.
 	Invalidate()
 	// Copy copies all the properties from another object. Do nothing if not the same type.
-	Copy(from interface{})
+	Copy(from FaceData)
 	// Permute some properties of the instance using the desired indexes.
 	// Not all the indexes have to be used.
 	Permute(index1, index2, index3 uint32)
 	// Merge merges both instances.
-	Merge(other interface{})
+	Merge(other FaceData)
 	// HasData returns true if the instances has any kind of data other than its default ones.
 	HasData() bool
 }

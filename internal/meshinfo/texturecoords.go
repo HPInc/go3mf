@@ -21,7 +21,7 @@ func (t *TextureCoords) Invalidate() {
 }
 
 // Copy copy the properties of another texture coords.
-func (t *TextureCoords) Copy(from interface{}) {
+func (t *TextureCoords) Copy(from FaceData) {
 	other, ok := from.(*TextureCoords)
 	if !ok {
 		return
@@ -44,7 +44,7 @@ func (t *TextureCoords) Permute(index1, index2, index3 uint32) {
 }
 
 // Merge is not necessary for a tetxure coords.
-func (t *TextureCoords) Merge(other interface{}) {
+func (t *TextureCoords) Merge(other FaceData) {
 	// nothing to merge
 }
 

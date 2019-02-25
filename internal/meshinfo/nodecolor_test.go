@@ -27,7 +27,7 @@ func TestNodeColor_Invalidate(t *testing.T) {
 func TestNodeColor_Copy(t *testing.T) {
 	targetColor := [3]color.RGBA{{1, 2, 3, 4}, {3, 1, 2, 3}, {1, 2, 34, 3}}
 	type args struct {
-		from interface{}
+		from FaceData
 	}
 	tests := []struct {
 		name string
@@ -103,7 +103,7 @@ func TestNodeColor_Permute(t *testing.T) {
 
 func TestNodeColor_Merge(t *testing.T) {
 	type args struct {
-		other interface{}
+		other FaceData
 	}
 	tests := []struct {
 		name string
