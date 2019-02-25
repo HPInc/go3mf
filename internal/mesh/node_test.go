@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/go-gl/mathgl/mgl32"
-	gomock "github.com/golang/mock/gomock"
 	"github.com/qmuntal/go3mf/internal/geometry"
+	"github.com/stretchr/testify/mock"
 )
 
 func Test_nodeStructure_clear(t *testing.T) {
@@ -125,11 +125,7 @@ func Test_nodeStructure_checkSanity(t *testing.T) {
 }
 
 func Test_nodeStructure_merge(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-	mockMesh := NewMockMergeableMesh(mockCtrl)
 	type args struct {
-		other  mergeableNodes
 		matrix mgl32.Mat4
 	}
 	tests := []struct {
@@ -139,16 +135,18 @@ func Test_nodeStructure_merge(t *testing.T) {
 		want  []uint32
 		times uint32
 	}{
-		{"zero", new(nodeStructure), args{mockMesh, mgl32.Ident4()}, make([]uint32, 0), 0},
-		{"merged", new(nodeStructure), args{mockMesh, mgl32.Translate3D(1.0, 2.0, 3.0)}, []uint32{0, 1}, 2},
+		{"zero", new(nodeStructure), args{mgl32.Ident4()}, make([]uint32, 0), 0},
+		{"merged", new(nodeStructure), args{mgl32.Translate3D(1.0, 2.0, 3.0)}, []uint32{0, 1}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockMesh.EXPECT().NodeCount().Return(tt.times)
-			mockMesh.EXPECT().Node(gomock.Any()).Return(new(Node)).Times(int(tt.times))
-			got := tt.n.merge(tt.args.other, tt.args.matrix)
+			mockMesh := new(MockMergeableMesh)
+			mockMesh.On("NodeCount").Return(tt.times)
+			mockMesh.On("Node", mock.Anything).Return(new(Node))
+			got := tt.n.merge(mockMesh, tt.args.matrix)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("nodeStructure.merge() = %v, want %v", got, tt.want)
+				return
 			}
 		})
 	}

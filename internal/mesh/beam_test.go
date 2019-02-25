@@ -1,10 +1,9 @@
 package mesh
 
 import (
+	"github.com/stretchr/testify/mock"
 	"reflect"
 	"testing"
-
-	gomock "github.com/golang/mock/gomock"
 )
 
 func Test_newbeamLattice(t *testing.T) {
@@ -320,11 +319,7 @@ func Test_beamLattice_checkSanity(t *testing.T) {
 }
 
 func Test_beamLattice_merge(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-	mockMesh := NewMockMergeableMesh(mockCtrl)
 	type args struct {
-		other    mergeableBeams
 		newNodes []uint32
 	}
 	tests := []struct {
@@ -334,16 +329,17 @@ func Test_beamLattice_merge(t *testing.T) {
 		wantErr bool
 		times   uint32
 	}{
-		{"err", &beamLattice{beams: []*Beam{new(Beam)}}, args{mockMesh, []uint32{0, 0}}, true, 1},
-		{"zero", new(beamLattice), args{mockMesh, make([]uint32, 0)}, false, 0},
-		{"merged", new(beamLattice), args{mockMesh, []uint32{0, 1}}, false, 2},
+		{"err", &beamLattice{beams: []*Beam{new(Beam)}}, args{[]uint32{0, 0}}, true, 1},
+		{"zero", new(beamLattice), args{make([]uint32, 0)}, false, 0},
+		{"merged", new(beamLattice), args{[]uint32{0, 1}}, false, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockMesh.EXPECT().BeamCount().Return(tt.times)
+			mockMesh := new(MockMergeableMesh)
+			mockMesh.On("BeamCount").Return(tt.times)
 			beam := &Beam{NodeIndices: [2]uint32{0, 1}, Radius: [2]float64{1.0, 2.0}, CapMode: [2]BeamCapMode{CapModeButt, CapModeHemisphere}}
-			mockMesh.EXPECT().Beam(gomock.Any()).Return(beam).Times(int(tt.times))
-			if err := tt.b.merge(tt.args.other, tt.args.newNodes); (err != nil) != tt.wantErr {
+			mockMesh.On("Beam", mock.Anything).Return(beam)
+			if err := tt.b.merge(mockMesh, tt.args.newNodes); (err != nil) != tt.wantErr {
 				t.Errorf("beamLattice.merge() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
@@ -353,6 +349,7 @@ func Test_beamLattice_merge(t *testing.T) {
 					want.Index = uint32(i)
 					if got := tt.b.Beam(uint32(i)); *got != want {
 						t.Errorf("beamLattice.merge() = %v, want %v", got, want)
+						return
 					}
 				}
 			}

@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"testing"
 
-	gomock "github.com/golang/mock/gomock"
-	meshinfo "github.com/qmuntal/go3mf/internal/meshinfo"
+	"github.com/qmuntal/go3mf/internal/meshinfo"
+	"github.com/stretchr/testify/mock"
 )
 
 func Test_faceStructure_clear(t *testing.T) {
@@ -136,11 +136,7 @@ func Test_faceStructure_checkSanity(t *testing.T) {
 }
 
 func Test_faceStructure_merge(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-	mockMesh := NewMockMergeableMesh(mockCtrl)
 	type args struct {
-		other    mergeableFaces
 		newNodes []uint32
 	}
 	tests := []struct {
@@ -150,9 +146,9 @@ func Test_faceStructure_merge(t *testing.T) {
 		wantErr bool
 		times   uint32
 	}{
-		{"err", &faceStructure{maxFaceCount: 1, faces: make([]*Face, 1)}, args{mockMesh, []uint32{0, 1, 2}}, true, 1},
-		{"zero", new(faceStructure), args{mockMesh, make([]uint32, 0)}, false, 0},
-		{"merged", new(faceStructure), args{mockMesh, []uint32{0, 1, 2}}, false, 2},
+		{"err", &faceStructure{maxFaceCount: 1, faces: make([]*Face, 1)}, args{[]uint32{0, 1, 2}}, true, 1},
+		{"zero", new(faceStructure), args{make([]uint32, 0)}, false, 0},
+		{"merged", new(faceStructure), args{[]uint32{0, 1, 2}}, false, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -161,13 +157,15 @@ func Test_faceStructure_merge(t *testing.T) {
 					t.Error("faceStructure.merge() want panic")
 				}
 			}()
-			mockMesh.EXPECT().FaceCount().Return(tt.times)
-			mockMesh.EXPECT().InformationHandler().Return(meshinfo.NewHandler()).MaxTimes(int(tt.times))
+			mockMesh := new(MockMergeableMesh)
+			mockMesh.On("FaceCount").Return(tt.times)
+			mockMesh.On("InformationHandler").Return(meshinfo.NewHandler())
 			tt.f.informationHandler = meshinfo.NewHandler()
 			face := &Face{NodeIndices: [3]uint32{0, 1, 2}}
-			mockMesh.EXPECT().Face(gomock.Any()).Return(face).Times(int(tt.times))
-			if err := tt.f.merge(tt.args.other, tt.args.newNodes); (err != nil) != tt.wantErr {
+			mockMesh.On("Face", mock.Anything).Return(face)
+			if err := tt.f.merge(mockMesh, tt.args.newNodes); (err != nil) != tt.wantErr {
 				t.Errorf("faceStructure.merge() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
 		})
 	}

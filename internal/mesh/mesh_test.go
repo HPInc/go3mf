@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/go-gl/mathgl/mgl32"
-	gomock "github.com/golang/mock/gomock"
 	"github.com/qmuntal/go3mf/internal/meshinfo"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestNewMesh(t *testing.T) {
@@ -103,8 +103,6 @@ func TestMesh_ClearInformationHandler(t *testing.T) {
 }
 
 func TestMesh_Merge(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
 	type args struct {
 		mesh   *MockMergeableMesh
 		matrix mgl32.Mat4
@@ -117,18 +115,18 @@ func TestMesh_Merge(t *testing.T) {
 		faces   uint32
 		wantErr bool
 	}{
-		{"error1", new(Mesh), args{NewMockMergeableMesh(mockCtrl), mgl32.Ident4()}, 0, 0, false},
-		{"error2", new(Mesh), args{NewMockMergeableMesh(mockCtrl), mgl32.Ident4()}, 1, 0, false},
-		{"base", new(Mesh), args{NewMockMergeableMesh(mockCtrl), mgl32.Ident4()}, 1, 1, true},
+		{"error1", new(Mesh), args{new(MockMergeableMesh), mgl32.Ident4()}, 0, 0, false},
+		{"error2", new(Mesh), args{new(MockMergeableMesh), mgl32.Ident4()}, 1, 0, false},
+		{"base", new(Mesh), args{new(MockMergeableMesh), mgl32.Ident4()}, 1, 1, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.args.mesh.EXPECT().InformationHandler().Return(meshinfo.NewHandler()).MaxTimes(2)
-			tt.args.mesh.EXPECT().NodeCount().Return(tt.nodes)
-			tt.args.mesh.EXPECT().Node(gomock.Any()).Return(new(Node)).Times(int(tt.nodes))
-			tt.args.mesh.EXPECT().FaceCount().Return(tt.faces).MaxTimes(2)
-			tt.args.mesh.EXPECT().Face(gomock.Any()).Return(new(Face)).Times(int(tt.faces))
-			tt.args.mesh.EXPECT().BeamCount().Return(uint32(0)).MaxTimes(1)
+			tt.args.mesh.On("InformationHandler").Return(meshinfo.NewHandler())
+			tt.args.mesh.On("NodeCount").Return(tt.nodes)
+			tt.args.mesh.On("Node", mock.Anything).Return(new(Node))
+			tt.args.mesh.On("FaceCount").Return(tt.faces)
+			tt.args.mesh.On("Face", mock.Anything).Return(new(Face))
+			tt.args.mesh.On("BeamCount").Return(uint32(0))
 			if err := tt.m.Merge(tt.args.mesh, tt.args.matrix); (err != nil) != tt.wantErr {
 				t.Errorf("Mesh.Merge() error = %v, wantErr %v", err, tt.wantErr)
 			}
