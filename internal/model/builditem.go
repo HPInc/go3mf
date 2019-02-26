@@ -3,6 +3,7 @@ package model
 import (
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/gofrs/uuid"
+	"github.com/qmuntal/go3mf/internal/mesh"
 )
 
 // A BuildItem is an in memory representation of the 3MF build item.

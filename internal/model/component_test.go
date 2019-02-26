@@ -150,7 +150,7 @@ func TestComponent_MergeToMesh(t *testing.T) {
 		c    *Component
 		args args
 	}{
-		// TODO: Add test cases.
+		{"base", &Component{Object: newObject()}, args{new(mesh.Mesh), mgl32.Ident4()}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
