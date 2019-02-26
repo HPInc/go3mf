@@ -17,7 +17,7 @@ func TestModel_registerUUID(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"duplicated", &Model{usedUUIDs: map[uuid.UUID]struct{}{uuid.UUID{}: a}}, args{uuid.UUID{}}, true},
+		{"duplicated", &Model{usedUUIDs: map[uuid.UUID]struct{}{{}: a}}, args{uuid.UUID{}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

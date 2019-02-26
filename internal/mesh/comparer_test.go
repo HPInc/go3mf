@@ -70,12 +70,12 @@ func Test_comparer_compareNodes(t *testing.T) {
 		want bool
 	}{
 		{"diff", comparer{}, args{
-			&Mesh{nodeStructure: nodeStructure{nodes: []Node{Node{Position: mgl32.Vec3{1.0, 2.5, 3.33}}}}},
-			&Mesh{nodeStructure: nodeStructure{nodes: []Node{Node{Position: mgl32.Vec3{1.0, 3.5, 3.33}}}}},
+			&Mesh{nodeStructure: nodeStructure{nodes: []Node{{Position: mgl32.Vec3{1.0, 2.5, 3.33}}}}},
+			&Mesh{nodeStructure: nodeStructure{nodes: []Node{{Position: mgl32.Vec3{1.0, 3.5, 3.33}}}}},
 		}, false},
 		{"same", comparer{}, args{
-			&Mesh{nodeStructure: nodeStructure{nodes: []Node{Node{Position: mgl32.Vec3{1.0, 2.5, 3.33}}}}},
-			&Mesh{nodeStructure: nodeStructure{nodes: []Node{Node{Position: mgl32.Vec3{1.0, 2.5, 3.33}}}}},
+			&Mesh{nodeStructure: nodeStructure{nodes: []Node{{Position: mgl32.Vec3{1.0, 2.5, 3.33}}}}},
+			&Mesh{nodeStructure: nodeStructure{nodes: []Node{{Position: mgl32.Vec3{1.0, 2.5, 3.33}}}}},
 		}, true},
 	}
 	for _, tt := range tests {
@@ -99,12 +99,12 @@ func Test_comparer_compareFaces(t *testing.T) {
 		want bool
 	}{
 		{"diff", comparer{}, args{
-			&Mesh{faceStructure: faceStructure{faces: []Face{Face{NodeIndices: [3]uint32{0, 1, 2}}}}},
-			&Mesh{faceStructure: faceStructure{faces: []Face{Face{NodeIndices: [3]uint32{0, 1, 3}}}}},
+			&Mesh{faceStructure: faceStructure{faces: []Face{{NodeIndices: [3]uint32{0, 1, 2}}}}},
+			&Mesh{faceStructure: faceStructure{faces: []Face{{NodeIndices: [3]uint32{0, 1, 3}}}}},
 		}, false},
 		{"same", comparer{}, args{
-			&Mesh{faceStructure: faceStructure{faces: []Face{Face{NodeIndices: [3]uint32{0, 1, 2}}}}},
-			&Mesh{faceStructure: faceStructure{faces: []Face{Face{NodeIndices: [3]uint32{0, 1, 2}}}}},
+			&Mesh{faceStructure: faceStructure{faces: []Face{{NodeIndices: [3]uint32{0, 1, 2}}}}},
+			&Mesh{faceStructure: faceStructure{faces: []Face{{NodeIndices: [3]uint32{0, 1, 2}}}}},
 		}, true},
 	}
 	for _, tt := range tests {

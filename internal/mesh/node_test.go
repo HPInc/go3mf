@@ -84,8 +84,8 @@ func Test_nodeStructure_AddNode(t *testing.T) {
 		wantPanic bool
 	}{
 		{"existing", existingStruct, args{pos}, &Node{Index: 0, Position: pos}, false},
-		{"max", &nodeStructure{maxNodeCount: 1, nodes: []Node{Node{}}}, args{mgl32.Vec3{}}, &Node{}, true},
-		{"base", &nodeStructure{nodes: []Node{Node{}}}, args{mgl32.Vec3{1.0, 2.0, 3.0}}, &Node{
+		{"max", &nodeStructure{maxNodeCount: 1, nodes: []Node{{}}}, args{mgl32.Vec3{}}, &Node{}, true},
+		{"base", &nodeStructure{nodes: []Node{{}}}, args{mgl32.Vec3{1.0, 2.0, 3.0}}, &Node{
 			Index:    1,
 			Position: mgl32.Vec3{1.0, 2.0, 3.0},
 		}, false},
@@ -111,9 +111,9 @@ func Test_nodeStructure_checkSanity(t *testing.T) {
 		n    *nodeStructure
 		want bool
 	}{
-		{"max", &nodeStructure{maxNodeCount: 1, nodes: []Node{Node{}, Node{}}}, false},
-		{"badindex", &nodeStructure{nodes: []Node{Node{}, {Index: 2}}}, false},
-		{"good", &nodeStructure{nodes: []Node{Node{}, {Index: 1}}}, true},
+		{"max", &nodeStructure{maxNodeCount: 1, nodes: []Node{{}, {}}}, false},
+		{"badindex", &nodeStructure{nodes: []Node{{}, {Index: 2}}}, false},
+		{"good", &nodeStructure{nodes: []Node{{}, {Index: 1}}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

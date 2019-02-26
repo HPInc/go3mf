@@ -162,7 +162,7 @@ func (c *ComponentResource) IsValidForSlices(transform mgl32.Mat4) bool {
 // A MeshResource is an in memory representation of the 3MF mesh object.
 type MeshResource struct {
 	ObjectResource
-	Mesh *mesh.Mesh
+	Mesh                  *mesh.Mesh
 	BeamLatticeAttributes BeamLatticeAttributes
 }
 
@@ -197,11 +197,11 @@ func (c *MeshResource) IsValid() bool {
 	case SurfaceType:
 		return c.Mesh.BeamCount() == 0
 	}
-	
+
 	return false
 }
 
 // IsValidForSlices checks if the mesh resource are valid for slices.
-func (c *MeshResource) IsValidForSlices(t mgl32.Mat4) bool {	
+func (c *MeshResource) IsValidForSlices(t mgl32.Mat4) bool {
 	return c.SliceStackID == nil || t[2] == 0 && t[6] == 0 && t[8] == 0 && t[9] == 0 && t[10] == 1
 }

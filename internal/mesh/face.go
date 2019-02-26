@@ -49,7 +49,7 @@ func (f *faceStructure) AddFace(node1, node2, node3 uint32) (*Face, error) {
 	if f.informationHandler != nil {
 		f.informationHandler.AddFace(f.FaceCount())
 	}
-	return &f.faces[len(f.faces) - 1], nil
+	return &f.faces[len(f.faces)-1], nil
 }
 
 func (f *faceStructure) checkSanity(nodeCount uint32) bool {

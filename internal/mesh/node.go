@@ -53,7 +53,7 @@ func (n *nodeStructure) AddNode(position mgl32.Vec3) *Node {
 	if n.vectorTree != nil {
 		n.vectorTree.AddVector(position, nodeCount)
 	}
-	return &n.nodes[len(n.nodes) - 1]
+	return &n.nodes[len(n.nodes)-1]
 }
 
 func (n *nodeStructure) checkSanity() bool {

@@ -118,7 +118,7 @@ func (m *Mesh) FaceNodes(i uint32) (*Node, *Node, *Node) {
 
 // IsManifoldAndOriented returns true if the mesh is manifold and oriented.
 func (m *Mesh) IsManifoldAndOriented() bool {
-	if m.NodeCount() < 3 || m.FaceCount() < 3 || !m.CheckSanity()  {
+	if m.NodeCount() < 3 || m.FaceCount() < 3 || !m.CheckSanity() {
 		return false
 	}
 

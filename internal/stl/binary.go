@@ -76,7 +76,7 @@ func (e *binaryEncoder) encode(m *mesh.Mesh) error {
 		normal := geometry.FaceNormal(n1, n2, n3)
 		facet := binaryFace{
 			Normal:   [3]float32{normal.X(), normal.Y(), normal.Z()},
-			Vertices: [3][3]float32{[3]float32{n1.X(), n1.Y(), n1.Z()}, [3]float32{n2.X(), n2.Y(), n2.Z()}, [3]float32{n3.X(), n3.Y(), n3.Z()}},
+			Vertices: [3][3]float32{{n1.X(), n1.Y(), n1.Z()}, {n2.X(), n2.Y(), n2.Z()}, {n3.X(), n3.Y(), n3.Z()}},
 		}
 		err := binary.Write(e.w, binary.LittleEndian, facet)
 		if err != nil {

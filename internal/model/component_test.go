@@ -384,9 +384,9 @@ func TestMeshResource_IsValid(t *testing.T) {
 		{"empty", new(MeshResource), false},
 		{"other", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{Type: OtherType}}, false},
 		{"surface", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{Type: SurfaceType}}, true},
-		{"support", &MeshResource{Mesh: new(mesh.Mesh),ObjectResource: ObjectResource{Type: SupportType}}, true},
-		{"solidsupport", &MeshResource{Mesh: new(mesh.Mesh),ObjectResource: ObjectResource{Type: SolidSupportType}}, false},
-		{"model", &MeshResource{Mesh: new(mesh.Mesh),ObjectResource: ObjectResource{Type: ModelType}}, false},
+		{"support", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{Type: SupportType}}, true},
+		{"solidsupport", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{Type: SolidSupportType}}, false},
+		{"model", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{Type: ModelType}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
