@@ -187,7 +187,7 @@ func TestNewSliceStackResource(t *testing.T) {
 		want    *SliceStackResource
 		wantErr bool
 	}{
-		{"base", args{0, model, nil}, &SliceStackResource{Resource: Resource{Model: model, ResourceID: &PackageResourceID{"", 0, 1}}}, false},
+		{"base", args{0, model, nil}, &SliceStackResource{Resource: Resource{Model: model, ResourceID: &ResourceID{"", 0, 1}}}, false},
 		{"dup", args{0, model, nil}, nil, true},
 	}
 	for _, tt := range tests {

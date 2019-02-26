@@ -12,17 +12,17 @@ func TestPackageResourceID_SetID(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		p    *PackageResourceID
+		p    *ResourceID
 		args args
-		want *PackageResourceID
+		want *ResourceID
 	}{
-		{"base", new(PackageResourceID), args{"a", 6}, &PackageResourceID{path: "a", id: 6}},
+		{"base", new(ResourceID), args{"a", 6}, &ResourceID{path: "a", id: 6}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.p.SetID(tt.args.path, tt.args.id)
 			if !reflect.DeepEqual(tt.p, tt.want) {
-				t.Errorf("PackageResourceID.SetID() = %v, want %v", tt.p, tt.want)
+				t.Errorf("ResourceID.SetID() = %v, want %v", tt.p, tt.want)
 			}
 		})
 	}
@@ -31,21 +31,21 @@ func TestPackageResourceID_SetID(t *testing.T) {
 func TestPackageResourceID_ID(t *testing.T) {
 	tests := []struct {
 		name  string
-		p     *PackageResourceID
+		p     *ResourceID
 		want  string
 		want1 uint64
 	}{
-		{"new", new(PackageResourceID), "", 0},
-		{"base", &PackageResourceID{path: "a", id: 6}, "a", 6},
+		{"new", new(ResourceID), "", 0},
+		{"base", &ResourceID{path: "a", id: 6}, "a", 6},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, got1 := tt.p.ID()
 			if got != tt.want {
-				t.Errorf("PackageResourceID.ID() got = %v, want %v", got, tt.want)
+				t.Errorf("ResourceID.ID() got = %v, want %v", got, tt.want)
 			}
 			if got1 != tt.want1 {
-				t.Errorf("PackageResourceID.ID() got1 = %v, want %v", got1, tt.want1)
+				t.Errorf("ResourceID.ID() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}
@@ -57,16 +57,16 @@ func TestPackageResourceID_SetUniqueID(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		p    *PackageResourceID
+		p    *ResourceID
 		args args
 	}{
-		{"base", new(PackageResourceID), args{8}},
+		{"base", new(ResourceID), args{8}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.p.SetUniqueID(tt.args.id)
 			if tt.p.uniqueID != tt.args.id {
-				t.Errorf("PackageResourceID.SetUniqueID() = %v, want %v", tt.p.uniqueID, tt.args.id)
+				t.Errorf("ResourceID.SetUniqueID() = %v, want %v", tt.p.uniqueID, tt.args.id)
 			}
 		})
 	}
@@ -75,16 +75,16 @@ func TestPackageResourceID_SetUniqueID(t *testing.T) {
 func TestPackageResourceID_UniqueID(t *testing.T) {
 	tests := []struct {
 		name string
-		p    *PackageResourceID
+		p    *ResourceID
 		want uint64
 	}{
-		{"new", new(PackageResourceID), 0},
-		{"base", &PackageResourceID{uniqueID: 4}, 4},
+		{"new", new(ResourceID), 0},
+		{"base", &ResourceID{uniqueID: 4}, 4},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.p.UniqueID(); got != tt.want {
-				t.Errorf("PackageResourceID.UniqueID() = %v, want %v", got, tt.want)
+				t.Errorf("ResourceID.UniqueID() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -96,7 +96,7 @@ func Test_newResourceHandler(t *testing.T) {
 		want *ResourceHandler
 	}{
 		{"base", &ResourceHandler{
-			resourceIDs: make(map[uint64]*PackageResourceID, 0),
+			resourceIDs: make(map[uint64]*ResourceID, 0),
 		}},
 	}
 	for _, tt := range tests {
@@ -119,7 +119,7 @@ func TestResourceHandler_FindResourceID(t *testing.T) {
 		name    string
 		r       *ResourceHandler
 		args    args
-		wantVal *PackageResourceID
+		wantVal *ResourceID
 		wantOk  bool
 	}{
 		{"nook", rh, args{123}, nil, false},
@@ -139,7 +139,7 @@ func TestResourceHandler_FindResourceID(t *testing.T) {
 	}
 }
 
-func TestResourceHandler_FindResourceIDByID(t *testing.T) {
+func TestResourceHandler_FindResourcePath(t *testing.T) {
 	rh := newResourceHandler()
 	r1, _ := rh.NewResourceID("a", 11)
 	r2, _ := rh.NewResourceID("b", 12)
@@ -151,7 +151,7 @@ func TestResourceHandler_FindResourceIDByID(t *testing.T) {
 		name    string
 		r       *ResourceHandler
 		args    args
-		wantVal *PackageResourceID
+		wantVal *ResourceID
 		wantOk  bool
 	}{
 		{"nook", rh, args{"abc", 11}, nil, false},
@@ -160,12 +160,12 @@ func TestResourceHandler_FindResourceIDByID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotVal, gotOk := tt.r.FindResourceIDByID(tt.args.path, tt.args.id)
+			gotVal, gotOk := tt.r.FindResourcePath(tt.args.path, tt.args.id)
 			if !reflect.DeepEqual(gotVal, tt.wantVal) {
-				t.Errorf("ResourceHandler.FindResourceIDByID() gotVal = %v, want %v", gotVal, tt.wantVal)
+				t.Errorf("ResourceHandler.FindResourcePath() gotVal = %v, want %v", gotVal, tt.wantVal)
 			}
 			if gotOk != tt.wantOk {
-				t.Errorf("ResourceHandler.FindResourceIDByID() gotOk = %v, want %v", gotOk, tt.wantOk)
+				t.Errorf("ResourceHandler.FindResourcePath() gotOk = %v, want %v", gotOk, tt.wantOk)
 			}
 		})
 	}
@@ -181,11 +181,11 @@ func TestResourceHandler_NewResourceID(t *testing.T) {
 		name    string
 		r       *ResourceHandler
 		args    args
-		want    *PackageResourceID
+		want    *ResourceID
 		wantErr bool
 	}{
-		{"add1", rh, args{"a", 12}, &PackageResourceID{"a", 12, 1}, false},
-		{"add2", rh, args{"b", 13}, &PackageResourceID{"b", 13, 2}, false},
+		{"add1", rh, args{"a", 12}, &ResourceID{"a", 12, 1}, false},
+		{"add2", rh, args{"b", 13}, &ResourceID{"b", 13, 2}, false},
 		{"err", rh, args{"b", 13}, nil, true},
 	}
 	for _, tt := range tests {

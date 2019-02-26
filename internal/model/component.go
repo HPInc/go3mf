@@ -9,7 +9,7 @@ import (
 // Object defines a composable object.
 type Object interface {
 	RootModel() *Model
-	MergeToMesh(*mesh.Mesh, mgl32.Mat4)
+	MergeToMesh(*mesh.Mesh, mgl32.Mat4) error
 	ID() uint64
 	IsValid() bool
 	IsValidForSlices(mgl32.Mat4) bool
@@ -20,7 +20,7 @@ type ObjectResource struct {
 	Resource
 	Name            string
 	PartNumber      string
-	SliceStackID    *PackageResourceID
+	SliceStackID    *ResourceID
 	SliceResoultion SliceResolution
 	Thumbnail       string
 	DefaultProperty interface{}
@@ -63,7 +63,8 @@ func (o *ObjectResource) ID() uint64 {
 }
 
 // MergeToMesh left on purpose empty to be redefined in embedding class.
-func (o *ObjectResource) MergeToMesh(m *mesh.Mesh, transform mgl32.Mat4) {
+func (o *ObjectResource) MergeToMesh(m *mesh.Mesh, transform mgl32.Mat4) error {
+	return nil
 }
 
 // IsValid should be redefined in embedding class.
@@ -103,8 +104,8 @@ func (c *Component) HasTransform() bool {
 }
 
 // MergeToMesh merges a mesh with the component.
-func (c *Component) MergeToMesh(m *mesh.Mesh, transform mgl32.Mat4) {
-	c.Object.MergeToMesh(m, c.Transform.Mul4(transform))
+func (c *Component) MergeToMesh(m *mesh.Mesh, transform mgl32.Mat4) error {
+	return c.Object.MergeToMesh(m, c.Transform.Mul4(transform))
 }
 
 // A ComponentResource resource is an in memory representation of the 3MF component object.
@@ -125,10 +126,13 @@ func NewComponentResource(id uint64, model *Model) (*ComponentResource, error) {
 }
 
 // MergeToMesh merges the mesh with all the components.
-func (c *ComponentResource) MergeToMesh(m *mesh.Mesh, transform mgl32.Mat4) {
+func (c *ComponentResource) MergeToMesh(m *mesh.Mesh, transform mgl32.Mat4) error {
 	for _, comp := range c.Components {
-		comp.MergeToMesh(m, transform)
+		if err := comp.MergeToMesh(m, transform); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 // IsValid checks if the component resource and all its child are valid.
@@ -178,8 +182,8 @@ func NewMeshResource(id uint64, model *Model) (*MeshResource, error) {
 }
 
 // MergeToMesh merges the resource with the mesh.
-func (c *MeshResource) MergeToMesh(m *mesh.Mesh, transform mgl32.Mat4) {
-	c.Mesh.Merge(m, transform)
+func (c *MeshResource) MergeToMesh(m *mesh.Mesh, transform mgl32.Mat4) error {
+	return c.Mesh.Merge(m, transform)
 }
 
 // IsValid checks if the mesh resource are valid.

@@ -102,7 +102,7 @@ func TestNewTexture2DResource(t *testing.T) {
 		wantErr bool
 	}{
 		{"base", args{0, model}, &Texture2DResource{
-			Resource:    Resource{Model: model, ResourceID: &PackageResourceID{"", 0, 1}},
+			Resource:    Resource{Model: model, ResourceID: &ResourceID{"", 0, 1}},
 			ContentType: UnknownTexture,
 			boxWidth:    1,
 			boxHeight:   1,

@@ -11,7 +11,6 @@ type BuildItem struct {
 	Object     Object
 	Transform  mgl32.Mat4
 	PartNumber string
-	Handle     uint32
 	uuid       uuid.UUID
 }
 
@@ -40,6 +39,6 @@ func (b *BuildItem) IsValidForSlices() bool {
 }
 
 // MergeToMesh merges the build object with the mesh.
-func (b *BuildItem) MergeToMesh(m *mesh.Mesh) {
-	b.Object.MergeToMesh(m, b.Transform)
+func (b *BuildItem) MergeToMesh(m *mesh.Mesh) error {
+	return b.Object.MergeToMesh(m, b.Transform)
 }

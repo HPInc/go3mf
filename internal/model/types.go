@@ -9,6 +9,26 @@ import (
 
 const (
 	relTypeTexture3D = "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture"
+	relTypeThumbnail = "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail"
+	langUS           = "en-US"
+)
+
+// Units define the allowed model units.
+type Units string
+
+const (
+	// Micrometer for microns
+	Micrometer Units = "micron"
+	// Millimeter for millimeter
+	Millimeter = "millimeter"
+	// Centimeter for centimeter
+	Centimeter = "centimeter"
+	// Inch for inch
+	Inch = "inch"
+	// Foot for foot
+	Foot = "foot"
+	// Meter for meter
+	Meter = "meter"
 )
 
 // ClipMode defines the clipping modes for the beam lattices.
@@ -111,8 +131,8 @@ type BeamLatticeAttributes struct {
 	ClipMode                ClipMode
 	HasClippingMeshID       bool
 	HasRepresentationMeshID bool
-	ClippingMeshID          *PackageResourceID
-	RepresentationMeshID    *PackageResourceID
+	ClippingMeshID          *ResourceID
+	RepresentationMeshID    *ResourceID
 }
 
 func registerUUID(old, new uuid.UUID, model *Model) error {

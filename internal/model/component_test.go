@@ -26,9 +26,9 @@ func (o *MockObject) RootModel() *Model {
 	o.Called()
 	return new(Model)
 }
-func (o *MockObject) MergeToMesh(args0 *mesh.Mesh, args1 mgl32.Mat4) {
+func (o *MockObject) MergeToMesh(args0 *mesh.Mesh, args1 mgl32.Mat4) error {
 	o.Called(args0, args1)
-	return
+	return nil
 }
 func (o *MockObject) ID() uint64 {
 	o.Called()
@@ -245,7 +245,7 @@ func TestObjectResource_ID(t *testing.T) {
 		o    *ObjectResource
 		want uint64
 	}{
-		{"base", &ObjectResource{Resource: Resource{ResourceID: &PackageResourceID{uniqueID: 1}}}, 1},
+		{"base", &ObjectResource{Resource: Resource{ResourceID: &ResourceID{uniqueID: 1}}}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -306,7 +306,7 @@ func TestNewComponentResource(t *testing.T) {
 		want    *ComponentResource
 		wantErr bool
 	}{
-		{"base", args{0, model}, &ComponentResource{ObjectResource: ObjectResource{Resource: Resource{Model: model, ResourceID: &PackageResourceID{"", 0, 1}}}}, false},
+		{"base", args{0, model}, &ComponentResource{ObjectResource: ObjectResource{Resource: Resource{Model: model, ResourceID: &ResourceID{"", 0, 1}}}}, false},
 		{"dup", args{0, model}, nil, true},
 	}
 	for _, tt := range tests {
@@ -334,8 +334,8 @@ func TestMeshResource_IsValidForSlices(t *testing.T) {
 		want bool
 	}{
 		{"empty", new(MeshResource), args{mgl32.Mat4{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}}, true},
-		{"valid", &MeshResource{ObjectResource: ObjectResource{SliceStackID: &PackageResourceID{}}}, args{mgl32.Mat4{1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1}}, true},
-		{"invalid", &MeshResource{ObjectResource: ObjectResource{SliceStackID: &PackageResourceID{}}}, args{mgl32.Mat4{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}}, false},
+		{"valid", &MeshResource{ObjectResource: ObjectResource{SliceStackID: &ResourceID{}}}, args{mgl32.Mat4{1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1}}, true},
+		{"invalid", &MeshResource{ObjectResource: ObjectResource{SliceStackID: &ResourceID{}}}, args{mgl32.Mat4{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -358,7 +358,7 @@ func TestNewMeshResource(t *testing.T) {
 		want    *MeshResource
 		wantErr bool
 	}{
-		{"base", args{0, model}, &MeshResource{ObjectResource: ObjectResource{Resource: Resource{Model: model, ResourceID: &PackageResourceID{"", 0, 1}}}}, false},
+		{"base", args{0, model}, &MeshResource{ObjectResource: ObjectResource{Resource: Resource{Model: model, ResourceID: &ResourceID{"", 0, 1}}}}, false},
 		{"dup", args{0, model}, nil, true},
 	}
 	for _, tt := range tests {
