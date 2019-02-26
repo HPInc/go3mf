@@ -16,12 +16,12 @@ type Node struct {
 
 type nodeStructure struct {
 	vectorTree   *geometry.VectorTree
-	nodes        []*Node
+	nodes        []Node
 	maxNodeCount uint32 // If 0 MaxNodeCount will be used.
 }
 
 func (n *nodeStructure) clear() {
-	n.nodes = make([]*Node, 0)
+	n.nodes = make([]Node, 0)
 }
 
 // NodeCount returns the number of nodes in the mesh.
@@ -31,7 +31,7 @@ func (n *nodeStructure) NodeCount() uint32 {
 
 // Node retrieve the node with the target index.
 func (n *nodeStructure) Node(index uint32) *Node {
-	return n.nodes[uint32(index)]
+	return &n.nodes[uint32(index)]
 }
 
 // AddNode adds a node the the mesh at the target position.
@@ -46,15 +46,14 @@ func (n *nodeStructure) AddNode(position mgl32.Vec3) *Node {
 		panic(new(MaxNodeError))
 	}
 
-	node := &Node{
+	n.nodes = append(n.nodes, Node{
 		Index:    nodeCount,
 		Position: position,
-	}
-	n.nodes = append(n.nodes, node)
+	})
 	if n.vectorTree != nil {
-		n.vectorTree.AddVector(node.Position, node.Index)
+		n.vectorTree.AddVector(position, nodeCount)
 	}
-	return node
+	return &n.nodes[len(n.nodes) - 1]
 }
 
 func (n *nodeStructure) checkSanity() bool {
@@ -62,9 +61,8 @@ func (n *nodeStructure) checkSanity() bool {
 	if nodeCount > n.getMaxNodeCount() {
 		return false
 	}
-	for i := 0; i < int(nodeCount); i++ {
-		node := n.Node(uint32(i))
-		if node.Index != uint32(i) {
+	for i := uint32(0); i < nodeCount; i++ {
+		if n.Node(i).Index != i {
 			return false
 		}
 	}
@@ -78,8 +76,8 @@ func (n *nodeStructure) merge(other mergeableNodes, matrix mgl32.Mat4) []uint32 
 		return newNodes
 	}
 
-	for i := 0; i < int(nodeCount); i++ {
-		node := other.Node(uint32(i))
+	for i := uint32(0); i < nodeCount; i++ {
+		node := other.Node(i)
 		position := mgl32.TransformCoordinate(node.Position, matrix)
 		newNodes[i] = n.AddNode(position).Index
 	}

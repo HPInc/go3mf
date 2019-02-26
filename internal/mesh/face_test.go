@@ -13,7 +13,7 @@ func Test_faceStructure_clear(t *testing.T) {
 		name string
 		f    *faceStructure
 	}{
-		{"base", &faceStructure{faces: make([]*Face, 2)}},
+		{"base", &faceStructure{faces: make([]Face, 2)}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -32,7 +32,7 @@ func Test_faceStructure_FaceCount(t *testing.T) {
 		want uint32
 	}{
 		{"zero", new(faceStructure), 0},
-		{"base", &faceStructure{faces: make([]*Face, 2)}, 2},
+		{"base", &faceStructure{faces: make([]Face, 2)}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -45,8 +45,8 @@ func Test_faceStructure_FaceCount(t *testing.T) {
 
 func Test_faceStructure_Face(t *testing.T) {
 	f := new(faceStructure)
-	f.faces = append(f.faces, new(Face))
-	f.faces = append(f.faces, new(Face))
+	f.faces = append(f.faces, Face{})
+	f.faces = append(f.faces, Face{})
 	type args struct {
 		index uint32
 	}
@@ -56,8 +56,8 @@ func Test_faceStructure_Face(t *testing.T) {
 		args args
 		want *Face
 	}{
-		{"zero", f, args{0}, f.faces[0]},
-		{"one", f, args{1}, f.faces[1]},
+		{"zero", f, args{0}, &f.faces[0]},
+		{"one", f, args{1}, &f.faces[1]},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -82,11 +82,11 @@ func Test_faceStructure_AddFace(t *testing.T) {
 		wantErr   bool
 		wantPanic bool
 	}{
-		{"max", &faceStructure{maxFaceCount: 1, faces: make([]*Face, 1)}, args{0, 1, 2}, nil, false, true},
+		{"max", &faceStructure{maxFaceCount: 1, faces: make([]Face, 1)}, args{0, 1, 2}, nil, false, true},
 		{"duplicated0-1", new(faceStructure), args{1, 1, 2}, nil, true, false},
 		{"duplicated0-2", new(faceStructure), args{1, 2, 1}, nil, true, false},
 		{"duplicated1-2", new(faceStructure), args{2, 1, 1}, nil, true, false},
-		{"base", &faceStructure{informationHandler: meshinfo.NewHandler(), faces: []*Face{new(Face)}}, args{0, 1, 2}, &Face{Index: 1, NodeIndices: [3]uint32{0, 1, 2}}, false, false},
+		{"base", &faceStructure{informationHandler: meshinfo.NewHandler(), faces: []Face{{}}}, args{0, 1, 2}, &Face{Index: 1, NodeIndices: [3]uint32{0, 1, 2}}, false, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -117,14 +117,14 @@ func Test_faceStructure_checkSanity(t *testing.T) {
 		args args
 		want bool
 	}{
-		{"max", &faceStructure{maxFaceCount: 1, faces: make([]*Face, 2)}, args{1}, false},
-		{"i0==i1", &faceStructure{faces: []*Face{{NodeIndices: [3]uint32{1, 1, 2}}}}, args{3}, false},
-		{"i0==i2", &faceStructure{faces: []*Face{{NodeIndices: [3]uint32{1, 2, 1}}}}, args{3}, false},
-		{"i1==i2", &faceStructure{faces: []*Face{{NodeIndices: [3]uint32{2, 1, 1}}}}, args{3}, false},
-		{"i0big", &faceStructure{faces: []*Face{{NodeIndices: [3]uint32{3, 1, 2}}}}, args{3}, false},
-		{"i1big", &faceStructure{faces: []*Face{{NodeIndices: [3]uint32{0, 3, 2}}}}, args{3}, false},
-		{"i2big", &faceStructure{faces: []*Face{{NodeIndices: [3]uint32{0, 1, 3}}}}, args{3}, false},
-		{"good", &faceStructure{faces: []*Face{{NodeIndices: [3]uint32{0, 1, 2}}}}, args{3}, true},
+		{"max", &faceStructure{maxFaceCount: 1, faces: make([]Face, 2)}, args{1}, false},
+		{"i0==i1", &faceStructure{faces: []Face{{NodeIndices: [3]uint32{1, 1, 2}}}}, args{3}, false},
+		{"i0==i2", &faceStructure{faces: []Face{{NodeIndices: [3]uint32{1, 2, 1}}}}, args{3}, false},
+		{"i1==i2", &faceStructure{faces: []Face{{NodeIndices: [3]uint32{2, 1, 1}}}}, args{3}, false},
+		{"i0big", &faceStructure{faces: []Face{{NodeIndices: [3]uint32{3, 1, 2}}}}, args{3}, false},
+		{"i1big", &faceStructure{faces: []Face{{NodeIndices: [3]uint32{0, 3, 2}}}}, args{3}, false},
+		{"i2big", &faceStructure{faces: []Face{{NodeIndices: [3]uint32{0, 1, 3}}}}, args{3}, false},
+		{"good", &faceStructure{faces: []Face{{NodeIndices: [3]uint32{0, 1, 2}}}}, args{3}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -146,7 +146,7 @@ func Test_faceStructure_merge(t *testing.T) {
 		wantErr bool
 		times   uint32
 	}{
-		{"err", &faceStructure{maxFaceCount: 1, faces: make([]*Face, 1)}, args{[]uint32{0, 1, 2}}, true, 1},
+		{"err", &faceStructure{maxFaceCount: 1, faces: make([]Face, 1)}, args{[]uint32{0, 1, 2}}, true, 1},
 		{"zero", new(faceStructure), args{make([]uint32, 0)}, false, 0},
 		{"merged", new(faceStructure), args{[]uint32{0, 1, 2}}, false, 2},
 	}

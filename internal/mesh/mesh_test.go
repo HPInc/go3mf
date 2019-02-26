@@ -141,9 +141,9 @@ func TestMesh_CheckSanity(t *testing.T) {
 		want bool
 	}{
 		{"new", NewMesh(), true},
-		{"nodefail", &Mesh{nodeStructure: nodeStructure{maxNodeCount: 1, nodes: make([]*Node, 2)}}, false},
-		{"facefail", &Mesh{faceStructure: faceStructure{maxFaceCount: 1, faces: make([]*Face, 2)}}, false},
-		{"beamfail", &Mesh{beamLattice: beamLattice{maxBeamCount: 1, beams: make([]*Beam, 2)}}, false},
+		{"nodefail", &Mesh{nodeStructure: nodeStructure{maxNodeCount: 1, nodes: make([]Node, 2)}}, false},
+		{"facefail", &Mesh{faceStructure: faceStructure{maxFaceCount: 1, faces: make([]Face, 2)}}, false},
+		{"beamfail", &Mesh{beamLattice: beamLattice{maxBeamCount: 1, beams: make([]Beam, 2)}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -250,6 +250,49 @@ func TestMesh_FaceNodes(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got2, tt.want2) {
 				t.Errorf("Mesh.FaceNodes() got2 = %v, want %v", got2, tt.want2)
+			}
+		})
+	}
+}
+
+func TestMesh_IsManifoldAndOriented(t *testing.T) {
+	tests := []struct {
+		name string
+		m    *Mesh
+		want bool
+	}{
+		{"valid", &Mesh{
+			nodeStructure: nodeStructure{nodes: []Node{{Index: 0}, {Index: 1}, {Index: 2}, {Index: 3}}},
+			faceStructure: faceStructure{faces: []Face{
+				{NodeIndices: [3]uint32{0, 1, 2}},
+				{NodeIndices: [3]uint32{0, 3, 1}},
+				{NodeIndices: [3]uint32{0, 2, 3}},
+				{NodeIndices: [3]uint32{1, 3, 2}},
+			}},
+		}, true},
+		{"nonmanifold", &Mesh{
+			nodeStructure: nodeStructure{nodes: []Node{{Index: 0}, {Index: 1}, {Index: 2}, {Index: 3}}},
+			faceStructure: faceStructure{faces: []Face{
+				{NodeIndices: [3]uint32{0, 1, 2}},
+				{NodeIndices: [3]uint32{0, 1, 3}},
+				{NodeIndices: [3]uint32{0, 2, 3}},
+				{NodeIndices: [3]uint32{1, 2, 3}},
+			}},
+		}, false},
+		{"empty", NewMesh(), false},
+		{"2nodes", &Mesh{
+			nodeStructure: nodeStructure{nodes: make([]Node, 2)},
+			faceStructure: faceStructure{faces: make([]Face, 3)},
+		}, false},
+		{"2faces", &Mesh{
+			nodeStructure: nodeStructure{nodes: make([]Node, 3)},
+			faceStructure: faceStructure{faces: make([]Face, 2)},
+		}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.IsManifoldAndOriented(); got != tt.want {
+				t.Errorf("Mesh.IsManifoldAndOriented() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -14,7 +14,7 @@ func Test_nodeStructure_clear(t *testing.T) {
 		name string
 		n    *nodeStructure
 	}{
-		{"base", &nodeStructure{nodes: make([]*Node, 2)}},
+		{"base", &nodeStructure{nodes: make([]Node, 2)}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -33,7 +33,7 @@ func Test_nodeStructure_NodeCount(t *testing.T) {
 		want uint32
 	}{
 		{"zero", new(nodeStructure), 0},
-		{"base", &nodeStructure{nodes: make([]*Node, 2)}, 2},
+		{"base", &nodeStructure{nodes: make([]Node, 2)}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -46,8 +46,8 @@ func Test_nodeStructure_NodeCount(t *testing.T) {
 
 func Test_nodeStructure_Node(t *testing.T) {
 	n := new(nodeStructure)
-	n.nodes = append(n.nodes, new(Node))
-	n.nodes = append(n.nodes, new(Node))
+	n.nodes = append(n.nodes, Node{})
+	n.nodes = append(n.nodes, Node{})
 	type args struct {
 		index uint32
 	}
@@ -57,8 +57,8 @@ func Test_nodeStructure_Node(t *testing.T) {
 		args args
 		want *Node
 	}{
-		{"zero", n, args{0}, n.nodes[0]},
-		{"one", n, args{1}, n.nodes[1]},
+		{"zero", n, args{0}, &n.nodes[0]},
+		{"one", n, args{1}, &n.nodes[1]},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -84,8 +84,8 @@ func Test_nodeStructure_AddNode(t *testing.T) {
 		wantPanic bool
 	}{
 		{"existing", existingStruct, args{pos}, &Node{Index: 0, Position: pos}, false},
-		{"max", &nodeStructure{maxNodeCount: 1, nodes: []*Node{new(Node)}}, args{mgl32.Vec3{}}, nil, true},
-		{"base", &nodeStructure{nodes: []*Node{new(Node)}}, args{mgl32.Vec3{1.0, 2.0, 3.0}}, &Node{
+		{"max", &nodeStructure{maxNodeCount: 1, nodes: []Node{Node{}}}, args{mgl32.Vec3{}}, &Node{}, true},
+		{"base", &nodeStructure{nodes: []Node{Node{}}}, args{mgl32.Vec3{1.0, 2.0, 3.0}}, &Node{
 			Index:    1,
 			Position: mgl32.Vec3{1.0, 2.0, 3.0},
 		}, false},
@@ -111,9 +111,9 @@ func Test_nodeStructure_checkSanity(t *testing.T) {
 		n    *nodeStructure
 		want bool
 	}{
-		{"max", &nodeStructure{maxNodeCount: 1, nodes: []*Node{new(Node), new(Node)}}, false},
-		{"badindex", &nodeStructure{nodes: []*Node{new(Node), {Index: 2}}}, false},
-		{"good", &nodeStructure{nodes: []*Node{new(Node), {Index: 1}}}, true},
+		{"max", &nodeStructure{maxNodeCount: 1, nodes: []Node{Node{}, Node{}}}, false},
+		{"badindex", &nodeStructure{nodes: []Node{Node{}, {Index: 2}}}, false},
+		{"good", &nodeStructure{nodes: []Node{Node{}, {Index: 1}}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -10,7 +10,7 @@ func TestNewPairMatch(t *testing.T) {
 		name string
 		want *PairMatch
 	}{
-		{"new", &PairMatch{map[pairEntry]int32{}}},
+		{"new", &PairMatch{map[pairEntry]uint32{}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -24,9 +24,9 @@ func TestNewPairMatch(t *testing.T) {
 func TestPairMatch_AddMatch(t *testing.T) {
 	p := NewPairMatch()
 	type args struct {
-		data1 int32
-		data2 int32
-		param int32
+		data1 uint32
+		data2 uint32
+		param uint32
 	}
 	tests := []struct {
 		name string
@@ -57,8 +57,8 @@ func TestPairMatch_DeleteMatch(t *testing.T) {
 	p := NewPairMatch()
 	p.AddMatch(1, 2, 5)
 	type args struct {
-		data1 int32
-		data2 int32
+		data1 uint32
+		data2 uint32
 	}
 	tests := []struct {
 		name string
@@ -81,8 +81,8 @@ func TestPairMatch_DeleteMatch(t *testing.T) {
 
 func Test_newPairEntry(t *testing.T) {
 	type args struct {
-		data1 int32
-		data2 int32
+		data1 uint32
+		data2 uint32
 	}
 	tests := []struct {
 		name string

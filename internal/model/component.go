@@ -113,7 +113,7 @@ type ComponentResource struct {
 	Components []*Component
 }
 
-// NewComponentResource returns a new object resource.
+// NewComponentResource returns a new component resource.
 func NewComponentResource(id uint64, model *Model) (*ComponentResource, error) {
 	r, err := newObjectResource(id, model)
 	if err != nil {
@@ -166,6 +166,17 @@ type MeshResource struct {
 	BeamLatticeAttributes BeamLatticeAttributes
 }
 
+// NewMeshResource returns a new mesh resource.
+func NewMeshResource(id uint64, model *Model) (*MeshResource, error) {
+	r, err := newObjectResource(id, model)
+	if err != nil {
+		return nil, err
+	}
+	return &MeshResource{
+		ObjectResource: *r,
+	}, nil
+}
+
 // MergeToMesh merges the resource with the mesh.
 func (c *MeshResource) MergeToMesh(m *mesh.Mesh, transform mgl32.Mat4) {
 	c.Mesh.Merge(m, transform)
@@ -173,15 +184,18 @@ func (c *MeshResource) MergeToMesh(m *mesh.Mesh, transform mgl32.Mat4) {
 
 // IsValid checks if the mesh resource are valid.
 func (c *MeshResource) IsValid() bool {
+	if c.Mesh == nil {
+		return false
+	}
 	switch c.Type {
 	case ModelType:
-		return true
+		return c.Mesh.IsManifoldAndOriented()
 	case SupportType:
-		return true
+		return c.Mesh.BeamCount() == 0
 	case SolidSupportType:
-		return true
+		return c.Mesh.IsManifoldAndOriented()
 	case SurfaceType:
-		return true
+		return c.Mesh.BeamCount() == 0
 	}
 	
 	return false
@@ -190,12 +204,4 @@ func (c *MeshResource) IsValid() bool {
 // IsValidForSlices checks if the mesh resource are valid for slices.
 func (c *MeshResource) IsValidForSlices(t mgl32.Mat4) bool {	
 	return c.SliceStackID == nil || t[2] == 0 && t[6] == 0 && t[8] == 0 && t[9] == 0 && t[10] == 1
-}
-
-func (c *MeshResource) IsManifoldAndOriented() bool {
-	if !c.Mesh.CheckSanity() {
-		return false
-	}
-
-	return true
 }

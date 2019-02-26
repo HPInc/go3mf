@@ -53,8 +53,8 @@ func newnodeColorContainer(currentFaceCount uint32) *nodeColorContainer {
 	m := &nodeColorContainer{
 		dataBlocks: make([]*NodeColor, 0, int(currentFaceCount)),
 	}
-	for i := 1; i <= int(currentFaceCount); i++ {
-		m.AddFaceData(uint32(i))
+	for i := uint32(1); i <= currentFaceCount; i++ {
+		m.AddFaceData(i)
 	}
 	return m
 }

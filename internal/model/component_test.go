@@ -306,7 +306,7 @@ func TestNewComponentResource(t *testing.T) {
 		want    *ComponentResource
 		wantErr bool
 	}{
-		{"base", args{0, model}, &ComponentResource{ObjectResource: ObjectResource{ Resource: Resource{Model: model, ResourceID: &PackageResourceID{"", 0, 1}}}}, false},
+		{"base", args{0, model}, &ComponentResource{ObjectResource: ObjectResource{Resource: Resource{Model: model, ResourceID: &PackageResourceID{"", 0, 1}}}}, false},
 		{"dup", args{0, model}, nil, true},
 	}
 	for _, tt := range tests {
@@ -318,6 +318,80 @@ func TestNewComponentResource(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewComponentResource() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMeshResource_IsValidForSlices(t *testing.T) {
+	type args struct {
+		t mgl32.Mat4
+	}
+	tests := []struct {
+		name string
+		c    *MeshResource
+		args args
+		want bool
+	}{
+		{"empty", new(MeshResource), args{mgl32.Mat4{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}}, true},
+		{"valid", &MeshResource{ObjectResource: ObjectResource{SliceStackID: &PackageResourceID{}}}, args{mgl32.Mat4{1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1}}, true},
+		{"invalid", &MeshResource{ObjectResource: ObjectResource{SliceStackID: &PackageResourceID{}}}, args{mgl32.Mat4{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.c.IsValidForSlices(tt.args.t); got != tt.want {
+				t.Errorf("MeshResource.IsValidForSlices() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNewMeshResource(t *testing.T) {
+	model := new(Model)
+	type args struct {
+		id    uint64
+		model *Model
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *MeshResource
+		wantErr bool
+	}{
+		{"base", args{0, model}, &MeshResource{ObjectResource: ObjectResource{Resource: Resource{Model: model, ResourceID: &PackageResourceID{"", 0, 1}}}}, false},
+		{"dup", args{0, model}, nil, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := NewMeshResource(tt.args.id, tt.args.model)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NewMeshResource() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewMeshResource() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMeshResource_IsValid(t *testing.T) {
+	tests := []struct {
+		name string
+		c    *MeshResource
+		want bool
+	}{
+		{"empty", new(MeshResource), false},
+		{"other", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{Type: OtherType}}, false},
+		{"surface", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{Type: SurfaceType}}, true},
+		{"support", &MeshResource{Mesh: new(mesh.Mesh),ObjectResource: ObjectResource{Type: SupportType}}, true},
+		{"solidsupport", &MeshResource{Mesh: new(mesh.Mesh),ObjectResource: ObjectResource{Type: SolidSupportType}}, false},
+		{"model", &MeshResource{Mesh: new(mesh.Mesh),ObjectResource: ObjectResource{Type: ModelType}}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.c.IsValid(); got != tt.want {
+				t.Errorf("MeshResource.IsValid() = %v, want %v", got, tt.want)
 			}
 		})
 	}

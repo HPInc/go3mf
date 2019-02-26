@@ -115,3 +115,45 @@ func (m *Mesh) FaceNodes(i uint32) (*Node, *Node, *Node) {
 	face := m.Face(uint32(i))
 	return m.Node(face.NodeIndices[0]), m.Node(face.NodeIndices[1]), m.Node(face.NodeIndices[2])
 }
+
+// IsManifoldAndOriented returns true if the mesh is manifold and oriented.
+func (m *Mesh) IsManifoldAndOriented() bool {
+	if m.NodeCount() < 3 || m.FaceCount() < 3 || !m.CheckSanity()  {
+		return false
+	}
+
+	var edgeCounter uint32
+	pairMatching := geometry.NewPairMatch()
+	for i := uint32(0); i < m.FaceCount(); i++ {
+		face := m.Face(i)
+		for j := uint32(0); j < 3; j++ {
+			n1, n2 := face.NodeIndices[j], face.NodeIndices[(j+1)%3]
+			if _, ok := pairMatching.CheckMatch(n1, n2); !ok {
+				pairMatching.AddMatch(n1, n2, edgeCounter)
+				edgeCounter++
+			}
+		}
+	}
+
+	positive, negative := make([]uint32, edgeCounter), make([]uint32, edgeCounter)
+	for i := uint32(0); i < m.FaceCount(); i++ {
+		face := m.Face(i)
+		for j := uint32(0); j < 3; j++ {
+			n1, n2 := face.NodeIndices[j], face.NodeIndices[(j+1)%3]
+			edgeIndex, _ := pairMatching.CheckMatch(n1, n2)
+			if n1 <= n2 {
+				positive[edgeIndex]++
+			} else {
+				negative[edgeIndex]++
+			}
+		}
+	}
+
+	for i := uint32(0); i < edgeCounter; i++ {
+		if positive[i] != 1 || negative[i] != 1 {
+			return false
+		}
+	}
+
+	return true
+}

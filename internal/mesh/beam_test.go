@@ -144,8 +144,8 @@ func Test_beamLattice_SetBeamLatticeCapMode(t *testing.T) {
 
 func Test_beamLattice_ClearBeamLattice(t *testing.T) {
 	b := new(beamLattice)
-	b.beams = append(b.beams, new(Beam))
-	b.beamSets = append(b.beamSets, new(BeamSet))
+	b.beams = append(b.beams, Beam{})
+	b.beamSets = append(b.beamSets, BeamSet{})
 	tests := []struct {
 		name string
 		b    *beamLattice
@@ -169,7 +169,7 @@ func Test_beamLattice_BeamCount(t *testing.T) {
 		want uint32
 	}{
 		{"zero", new(beamLattice), 0},
-		{"one", &beamLattice{beams: make([]*Beam, 2)}, 2},
+		{"one", &beamLattice{beams: make([]Beam, 2)}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -182,8 +182,8 @@ func Test_beamLattice_BeamCount(t *testing.T) {
 
 func Test_beamLattice_Beam(t *testing.T) {
 	b := new(beamLattice)
-	b.beams = append(b.beams, new(Beam))
-	b.beams = append(b.beams, new(Beam))
+	b.beams = append(b.beams, Beam{})
+	b.beams = append(b.beams, Beam{})
 	type args struct {
 		index uint32
 	}
@@ -193,8 +193,8 @@ func Test_beamLattice_Beam(t *testing.T) {
 		args args
 		want *Beam
 	}{
-		{"zero", b, args{0}, b.beams[0]},
-		{"one", b, args{1}, b.beams[1]},
+		{"zero", b, args{0}, &b.beams[0]},
+		{"one", b, args{1}, &b.beams[1]},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -224,8 +224,8 @@ func Test_beamLattice_AddBeamSet(t *testing.T) {
 
 func Test_beamLattice_BeamSet(t *testing.T) {
 	b := new(beamLattice)
-	b.beamSets = append(b.beamSets, new(BeamSet))
-	b.beamSets = append(b.beamSets, new(BeamSet))
+	b.beamSets = append(b.beamSets, BeamSet{})
+	b.beamSets = append(b.beamSets, BeamSet{})
 	type args struct {
 		index uint32
 	}
@@ -235,8 +235,8 @@ func Test_beamLattice_BeamSet(t *testing.T) {
 		args args
 		want *BeamSet
 	}{
-		{"zero", b, args{0}, b.beamSets[0]},
-		{"one", b, args{1}, b.beamSets[1]},
+		{"zero", b, args{0}, &b.beamSets[0]},
+		{"one", b, args{1}, &b.beamSets[1]},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -264,10 +264,10 @@ func Test_beamLattice_AddBeam(t *testing.T) {
 		wantErr   bool
 		wantPanic bool
 	}{
-		{"max", &beamLattice{maxBeamCount: 1, beams: []*Beam{new(Beam)}}, args{1, 2, 1.0, 2.0, CapModeHemisphere, CapModeSphere}, nil, false, true},
+		{"max", &beamLattice{maxBeamCount: 1, beams: []Beam{{}}}, args{1, 2, 1.0, 2.0, CapModeHemisphere, CapModeSphere}, nil, false, true},
 		{"node1", new(beamLattice), args{1, 1, 1.0, 2.0, CapModeHemisphere, CapModeSphere}, nil, true, false},
 		{"node2", new(beamLattice), args{2, 2, 1.0, 2.0, CapModeHemisphere, CapModeSphere}, nil, true, false},
-		{"base", &beamLattice{beams: []*Beam{new(Beam)}}, args{0, 1, 1.0, 2.0, CapModeHemisphere, CapModeSphere}, &Beam{
+		{"base", &beamLattice{beams: []Beam{{}}}, args{0, 1, 1.0, 2.0, CapModeHemisphere, CapModeSphere}, &Beam{
 			NodeIndices: [2]uint32{0, 1},
 			Index:       1,
 			Radius:      [2]float64{1.0, 2.0},
@@ -303,11 +303,11 @@ func Test_beamLattice_checkSanity(t *testing.T) {
 		args args
 		want bool
 	}{
-		{"max", &beamLattice{maxBeamCount: 1, beams: []*Beam{new(Beam), new(Beam)}}, args{0}, false},
-		{"eq", &beamLattice{beams: []*Beam{{NodeIndices: [2]uint32{1, 1}}}}, args{0}, false},
-		{"high1", &beamLattice{beams: []*Beam{{NodeIndices: [2]uint32{2, 1}}}}, args{2}, false},
-		{"high2", &beamLattice{beams: []*Beam{{NodeIndices: [2]uint32{1, 2}}}}, args{2}, false},
-		{"good", &beamLattice{beams: []*Beam{{NodeIndices: [2]uint32{1, 2}}}}, args{3}, true},
+		{"max", &beamLattice{maxBeamCount: 1, beams: []Beam{{}, {}}}, args{0}, false},
+		{"eq", &beamLattice{beams: []Beam{{NodeIndices: [2]uint32{1, 1}}}}, args{0}, false},
+		{"high1", &beamLattice{beams: []Beam{{NodeIndices: [2]uint32{2, 1}}}}, args{2}, false},
+		{"high2", &beamLattice{beams: []Beam{{NodeIndices: [2]uint32{1, 2}}}}, args{2}, false},
+		{"good", &beamLattice{beams: []Beam{{NodeIndices: [2]uint32{1, 2}}}}, args{3}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -329,7 +329,7 @@ func Test_beamLattice_merge(t *testing.T) {
 		wantErr bool
 		times   uint32
 	}{
-		{"err", &beamLattice{beams: []*Beam{new(Beam)}}, args{[]uint32{0, 0}}, true, 1},
+		{"err", &beamLattice{beams: []Beam{{}}}, args{[]uint32{0, 0}}, true, 1},
 		{"zero", new(beamLattice), args{make([]uint32, 0)}, false, 0},
 		{"merged", new(beamLattice), args{[]uint32{0, 1}}, false, 2},
 	}
@@ -343,7 +343,8 @@ func Test_beamLattice_merge(t *testing.T) {
 				t.Errorf("beamLattice.merge() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !tt.wantErr && len(tt.b.beams) > 0 && tt.b.beams[0] != nil {
+			emptyBeam := Beam{}
+			if !tt.wantErr && len(tt.b.beams) > 0 && tt.b.beams[0] != emptyBeam {
 				for i := 0; i < len(tt.b.beams); i++ {
 					want := *beam
 					want.Index = uint32(i)

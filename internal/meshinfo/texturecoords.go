@@ -57,8 +57,8 @@ func newtextureCoordsContainer(currentFaceCount uint32) *textureCoordsContainer 
 	m := &textureCoordsContainer{
 		dataBlocks: make([]*TextureCoords, 0, int(currentFaceCount)),
 	}
-	for i := 1; i <= int(currentFaceCount); i++ {
-		m.AddFaceData(uint32(i))
+	for i := uint32(1); i <= currentFaceCount; i++ {
+		m.AddFaceData(i)
 	}
 	return m
 }

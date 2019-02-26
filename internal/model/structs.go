@@ -31,8 +31,8 @@ type BeamLatticeAttributes struct {
 	ClipMode                ClipMode
 	HasClippingMeshID       bool
 	HasRepresentationMeshID bool
-	ClippingMeshID          PackageResourceID
-	RepresentationMeshID    PackageResourceID
+	ClippingMeshID          *PackageResourceID
+	RepresentationMeshID    *PackageResourceID
 }
 
 func registerUUID(old, new uuid.UUID, model *Model) error {

@@ -55,8 +55,8 @@ const pstr = "solid\nfacet normal %f %f %f\nouter loop\nvertex %f %f %f\nvertex 
 
 func (e *asciiEncoder) encode(m *mesh.Mesh) error {
 	faceCount := m.FaceCount()
-	for i := 0; i < int(faceCount); i++ {
-		node1, node2, node3 := m.FaceNodes(uint32(i))
+	for i := uint32(0); i < faceCount; i++ {
+		node1, node2, node3 := m.FaceNodes(i)
 		n1, n2, n3 := node1.Position, node2.Position, node3.Position
 		n := geometry.FaceNormal(n1, n2, n3)
 
