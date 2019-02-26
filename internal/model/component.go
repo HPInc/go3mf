@@ -55,6 +55,7 @@ func (o *ObjectResource) SetUUID(id uuid.UUID) error {
 func (o *ObjectResource) MergeToMesh(m *mesh.Mesh, transform mgl32.Mat4) {
 }
 
+// RootModel returns the model of the object.
 func (o *ObjectResource) RootModel() *Model {
 	return o.Model
 }
@@ -64,10 +65,11 @@ func (o *ObjectResource) ID() uint64 {
 	return o.ResourceID.UniqueID()
 }
 
+// A Component is an in memory representation of the 3MF component.
 type Component struct {
-	Object   Object
+	Object    Object
 	Transform mgl32.Mat4
-	uuid     uuid.UUID
+	uuid      uuid.UUID
 }
 
 // UUID returns the object UUID.
@@ -84,10 +86,12 @@ func (c *Component) SetUUID(id uuid.UUID) error {
 	return err
 }
 
+// HasTransform returns true if the transform is different than the identity.
 func (c *Component) HasTransform() bool {
 	return !c.Transform.ApproxEqual(identityTransform)
 }
 
+// MergeToMesh merges a mesh with the component.
 func (c *Component) MergeToMesh(m *mesh.Mesh, transform mgl32.Mat4) {
 	c.Object.MergeToMesh(m, c.Transform.Mul4(transform))
 }

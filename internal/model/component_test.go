@@ -31,7 +31,6 @@ func TestObjectResource_UUID(t *testing.T) {
 	}
 }
 
-
 func TestObjectResource_SetUUID(t *testing.T) {
 	type args struct {
 		id uuid.UUID
@@ -94,8 +93,8 @@ func TestComponent_HasTransform(t *testing.T) {
 		c    *Component
 		want bool
 	}{
-		{"identity", &Component{Transform:mgl32.Ident4()}, false},
-		{"base", &Component{Transform:  mgl32.Mat4{2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}}, true},
+		{"identity", &Component{Transform: mgl32.Ident4()}, false},
+		{"base", &Component{Transform: mgl32.Mat4{2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

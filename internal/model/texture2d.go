@@ -54,3 +54,17 @@ func (t *Texture2DResource) ClearBox() *Texture2DResource {
 	t.HasBox = false
 	return t
 }
+
+// Copy copies the properties from another texture.
+func (t *Texture2DResource) Copy(other *Texture2DResource) {
+	t.Path = other.Path
+	t.ContentType = other.ContentType
+	t.TileStyleU = other.TileStyleU
+	t.TileStyleV = other.TileStyleV
+	if other.HasBox {
+		u, v, width, height, _ := other.Box()
+		t.SetBox(u, v, width, height)
+	} else {
+		t.ClearBox()
+	}
+}

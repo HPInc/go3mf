@@ -3,8 +3,8 @@ package model
 import (
 	"image/color"
 
-	"github.com/gofrs/uuid"
 	"github.com/go-gl/mathgl/mgl32"
+	"github.com/gofrs/uuid"
 )
 
 var identityTransform = mgl32.Ident4()

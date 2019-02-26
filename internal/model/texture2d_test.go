@@ -44,3 +44,46 @@ func TestTexture2DResource_Box(t *testing.T) {
 		})
 	}
 }
+
+func TestTexture2DResource_Copy(t *testing.T) {
+	type args struct {
+		other *Texture2DResource
+	}
+	tests := []struct {
+		name string
+		t    *Texture2DResource
+		args args
+	}{
+		{"equal", newTexture2D().SetBox(1, 2, 3, 4), args{newTexture2D().SetBox(1, 2, 3, 4)}},
+		{"diff", newTexture2D(), args{newTexture2D().SetBox(1, 2, 3, 4)}},
+		{"noBox", newTexture2D().SetBox(1, 2, 3, 4), args{newTexture2D()}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.t.Copy(tt.args.other)
+			gotU, gotV, gotWidth, gotHeight, gotHasBox := tt.t.Box()
+			wantU, wantV, wantWidth, wantHeight, wantHasBox := tt.args.other.Box()
+			if gotU != wantU {
+				t.Errorf("Texture2DResource.Copy() gotU = %v, want %v", gotU, wantU)
+			}
+			if gotV != wantV {
+				t.Errorf("Texture2DResource.Copy() gotV = %v, want %v", gotV, wantV)
+			}
+			if gotWidth != wantWidth {
+				t.Errorf("Texture2DResource.Copy() gotWidth = %v, want %v", gotWidth, wantWidth)
+			}
+			if gotHeight != wantHeight {
+				t.Errorf("Texture2DResource.Copy() gotHeight = %v, want %v", gotHeight, wantHeight)
+			}
+			if gotHasBox != wantHasBox {
+				t.Errorf("Texture2DResource.Copy() gotHasBox = %v, want %v", gotHasBox, wantHasBox)
+			}
+			if tt.t.Path != tt.args.other.Path {
+				t.Errorf("Texture2DResource.Copy() gotPath = %v, want %v", tt.t.Path, tt.args.other.Path)
+			}
+			if tt.t.ContentType != tt.args.other.ContentType {
+				t.Errorf("Texture2DResource.Copy() gotContentType = %v, want %v", tt.t.ContentType, tt.args.other.ContentType)
+			}
+		})
+	}
+}
