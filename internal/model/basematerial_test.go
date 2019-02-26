@@ -46,3 +46,32 @@ func TestBaseMaterialsResource_Merge(t *testing.T) {
 		})
 	}
 }
+
+func TestNewBaseMaterialsResource(t *testing.T) {
+	model := new(Model)
+	type args struct {
+		id    uint64
+		model *Model
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *BaseMaterialsResource
+		wantErr bool
+	}{
+		{"base", args{0, model}, &BaseMaterialsResource{Resource: Resource{Model: model, ResourceID: &PackageResourceID{"", 0, 1}}}, false},
+		{"dup", args{0, model}, nil, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := NewBaseMaterialsResource(tt.args.id, tt.args.model)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NewBaseMaterialsResource() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewBaseMaterialsResource() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

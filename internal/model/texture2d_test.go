@@ -1,6 +1,7 @@
 package model
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -83,6 +84,43 @@ func TestTexture2DResource_Copy(t *testing.T) {
 			}
 			if tt.t.ContentType != tt.args.other.ContentType {
 				t.Errorf("Texture2DResource.Copy() gotContentType = %v, want %v", tt.t.ContentType, tt.args.other.ContentType)
+			}
+		})
+	}
+}
+
+func TestNewTexture2DResource(t *testing.T) {
+	model := new(Model)
+	type args struct {
+		id    uint64
+		model *Model
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *Texture2DResource
+		wantErr bool
+	}{
+		{"base", args{0, model}, &Texture2DResource{
+			Resource:    Resource{Model: model, ResourceID: &PackageResourceID{"", 0, 1}},
+			ContentType: UnknownTexture,
+			boxWidth:    1,
+			boxHeight:   1,
+			TileStyleU:  WrapTile,
+			TileStyleV:  WrapTile,
+			Filter:      AutoFilter,
+		}, false},
+		{"dup", args{0, model}, nil, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := NewTexture2DResource(tt.args.id, tt.args.model)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NewTexture2DResource() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewTexture2DResource() = %v, want %v", got, tt.want)
 			}
 		})
 	}

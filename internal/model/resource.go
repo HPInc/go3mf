@@ -63,7 +63,7 @@ func (r *ResourceHandler) FindResourceIDByID(path string, id uint64) (val *Packa
 // NewResourceID creates a new unique resource ID.
 func (r *ResourceHandler) NewResourceID(path string, id uint64) (*PackageResourceID, error) {
 	if _, ok := r.FindResourceIDByID(path, id); ok {
-		return nil, errors.New("go3mf: Duplicate Resource ID")
+		return nil, errors.New("go3mf: Duplicate resource ID")
 	}
 	if len(r.resourceIDs) == 0 {
 		r.resourceIDs = make(map[uint64]*PackageResourceID, 0)

@@ -173,3 +173,33 @@ func TestSliceStackResource_ReferencePath(t *testing.T) {
 		})
 	}
 }
+
+func TestNewSliceStackResource(t *testing.T) {
+	model := new(Model)
+	type args struct {
+		id    uint64
+		model *Model
+		stack *SliceStack
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *SliceStackResource
+		wantErr bool
+	}{
+		{"base", args{0, model, nil}, &SliceStackResource{Resource: Resource{Model: model, ResourceID: &PackageResourceID{"", 0, 1}}}, false},
+		{"dup", args{0, model, nil}, nil, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := NewSliceStackResource(tt.args.id, tt.args.model, tt.args.stack)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NewSliceStackResource() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewSliceStackResource() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
