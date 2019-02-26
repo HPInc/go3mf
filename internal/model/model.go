@@ -104,7 +104,7 @@ func (m *Model) FindResourcePath(path string, id uint64) (r Identifier, ok bool)
 }
 
 // FindResourceID returns the resource with the target unique ID.
-func (m *Model) FindResourceID(uniqueID uint64) (r Identifier, ok bool) {
+func (m *Model) FindResourceID(uniqueID uint64) (Identifier, bool) {
 	rID, ok := m.resourceHandler.FindResourceID(uniqueID)
 	if ok {
 		return m.FindResource(rID)
@@ -142,13 +142,15 @@ func (m *Model) AddResource(resource Identifier) error {
 
 func (m *Model) addResourceToLookupTable(resource Identifier) {
 	switch resource.(type) {
-	case ObjectResource:
+	case *ComponentResource:
 		m.objects = append(m.objects, resource)
-	case BaseMaterialsResource:
+	case *MeshResource:
+		m.objects = append(m.objects, resource)
+	case *BaseMaterialsResource:
 		m.baseMaterials = append(m.baseMaterials, resource.(*BaseMaterialsResource))
-	case Texture2DResource:
+	case *Texture2DResource:
 		m.textures = append(m.textures, resource.(*Texture2DResource))
-	case SliceStackResource:
+	case *SliceStackResource:
 		m.sliceStacks = append(m.sliceStacks, resource.(*SliceStackResource))
 	}
 }
