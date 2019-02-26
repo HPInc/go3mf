@@ -10,7 +10,20 @@ import (
 const (
 	relTypeTexture3D = "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture"
 	relTypeThumbnail = "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail"
+	relTypeRootModel = "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"
 	langUS           = "en-US"
+)
+
+// Warning level of a reader.
+type WarningLevel int
+
+const (
+	// FatalWarning fatal.
+	FatalWarning WarningLevel = iota
+	// MandatoryWarning mandatory.
+	MandatoryWarning
+	// Optional optional.
+	OptionalWarning
 )
 
 // Units define the allowed model units.

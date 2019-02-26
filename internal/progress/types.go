@@ -1,4 +1,4 @@
-package common
+package progress
 
 // A Stage is an enumerable for the different progress states
 type Stage int
@@ -54,9 +54,9 @@ type float64Pair struct {
 	B float64 // the second element of the tuple
 }
 
-// progressCallback defines the signature of the callback which will be called when there is a progress in the process.
+// ProgressCallback defines the signature of the callback which will be called when there is a progress in the process.
 // Returns true if the progress should continue and false to abort it.
-type progressCallback func(progress int, id Stage, data interface{}) bool
+type ProgressCallback func(progress int, id Stage, data interface{}) bool
 
 // progressMap defines a mapping between the progress identifiers and the message
 var progressMap = map[Stage]string{

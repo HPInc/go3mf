@@ -43,7 +43,7 @@ type Model struct {
 
 	usedUUIDs       map[uuid.UUID]struct{}
 	resourceHandler ResourceHandler
-	resourceMap    map[uint64]Identifier
+	resourceMap     map[uint64]Identifier
 	uuid            uuid.UUID
 	objects         []interface{}
 	baseMaterials   []*BaseMaterialsResource
@@ -58,7 +58,7 @@ func NewModel() *Model {
 		Language:           langUS,
 		CustomContentTypes: make(map[string]string),
 		usedUUIDs:          make(map[uuid.UUID]struct{}),
-		resourceMap:       make(map[uint64]Identifier),
+		resourceMap:        make(map[uint64]Identifier),
 	}
 	m.SetUUID(uuid.Must(uuid.NewV4()))
 	return m
@@ -117,6 +117,7 @@ func (m *Model) FindResource(id *ResourceID) (r Identifier, ok bool) {
 	r, ok = m.resourceMap[id.UniqueID()]
 	return
 }
+
 // FindPackageResourceID returns the package resource with the target unique ID.
 func (m *Model) FindPackageResourceID(uniqueID uint64) (r Identifier, ok bool) {
 	return m.resourceHandler.FindResourceID(uniqueID)

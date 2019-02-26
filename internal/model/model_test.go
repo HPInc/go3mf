@@ -86,11 +86,11 @@ func TestModel_AddResource(t *testing.T) {
 		resource Identifier
 	}
 	tests := []struct {
-		name    string
-		m       *Model
-		args    args
+		name          string
+		m             *Model
+		args          args
 		wantResources int
-		wantErr bool
+		wantErr       bool
 	}{
 		{"baseMaterial", m, args{mustIdentifier(NewBaseMaterialsResource(0, m))}, 1, false},
 		{"sliceStack", m, args{mustIdentifier(NewSliceStackResource(1, m, nil))}, 2, false},

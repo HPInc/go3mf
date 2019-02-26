@@ -1,4 +1,4 @@
-package common
+package progress
 
 import (
 	"math"
@@ -210,7 +210,7 @@ func TestMonitor_ResetLevels(t *testing.T) {
 func TestMonitor_SetProgressCallback(t *testing.T) {
 	pr := float64Pair{0.0, 1.0}
 	type args struct {
-		callback progressCallback
+		callback ProgressCallback
 		userData interface{}
 	}
 	tests := []struct {

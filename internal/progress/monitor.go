@@ -1,4 +1,4 @@
-package common
+package progress
 
 import (
 	"math"
@@ -10,7 +10,7 @@ import (
 // Monitor is the reference implementation for the Progress interface.
 // It uses semaphores for managing concurrent notification and stacks for managing the process.
 type Monitor struct {
-	progressCallback   progressCallback
+	progressCallback   ProgressCallback
 	userData           interface{}
 	lastCallbackResult bool
 	levels             *stack.ItemStack
@@ -81,7 +81,7 @@ func (p *Monitor) level() float64Pair {
 
 // SetProgressCallback restarts the progress and specifies the callback to be executed on every step of the progress.
 // Optionaly usedData can be defined, which will be passed as parameter to the callback.
-func (p *Monitor) SetProgressCallback(callback progressCallback, userData interface{}) {
+func (p *Monitor) SetProgressCallback(callback ProgressCallback, userData interface{}) {
 	p.progressCallback = callback
 	p.userData = userData
 	p.lastCallbackResult = true
