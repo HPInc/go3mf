@@ -1,7 +1,7 @@
 package mesh
 
 import (
-	meshinfo "github.com/qmuntal/go3mf/internal/meshinfo"
+	"github.com/qmuntal/go3mf/internal/meshinfo"
 	"github.com/stretchr/testify/mock"
 )
 

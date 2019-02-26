@@ -87,7 +87,7 @@ type SliceStackResource struct {
 
 // NewSliceStackResource returns a new SliceStackResource.
 func NewSliceStackResource(id uint64, model *Model, stack *SliceStack) (*SliceStackResource, error) {
-	r, err := newResource(model, id)
+	r, err := newResource(id, model)
 	if err != nil {
 		return nil, err
 	}

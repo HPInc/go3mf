@@ -26,7 +26,7 @@ type BaseMaterialsResource struct {
 
 // NewBaseMaterialsResource returns a new texture 2D resource.
 func NewBaseMaterialsResource(id uint64, model *Model) (*BaseMaterialsResource, error) {
-	r, err := newResource(model, id)
+	r, err := newResource(id, model)
 	if err != nil {
 		return nil, err
 	}

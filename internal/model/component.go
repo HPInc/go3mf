@@ -11,6 +11,8 @@ type Object interface {
 	RootModel() *Model
 	MergeToMesh(*mesh.Mesh, mgl32.Mat4)
 	ID() uint64
+	IsValid() bool
+	IsValidForSlices(mgl32.Mat4) bool
 }
 
 // An ObjectResource is an in memory representation of the 3MF model object.
@@ -26,9 +28,8 @@ type ObjectResource struct {
 	uuid            uuid.UUID
 }
 
-// NewObjectResource returns a new object resource.
-func NewObjectResource(id uint64, model *Model) (*ObjectResource, error) {
-	r, err := newResource(model, id)
+func newObjectResource(id uint64, model *Model) (*ObjectResource, error) {
+	r, err := newResource(id, model)
 	if err != nil {
 		return nil, err
 	}
@@ -51,10 +52,6 @@ func (o *ObjectResource) SetUUID(id uuid.UUID) error {
 	return err
 }
 
-// MergeToMesh left on purpose empty to be reimplemented
-func (o *ObjectResource) MergeToMesh(m *mesh.Mesh, transform mgl32.Mat4) {
-}
-
 // RootModel returns the model of the object.
 func (o *ObjectResource) RootModel() *Model {
 	return o.Model
@@ -63,6 +60,20 @@ func (o *ObjectResource) RootModel() *Model {
 // ID returns the id of the object.
 func (o *ObjectResource) ID() uint64 {
 	return o.ResourceID.UniqueID()
+}
+
+// MergeToMesh left on purpose empty to be redefined in embedding class.
+func (o *ObjectResource) MergeToMesh(m *mesh.Mesh, transform mgl32.Mat4) {
+}
+
+// IsValid should be redefined in embedding class.
+func (o *ObjectResource) IsValid() bool {
+	return false
+}
+
+// IsValidForSlices should be redefined in embedding class.
+func (o *ObjectResource) IsValidForSlices(transform mgl32.Mat4) bool {
+	return false
 }
 
 // A Component is an in memory representation of the 3MF component.
@@ -94,4 +105,56 @@ func (c *Component) HasTransform() bool {
 // MergeToMesh merges a mesh with the component.
 func (c *Component) MergeToMesh(m *mesh.Mesh, transform mgl32.Mat4) {
 	c.Object.MergeToMesh(m, c.Transform.Mul4(transform))
+}
+
+// A ComponentResource resource is an in memory representation of the 3MF component object.
+type ComponentResource struct {
+	ObjectResource
+	Components []*Component
+}
+
+// NewComponentResource returns a new object resource.
+func NewComponentResource(id uint64, model *Model) (*ComponentResource, error) {
+	r, err := newObjectResource(id, model)
+	if err != nil {
+		return nil, err
+	}
+	return &ComponentResource{
+		ObjectResource: *r,
+	}, nil
+}
+
+// MergeToMesh merges the mesh with all the components.
+func (c *ComponentResource) MergeToMesh(m *mesh.Mesh, transform mgl32.Mat4) {
+	for _, comp := range c.Components {
+		comp.MergeToMesh(m, transform)
+	}
+}
+
+// IsValid checks if the component resource and all its child are valid.
+func (c *ComponentResource) IsValid() bool {
+	if len(c.Components) == 0 {
+		return false
+	}
+
+	for _, comp := range c.Components {
+		if !comp.Object.IsValid() {
+			return false
+		}
+	}
+	return true
+}
+
+// IsValidForSlices checks if the component resource and all its child are valid to be used with slices.
+func (c *ComponentResource) IsValidForSlices(transform mgl32.Mat4) bool {
+	if len(c.Components) == 0 {
+		return true
+	}
+
+	for _, comp := range c.Components {
+		if !comp.Object.IsValidForSlices(transform.Mul4(comp.Transform)) {
+			return false
+		}
+	}
+	return true
 }

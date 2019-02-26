@@ -14,7 +14,7 @@ type Texture2DResource struct {
 
 // NewTexture2DResource returns a new texture 2D resource.
 func NewTexture2DResource(id uint64, model *Model) (*Texture2DResource, error) {
-	r, err := newResource(model, id)
+	r, err := newResource(id, model)
 	if err != nil {
 		return nil, err
 	}

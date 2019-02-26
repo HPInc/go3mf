@@ -88,7 +88,7 @@ type Resource struct {
 	ResourceID *PackageResourceID
 }
 
-func newResource(model *Model, id uint64) (*Resource, error) {
+func newResource(id uint64, model *Model) (*Resource, error) {
 	packageID, err := model.generatePackageResourceID(id)
 	if err != nil {
 		return nil, err
