@@ -158,3 +158,44 @@ func (c *ComponentResource) IsValidForSlices(transform mgl32.Mat4) bool {
 	}
 	return true
 }
+
+// A MeshResource is an in memory representation of the 3MF mesh object.
+type MeshResource struct {
+	ObjectResource
+	Mesh *mesh.Mesh
+	BeamLatticeAttributes BeamLatticeAttributes
+}
+
+// MergeToMesh merges the resource with the mesh.
+func (c *MeshResource) MergeToMesh(m *mesh.Mesh, transform mgl32.Mat4) {
+	c.Mesh.Merge(m, transform)
+}
+
+// IsValid checks if the mesh resource are valid.
+func (c *MeshResource) IsValid() bool {
+	switch c.Type {
+	case ModelType:
+		return true
+	case SupportType:
+		return true
+	case SolidSupportType:
+		return true
+	case SurfaceType:
+		return true
+	}
+	
+	return false
+}
+
+// IsValidForSlices checks if the mesh resource are valid for slices.
+func (c *MeshResource) IsValidForSlices(t mgl32.Mat4) bool {	
+	return c.SliceStackID == nil || t[2] == 0 && t[6] == 0 && t[8] == 0 && t[9] == 0 && t[10] == 1
+}
+
+func (c *MeshResource) IsManifoldAndOriented() bool {
+	if !c.Mesh.CheckSanity() {
+		return false
+	}
+
+	return true
+}
