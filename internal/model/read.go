@@ -1,7 +1,6 @@
 package model
 
 import (
-	"github.com/qmuntal/go3mf/internal/model"
 	"bytes"
 	"errors"
 	"io"
