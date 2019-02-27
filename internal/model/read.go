@@ -68,13 +68,27 @@ func (d *Decoder) SetProgressCallback(callback progress.ProgressCallback, userDa
 // Decode reads the 3mf file and unmarshall its content into the model.
 func (d *Decoder) Decode(model *Model) error {
 	d.progress.ResetLevels()
-	_, err := d.processOPC(model)
-	if !d.progress.Progress(0.1, progress.StageReadNonRootModels) {
+	if !d.progress.Progress(0.05, progress.StageExtractOPCPackage) {
 		return ErrUserAborted
 	}
+	_, err := d.processOPC(model)
 	if err != nil {
 		return err
 	}
+	if !d.progress.Progress(0.1, progress.StageReadNonRootModels) {
+		return ErrUserAborted
+	}
+	progressNonRoot := 0.6
+	if len(model.ProductionAttachments) == 0 {
+		progressNonRoot = 0.1
+	}
+	d.progress.PushLevel(0.1, progressNonRoot)
+	// read production attachments
+	d.progress.PopLevel()
+	if !d.progress.Progress(progressNonRoot, progress.StageReadRootModel) {
+		return ErrUserAborted
+	}
+
 	return nil
 }
 
