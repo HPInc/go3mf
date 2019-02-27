@@ -65,7 +65,8 @@ func (d *Decoder) SetProgressCallback(callback progress.ProgressCallback, userDa
 
 // Decode reads the 3mf file and unmarshall its content into the model.
 func (d *Decoder) Decode(model *Model) error {
-	if err := d.processOPC(model); err != nil {
+	_, err := d.processOPC(model)
+	if err != nil {
 		return err
 	}
 	return nil
@@ -144,10 +145,10 @@ func (d *Decoder) addAttachment(attachments []*Attachment, file packageFile, rel
 func copyFile(file packageFile) (io.Reader, error) {
 	stream, err := file.Open()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	buff := new(bytes.Buffer)
-	_, err := io.Copy(buff, stream)
+	_, err = io.Copy(buff, stream)
 	stream.Close()
-	return err
+	return buff, err
 }
