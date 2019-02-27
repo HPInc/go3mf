@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
+	"github.com/qmuntal/go3mf/internal/mesh"
 )
 
 func TestModel_registerUUID(t *testing.T) {
@@ -106,6 +107,27 @@ func TestModel_AddResource(t *testing.T) {
 			if tt.wantResources != len(tt.m.Resources) {
 				t.Errorf("Model.AddResource() resource count error = %v, wantErr %v", len(tt.m.Resources), tt.wantResources)
 				return
+			}
+		})
+	}
+}
+
+func TestModel_MergeToMesh(t *testing.T) {
+	type args struct {
+		msh *mesh.Mesh
+	}
+	tests := []struct {
+		name    string
+		m       *Model
+		args    args
+		wantErr bool
+	}{
+		{"base", &Model{BuildItems: []*BuildItem{{Object: newObject()}}}, args{new(mesh.Mesh)}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.m.MergeToMesh(tt.args.msh); (err != nil) != tt.wantErr {
+				t.Errorf("Model.MergeToMesh() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

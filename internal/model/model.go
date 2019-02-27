@@ -42,7 +42,7 @@ type Model struct {
 	CustomContentTypes    map[string]string
 
 	usedUUIDs       map[uuid.UUID]struct{}
-	resourceHandler ResourceHandler
+	resourceHandler resourceHandler
 	resourceMap     map[uint64]Identifier
 	uuid            uuid.UUID
 	objects         []interface{}

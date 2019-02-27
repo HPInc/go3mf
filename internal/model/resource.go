@@ -30,25 +30,24 @@ func (p *ResourceID) UniqueID() uint64 {
 	return p.uniqueID
 }
 
-// ResourceHandler helps creating new resource identifiers.
-type ResourceHandler struct {
+type resourceHandler struct {
 	resourceIDs map[uint64]*ResourceID
 }
 
-func newResourceHandler() *ResourceHandler {
-	return &ResourceHandler{
+func newResourceHandler() *resourceHandler {
+	return &resourceHandler{
 		resourceIDs: make(map[uint64]*ResourceID, 0),
 	}
 }
 
 // FindResourceID search for an existing resource ID in the handler.
-func (r *ResourceHandler) FindResourceID(uniqueID uint64) (val *ResourceID, ok bool) {
+func (r *resourceHandler) FindResourceID(uniqueID uint64) (val *ResourceID, ok bool) {
 	val, ok = r.resourceIDs[uniqueID]
 	return
 }
 
 // FindResourcePath search for an existing resource ID in the handler looking by ID.
-func (r *ResourceHandler) FindResourcePath(path string, id uint64) (val *ResourceID, ok bool) {
+func (r *resourceHandler) FindResourcePath(path string, id uint64) (val *ResourceID, ok bool) {
 	for _, value := range r.resourceIDs {
 		cpath, cid := value.ID()
 		if cpath == path && cid == id {
@@ -61,7 +60,7 @@ func (r *ResourceHandler) FindResourcePath(path string, id uint64) (val *Resourc
 }
 
 // NewResourceID creates a new unique resource ID.
-func (r *ResourceHandler) NewResourceID(path string, id uint64) (*ResourceID, error) {
+func (r *resourceHandler) NewResourceID(path string, id uint64) (*ResourceID, error) {
 	if _, ok := r.FindResourcePath(path, id); ok {
 		return nil, errors.New("go3mf: Duplicate resource ID")
 	}
@@ -78,7 +77,7 @@ func (r *ResourceHandler) NewResourceID(path string, id uint64) (*ResourceID, er
 }
 
 // Clear resets the internal map of resource IDs.
-func (r *ResourceHandler) Clear() {
+func (r *resourceHandler) Clear() {
 	r.resourceIDs = make(map[uint64]*ResourceID, 0)
 }
 

@@ -93,9 +93,9 @@ func TestPackageResourceID_UniqueID(t *testing.T) {
 func Test_newResourceHandler(t *testing.T) {
 	tests := []struct {
 		name string
-		want *ResourceHandler
+		want *resourceHandler
 	}{
-		{"base", &ResourceHandler{
+		{"base", &resourceHandler{
 			resourceIDs: make(map[uint64]*ResourceID, 0),
 		}},
 	}
@@ -108,7 +108,7 @@ func Test_newResourceHandler(t *testing.T) {
 	}
 }
 
-func TestResourceHandler_FindResourceID(t *testing.T) {
+func Test_resourceHandler_FindResourceID(t *testing.T) {
 	rh := newResourceHandler()
 	r1, _ := rh.NewResourceID("a", 11)
 	r2, _ := rh.NewResourceID("b", 12)
@@ -117,7 +117,7 @@ func TestResourceHandler_FindResourceID(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		r       *ResourceHandler
+		r       *resourceHandler
 		args    args
 		wantVal *ResourceID
 		wantOk  bool
@@ -130,16 +130,16 @@ func TestResourceHandler_FindResourceID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			gotVal, gotOk := tt.r.FindResourceID(tt.args.uniqueID)
 			if !reflect.DeepEqual(gotVal, tt.wantVal) {
-				t.Errorf("ResourceHandler.FindResourceID() gotVal = %v, want %v", gotVal, tt.wantVal)
+				t.Errorf("resourceHandler.FindResourceID() gotVal = %v, want %v", gotVal, tt.wantVal)
 			}
 			if gotOk != tt.wantOk {
-				t.Errorf("ResourceHandler.FindResourceID() gotOk = %v, want %v", gotOk, tt.wantOk)
+				t.Errorf("resourceHandler.FindResourceID() gotOk = %v, want %v", gotOk, tt.wantOk)
 			}
 		})
 	}
 }
 
-func TestResourceHandler_FindResourcePath(t *testing.T) {
+func Test_resourceHandler_FindResourcePath(t *testing.T) {
 	rh := newResourceHandler()
 	r1, _ := rh.NewResourceID("a", 11)
 	r2, _ := rh.NewResourceID("b", 12)
@@ -149,7 +149,7 @@ func TestResourceHandler_FindResourcePath(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		r       *ResourceHandler
+		r       *resourceHandler
 		args    args
 		wantVal *ResourceID
 		wantOk  bool
@@ -162,16 +162,16 @@ func TestResourceHandler_FindResourcePath(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			gotVal, gotOk := tt.r.FindResourcePath(tt.args.path, tt.args.id)
 			if !reflect.DeepEqual(gotVal, tt.wantVal) {
-				t.Errorf("ResourceHandler.FindResourcePath() gotVal = %v, want %v", gotVal, tt.wantVal)
+				t.Errorf("resourceHandler.FindResourcePath() gotVal = %v, want %v", gotVal, tt.wantVal)
 			}
 			if gotOk != tt.wantOk {
-				t.Errorf("ResourceHandler.FindResourcePath() gotOk = %v, want %v", gotOk, tt.wantOk)
+				t.Errorf("resourceHandler.FindResourcePath() gotOk = %v, want %v", gotOk, tt.wantOk)
 			}
 		})
 	}
 }
 
-func TestResourceHandler_NewResourceID(t *testing.T) {
+func Test_resourceHandler_NewResourceID(t *testing.T) {
 	rh := newResourceHandler()
 	type args struct {
 		path string
@@ -179,7 +179,7 @@ func TestResourceHandler_NewResourceID(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		r       *ResourceHandler
+		r       *resourceHandler
 		args    args
 		want    *ResourceID
 		wantErr bool
@@ -192,23 +192,23 @@ func TestResourceHandler_NewResourceID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := tt.r.NewResourceID(tt.args.path, tt.args.id)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("ResourceHandler.NewResourceID() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("resourceHandler.NewResourceID() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ResourceHandler.NewResourceID() = %v, want %v", got, tt.want)
+				t.Errorf("resourceHandler.NewResourceID() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestResourceHandler_Clear(t *testing.T) {
+func Test_resourceHandler_Clear(t *testing.T) {
 	rh := newResourceHandler()
 	rh.NewResourceID("a", 11)
 	rh.NewResourceID("b", 12)
 	tests := []struct {
 		name string
-		r    *ResourceHandler
+		r    *resourceHandler
 	}{
 		{"new", newResourceHandler()},
 		{"base", rh},
@@ -217,7 +217,7 @@ func TestResourceHandler_Clear(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.r.Clear()
 			if len(tt.r.resourceIDs) != 0 {
-				t.Error("ResourceHandler.Clear() should clear uniqueIDs")
+				t.Error("resourceHandler.Clear() should clear uniqueIDs")
 			}
 		})
 	}
