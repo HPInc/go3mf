@@ -256,25 +256,6 @@ func TestObjectResource_ID(t *testing.T) {
 	}
 }
 
-func TestObjectResource_MergeToMesh(t *testing.T) {
-	type args struct {
-		m         *mesh.Mesh
-		transform mgl32.Mat4
-	}
-	tests := []struct {
-		name string
-		o    *ObjectResource
-		args args
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.o.MergeToMesh(tt.args.m, tt.args.transform)
-		})
-	}
-}
-
 func TestComponentResource_MergeToMesh(t *testing.T) {
 	type args struct {
 		m         *mesh.Mesh
@@ -285,7 +266,8 @@ func TestComponentResource_MergeToMesh(t *testing.T) {
 		c    *ComponentResource
 		args args
 	}{
-		{"base", new(ComponentResource), args{nil, mgl32.Ident4()}},
+		{"empty", new(ComponentResource), args{nil, mgl32.Ident4()}},
+		{"base", &ComponentResource{Components: []*Component{{Object: newObject()}}}, args{nil, mgl32.Ident4()}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -392,6 +374,28 @@ func TestMeshResource_IsValid(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.c.IsValid(); got != tt.want {
 				t.Errorf("MeshResource.IsValid() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMeshResource_MergeToMesh(t *testing.T) {
+	type args struct {
+		m         *mesh.Mesh
+		transform mgl32.Mat4
+	}
+	tests := []struct {
+		name    string
+		c       *MeshResource
+		args    args
+		wantErr bool
+	}{
+		{"base", &MeshResource{Mesh: new(mesh.Mesh)}, args{new(mesh.Mesh), mgl32.Ident4()}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.c.MergeToMesh(tt.args.m, tt.args.transform); (err != nil) != tt.wantErr {
+				t.Errorf("MeshResource.MergeToMesh() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

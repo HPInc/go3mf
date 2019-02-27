@@ -56,7 +56,7 @@ func TestNewModel(t *testing.T) {
 
 func TestModel_SetThumbnail(t *testing.T) {
 	type args struct {
-		r    io.Reader
+		r io.Reader
 	}
 	tests := []struct {
 		name string

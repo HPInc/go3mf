@@ -105,7 +105,7 @@ func (d *Decoder) extractTexturesAttachments(model *Model, rootFile packageFile)
 		file := rootFile.FindFileFromRel(r.TargetURI())
 		if file != nil {
 			d.addAttachment(model.Attachments, file, r.Type())
-		}		
+		}
 	}
 }
 
@@ -114,7 +114,7 @@ func (d *Decoder) extractCustomAttachments(model *Model, rootFile packageFile) {
 		file := rootFile.FindFileFromRel(r)
 		if file != nil {
 			d.addAttachment(model.Attachments, file, r)
-		}	
+		}
 	}
 }
 
@@ -126,7 +126,7 @@ func (d *Decoder) extractModelAttachments(model *Model, rootFile packageFile) {
 		file := rootFile.FindFileFromRel(r.TargetURI())
 		if file != nil {
 			d.addAttachment(model.ProductionAttachments, file, r.Type())
-		}		
+		}
 	}
 }
 
@@ -135,10 +135,10 @@ func (d *Decoder) addAttachment(attachments []*Attachment, file packageFile, rel
 	if err == nil {
 		attachments = append(attachments, &Attachment{
 			RelationshipType: relType,
-			Path:              file.Name(),
+			Path:             file.Name(),
 			Stream:           buff,
 		})
-	}	
+	}
 	return err
 }
 

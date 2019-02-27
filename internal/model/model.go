@@ -24,7 +24,7 @@ type Metadata struct {
 type Attachment struct {
 	Stream           io.Reader
 	RelationshipType string
-	Path              string
+	Path             string
 }
 
 // A Model is an in memory representation of the 3MF file.

@@ -1,10 +1,11 @@
 package model
 
 import (
-	"io"
-	"strings"
-	"path/filepath"
 	"github.com/qmuntal/opc"
+	"io"
+	"fmt"
+	"path/filepath"
+	"strings"
 )
 
 type opcRelationship struct {
@@ -42,14 +43,14 @@ func (o *opcFile) Name() string {
 
 func (o *opcFile) FindFileFromRel(relType string) packageFile {
 	name := findOPCFileURIFromRel(relType, o.f.Relationships)
+	if !strings.HasPrefix(name, "/") && !strings.HasPrefix(name, "\\") {
+		base := strings.Replace(filepath.Dir(o.f.Name), "\\", "/", -1)
+		name = fmt.Sprintf("%s/%s", base, name)
+	}
 	return o.FindFileFromName(name)
 }
 
-
 func (o *opcFile) FindFileFromName(name string) packageFile {
-	if strings.HasPrefix(name, "/") || strings.HasPrefix(name, "\\") {
-		name = filepath.Dir(o.f.Name) + name
-	}
 	return findOPCFileFromName(name, o.r)
 }
 
