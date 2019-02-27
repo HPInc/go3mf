@@ -96,43 +96,34 @@ func (m *Model) MergeToMesh(msh *mesh.Mesh) error {
 
 // FindResourcePath returns the resource with the target path and ID.
 func (m *Model) FindResourcePath(path string, id uint64) (r Identifier, ok bool) {
-	rID, ok := m.resourceHandler.FindResourcePath(path, id)
+	rID, ok := m.FindPackageResourcePath(path, id)
 	if ok {
-		return m.FindResource(rID)
+		return m.FindResource(rID.UniqueID())
 	}
 	return nil, false
 }
 
-// FindResourceID returns the resource with the target unique ID.
-func (m *Model) FindResourceID(uniqueID uint64) (Identifier, bool) {
-	rID, ok := m.resourceHandler.FindResourceID(uniqueID)
-	if ok {
-		return m.FindResource(rID)
-	}
-	return nil, false
-}
-
-// FindResource returns the resource with the target ResourceID.
-func (m *Model) FindResource(id *ResourceID) (r Identifier, ok bool) {
-	r, ok = m.resourceMap[id.UniqueID()]
+// FindResource returns the resource with the target unique ID.
+func (m *Model) FindResource(uniqueID uint64) (i Identifier, ok bool) {
+	i, ok = m.resourceMap[uniqueID]
 	return
 }
 
 // FindPackageResourceID returns the package resource with the target unique ID.
-func (m *Model) FindPackageResourceID(uniqueID uint64) (r Identifier, ok bool) {
+func (m *Model) FindPackageResourceID(uniqueID uint64) (*ResourceID, bool) {
 	return m.resourceHandler.FindResourceID(uniqueID)
 }
 
 // FindPackageResourcePath returns the package resource with the target path and ID.
-func (m *Model) FindPackageResourcePath(path string, id uint64) (r Identifier, ok bool) {
+func (m *Model) FindPackageResourcePath(path string, id uint64) (*ResourceID, bool) {
 	return m.resourceHandler.FindResourcePath(path, id)
 }
 
 // AddResource adds a new resource to the model.
 func (m *Model) AddResource(resource Identifier) error {
 	id := resource.UniqueID()
-	if _, ok := m.FindResourceID(id); ok {
-		return errors.New("go3mf: Duplicated model resource")
+	if _, ok := m.FindResource(id); ok {
+		return errors.New("go3mf: duplicated model resource")
 	}
 
 	m.resourceMap[id] = resource
@@ -166,7 +157,7 @@ func (m *Model) unregisterUUID(id uuid.UUID) {
 
 func (m *Model) registerUUID(id uuid.UUID) error {
 	if _, ok := m.usedUUIDs[id]; ok {
-		return errors.New("go3mf: Duplicated UUID")
+		return errors.New("go3mf: duplicated UUID")
 	}
 	if len(m.usedUUIDs) == 0 {
 		m.usedUUIDs = make(map[uuid.UUID]struct{})
