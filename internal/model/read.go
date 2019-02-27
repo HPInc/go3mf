@@ -8,6 +8,9 @@ import (
 	"github.com/qmuntal/go3mf/internal/progress"
 )
 
+// ErrUserAborted defines a user function abort.
+var ErrUserAborted = errors.New("go3mf: the called function was aborted by the user")
+
 // ReadError defines a error while reading a 3mf.
 type ReadError struct {
 	Level   WarningLevel
@@ -64,7 +67,11 @@ func (d *Decoder) SetProgressCallback(callback progress.ProgressCallback, userDa
 
 // Decode reads the 3mf file and unmarshall its content into the model.
 func (d *Decoder) Decode(model *Model) error {
+	d.progress.ResetLevels()
 	_, err := d.processOPC(model)
+	if !d.progress.Progress(0.1, progress.StageReadNonRootModels) {
+		return ErrUserAborted
+	}
 	if err != nil {
 		return err
 	}
