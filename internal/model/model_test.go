@@ -56,7 +56,6 @@ func TestNewModel(t *testing.T) {
 
 func TestModel_SetThumbnail(t *testing.T) {
 	type args struct {
-		path string
 		r    io.Reader
 	}
 	tests := []struct {
@@ -65,11 +64,11 @@ func TestModel_SetThumbnail(t *testing.T) {
 		args args
 		want *Attachment
 	}{
-		{"base", NewModel(), args{"a.png", nil}, &Attachment{URI: "a.png", RelationshipType: relTypeThumbnail}},
+		{"base", NewModel(), args{nil}, &Attachment{Path: thumbnailPath, RelationshipType: relTypeThumbnail}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.m.SetThumbnail(tt.args.path, tt.args.r); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.m.SetThumbnail(tt.args.r); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Model.SetThumbnail() = %v, want %v", got, tt.want)
 			}
 		})

@@ -24,7 +24,7 @@ type Metadata struct {
 type Attachment struct {
 	Stream           io.Reader
 	RelationshipType string
-	URI              string
+	Path              string
 }
 
 // A Model is an in memory representation of the 3MF file.
@@ -79,8 +79,8 @@ func (m *Model) SetUUID(id uuid.UUID) error {
 }
 
 // SetThumbnail sets the package thumbnail.
-func (m *Model) SetThumbnail(path string, r io.Reader) *Attachment {
-	m.Thumbnail = &Attachment{Stream: r, URI: path, RelationshipType: relTypeThumbnail}
+func (m *Model) SetThumbnail(r io.Reader) *Attachment {
+	m.Thumbnail = &Attachment{Stream: r, Path: thumbnailPath, RelationshipType: relTypeThumbnail}
 	return m.Thumbnail
 }
 

@@ -10,11 +10,12 @@ import (
 const (
 	relTypeTexture3D = "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture"
 	relTypeThumbnail = "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail"
-	relTypeRootModel = "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"
+	relTypeModel3D = "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"
 	langUS           = "en-US"
+	thumbnailPath = "/Metadata/thumbnail.png"
 )
 
-// Warning level of a reader.
+// WarningLevel defines the level of a reader warning.
 type WarningLevel int
 
 const (
@@ -22,7 +23,7 @@ const (
 	FatalWarning WarningLevel = iota
 	// MandatoryWarning mandatory.
 	MandatoryWarning
-	// Optional optional.
+	// OptionalWarning optional.
 	OptionalWarning
 )
 
