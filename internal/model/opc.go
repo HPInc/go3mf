@@ -1,9 +1,9 @@
 package model
 
 import (
+	"fmt"
 	"github.com/qmuntal/opc"
 	"io"
-	"fmt"
 	"path/filepath"
 	"strings"
 )
@@ -41,16 +41,12 @@ func (o *opcFile) Name() string {
 	return o.f.Name
 }
 
-func (o *opcFile) FindFileFromRel(relType string) packageFile {
+func (o *opcFile) FindFileFromRel(relType string) (packageFile, bool) {
 	name := findOPCFileURIFromRel(relType, o.f.Relationships)
 	if !strings.HasPrefix(name, "/") && !strings.HasPrefix(name, "\\") {
 		base := strings.Replace(filepath.Dir(o.f.Name), "\\", "/", -1)
 		name = fmt.Sprintf("%s/%s", base, name)
 	}
-	return o.FindFileFromName(name)
-}
-
-func (o *opcFile) FindFileFromName(name string) packageFile {
 	return findOPCFileFromName(name, o.r)
 }
 
@@ -70,12 +66,12 @@ func newOPCReader(r io.ReaderAt, size int64) (*opcReader, error) {
 	return &opcReader{opcr}, nil
 }
 
-func (o *opcReader) FindFileFromRel(relType string) packageFile {
+func (o *opcReader) FindFileFromRel(relType string) (packageFile, bool) {
 	name := findOPCFileURIFromRel(relType, o.r.Relationships)
 	return o.FindFileFromName(name)
 }
 
-func (o *opcReader) FindFileFromName(name string) packageFile {
+func (o *opcReader) FindFileFromName(name string) (packageFile, bool) {
 	return findOPCFileFromName(name, o.r)
 }
 
@@ -83,13 +79,13 @@ func (o *opcReader) Relationships() []relationship {
 	return newRelationships(o.r.Relationships)
 }
 
-func findOPCFileFromName(name string, r *opc.Reader) packageFile {
+func findOPCFileFromName(name string, r *opc.Reader) (packageFile, bool) {
 	for _, f := range r.Files {
 		if f.Name == name {
-			return &opcFile{r, f}
+			return &opcFile{r, f}, true
 		}
 	}
-	return nil
+	return nil, false
 }
 
 func findOPCFileURIFromRel(relType string, rels []*opc.Relationship) string {

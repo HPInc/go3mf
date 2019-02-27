@@ -26,15 +26,14 @@ type relationship interface {
 
 type packageFile interface {
 	Name() string
-	FindFileFromRel(string) packageFile
-	FindFileFromName(string) packageFile
+	FindFileFromRel(string) (packageFile, bool)
 	Relationships() []relationship
 	Open() (io.ReadCloser, error)
 }
 
 type packageReader interface {
-	FindFileFromRel(string) packageFile
-	FindFileFromName(string) packageFile
+	FindFileFromRel(string) (packageFile, bool)
+	FindFileFromName(string) (packageFile, bool)
 	Relationships() []relationship
 }
 
@@ -73,8 +72,8 @@ func (d *Decoder) Decode(model *Model) error {
 }
 
 func (d *Decoder) processOPC(model *Model) (io.ReadCloser, error) {
-	rootFile := d.r.FindFileFromRel(relTypeModel3D)
-	if rootFile == nil {
+	rootFile, ok := d.r.FindFileFromRel(relTypeModel3D)
+	if !ok {
 		return nil, errors.New("go3mf: package does not have root model")
 	}
 
@@ -83,12 +82,12 @@ func (d *Decoder) processOPC(model *Model) (io.ReadCloser, error) {
 	d.extractCustomAttachments(model, rootFile)
 	d.extractModelAttachments(model, rootFile)
 	for _, a := range model.ProductionAttachments {
-		file := d.r.FindFileFromName(a.Path)
+		file, _ := d.r.FindFileFromName(a.Path)
 		d.extractCustomAttachments(model, file)
 		d.extractTexturesAttachments(model, file)
 	}
-	thumbFile := rootFile.FindFileFromRel(relTypeThumbnail)
-	if thumbFile != nil {
+	thumbFile, ok := rootFile.FindFileFromRel(relTypeThumbnail)
+	if ok {
 		if buff, err := copyFile(thumbFile); err == nil {
 			model.SetThumbnail(buff)
 		}
@@ -102,18 +101,17 @@ func (d *Decoder) extractTexturesAttachments(model *Model, rootFile packageFile)
 		if r.Type() != relTypeTexture3D && r.Type() != relTypeThumbnail {
 			continue
 		}
-		file := rootFile.FindFileFromRel(r.TargetURI())
-		if file != nil {
-			d.addAttachment(model.Attachments, file, r.Type())
+
+		if file, ok := rootFile.FindFileFromRel(r.TargetURI()); ok {
+			model.Attachments = d.addAttachment(model.Attachments, file, r.Type())
 		}
 	}
 }
 
 func (d *Decoder) extractCustomAttachments(model *Model, rootFile packageFile) {
 	for _, r := range d.AttachmentRelations {
-		file := rootFile.FindFileFromRel(r)
-		if file != nil {
-			d.addAttachment(model.Attachments, file, r)
+		if file, ok := rootFile.FindFileFromRel(r); ok {
+			model.Attachments = d.addAttachment(model.Attachments, file, r)
 		}
 	}
 }
@@ -123,23 +121,23 @@ func (d *Decoder) extractModelAttachments(model *Model, rootFile packageFile) {
 		if r.Type() != relTypeModel3D {
 			continue
 		}
-		file := rootFile.FindFileFromRel(r.TargetURI())
-		if file != nil {
-			d.addAttachment(model.ProductionAttachments, file, r.Type())
+
+		if file, ok := rootFile.FindFileFromRel(r.TargetURI()); ok {
+			model.ProductionAttachments = d.addAttachment(model.ProductionAttachments, file, r.Type())
 		}
 	}
 }
 
-func (d *Decoder) addAttachment(attachments []*Attachment, file packageFile, relType string) error {
+func (d *Decoder) addAttachment(attachments []*Attachment, file packageFile, relType string) []*Attachment {
 	buff, err := copyFile(file)
 	if err == nil {
-		attachments = append(attachments, &Attachment{
+		return append(attachments, &Attachment{
 			RelationshipType: relType,
 			Path:             file.Name(),
 			Stream:           buff,
 		})
 	}
-	return err
+	return attachments
 }
 
 func copyFile(file packageFile) (io.Reader, error) {

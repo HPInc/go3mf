@@ -84,10 +84,10 @@ func Test_opcFile_Name(t *testing.T) {
 
 func Test_opcFile_FindFileFromRel(t *testing.T) {
 	rels := []*opc.Relationship{
-			{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture", TargetURI: "/c.xml"},
-			{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel", TargetURI: "/b.xml"},
-			{Type: "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail", TargetURI: "Metadata/thumbnail.png"},
-		}
+		{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture", TargetURI: "/c.xml"},
+		{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel", TargetURI: "/b.xml"},
+		{Type: "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail", TargetURI: "Metadata/thumbnail.png"},
+	}
 	reader := &opc.Reader{
 		Files: []*opc.File{{Part: &opc.Part{Name: "/c.xml"}}, {Part: &opc.Part{Name: "/props/Metadata/thumbnail.png"}}},
 	}
@@ -107,34 +107,8 @@ func Test_opcFile_FindFileFromRel(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.o.FindFileFromRel(tt.args.relType); !reflect.DeepEqual(got, tt.want) {
+			if got, _ := tt.o.FindFileFromRel(tt.args.relType); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("opcFile.FindFileFromRel() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_opcFile_FindFileFromName(t *testing.T) {
-	reader := &opc.Reader{
-		Files: []*opc.File{{Part: &opc.Part{Name: "/a.xml"}}, {Part: &opc.Part{Name: "/b.xml"}}},
-	}
-	type args struct {
-		name string
-	}
-	tests := []struct {
-		name string
-		o    *opcFile
-		args args
-		want packageFile
-	}{
-		{"foundA", &opcFile{reader, &opc.File{Part: &opc.Part{}}}, args{"/a.xml"}, &opcFile{reader, &opc.File{Part: &opc.Part{Name: "/a.xml"}}}},
-		{"foundB", &opcFile{reader, &opc.File{Part: &opc.Part{}}}, args{"/b.xml"}, &opcFile{reader, &opc.File{Part: &opc.Part{Name: "/b.xml"}}}},
-		{"notfound", &opcFile{reader, &opc.File{Part: &opc.Part{}}}, args{"/c.xml"}, nil},		
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.o.FindFileFromName(tt.args.name); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("opcFile.FindFileFromName() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -214,7 +188,7 @@ func Test_opcReader_FindFileFromRel(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.o.FindFileFromRel(tt.args.relType); !reflect.DeepEqual(got, tt.want) {
+			if got, _ := tt.o.FindFileFromRel(tt.args.relType); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("opcReader.FindFileFromRel() = %v, want %v", got, tt.want)
 			}
 		})
@@ -238,7 +212,7 @@ func Test_opcReader_FindFileFromName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.o.FindFileFromName(tt.args.name); !reflect.DeepEqual(got, tt.want) {
+			if got, _ := tt.o.FindFileFromName(tt.args.name); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("opcReader.FindFileFromName() = %v, want %v", got, tt.want)
 			}
 		})
