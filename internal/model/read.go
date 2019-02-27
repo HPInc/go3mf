@@ -99,21 +99,23 @@ func (d *Decoder) processOPC(model *Model) error {
 
 func (d *Decoder) extractTexturesFromRels(model *Model, rootPart *opc.Part) error {
 	for _, r := range rootPart.Relationships {
-		if r.Type == relTypeTexture3D || r.Type == relTypeThumbnail {
-			part := d.r.FindPart(r.TargetURI)
-			if part != nil {
-				stream, err := part.Open()
-				buff := new(bytes.Buffer)
-				if err == nil {
-					io.Copy(buff, stream)
-					stream.Close()
-					model.Attachments = append(model.Attachments, &Attachment{
-						RelationshipType: r.Type,
-						URI:              part.Name,
-						Stream:           buff,
-					})
-				}
+		if r.Type != relTypeTexture3D && r.Type != relTypeThumbnail {
+			continue
+		}
+		part := d.r.FindPart(r.TargetURI)
+		if part == nil {
+			continue
+		}
+		if stream, err := part.Open(); err == nil {
+			buff := new(bytes.Buffer)
+			if _, err := io.Copy(buff, stream); err == nil {
+				model.Attachments = append(model.Attachments, &Attachment{
+					RelationshipType: r.Type,
+					URI:              part.Name,
+					Stream:           buff,
+				})
 			}
+			stream.Close()
 		}
 	}
 	return nil
