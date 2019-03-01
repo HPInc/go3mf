@@ -80,7 +80,7 @@ func (m *Model) SetUUID(id uuid.UUID) error {
 
 // SetThumbnail sets the package thumbnail.
 func (m *Model) SetThumbnail(r io.Reader) *Attachment {
-	m.Thumbnail = &Attachment{Stream: r, Path: thumbnailPath, RelationshipType: relTypeThumbnail}
+	m.Thumbnail = &Attachment{Stream: r, Path: thumbnailPath, RelationshipType: "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail"}
 	return m.Thumbnail
 }
 

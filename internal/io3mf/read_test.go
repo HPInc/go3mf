@@ -1,9 +1,10 @@
-package model
+package io3mf
 
 import (
 	"bytes"
 	"errors"
 	"github.com/go-test/deep"
+	mdl "github.com/qmuntal/go3mf/internal/model"
 	"github.com/stretchr/testify/mock"
 	"io"
 	"io/ioutil"
@@ -114,56 +115,52 @@ func TestReadError_Error(t *testing.T) {
 	}
 }
 
-func TestDecoder_processOPC(t *testing.T) {
+func TestReader_processOPC(t *testing.T) {
 	thumbFile := newMockFile("/a.png", nil, nil, nil, false)
 	thumbErr := newMockFile("/a.png", nil, nil, nil, true)
-	type args struct {
-		model *Model
-	}
 	tests := []struct {
 		name    string
-		d       *Decoder
-		args    args
-		want    *Model
+		d       *Reader
+		want    *mdl.Model
 		wantErr bool
 	}{
-		{"noRoot", &Decoder{r: newMockPackage(nil, nil)}, args{new(Model)}, new(Model), true},
-		{"noRels", &Decoder{r: newMockPackage(nil, newMockFile("/a.model", nil, nil, nil, false))}, args{new(Model)}, &Model{RootPath: "/a.model"}, false},
-		{"withThumb", &Decoder{r: newMockPackage(nil,
+		{"noRoot", &Reader{r: newMockPackage(nil, nil)}, &mdl.Model{}, true},
+		{"noRels", &Reader{r: newMockPackage(nil, newMockFile("/a.model", nil, nil, nil, false))}, &mdl.Model{RootPath: "/a.model"}, false},
+		{"withThumb", &Reader{r: newMockPackage(nil,
 			newMockFile("/a.model", []relationship{newMockRelationship(relTypeThumbnail, "/a.png")}, thumbFile, thumbFile, false)),
-		}, args{new(Model)}, &Model{
+		}, &mdl.Model{
 			RootPath:    "/a.model",
-			Thumbnail:   &Attachment{RelationshipType: relTypeThumbnail, Path: "/Metadata/thumbnail.png", Stream: new(bytes.Buffer)},
-			Attachments: []*Attachment{{RelationshipType: relTypeThumbnail, Path: "/a.png", Stream: new(bytes.Buffer)}},
+			Thumbnail:   &mdl.Attachment{RelationshipType: relTypeThumbnail, Path: "/Metadata/thumbnail.png", Stream: new(bytes.Buffer)},
+			Attachments: []*mdl.Attachment{{RelationshipType: relTypeThumbnail, Path: "/a.png", Stream: new(bytes.Buffer)}},
 		}, false},
-		{"withThumbErr", &Decoder{r: newMockPackage(nil,
+		{"withThumbErr", &Reader{r: newMockPackage(nil,
 			newMockFile("/a.model", []relationship{newMockRelationship(relTypeThumbnail, "/a.png")}, thumbErr, thumbErr, false)),
-		}, args{new(Model)}, &Model{RootPath: "/a.model"}, false},
-		{"withOtherRel", &Decoder{r: newMockPackage(nil,
+		}, &mdl.Model{RootPath: "/a.model"}, false},
+		{"withOtherRel", &Reader{r: newMockPackage(nil,
 			newMockFile("/a.model", []relationship{newMockRelationship("other", "/a.png")}, nil, nil, false)),
-		}, args{new(Model)}, &Model{RootPath: "/a.model"}, false},
-		{"withModelAttachment", &Decoder{r: newMockPackage(nil,
+		}, &mdl.Model{RootPath: "/a.model"}, false},
+		{"withModelAttachment", &Reader{r: newMockPackage(nil,
 			newMockFile("/a.model", []relationship{newMockRelationship(relTypeModel3D, "/a.model")}, nil, newMockFile("/a.model", nil, nil, nil, false), false)),
-		}, args{new(Model)}, &Model{
+		}, &mdl.Model{
 			RootPath:              "/a.model",
-			ProductionAttachments: []*Attachment{{RelationshipType: relTypeModel3D, Path: "/a.model", Stream: new(bytes.Buffer)}},
+			ProductionAttachments: []*mdl.Attachment{{RelationshipType: relTypeModel3D, Path: "/a.model", Stream: new(bytes.Buffer)}},
 		}, false},
-		{"withAttRel", &Decoder{AttachmentRelations: []string{"b"}, r: newMockPackage(nil,
+		{"withAttRel", &Reader{AttachmentRelations: []string{"b"}, r: newMockPackage(nil,
 			newMockFile("/a.model", []relationship{newMockRelationship("b", "/a.xml")}, nil, newMockFile("/a.xml", nil, nil, nil, false), false)),
-		}, args{new(Model)}, &Model{
+		}, &mdl.Model{
 			RootPath:    "/a.model",
-			Attachments: []*Attachment{{RelationshipType: "b", Path: "/a.xml", Stream: new(bytes.Buffer)}},
+			Attachments: []*mdl.Attachment{{RelationshipType: "b", Path: "/a.xml", Stream: new(bytes.Buffer)}},
 		}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.d.processOPC(tt.args.model)
+			err := tt.d.processOPC()
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Decoder.processOPC() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Reader.processOPC() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if diff := deep.Equal(tt.args.model, tt.want); diff != nil {
-				t.Errorf("Decoder.processOPC() = %v", diff)
+			if diff := deep.Equal(tt.d.Model, tt.want); diff != nil {
+				t.Errorf("Reader.processOPC() = %v", diff)
 				return
 			}
 		})

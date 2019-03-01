@@ -10,11 +10,11 @@ import (
 // Monitor is the reference implementation for the Progress interface.
 // It uses semaphores for managing concurrent notification and stacks for managing the process.
 type Monitor struct {
-	progressCallback   ProgressCallback
-	userData           interface{}
+	progressCallback    ProgressCallback
+	userData            interface{}
 	lastCallbackAborted bool
-	levels             stack.ItemStack
-	callbackMutex      semaphore.Semaphore
+	levels              stack.ItemStack
+	callbackMutex       semaphore.Semaphore
 }
 
 // QueryCancelled cancels the current process with a ProgressQueryCanceled identifier.

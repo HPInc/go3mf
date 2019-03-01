@@ -1,4 +1,4 @@
-package model
+package io3mf
 
 import (
 	"io"

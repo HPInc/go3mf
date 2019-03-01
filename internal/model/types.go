@@ -8,23 +8,8 @@ import (
 )
 
 const (
-	relTypeTexture3D = "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture"
-	relTypeThumbnail = "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail"
-	relTypeModel3D   = "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"
-	langUS           = "en-US"
-	thumbnailPath    = "/Metadata/thumbnail.png"
-)
-
-// WarningLevel defines the level of a reader warning.
-type WarningLevel int
-
-const (
-	// FatalWarning fatal.
-	FatalWarning WarningLevel = iota
-	// MandatoryWarning mandatory.
-	MandatoryWarning
-	// OptionalWarning optional.
-	OptionalWarning
+	thumbnailPath = "/Metadata/thumbnail.png"
+	langUS        = "en-US"
 )
 
 // Units define the allowed model units.
@@ -44,6 +29,14 @@ const (
 	// Meter for meter
 	Meter = "meter"
 )
+
+func NewUnits(s string) (Units, bool) {
+	u := Units(s)
+	if u == Millimeter || u == Inch || u == Micrometer || u == Centimeter || u == Foot || u == Meter {
+		return u, true
+	}
+	return "", false
+}
 
 // ClipMode defines the clipping modes for the beam lattices.
 type ClipMode string

@@ -20,7 +20,7 @@ func NewTexture2DResource(id uint64, model *Model) (*Texture2DResource, error) {
 	}
 	return &Texture2DResource{
 		Resource:    *r,
-		ContentType: UnknownTexture,
+		ContentType: PNGTexture,
 		boxWidth:    1,
 		boxHeight:   1,
 		TileStyleU:  WrapTile,

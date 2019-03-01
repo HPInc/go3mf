@@ -103,7 +103,7 @@ func TestNewTexture2DResource(t *testing.T) {
 	}{
 		{"base", args{0, model}, &Texture2DResource{
 			Resource:    Resource{Model: model, ResourceID: &ResourceID{"", 0, 1}},
-			ContentType: UnknownTexture,
+			ContentType: PNGTexture,
 			boxWidth:    1,
 			boxHeight:   1,
 			TileStyleU:  WrapTile,

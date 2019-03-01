@@ -65,7 +65,7 @@ func TestModel_SetThumbnail(t *testing.T) {
 		args args
 		want *Attachment
 	}{
-		{"base", NewModel(), args{nil}, &Attachment{Path: thumbnailPath, RelationshipType: relTypeThumbnail}},
+		{"base", NewModel(), args{nil}, &Attachment{Path: thumbnailPath, RelationshipType: "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

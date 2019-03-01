@@ -11,6 +11,7 @@ type BuildItem struct {
 	Object     Object
 	Transform  mgl32.Mat4
 	PartNumber string
+	Path       string
 	uuid       uuid.UUID
 }
 
