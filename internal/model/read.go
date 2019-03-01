@@ -44,7 +44,7 @@ type packageReader interface {
 type Decoder struct {
 	Warnings            []error
 	AttachmentRelations []string
-	progress            *progress.Monitor
+	progress            progress.Monitor
 	r                   packageReader
 }
 
@@ -56,7 +56,6 @@ func NewDecoder(r io.ReaderAt, size int64) (*Decoder, error) {
 	}
 	return &Decoder{
 		r:        opcr,
-		progress: progress.NewMonitor(),
 	}, nil
 }
 
@@ -68,34 +67,42 @@ func (d *Decoder) SetProgressCallback(callback progress.ProgressCallback, userDa
 // Decode reads the 3mf file and unmarshall its content into the model.
 func (d *Decoder) Decode(model *Model) error {
 	d.progress.ResetLevels()
-	if !d.progress.Progress(0.05, progress.StageExtractOPCPackage) {
-		return ErrUserAborted
-	}
-	_, err := d.processOPC(model)
-	if err != nil {
+	if err := d.processOPC(model); err != nil {
 		return err
 	}
-	if !d.progress.Progress(0.1, progress.StageReadNonRootModels) {
-		return ErrUserAborted
+	if err := d.processNonRootModels(model); err != nil {
+		return err
 	}
-	progressNonRoot := 0.6
-	if len(model.ProductionAttachments) == 0 {
-		progressNonRoot = 0.1
+	if err := d.processRootModel(model); err != nil {
+		return err
 	}
-	d.progress.PushLevel(0.1, progressNonRoot)
-	// read production attachments
-	d.progress.PopLevel()
-	if !d.progress.Progress(progressNonRoot, progress.StageReadRootModel) {
-		return ErrUserAborted
-	}
-
 	return nil
 }
 
-func (d *Decoder) processOPC(model *Model) (io.ReadCloser, error) {
+func (d *Decoder) processRootModel(model *Model) error {	
+	if !d.progress.Progress(d.nonRootProgress(model), progress.StageReadRootModel) {
+		return ErrUserAborted
+	} 
+	return nil
+}
+
+func (d *Decoder) processNonRootModels(model *Model) error {	
+	if !d.progress.Progress(0.1, progress.StageReadNonRootModels) {
+		return ErrUserAborted
+	}
+	d.progress.PushLevel(0.1, d.nonRootProgress(model))
+	// read production attachments
+	d.progress.PopLevel()
+	return nil
+}
+
+func (d *Decoder) processOPC(model *Model) error {
+	if !d.progress.Progress(0.05, progress.StageExtractOPCPackage) {
+		return ErrUserAborted
+	}
 	rootFile, ok := d.r.FindFileFromRel(relTypeModel3D)
 	if !ok {
-		return nil, errors.New("go3mf: package does not have root model")
+		return errors.New("go3mf: package does not have root model")
 	}
 
 	model.RootPath = rootFile.Name()
@@ -114,7 +121,14 @@ func (d *Decoder) processOPC(model *Model) (io.ReadCloser, error) {
 		}
 	}
 
-	return rootFile.Open()
+	return nil
+}
+
+func (d *Decoder) nonRootProgress(model *Model) float64 {
+	if len(model.ProductionAttachments) == 0 {
+		return 0.1
+	}	
+	return 0.6
 }
 
 func (d *Decoder) extractTexturesAttachments(model *Model, rootFile packageFile) {

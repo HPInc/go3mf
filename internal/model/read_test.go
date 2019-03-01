@@ -128,7 +128,6 @@ func TestDecoder_processOPC(t *testing.T) {
 		wantErr bool
 	}{
 		{"noRoot", &Decoder{r: newMockPackage(nil, nil)}, args{new(Model)}, new(Model), true},
-		{"noRelsFail", &Decoder{r: newMockPackage(nil, newMockFile("/a.model", nil, nil, nil, true))}, args{new(Model)}, &Model{RootPath: "/a.model"}, true},
 		{"noRels", &Decoder{r: newMockPackage(nil, newMockFile("/a.model", nil, nil, nil, false))}, args{new(Model)}, &Model{RootPath: "/a.model"}, false},
 		{"withThumb", &Decoder{r: newMockPackage(nil,
 			newMockFile("/a.model", []relationship{newMockRelationship(relTypeThumbnail, "/a.png")}, thumbFile, thumbFile, false)),
@@ -158,7 +157,7 @@ func TestDecoder_processOPC(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := tt.d.processOPC(tt.args.model)
+			err := tt.d.processOPC(tt.args.model)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Decoder.processOPC() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -15,13 +15,6 @@ type ItemStack struct {
 	lock  sync.RWMutex
 }
 
-// NewItemStack creates a new ItemStack
-func NewItemStack() *ItemStack {
-	return &ItemStack{
-		items: []Item{},
-	}
-}
-
 // Push adds an Item to the top of the stack
 func (s *ItemStack) Push(t Item) {
 	s.lock.Lock()

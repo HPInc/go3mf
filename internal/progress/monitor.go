@@ -12,18 +12,9 @@ import (
 type Monitor struct {
 	progressCallback   ProgressCallback
 	userData           interface{}
-	lastCallbackResult bool
-	levels             *stack.ItemStack
-	callbackMutex      *semaphore.Semaphore
-}
-
-// NewMonitor creates a default ProgresMonitor.
-func NewMonitor() *Monitor {
-	return &Monitor{
-		lastCallbackResult: true,
-		callbackMutex:      semaphore.NewSemaphore(),
-		levels:             stack.NewItemStack(),
-	}
+	lastCallbackAborted bool
+	levels             stack.ItemStack
+	callbackMutex      semaphore.Semaphore
 }
 
 // QueryCancelled cancels the current process with a ProgressQueryCanceled identifier.
@@ -44,9 +35,9 @@ func (p *Monitor) Progress(progress float64, identifier Stage) bool {
 	} else {
 		nProgress = int(100.0 * (p.level().A + math.Max(math.Min(progress, 1.0), 0.0)*(p.level().B-p.level().A)))
 	}
-	p.lastCallbackResult = p.progressCallback(nProgress, identifier, p.userData)
+	p.lastCallbackAborted = !p.progressCallback(nProgress, identifier, p.userData)
 	p.callbackMutex.Done()
-	return p.lastCallbackResult
+	return p.lastCallbackAborted == false
 }
 
 // PushLevel adds a new level to the progress
@@ -84,7 +75,7 @@ func (p *Monitor) level() float64Pair {
 func (p *Monitor) SetProgressCallback(callback ProgressCallback, userData interface{}) {
 	p.progressCallback = callback
 	p.userData = userData
-	p.lastCallbackResult = true
+	p.lastCallbackAborted = false
 	p.ResetLevels()
 }
 
@@ -95,7 +86,7 @@ func (p *Monitor) ClearProgressCallback() {
 
 // WasAborted returns true if the callback asked for aborting the progress, false otherwise.
 func (p *Monitor) WasAborted() bool {
-	return p.lastCallbackResult == false
+	return p.lastCallbackAborted
 }
 
 // ProgressMessage stringify the progress identifiers.

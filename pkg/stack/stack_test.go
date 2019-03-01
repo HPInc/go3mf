@@ -5,7 +5,7 @@ import (
 )
 
 func TestPush(t *testing.T) {
-	s := NewItemStack()
+	s := ItemStack{}
 	s.Push(1)
 	s.Push(2)
 	s.Push(3)
@@ -15,7 +15,7 @@ func TestPush(t *testing.T) {
 }
 
 func TestPop(t *testing.T) {
-	s := NewItemStack()
+	s := ItemStack{}
 	s.Push(1)
 	s.Push(2)
 	s.Push(3)
@@ -32,7 +32,7 @@ func TestPop(t *testing.T) {
 }
 
 func TestEmpty(t *testing.T) {
-	s := NewItemStack()
+	s := ItemStack{}
 	if !s.Empty() {
 		t.Errorf("expected to be empty, got %d", len(s.items))
 	}
@@ -43,7 +43,7 @@ func TestEmpty(t *testing.T) {
 }
 
 func TestTop(t *testing.T) {
-	s := NewItemStack()
+	s := ItemStack{}
 	s.Push(1)
 	r := *s.Top()
 	if r != 1 {

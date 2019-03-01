@@ -7,11 +7,6 @@ type Semaphore struct {
 	semaphore int32
 }
 
-// NewSemaphore creates a new default semaphore.
-func NewSemaphore() *Semaphore {
-	return &Semaphore{}
-}
-
 // CanRun should be called when entering to the synchronization block.
 // Returns true if no thread is running inside the block and false otherwhise.
 // If the result is true the caller is responsible for freeing the block with a Done().
