@@ -29,9 +29,6 @@ func (d *modelDecoder) Decode(se xml.StartElement) error {
 		if err != nil {
 			return err
 		}
-		if t == nil {
-			break
-		}
 		switch tp := t.(type) {
 		case xml.StartElement:
 			if d.r.namespaceAttr(tp.Name.Space) == nsCoreSpec {
@@ -48,7 +45,6 @@ func (d *modelDecoder) Decode(se xml.StartElement) error {
 			}
 		}
 	}
-	return nil
 }
 
 func (d *modelDecoder) parseBuild(se xml.StartElement) error {

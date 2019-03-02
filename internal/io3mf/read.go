@@ -5,7 +5,6 @@ import (
 	"encoding/xml"
 	"errors"
 	"io"
-	"strings"
 
 	mdl "github.com/qmuntal/go3mf/internal/model"
 	"github.com/qmuntal/go3mf/internal/progress"
@@ -111,39 +110,23 @@ func (r *Reader) processRootModel() error {
 	}
 	defer f.Close()
 	x := xml.NewDecoder(f)
+	var t xml.Token
 	for {
-		t, err := x.Token()
+		t, err = x.Token()
 		if err != nil {
-			return err
-		}
-		if t == nil {
 			break
 		}
 		switch tp := t.(type) {
 		case xml.StartElement:
-			if tp.Name.Local == "xml" {
-				if err := r.checkXMLHeader(tp); err != nil {
-					return err
-				}
-			} else if tp.Name.Local == "model" {
+			if tp.Name.Local == "model" {
 				md := modelDecoder{x: x, r: r, model: r.Model}
-				if err := md.Decode(tp); err != nil {
-					return err
-				}
+				err = md.Decode(tp)
+				break
 			}
 		}
 	}
-	return nil
-}
-
-func (r *Reader) checkXMLHeader(se xml.StartElement) error {
-	for _, a := range se.Attr {
-		if a.Name.Local == "encoding" {
-			if !strings.EqualFold(a.Value, "utf-8") && !strings.EqualFold(a.Value, "utf8") {
-				return errors.New("go3mf: invalid xml encoding")
-			}
-			break
-		}
+	if err != io.EOF {
+		return err
 	}
 	return nil
 }

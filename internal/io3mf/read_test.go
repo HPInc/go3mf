@@ -6,6 +6,8 @@ import (
 	"io"
 	"io/ioutil"
 	"testing"
+	"strings"
+	"fmt"
 
 	"github.com/go-test/deep"
 	mdl "github.com/qmuntal/go3mf/internal/model"
@@ -36,6 +38,51 @@ func (m *mockRelationship) Type() string {
 func (m *mockRelationship) TargetURI() string {
 	args := m.Called()
 	return args.String(0)
+}
+
+type modelBuilder struct {
+	str strings.Builder
+	hasBuild bool
+	hasModel bool
+}
+
+func (m *modelBuilder) addAttr(prefix, name, value string) *modelBuilder {
+	if prefix != "" {
+		m.str.WriteString(fmt.Sprintf(`%s:`, prefix))
+	}
+	if name != "" {
+		m.str.WriteString(fmt.Sprintf(`%s="%s" `, name, value))
+	}
+	return m
+}
+
+func (m *modelBuilder) withDefaultModel() *modelBuilder {
+	return m.withModel("millimeter", "en-US", "m p b s", "m", "p", "b", "s")
+}
+
+func (m *modelBuilder) withModel(unit mdl.Units, lang, requiredExt, nsMaterial, nsProd, nsLattice, nsSlice string) *modelBuilder {
+	m.str.WriteString(`<model `)
+	m.addAttr("", "unit", string(unit)).addAttr("xml", "lang", lang)
+	m.addAttr("", "xmlns", nsCoreSpec).addAttr("xmlns", nsMaterial, nsMaterialSpec).addAttr("xmlns", nsProd, nsProductionSpec)
+	m.addAttr("xmlns", nsLattice, nsBeamLatticeSpec).addAttr("xmlns", nsSlice, nsSliceSpec).addAttr("", "requiredextensions", requiredExt)
+	m.str.WriteString(">\n")
+	m.hasModel = true
+	return m
+}
+
+func (m *modelBuilder) withEncoding(encode string) *modelBuilder {
+	m.str.WriteString(fmt.Sprintf(`<?xml version="1.0" encoding="%s"?>`, encode))
+	m.str.WriteString("\n")
+	return m
+}
+
+func (m *modelBuilder) build() *mockFile {
+	if m.hasModel {
+		m.str.WriteString("</model>\n")
+	}
+	f := new(mockFile)
+	f.On("Open").Return(ioutil.NopCloser(bytes.NewBufferString(m.str.String())), nil).Maybe()
+	return f
 }
 
 type mockFile struct {
@@ -183,14 +230,19 @@ func TestReader_processRootModel(t *testing.T) {
 		{"noRoot", &Reader{Model: new(mdl.Model), r: newMockPackage(nil)}, new(mdl.Model), true},
 		{"abort", abortReader, new(mdl.Model), true},
 		{"errOpen", &Reader{Model: new(mdl.Model), r: newMockPackage(newMockFile("/a.model", nil, nil, nil, true))}, new(mdl.Model), true},
+		{"errEncode", &Reader{Model: new(mdl.Model), r: newMockPackage(new(modelBuilder).withEncoding("utf16").build())}, new(mdl.Model), true},
+		{"base", &Reader{Model: new(mdl.Model), r: newMockPackage(new(modelBuilder).withDefaultModel().build())}, &mdl.Model{
+			Units: mdl.Millimeter,
+		},false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := tt.r.processRootModel(); (err != nil) != tt.wantErr {
 				t.Errorf("Reader.processRootModel() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
 			if diff := deep.Equal(tt.r.Model, tt.want); diff != nil {
-				t.Errorf("Reader.processOPC() = %v", diff)
+				t.Errorf("Reader.processRootModel() = %v", diff)
 				return
 			}
 		})
