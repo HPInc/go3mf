@@ -218,27 +218,3 @@ func Test_opcReader_FindFileFromName(t *testing.T) {
 		})
 	}
 }
-
-func Test_opcReader_Relationships(t *testing.T) {
-	tests := []struct {
-		name string
-		o    *opcReader
-		want []relationship
-	}{
-		{"empty", &opcReader{new(opc.Reader)}, []relationship{}},
-		{"base", &opcReader{&opc.Reader{Relationships: []*opc.Relationship{
-			{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture", TargetURI: "/a.xml"},
-			{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel", TargetURI: "/b.xml"},
-		}}}, []relationship{
-			&opcRelationship{&opc.Relationship{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture", TargetURI: "/a.xml"}},
-			&opcRelationship{&opc.Relationship{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel", TargetURI: "/b.xml"}},
-		}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.o.Relationships(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("opcReader.Relationships() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}

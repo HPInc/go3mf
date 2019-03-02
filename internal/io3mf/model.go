@@ -52,7 +52,7 @@ func (d *modelDecoder) Decode(se xml.StartElement) error {
 }
 
 func (d *modelDecoder) parseBuild(se xml.StartElement) error {
-	if d.hasResources {
+	if d.hasBuild {
 		return errors.New("go3mf: duplicate build section in model file")
 	}
 	if d.ignoreBuild {

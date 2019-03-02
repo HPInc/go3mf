@@ -26,7 +26,6 @@ type packageFile interface {
 type packageReader interface {
 	FindFileFromRel(string) (packageFile, bool)
 	FindFileFromName(string) (packageFile, bool)
-	Relationships() []relationship
 }
 
 // Reader implements a 3mf file reader.
@@ -85,9 +84,6 @@ func (r *Reader) SetProgressCallback(callback progress.ProgressCallback, userDat
 
 // decode reads the 3mf file and unmarshall its content into the model.
 func (r *Reader) decode() error {
-	if r.Model == nil {
-		r.Model = new(mdl.Model)
-	}
 	r.progress.ResetLevels()
 	if err := r.processOPC(); err != nil {
 		return err
@@ -163,9 +159,6 @@ func (r *Reader) processNonRootModels() error {
 }
 
 func (r *Reader) processOPC() error {
-	if r.Model == nil {
-		r.Model = new(mdl.Model)
-	}
 	if !r.progress.Progress(0.05, progress.StageExtractOPCPackage) {
 		return ErrUserAborted
 	}

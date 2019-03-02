@@ -2,10 +2,11 @@ package io3mf
 
 import (
 	"fmt"
-	"github.com/qmuntal/opc"
 	"io"
 	"path/filepath"
 	"strings"
+
+	"github.com/qmuntal/opc"
 )
 
 type opcRelationship struct {
@@ -73,10 +74,6 @@ func (o *opcReader) FindFileFromRel(relType string) (packageFile, bool) {
 
 func (o *opcReader) FindFileFromName(name string) (packageFile, bool) {
 	return findOPCFileFromName(name, o.r)
-}
-
-func (o *opcReader) Relationships() []relationship {
-	return newRelationships(o.r.Relationships)
 }
 
 func findOPCFileFromName(name string, r *opc.Reader) (packageFile, bool) {
