@@ -1,6 +1,9 @@
 package io3mf
 
-import "errors"
+import (
+	"errors"
+	"image/color"
+)
 
 const (
 	nsXML             = "http://www.w3.org/XML/1998/namespace"
@@ -35,6 +38,8 @@ const (
 	attrBaseMaterialName  = "name"
 	attrBaseMaterialColor = "displaycolor"
 )
+
+var defaultColor = color.RGBA{R: 0xff, G: 0xff, B: 0xff, A: 0xff}
 
 // WarningLevel defines the level of a reader warning.
 type WarningLevel int

@@ -10,6 +10,61 @@ import (
 	"github.com/qmuntal/go3mf/internal/progress"
 )
 
+var emptyEntry struct{}
+
+type resourceEntry struct {
+	ID, Index uint64
+}
+
+type colorMapping struct {
+	entries map[resourceEntry]color.RGBA
+	resources map[uint64]struct{}
+}
+
+func (m *colorMapping) register(id, index uint64, c color.RGBA) {
+	m.entries[resourceEntry{id, index}] = c
+	m.resources[id] = emptyEntry
+}
+
+func (m *colorMapping) find(id, index uint64) (color.RGBA, bool) {
+	if c, ok := m.entries[resourceEntry{id, index}]; ok {
+		return c, true
+	}
+	return defaultColor, false
+}
+
+func (m *colorMapping) hasResource(id uint64) bool {
+	_, ok := m.resources[id]
+	return ok
+}
+
+type texCoord struct {
+	id uint64
+	u, v float32
+}
+
+type texCoordMapping struct {
+	entries map[resourceEntry]texCoord
+	resources map[uint64]struct{}
+}
+
+func (m *texCoordMapping) register(id, index, textureID uint64, u, v float32) {
+	m.entries[resourceEntry{id, index}] = texCoord{textureID, u, v}
+	m.resources[id] = emptyEntry
+}
+
+func (m *texCoordMapping) find(id, index uint64) (texCoord, bool) {
+	if c, ok := m.entries[resourceEntry{id, index}]; ok {
+		return c, true
+	}
+	return texCoord{}, false
+}
+
+func (m *texCoordMapping) hasResource(id uint64) bool {
+	_, ok := m.resources[id]
+	return ok
+}
+
 type resourceDecoder struct {
 	x             *xml.Decoder
 	r             *Reader
@@ -115,7 +170,7 @@ func (d *baseMaterialsDecoder) parseContent() error {
 
 func (d *baseMaterialsDecoder) addBaseMaterial(attrs []xml.Attr) error {
 	baseMaterial := mdl.BaseMaterial{
-		Color: color.RGBA{R: 0xff, G: 0xff, B: 0xff, A: 0xff},
+		Color: defaultColor,
 	}
 	for _, a := range attrs {
 		switch a.Name.Local {
