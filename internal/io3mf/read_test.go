@@ -3,11 +3,11 @@ package io3mf
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
-	"testing"
 	"strings"
-	"fmt"
+	"testing"
 
 	"github.com/go-test/deep"
 	mdl "github.com/qmuntal/go3mf/internal/model"
@@ -41,7 +41,7 @@ func (m *mockRelationship) TargetURI() string {
 }
 
 type modelBuilder struct {
-	str strings.Builder
+	str      strings.Builder
 	hasBuild bool
 	hasModel bool
 }
@@ -233,7 +233,7 @@ func TestReader_processRootModel(t *testing.T) {
 		{"errEncode", &Reader{Model: new(mdl.Model), r: newMockPackage(new(modelBuilder).withEncoding("utf16").build())}, new(mdl.Model), true},
 		{"base", &Reader{Model: new(mdl.Model), r: newMockPackage(new(modelBuilder).withDefaultModel().build())}, &mdl.Model{
 			Units: mdl.Millimeter,
-		},false},
+		}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
