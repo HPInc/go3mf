@@ -31,13 +31,12 @@ func (d *modelDecoder) Decode(se xml.StartElement) error {
 		}
 		switch tp := t.(type) {
 		case xml.StartElement:
-			if d.r.namespaceAttr(tp.Name.Space) == nsCoreSpec {
-				if tp.Name.Local == "resources" {
+			if tp.Name.Space == nsCoreSpec {
+				if tp.Name.Local == attrResources {
 					if err := d.parseResources(tp); err != nil {
 						return err
 					}
-				}
-				if tp.Name.Local == "build" {
+				} else if tp.Name.Local == attrBuild {
 					if err := d.parseBuild(tp); err != nil {
 						return err
 					}
@@ -86,34 +85,34 @@ func (d *modelDecoder) parseResources(se xml.StartElement) error {
 }
 
 func (d *modelDecoder) parseAttr(se xml.StartElement) error {
+	registeredNs := map[string]string{}
 	var requiredExts string
 	for _, a := range se.Attr {
 		if a.Name.Space == "" {
 			switch a.Name.Local {
-			case "unit":
+			case attrUnit:
 				var ok bool
 				if d.model.Units, ok = mdl.NewUnits(a.Value); !ok {
 					return errors.New("go3mf: invalid model units")
 				}
-			case "requiredextensions":
+			case attrReqExt:
 				requiredExts = a.Value
-			case "xmlns":
-				d.r.defaultNamespace = a.Value
 			}
 		} else {
-			switch ns := d.r.namespaceAttr(a.Name.Space); ns {
+			switch a.Name.Space {
 			case nsXML:
-				if a.Name.Local == "lang" {
+				if a.Name.Local == attrLang {
 					d.model.Language = a.Value
 				}
-			case nsXMLNs:
-				d.r.namespaces[a.Name.Local] = a.Value
+			case "xmlns":
+				d.r.namespaces = append(d.r.namespaces, a.Value)
+				registeredNs[a.Name.Local] = a.Value
 			}
 		}
 	}
 
 	for _, ext := range strings.Fields(requiredExts) {
-		ext = d.r.namespaceAttr(ext)
+		ext = registeredNs[ext]
 		if ext != nsCoreSpec && ext != nsMaterialSpec && ext != nsProductionSpec && ext != nsBeamLatticeSpec && ext != nsSliceSpec {
 			d.r.Warnings = append(d.r.Warnings, &ReadError{InvalidMandatoryValue, "go3mf: a required extension is not supported"})
 		}

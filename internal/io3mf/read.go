@@ -34,8 +34,7 @@ type Reader struct {
 	AttachmentRelations []string
 	progress            progress.Monitor
 	r                   packageReader
-	namespaces          map[string]string
-	defaultNamespace    string
+	namespaces          []string
 }
 
 // NewReader returns a new Reader reading a 3mf file from r.
@@ -46,25 +45,7 @@ func NewReader(r io.ReaderAt, size int64) (*Reader, error) {
 	}
 	return &Reader{
 		r: opcr,
-		namespaces: map[string]string{
-			"xml":   nsXML,
-			"xmlns": nsXMLNs,
-		},
 	}, nil
-}
-
-func (r *Reader) namespaceContent(prefix string) string {
-	if prefix == "" {
-		return r.defaultNamespace
-	}
-	return r.namespaces[prefix]
-}
-
-func (r *Reader) namespaceAttr(prefix string) string {
-	if prefix == "" {
-		return ""
-	}
-	return r.namespaces[prefix]
 }
 
 func (r *Reader) namespaceRegistered(ns string) bool {
@@ -111,6 +92,7 @@ func (r *Reader) processRootModel() error {
 	defer f.Close()
 	x := xml.NewDecoder(f)
 	var t xml.Token
+	mainLoop:
 	for {
 		t, err = x.Token()
 		if err != nil {
@@ -121,7 +103,7 @@ func (r *Reader) processRootModel() error {
 			if tp.Name.Local == "model" {
 				md := modelDecoder{x: x, r: r, model: r.Model}
 				err = md.Decode(tp)
-				break
+				break mainLoop
 			}
 		}
 	}

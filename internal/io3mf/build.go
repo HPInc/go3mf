@@ -27,12 +27,10 @@ func (d *buildDecoder) Decode(se xml.StartElement) error {
 		}
 		switch tp := t.(type) {
 		case xml.StartElement:
-			if d.r.namespaceAttr(tp.Name.Space) == nsCoreSpec {
-				if tp.Name.Local == "item" {
-					bd := buildItemDecoder{x: d.x, r: d.r, model: d.model}
-					if err := bd.Decode(se); err != nil {
-						return err
-					}
+			if tp.Name.Space == nsCoreSpec && tp.Name.Local == "item" {
+				bd := buildItemDecoder{x: d.x, r: d.r, model: d.model}
+				if err := bd.Decode(se); err != nil {
+					return err
 				}
 			}
 		}
@@ -41,14 +39,12 @@ func (d *buildDecoder) Decode(se xml.StartElement) error {
 
 func (d *buildDecoder) parseAttr(se xml.StartElement) error {
 	for _, a := range se.Attr {
-		if d.r.namespaceAttr(a.Name.Space) == nsProductionSpec {
-			if se.Name.Local == attrProdUUID {
-				if d.model.UUID() != uuid.Nil {
-					return errors.New("go3mf: duplicated build uuid attribute")
-				}
-				id := uuid.FromStringOrNil(a.Value)
-				return d.model.SetUUID(id)
+		if a.Name.Space == nsProductionSpec && se.Name.Local == attrProdUUID {
+			if d.model.UUID() != uuid.Nil {
+				return errors.New("go3mf: duplicated build uuid attribute")
 			}
+			id := uuid.FromStringOrNil(a.Value)
+			return d.model.SetUUID(id)
 		}
 	}
 
@@ -78,7 +74,7 @@ func (d *buildItemDecoder) Decode(se xml.StartElement) error {
 
 func (d *buildItemDecoder) parseAttr(se xml.StartElement) error {
 	for _, a := range se.Attr {
-		switch d.r.namespaceAttr(a.Name.Space) {
+		switch a.Name.Space {
 		case nsProductionSpec:
 			if se.Name.Local == attrProdUUID {
 				if d.item.UUID() != uuid.Nil {

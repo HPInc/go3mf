@@ -23,6 +23,11 @@ const (
 	attrProdPath  = "path"
 	attrObjectID  = "objectid"
 	attrTransform = "transform"
+	attrUnit      = "unit"
+	attrReqExt    = "requiredextensions"
+	attrLang      = "lang"
+	attrResources = "resources"
+	attrBuild     = "build"
 )
 
 // WarningLevel defines the level of a reader warning.

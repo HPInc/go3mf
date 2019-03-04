@@ -42,7 +42,6 @@ func (m *mockRelationship) TargetURI() string {
 
 type modelBuilder struct {
 	str      strings.Builder
-	hasBuild bool
 	hasModel bool
 }
 
@@ -57,14 +56,14 @@ func (m *modelBuilder) addAttr(prefix, name, value string) *modelBuilder {
 }
 
 func (m *modelBuilder) withDefaultModel() *modelBuilder {
-	return m.withModel("millimeter", "en-US", "m p b s", "m", "p", "b", "s")
+	return m.withModel("millimeter", "en-US")
 }
 
-func (m *modelBuilder) withModel(unit mdl.Units, lang, requiredExt, nsMaterial, nsProd, nsLattice, nsSlice string) *modelBuilder {
+func (m *modelBuilder) withModel(unit mdl.Units, lang string) *modelBuilder {
 	m.str.WriteString(`<model `)
 	m.addAttr("", "unit", string(unit)).addAttr("xml", "lang", lang)
-	m.addAttr("", "xmlns", nsCoreSpec).addAttr("xmlns", nsMaterial, nsMaterialSpec).addAttr("xmlns", nsProd, nsProductionSpec)
-	m.addAttr("xmlns", nsLattice, nsBeamLatticeSpec).addAttr("xmlns", nsSlice, nsSliceSpec).addAttr("", "requiredextensions", requiredExt)
+	m.addAttr("", "xmlns", nsCoreSpec).addAttr("xmlns", "m", nsMaterialSpec).addAttr("xmlns", "p", nsProductionSpec)
+	m.addAttr("xmlns", "b", nsBeamLatticeSpec).addAttr("xmlns", "s", nsSliceSpec).addAttr("", "requiredextensions", "m p b s")
 	m.str.WriteString(">\n")
 	m.hasModel = true
 	return m
@@ -231,8 +230,9 @@ func TestReader_processRootModel(t *testing.T) {
 		{"abort", abortReader, new(mdl.Model), true},
 		{"errOpen", &Reader{Model: new(mdl.Model), r: newMockPackage(newMockFile("/a.model", nil, nil, nil, true))}, new(mdl.Model), true},
 		{"errEncode", &Reader{Model: new(mdl.Model), r: newMockPackage(new(modelBuilder).withEncoding("utf16").build())}, new(mdl.Model), true},
+		{"invalidUnits", &Reader{Model: new(mdl.Model), r: newMockPackage(new(modelBuilder).withModel("other", "en-US").build())}, &mdl.Model{}, true},
 		{"base", &Reader{Model: new(mdl.Model), r: newMockPackage(new(modelBuilder).withDefaultModel().build())}, &mdl.Model{
-			Units: mdl.Millimeter,
+			Units: mdl.Millimeter, Language: "en-US",
 		}, false},
 	}
 	for _, tt := range tests {
@@ -249,52 +249,6 @@ func TestReader_processRootModel(t *testing.T) {
 	}
 }
 
-func TestReader_namespaceAttr(t *testing.T) {
-	type args struct {
-		prefix string
-	}
-	tests := []struct {
-		name string
-		r    *Reader
-		args args
-		want string
-	}{
-		{"empty", &Reader{defaultNamespace: "http://b.com", namespaces: map[string]string{"xml": "http://xml.com"}}, args{""}, ""},
-		{"xml", &Reader{defaultNamespace: "http://b.com", namespaces: map[string]string{"xml": "http:/xml.com"}}, args{"xml"}, "http:/xml.com"},
-		{"noexist", &Reader{defaultNamespace: "http://b.com", namespaces: map[string]string{"xml": "http:/xml.com"}}, args{"b"}, ""},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.r.namespaceAttr(tt.args.prefix); got != tt.want {
-				t.Errorf("Reader.namespaceAttr() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestReader_namespaceContent(t *testing.T) {
-	type args struct {
-		prefix string
-	}
-	tests := []struct {
-		name string
-		r    *Reader
-		args args
-		want string
-	}{
-		{"empty", &Reader{defaultNamespace: "http://b.com", namespaces: map[string]string{"xml": "http://xml.com"}}, args{""}, "http://b.com"},
-		{"xml", &Reader{defaultNamespace: "http://b.com", namespaces: map[string]string{"xml": "http:/xml.com"}}, args{"xml"}, "http:/xml.com"},
-		{"noexist", &Reader{defaultNamespace: "http://b.com", namespaces: map[string]string{"xml": "http:/xml.com"}}, args{"b"}, ""},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.r.namespaceContent(tt.args.prefix); got != tt.want {
-				t.Errorf("Reader.namespaceContent() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestReader_namespaceRegistered(t *testing.T) {
 	type args struct {
 		ns string
@@ -305,9 +259,9 @@ func TestReader_namespaceRegistered(t *testing.T) {
 		args args
 		want bool
 	}{
-		{"empty", &Reader{namespaces: map[string]string{"xml": "http://xml.com"}}, args{""}, false},
-		{"exist", &Reader{namespaces: map[string]string{"xml": "http://xml.com"}}, args{"http://xml.com"}, true},
-		{"noexist", &Reader{namespaces: map[string]string{"xml": "http://xml.com"}}, args{"xmls"}, false},
+		{"empty", &Reader{namespaces: []string{"http://xml.com"}}, args{""}, false},
+		{"exist", &Reader{namespaces: []string{"http://xml.com"}}, args{"http://xml.com"}, true},
+		{"noexist", &Reader{namespaces: []string{"http://xml.com"}}, args{"xmls"}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
