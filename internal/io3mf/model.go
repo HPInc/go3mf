@@ -119,13 +119,3 @@ func (d *modelDecoder) parseAttr(se xml.StartElement) error {
 	}
 	return nil
 }
-
-type resourceDecoder struct {
-	x     *xml.Decoder
-	r     *Reader
-	model *mdl.Model
-}
-
-func (d *resourceDecoder) Decode(se xml.StartElement) error {
-	return nil
-}

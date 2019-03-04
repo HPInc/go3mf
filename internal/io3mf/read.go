@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/xml"
 	"errors"
+	"image/color"
 	"io"
 
 	mdl "github.com/qmuntal/go3mf/internal/model"
@@ -92,7 +93,7 @@ func (r *Reader) processRootModel() error {
 	defer f.Close()
 	x := xml.NewDecoder(f)
 	var t xml.Token
-	mainLoop:
+mainLoop:
 	for {
 		t, err = x.Token()
 		if err != nil {
@@ -211,4 +212,40 @@ func copyFile(file packageFile) (io.Reader, error) {
 	_, err = io.Copy(buff, stream)
 	stream.Close()
 	return buff, err
+}
+
+func strToSRGB(s string) (c color.RGBA, err error) {
+	var errInvalidFormat = errors.New("gltf: invalid color format")
+	c.A = 0xff
+
+	if s[0] != '#' {
+		return c, errInvalidFormat
+	}
+
+	hexToByte := func(b byte) byte {
+		switch {
+		case b >= '0' && b <= '9':
+			return b - '0'
+		case b >= 'a' && b <= 'f':
+			return b - 'a'
+		case b >= 'A' && b <= 'F':
+			return b - 'A'
+		}
+		err = errInvalidFormat
+		return 0
+	}
+
+	switch len(s) {
+	case 7:
+		c.R = hexToByte(s[1])<<4 + hexToByte(s[2])
+		c.G = hexToByte(s[3])<<4 + hexToByte(s[4])
+		c.B = hexToByte(s[5])<<4 + hexToByte(s[6])
+	case 4:
+		c.R = hexToByte(s[1]) * 17
+		c.G = hexToByte(s[2]) * 17
+		c.B = hexToByte(s[3]) * 17
+	default:
+		err = errInvalidFormat
+	}
+	return
 }

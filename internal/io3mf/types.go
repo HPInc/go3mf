@@ -19,15 +19,21 @@ const (
 )
 
 const (
-	attrProdUUID  = "UUID"
-	attrProdPath  = "path"
-	attrObjectID  = "objectid"
-	attrTransform = "transform"
-	attrUnit      = "unit"
-	attrReqExt    = "requiredextensions"
-	attrLang      = "lang"
-	attrResources = "resources"
-	attrBuild     = "build"
+	attrID                = "id"
+	attrProdUUID          = "UUID"
+	attrProdPath          = "path"
+	attrObjectID          = "objectid"
+	attrTransform         = "transform"
+	attrUnit              = "unit"
+	attrReqExt            = "requiredextensions"
+	attrLang              = "lang"
+	attrResources         = "resources"
+	attrBuild             = "build"
+	attrObject            = "object"
+	attrBaseMaterials     = "basematerials"
+	attrBase              = "base"
+	attrBaseMaterialName  = "name"
+	attrBaseMaterialColor = "displaycolor"
 )
 
 // WarningLevel defines the level of a reader warning.
