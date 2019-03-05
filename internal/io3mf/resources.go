@@ -17,7 +17,7 @@ type resourceEntry struct {
 }
 
 type colorMapping struct {
-	entries map[resourceEntry]color.RGBA
+	entries   map[resourceEntry]color.RGBA
 	resources map[uint64]struct{}
 }
 
@@ -39,12 +39,12 @@ func (m *colorMapping) hasResource(id uint64) bool {
 }
 
 type texCoord struct {
-	id uint64
+	id   uint64
 	u, v float32
 }
 
 type texCoordMapping struct {
-	entries map[resourceEntry]texCoord
+	entries   map[resourceEntry]texCoord
 	resources map[uint64]struct{}
 }
 

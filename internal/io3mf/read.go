@@ -6,7 +6,10 @@ import (
 	"errors"
 	"image/color"
 	"io"
+	"strconv"
+	"strings"
 
+	"github.com/go-gl/mathgl/mgl32"
 	mdl "github.com/qmuntal/go3mf/internal/model"
 	"github.com/qmuntal/go3mf/internal/progress"
 )
@@ -216,9 +219,8 @@ func copyFile(file packageFile) (io.Reader, error) {
 
 func strToSRGB(s string) (c color.RGBA, err error) {
 	var errInvalidFormat = errors.New("gltf: invalid color format")
-	c.A = 0xff
 
-	if s[0] != '#' {
+	if len(s) == 0 || s[0] != '#' {
 		return c, errInvalidFormat
 	}
 
@@ -236,16 +238,38 @@ func strToSRGB(s string) (c color.RGBA, err error) {
 	}
 
 	switch len(s) {
+	case 9:
+		c.R = hexToByte(s[1])<<4 + hexToByte(s[2])
+		c.G = hexToByte(s[3])<<4 + hexToByte(s[4])
+		c.B = hexToByte(s[5])<<4 + hexToByte(s[6])
+		c.A = hexToByte(s[7])<<4 + hexToByte(s[8])
 	case 7:
 		c.R = hexToByte(s[1])<<4 + hexToByte(s[2])
 		c.G = hexToByte(s[3])<<4 + hexToByte(s[4])
 		c.B = hexToByte(s[5])<<4 + hexToByte(s[6])
-	case 4:
-		c.R = hexToByte(s[1]) * 17
-		c.G = hexToByte(s[2]) * 17
-		c.B = hexToByte(s[3]) * 17
+		c.A = 0xff
 	default:
 		err = errInvalidFormat
 	}
 	return
+}
+
+func strToMatrix(s string) (mgl32.Mat4, error) {
+	var matrix mgl32.Mat4
+	values := strings.Fields(s)
+	if len(values) != 12 {
+		return matrix, errors.New("go3mf: matrix string does not have 12 values")
+	}
+	var t [12]float32
+	for i := 0; i < 12; i++ {
+		val, err := strconv.ParseFloat(values[i], 32)
+		if err != nil {
+			return matrix, errors.New("go3mf: matrix string contain characters other than numbers")
+		}
+		t[i] = float32(val)
+	}
+	return mgl32.Mat4{t[0], t[3], t[6], t[9],
+		t[1], t[4], t[7], t[10],
+		t[2], t[5], t[8], t[11],
+		0.0, 0.0, 0.0, 1.0}, nil
 }

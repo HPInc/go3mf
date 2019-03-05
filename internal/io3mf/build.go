@@ -114,6 +114,8 @@ func (d *buildItemDecoder) parseCoreAttr(a xml.Attr) error {
 			return errors.New("go3mf: build item id is not valid")
 		}
 		d.hasObjectID = true
+	case attrPartNumber:
+		d.item.PartNumber = a.Value
 	}
 	return nil
 }

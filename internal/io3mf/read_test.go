@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"image/color"
 	"io"
 	"io/ioutil"
+	"reflect"
 	"strings"
 	"testing"
 
+	"github.com/go-gl/mathgl/mgl32"
 	"github.com/go-test/deep"
 	mdl "github.com/qmuntal/go3mf/internal/model"
 	"github.com/qmuntal/go3mf/internal/progress"
@@ -56,7 +59,8 @@ func (m *modelBuilder) addAttr(prefix, name, value string) *modelBuilder {
 }
 
 func (m *modelBuilder) withDefaultModel() *modelBuilder {
-	return m.withModel("millimeter", "en-US")
+	m.withModel("millimeter", "en-US")
+	return m
 }
 
 func (m *modelBuilder) withModel(unit mdl.Units, lang string) *modelBuilder {
@@ -267,6 +271,69 @@ func TestReader_namespaceRegistered(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.r.namespaceRegistered(tt.args.ns); got != tt.want {
 				t.Errorf("Reader.namespaceRegistered() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_strToMatrix(t *testing.T) {
+	type args struct {
+		s string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    mgl32.Mat4
+		wantErr bool
+	}{
+		{"empty", args{""}, mgl32.Mat4{}, true},
+		{"11values", args{"1 1 1 1 1 1 1 1 1 1 1"}, mgl32.Mat4{}, true},
+		{"13values", args{"1 1 1 1 1 1 1 1 1 1 1 1 1"}, mgl32.Mat4{}, true},
+		{"char", args{"1 1 a 1 1 1 1 1 1 1 1 1"}, mgl32.Mat4{}, true},
+		{"base", args{"1 1 1 1 1 1 1 1 1 1 1 1"}, mgl32.Mat4{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1}, false},
+		{"other", args{"0 1 2 10 11 12 20 21 22 30 31 32"}, mgl32.Mat4{0, 10, 20, 30, 1, 11, 21, 31, 2, 12, 22, 32, 0, 0, 0, 1}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := strToMatrix(tt.args.s)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("strToMatrix() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("strToMatrix() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_strToSRGB(t *testing.T) {
+	type args struct {
+		s string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantC   color.RGBA
+		wantErr bool
+	}{
+		{"empty", args{""}, color.RGBA{}, true},
+		{"nohashrgb", args{"101010"}, color.RGBA{}, true},
+		{"nohashrgba", args{"10101010"}, color.RGBA{}, true},
+		{"invalidChar", args{"#€0101010"}, color.RGBA{}, true},
+		{"rgb", args{"#112233"}, color.RGBA{17, 34, 51, 255}, false},
+		{"rgb", args{"#000233"}, color.RGBA{0, 2, 51, 255}, false},
+		{"rgba", args{"#00023311"}, color.RGBA{0, 2, 51, 17}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotC, err := strToSRGB(tt.args.s)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("strToSRGB() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotC, tt.wantC) {
+				t.Errorf("strToSRGB() = %v, want %v", gotC, tt.wantC)
 			}
 		})
 	}

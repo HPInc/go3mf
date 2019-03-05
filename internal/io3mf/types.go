@@ -37,6 +37,7 @@ const (
 	attrBase              = "base"
 	attrBaseMaterialName  = "name"
 	attrBaseMaterialColor = "displaycolor"
+	attrPartNumber        = "partnumber"
 )
 
 var defaultColor = color.RGBA{R: 0xff, G: 0xff, B: 0xff, A: 0xff}
