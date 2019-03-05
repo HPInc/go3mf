@@ -40,6 +40,7 @@ const (
 	attrPartNumber        = "partnumber"
 	attrItem              = "item"
 	attrModel             = "model"
+	attrColor             = "color"
 )
 
 var defaultColor = color.RGBA{R: 0xff, G: 0xff, B: 0xff, A: 0xff}

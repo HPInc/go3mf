@@ -72,7 +72,7 @@ func (d *buildItemDecoder) Decode(se xml.StartElement) error {
 	if !d.hasObjectID {
 		return errors.New("go3mf: build item does not have objectid attribute")
 	}
-	
+
 	return d.processItem()
 }
 

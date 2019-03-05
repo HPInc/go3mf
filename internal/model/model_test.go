@@ -262,8 +262,9 @@ func TestModel_FindPackageResourceID(t *testing.T) {
 	}
 }
 
-func TestModel_FindObject(t *testing.T) {model := new(Model)
-	id1:= newObject()
+func TestModel_FindObject(t *testing.T) {
+	model := new(Model)
+	id1 := newObject()
 	id1.ResourceID.uniqueID = 10
 	id2 := newObject()
 	id2.ResourceID.uniqueID = 11
