@@ -103,19 +103,20 @@ func (d *buildItemDecoder) parseAttr(se xml.StartElement) error {
 	return nil
 }
 
-func (d *buildItemDecoder) parseCoreAttr(a xml.Attr) error {
+func (d *buildItemDecoder) parseCoreAttr(a xml.Attr) (err error) {
 	switch a.Name.Local {
 	case attrObjectID:
 		if d.hasObjectID {
 			return errors.New("go3mf: duplicated build item objectid attribute")
 		}
-		var err error
 		if d.objectID, err = strconv.ParseUint(a.Value, 10, 64); err != nil {
 			return errors.New("go3mf: build item id is not valid")
 		}
 		d.hasObjectID = true
 	case attrPartNumber:
 		d.item.PartNumber = a.Value
+	case attrTransform:
+		d.item.Transform, err = strToMatrix(a.Value)
 	}
-	return nil
+	return
 }
