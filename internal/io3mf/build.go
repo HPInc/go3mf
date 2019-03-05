@@ -27,7 +27,7 @@ func (d *buildDecoder) Decode(se xml.StartElement) error {
 		}
 		switch tp := t.(type) {
 		case xml.StartElement:
-			if tp.Name.Space == nsCoreSpec && tp.Name.Local == "item" {
+			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrItem {
 				bd := buildItemDecoder{x: d.x, r: d.r, model: d.model}
 				if err := bd.Decode(se); err != nil {
 					return err

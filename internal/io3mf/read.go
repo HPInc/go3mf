@@ -104,7 +104,7 @@ mainLoop:
 		}
 		switch tp := t.(type) {
 		case xml.StartElement:
-			if tp.Name.Local == "model" {
+			if tp.Name.Local == attrModel {
 				md := modelDecoder{x: x, r: r, model: r.Model}
 				err = md.Decode(tp)
 				break mainLoop
