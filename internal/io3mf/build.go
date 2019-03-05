@@ -48,7 +48,7 @@ func (d *buildDecoder) parseAttr(se xml.StartElement) error {
 		}
 	}
 
-	if d.model.UUID() == uuid.Nil && d.model.RootPath == d.model.Path && d.r.namespaceRegistered(nsCoreSpec) {
+	if d.model.UUID() == uuid.Nil && d.model.RootPath == d.model.Path && d.r.namespaceRegistered(nsProductionSpec) {
 		d.r.Warnings = append(d.r.Warnings, &ReadError{MissingMandatoryValue, "go3mf: a UUID for a build is missing"})
 	}
 	return nil
@@ -69,6 +69,39 @@ func (d *buildItemDecoder) Decode(se xml.StartElement) error {
 	if err := d.parseAttr(se); err != nil {
 		return err
 	}
+	if !d.hasObjectID {
+		return errors.New("go3mf: build item does not have objectid attribute")
+	}
+	
+	return d.processItem()
+}
+
+func (d *buildItemDecoder) processItem() error {
+	var path string
+	if d.item.Path != "" {
+		if d.model.Path != d.model.RootPath {
+			return errors.New("go3mf: references in production extension go deeper than one level")
+		}
+		path = d.item.Path
+	} else {
+		path = d.model.Path
+	}
+	id, ok := d.model.FindPackageResourcePath(path, d.objectID)
+	if !ok {
+		return errors.New("go3mf: could not find build item object")
+	}
+	obj, ok := d.model.FindObject(id.UniqueID())
+	if !ok {
+		return errors.New("go3mf: could not find build item object")
+	}
+	if obj.Type() == mdl.OtherType {
+		d.r.Warnings = append(d.r.Warnings, &ReadError{InvalidMandatoryValue, "go3mf: build item must not reference object of type OTHER"})
+	}
+	d.item.Object = obj
+	if !d.item.IsValidForSlices() {
+		d.r.Warnings = append(d.r.Warnings, &ReadError{InvalidMandatoryValue, "go3mf: A slicestack posesses a nonplanar transformation"})
+	}
+	d.model.BuildItems = append(d.model.BuildItems, d.item)
 	return nil
 }
 
@@ -97,8 +130,8 @@ func (d *buildItemDecoder) parseAttr(se xml.StartElement) error {
 		}
 	}
 
-	if d.model.UUID() == uuid.Nil && d.model.RootPath == d.model.Path && d.r.namespaceRegistered(nsCoreSpec) {
-		d.r.Warnings = append(d.r.Warnings, &ReadError{MissingMandatoryValue, "go3mf: a UUID for a build is missing"})
+	if d.model.UUID() == uuid.Nil && d.model.RootPath == d.model.Path && d.r.namespaceRegistered(nsProductionSpec) {
+		d.r.Warnings = append(d.r.Warnings, &ReadError{MissingMandatoryValue, "go3mf: a UUID for a build item is missing"})
 	}
 	return nil
 }

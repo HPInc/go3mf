@@ -109,6 +109,17 @@ func (m *Model) FindResource(uniqueID uint64) (i Identifier, ok bool) {
 	return
 }
 
+// FindObject returns the object with the target unique ID.
+func (m *Model) FindObject(uniqueID uint64) (o Object, ok bool) {
+	r, k := m.FindResource(uniqueID)
+	if !k {
+		return
+	}
+	o, ok = r.(Object)
+	return
+}
+
+
 // FindPackageResourceID returns the package resource with the target unique ID.
 func (m *Model) FindPackageResourceID(uniqueID uint64) (*ResourceID, bool) {
 	return m.resourceHandler.FindResourceID(uniqueID)

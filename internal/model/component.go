@@ -13,6 +13,7 @@ type Object interface {
 	ID() uint64
 	IsValid() bool
 	IsValidForSlices(mgl32.Mat4) bool
+	Type() ObjectType
 }
 
 // An ObjectResource is an in memory representation of the 3MF model object.
@@ -24,7 +25,7 @@ type ObjectResource struct {
 	SliceResoultion SliceResolution
 	Thumbnail       string
 	DefaultProperty interface{}
-	Type            ObjectType
+	objectType      ObjectType
 	uuid            uuid.UUID
 }
 
@@ -36,6 +37,11 @@ func newObjectResource(id uint64, model *Model) (*ObjectResource, error) {
 	return &ObjectResource{
 		Resource: *r,
 	}, nil
+}
+
+// Type returns the type of the object.
+func (o *ObjectResource) Type() ObjectType {
+	return o.objectType
 }
 
 // UUID returns the object UUID.
@@ -191,7 +197,7 @@ func (c *MeshResource) IsValid() bool {
 	if c.Mesh == nil {
 		return false
 	}
-	switch c.Type {
+	switch c.objectType {
 	case ModelType:
 		return c.Mesh.IsManifoldAndOriented()
 	case SupportType:

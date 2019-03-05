@@ -22,10 +22,15 @@ func NewMockObject(isValid, isValidForSlices bool) *MockObject {
 	return o
 }
 
+func (o *MockObject) Type() ObjectType {
+	return OtherType
+}
+
 func (o *MockObject) RootModel() *Model {
 	o.Called()
 	return new(Model)
 }
+
 func (o *MockObject) MergeToMesh(args0 *mesh.Mesh, args1 mgl32.Mat4) error {
 	o.Called(args0, args1)
 	return nil
@@ -364,11 +369,11 @@ func TestMeshResource_IsValid(t *testing.T) {
 		want bool
 	}{
 		{"empty", new(MeshResource), false},
-		{"other", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{Type: OtherType}}, false},
-		{"surface", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{Type: SurfaceType}}, true},
-		{"support", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{Type: SupportType}}, true},
-		{"solidsupport", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{Type: SolidSupportType}}, false},
-		{"model", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{Type: ModelType}}, false},
+		{"other", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{objectType: OtherType}}, false},
+		{"surface", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{objectType: SurfaceType}}, true},
+		{"support", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{objectType: SupportType}}, true},
+		{"solidsupport", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{objectType: SolidSupportType}}, false},
+		{"model", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{objectType: ModelType}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
