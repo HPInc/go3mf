@@ -261,3 +261,39 @@ func TestModel_FindPackageResourceID(t *testing.T) {
 		})
 	}
 }
+
+func TestModel_FindObject(t *testing.T) {model := new(Model)
+	id1:= newObject()
+	id1.ResourceID.uniqueID = 10
+	id2 := newObject()
+	id2.ResourceID.uniqueID = 11
+	id3, _ := newResource(0, model)
+	model.resourceMap = map[uint64]Identifier{id1.UniqueID(): id1, id2.UniqueID(): id2, id3.UniqueID(): id3}
+	type args struct {
+		uniqueID uint64
+	}
+	tests := []struct {
+		name   string
+		m      *Model
+		args   args
+		wantO  Object
+		wantOk bool
+	}{
+		{"exist1", model, args{id1.UniqueID()}, id1, true},
+		{"exist2", model, args{id2.UniqueID()}, id2, true},
+		{"noobj", model, args{id3.UniqueID()}, nil, false},
+		{"noexist", model, args{100}, nil, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotO, gotOk := tt.m.FindObject(tt.args.uniqueID)
+			if !reflect.DeepEqual(gotO, tt.wantO) {
+				t.Errorf("Model.FindObject() gotO = %v, want %v", gotO, tt.wantO)
+				return
+			}
+			if gotOk != tt.wantOk {
+				t.Errorf("Model.FindObject() gotOk = %v, want %v", gotOk, tt.wantOk)
+			}
+		})
+	}
+}
