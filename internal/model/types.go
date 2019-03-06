@@ -16,24 +16,24 @@ const (
 type Units string
 
 const (
-	// Micrometer for microns
-	Micrometer Units = "micron"
-	// Millimeter for millimeter
-	Millimeter = "millimeter"
-	// Centimeter for centimeter
-	Centimeter = "centimeter"
-	// Inch for inch
-	Inch = "inch"
-	// Foot for foot
-	Foot = "foot"
-	// Meter for meter
-	Meter = "meter"
+	// UnitMicrometer for microns
+	UnitMicrometer Units = "micron"
+	// UnitMillimeter for millimeter
+	UnitMillimeter = "millimeter"
+	// UnitCentimeter for centimeter
+	UnitCentimeter = "centimeter"
+	// UnitInch for inch
+	UnitInch = "inch"
+	// UnitFoot for foot
+	UnitFoot = "foot"
+	// UnitMeter for meter
+	UnitMeter = "meter"
 )
 
 // NewUnits returns a new unit from a string.
 func NewUnits(s string) (Units, bool) {
 	u := Units(s)
-	if u == Millimeter || u == Inch || u == Micrometer || u == Centimeter || u == Foot || u == Meter {
+	if u == UnitMillimeter || u == UnitInch || u == UnitMicrometer || u == UnitCentimeter || u == UnitFoot || u == UnitMeter {
 		return u, true
 	}
 	return "", false
@@ -65,16 +65,16 @@ const (
 type ObjectType string
 
 const (
-	// OtherType defines a generic object type.
-	OtherType ObjectType = "other"
-	// ModelType defines a model object type.
-	ModelType = "model"
-	// SupportType defines a support object type.
-	SupportType = "support"
-	// SolidSupportType defines a solid support object type.
-	SolidSupportType = "solidsupport"
-	// SurfaceType defines a surface object type.
-	SurfaceType = "surface"
+	// ObjectTypeOther defines a generic object type.
+	ObjectTypeOther ObjectType = "other"
+	// ObjectTypeModel defines a model object type.
+	ObjectTypeModel = "model"
+	// ObjectTypeSupport defines a support object type.
+	ObjectTypeSupport = "support"
+	// ObjectTypeSolidSupport defines a solid support object type.
+	ObjectTypeSolidSupport = "solidsupport"
+	// ObjectTypeSurface defines a surface object type.
+	ObjectTypeSurface = "surface"
 )
 
 // Texture2DType defines the allowed texture 2D types.
@@ -102,20 +102,20 @@ func NewTexture2DType(s string) (Texture2DType, bool) {
 type TileStyle string
 
 const (
-	// WrapTile wraps the tile.
-	WrapTile TileStyle = "wrap"
-	// MirrorTile mirrors the tile.
-	MirrorTile = "mirror"
-	// ClampTile clamps the tile.
-	ClampTile = "clamp"
-	// NoneTile apply no style.
-	NoneTile = "none"
+	// TileWrap wraps the tile.
+	TileWrap TileStyle = "wrap"
+	// TileMirror mirrors the tile.
+	TileMirror = "mirror"
+	// TileClamp clamps the tile.
+	TileClamp = "clamp"
+	// TileNone apply no style.
+	TileNone = "none"
 )
 
 // NewTileStyle returns a new TileStyle from a string.
 func NewTileStyle(s string) (TileStyle, bool) {
 	u := TileStyle(s)
-	if u == WrapTile || u == MirrorTile || u == ClampTile || u == NoneTile {
+	if u == TileWrap || u == TileMirror || u == TileClamp || u == TileNone {
 		return u, true
 	}
 	return "", false
@@ -125,18 +125,18 @@ func NewTileStyle(s string) (TileStyle, bool) {
 type TextureFilter string
 
 const (
-	// AutoFilter applies an automatic filter.
-	AutoFilter TextureFilter = "auto"
-	// LinearFilter applies a linear filter.
-	LinearFilter = "linear"
-	// NearestFilter applies an nearest filter.
-	NearestFilter = "nearest"
+	// TextureFilterAuto applies an automatic filter.
+	TextureFilterAuto TextureFilter = "auto"
+	// TextureFilterLinear applies a linear filter.
+	TextureFilterLinear = "linear"
+	// TextureFilterNearest applies an nearest filter.
+	TextureFilterNearest = "nearest"
 )
 
 // NewTextureFilter returns a new TextureFilter from a string.
 func NewTextureFilter(s string) (TextureFilter, bool) {
 	u := TextureFilter(s)
-	if u == AutoFilter || u == LinearFilter || u == NearestFilter {
+	if u == TextureFilterAuto || u == TextureFilterLinear || u == TextureFilterNearest {
 		return u, true
 	}
 	return "", false

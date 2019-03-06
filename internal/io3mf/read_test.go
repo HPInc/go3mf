@@ -236,7 +236,7 @@ func TestReader_processRootModel(t *testing.T) {
 		{"errEncode", &Reader{Model: new(mdl.Model), r: newMockPackage(new(modelBuilder).withEncoding("utf16").build())}, new(mdl.Model), true},
 		{"invalidUnits", &Reader{Model: new(mdl.Model), r: newMockPackage(new(modelBuilder).withModel("other", "en-US").build())}, &mdl.Model{}, true},
 		{"base", &Reader{Model: new(mdl.Model), r: newMockPackage(new(modelBuilder).withDefaultModel().build())}, &mdl.Model{
-			Units: mdl.Millimeter, Language: "en-US",
+			Units: mdl.UnitMillimeter, Language: "en-US",
 		}, false},
 	}
 	for _, tt := range tests {

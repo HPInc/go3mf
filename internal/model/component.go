@@ -198,13 +198,13 @@ func (c *MeshResource) IsValid() bool {
 		return false
 	}
 	switch c.objectType {
-	case ModelType:
+	case ObjectTypeModel:
 		return c.Mesh.IsManifoldAndOriented()
-	case SupportType:
+	case ObjectTypeSupport:
 		return c.Mesh.BeamCount() == 0
-	case SolidSupportType:
+	case ObjectTypeSolidSupport:
 		return c.Mesh.IsManifoldAndOriented()
-	case SurfaceType:
+	case ObjectTypeSurface:
 		return c.Mesh.BeamCount() == 0
 	}
 

@@ -94,7 +94,7 @@ func (d *buildItemDecoder) processItem() error {
 	if !ok {
 		return errors.New("go3mf: could not find build item object")
 	}
-	if obj.Type() == mdl.OtherType {
+	if obj.Type() == mdl.ObjectTypeOther {
 		d.r.Warnings = append(d.r.Warnings, &ReadError{InvalidMandatoryValue, "go3mf: build item must not reference object of type OTHER"})
 	}
 	d.item.Object = obj

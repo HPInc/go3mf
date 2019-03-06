@@ -23,7 +23,7 @@ func NewMockObject(isValid, isValidForSlices bool) *MockObject {
 }
 
 func (o *MockObject) Type() ObjectType {
-	return OtherType
+	return ObjectTypeOther
 }
 
 func (o *MockObject) RootModel() *Model {
@@ -369,11 +369,11 @@ func TestMeshResource_IsValid(t *testing.T) {
 		want bool
 	}{
 		{"empty", new(MeshResource), false},
-		{"other", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{objectType: OtherType}}, false},
-		{"surface", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{objectType: SurfaceType}}, true},
-		{"support", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{objectType: SupportType}}, true},
-		{"solidsupport", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{objectType: SolidSupportType}}, false},
-		{"model", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{objectType: ModelType}}, false},
+		{"other", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{objectType: ObjectTypeOther}}, false},
+		{"surface", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{objectType: ObjectTypeSurface}}, true},
+		{"support", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{objectType: ObjectTypeSupport}}, true},
+		{"solidsupport", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{objectType: ObjectTypeSolidSupport}}, false},
+		{"model", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{objectType: ObjectTypeModel}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

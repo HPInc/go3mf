@@ -50,9 +50,9 @@ func TestNewTexture2DResource(t *testing.T) {
 		{"base", args{0, model}, &Texture2DResource{
 			Resource:    Resource{Model: model, ResourceID: &ResourceID{"", 0, 1}},
 			ContentType: PNGTexture,
-			TileStyleU:  WrapTile,
-			TileStyleV:  WrapTile,
-			Filter:      AutoFilter,
+			TileStyleU:  TileWrap,
+			TileStyleV:  TileWrap,
+			Filter:      TextureFilterAuto,
 		}, false},
 		{"dup", args{0, model}, nil, true},
 	}

@@ -11,12 +11,12 @@ func TestNewUnits(t *testing.T) {
 		want  Units
 		want1 bool
 	}{
-		{"micron", Micrometer, true},
-		{"millimeter", Millimeter, true},
-		{"centimeter", Centimeter, true},
-		{"inch", Inch, true},
-		{"foot", Foot, true},
-		{"meter", Meter, true},
+		{"micron", UnitMicrometer, true},
+		{"millimeter", UnitMillimeter, true},
+		{"centimeter", UnitCentimeter, true},
+		{"inch", UnitInch, true},
+		{"foot", UnitFoot, true},
+		{"meter", UnitMeter, true},
 		{"empty", Units(""), false},
 	}
 	for _, tt := range tests {
@@ -61,10 +61,10 @@ func TestNewTileStyle(t *testing.T) {
 		want  TileStyle
 		want1 bool
 	}{
-		{"wrap", WrapTile, true},
-		{"mirror", MirrorTile, true},
-		{"clamp", ClampTile, true},
-		{"none", NoneTile, true},
+		{"wrap", TileWrap, true},
+		{"mirror", TileMirror, true},
+		{"clamp", TileClamp, true},
+		{"none", TileNone, true},
 		{"empty", TileStyle(""), false},
 	}
 	for _, tt := range tests {
@@ -86,9 +86,9 @@ func TestNewTextureFilter(t *testing.T) {
 		want  TextureFilter
 		want1 bool
 	}{
-		{"auto", AutoFilter, true},
-		{"linear", LinearFilter, true},
-		{"nearest", NearestFilter, true},
+		{"auto", TextureFilterAuto, true},
+		{"linear", TextureFilterLinear, true},
+		{"nearest", TextureFilterNearest, true},
 		{"empty", TextureFilter(""), false},
 	}
 	for _, tt := range tests {
