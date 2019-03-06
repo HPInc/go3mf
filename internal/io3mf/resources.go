@@ -69,6 +69,7 @@ type resourceDecoder struct {
 	x             *xml.Decoder
 	r             *Reader
 	model         *mdl.Model
+	colorMapping  colorMapping
 	progressCount int
 }
 
@@ -94,7 +95,8 @@ func (d *resourceDecoder) Decode(se xml.StartElement) error {
 }
 
 func (d *resourceDecoder) processCoreContent(se xml.StartElement) error {
-	if se.Name.Local == attrObject {
+	switch se.Name.Local {
+	case attrObject:
 		d.progressCount++
 		if !d.r.progress.Progress(1.0-2.0/float64(d.progressCount+2), progress.StageReadResources) {
 			return ErrUserAborted
@@ -102,16 +104,19 @@ func (d *resourceDecoder) processCoreContent(se xml.StartElement) error {
 		d.r.progress.PushLevel(1.0-2.0/float64(d.progressCount+2), 1.0-2.0/float64(d.progressCount+1+2))
 
 		d.r.progress.PopLevel()
-	} else if se.Name.Local == attrBaseMaterials {
+	case attrBaseMaterials:
 		md := baseMaterialsDecoder{x: d.x, r: d.r, model: d.model}
-		if err := md.Decode(se); err != nil {
-			return err
-		}
+		return md.Decode(se)
 	}
 	return nil
 }
 
 func (d *resourceDecoder) processMaterialContent(se xml.StartElement) error {
+	switch se.Name.Local{
+	case attrColorGroup:
+		cd := colorGroupDecoder{x: d.x, r: d.r, model: d.model, colorMapping: &d.colorMapping}
+		return cd.Decode(se) 
+	}
 	return nil
 }
 

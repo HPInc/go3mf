@@ -40,6 +40,7 @@ const (
 	attrPartNumber        = "partnumber"
 	attrItem              = "item"
 	attrModel             = "model"
+	attrColorGroup        = "colorgroup"
 	attrColor             = "color"
 )
 
