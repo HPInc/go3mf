@@ -117,9 +117,14 @@ func (d *resourceDecoder) processMaterialContent(se xml.StartElement) error {
 	case attrColorGroup:
 		cd := colorGroupDecoder{x: d.x, r: d.r, model: d.model, colorMapping: &d.colorMapping}
 		return cd.Decode(se)
-	case attrTexture2dgroup:
+	case attrTexture2DGroup:
 		td := tex2DGroupDecoder{x: d.x, r: d.r, model: d.model, texCoordMapping: &d.texCoordMapping}
 		return td.Decode(se)
+	case attrTexture2D:
+		td := texture2DDecoder{x: d.x, r: d.r, model: d.model}
+		return td.Decode(se)
+	case attrComposite:
+		d.r.Warnings = append(d.r.Warnings, &ReadError{InvalidOptionalValue, "go3mf: composite materials extension not supported"})
 	}
 	return nil
 }

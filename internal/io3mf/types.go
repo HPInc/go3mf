@@ -24,7 +24,7 @@ const (
 const (
 	attrID                = "id"
 	attrProdUUID          = "UUID"
-	attrProdPath          = "path"
+	attrPath              = "path"
 	attrObjectID          = "objectid"
 	attrTransform         = "transform"
 	attrUnit              = "unit"
@@ -42,11 +42,17 @@ const (
 	attrModel             = "model"
 	attrColorGroup        = "colorgroup"
 	attrColor             = "color"
-	attrTexture2dgroup    = "texture2dgroup"
+	attrTexture2DGroup    = "texture2dgroup"
 	attrTex2DCoord        = "tex2coord"
 	attrTexID             = "texid"
 	attrU                 = "u"
 	attrV                 = "v"
+	attrContentType       = "contenttype"
+	attrTileStyleU        = "tilestyleu"
+	attrTileStyleV        = "tilestylev"
+	attrFilter            = "filter"
+	attrTexture2D         = "texture2d"
+	attrComposite         = "compositematerials"
 )
 
 var defaultColor = color.RGBA{R: 0xff, G: 0xff, B: 0xff, A: 0xff}

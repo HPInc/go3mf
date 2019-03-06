@@ -30,6 +30,7 @@ const (
 	Meter = "meter"
 )
 
+// NewUnits returns a new unit from a string.
 func NewUnits(s string) (Units, bool) {
 	u := Units(s)
 	if u == Millimeter || u == Inch || u == Micrometer || u == Centimeter || u == Foot || u == Meter {
@@ -88,6 +89,15 @@ const (
 	UnknownTexture = ""
 )
 
+// NewTexture2DType returns a new Texture2DType from a string.
+func NewTexture2DType(s string) (Texture2DType, bool) {
+	u := Texture2DType(s)
+	if u == PNGTexture || u == JPEGTexture {
+		return u, true
+	}
+	return "", false
+}
+
 // TileStyle defines the allowed tile styles.
 type TileStyle string
 
@@ -102,6 +112,15 @@ const (
 	NoneTile = "none"
 )
 
+// NewTileStyle returns a new TileStyle from a string.
+func NewTileStyle(s string) (TileStyle, bool) {
+	u := TileStyle(s)
+	if u == WrapTile || u == MirrorTile || u == ClampTile || u == NoneTile {
+		return u, true
+	}
+	return "", false
+}
+
 // TextureFilter defines the allowed texture filters.
 type TextureFilter string
 
@@ -113,6 +132,15 @@ const (
 	// NearestFilter applies an nearest filter.
 	NearestFilter = "nearest"
 )
+
+// NewTextureFilter returns a new TextureFilter from a string.
+func NewTextureFilter(s string) (TextureFilter, bool) {
+	u := TextureFilter(s)
+	if u == AutoFilter || u == LinearFilter || u == NearestFilter {
+		return u, true
+	}
+	return "", false
+}
 
 var identityTransform = mgl32.Ident4()
 

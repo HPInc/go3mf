@@ -117,7 +117,7 @@ func (d *buildItemDecoder) parseAttr(se xml.StartElement) error {
 				if err := d.item.SetUUID(id); err != nil {
 					return err
 				}
-			} else if a.Name.Local == attrProdPath {
+			} else if a.Name.Local == attrPath {
 				if d.item.Path != "" {
 					return errors.New("go3mf: duplicated build item path attribute")
 				}
