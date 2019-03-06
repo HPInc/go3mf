@@ -66,11 +66,12 @@ func (m *texCoordMapping) hasResource(id uint64) bool {
 }
 
 type resourceDecoder struct {
-	x             *xml.Decoder
-	r             *Reader
-	model         *mdl.Model
-	colorMapping  colorMapping
-	progressCount int
+	x               *xml.Decoder
+	r               *Reader
+	model           *mdl.Model
+	colorMapping    colorMapping
+	texCoordMapping texCoordMapping
+	progressCount   int
 }
 
 func (d *resourceDecoder) Decode(se xml.StartElement) error {
@@ -112,10 +113,13 @@ func (d *resourceDecoder) processCoreContent(se xml.StartElement) error {
 }
 
 func (d *resourceDecoder) processMaterialContent(se xml.StartElement) error {
-	switch se.Name.Local{
+	switch se.Name.Local {
 	case attrColorGroup:
 		cd := colorGroupDecoder{x: d.x, r: d.r, model: d.model, colorMapping: &d.colorMapping}
-		return cd.Decode(se) 
+		return cd.Decode(se)
+	case attrTexture2dgroup:
+		td := tex2DGroupDecoder{x: d.x, r: d.r, model: d.model, texCoordMapping: &d.texCoordMapping}
+		return td.Decode(se)
 	}
 	return nil
 }
