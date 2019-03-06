@@ -53,6 +53,13 @@ const (
 	attrFilter            = "filter"
 	attrTexture2D         = "texture2d"
 	attrComposite         = "compositematerials"
+	attrZBottom           = "zbottom"
+	attrSlice             = "slice"
+	attrSliceRef          = "sliceref"
+)
+
+const (
+	readSliceUpdate = 100
 )
 
 var defaultColor = color.RGBA{R: 0xff, G: 0xff, B: 0xff, A: 0xff}
