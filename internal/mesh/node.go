@@ -1,9 +1,55 @@
 package mesh
 
 import (
+	"math"
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/qmuntal/go3mf/internal/geometry"
 )
+
+
+// vec3I represents a 3D vector typed as int32
+type vec3I struct {
+	X int32 // X coordinate
+	Y int32 // Y coordinate
+	Z int32 // Z coordinate
+}
+
+const micronsAccuracy = 1E-6
+
+func newvec3IFromVec3(vec mgl32.Vec3) vec3I {
+	a := vec3I{
+		X: int32(math.Floor(float64(vec.X() / micronsAccuracy))),
+		Y: int32(math.Floor(float64(vec.Y() / micronsAccuracy))),
+		Z: int32(math.Floor(float64(vec.Z() / micronsAccuracy))),
+	}
+	return a
+}
+
+// vectorTree implements a n*log(n) lookup tree class to identify vectors by their position
+type vectorTree struct {
+	entries map[vec3I]uint32
+}
+
+func newVectorTree() *vectorTree {
+	return &vectorTree{
+		entries: make(map[vec3I]uint32),
+	}
+}
+
+// AddVector adds a vector to the dictionary.
+func (t *vectorTree) AddVector(vec mgl32.Vec3, value uint32) {
+	t.entries[newvec3IFromVec3(vec)] = value
+}
+
+// FindVector returns the identifier of the vector.
+func (t *vectorTree) FindVector(vec mgl32.Vec3) (val uint32, ok bool) {
+	val, ok = t.entries[newvec3IFromVec3(vec)]
+	return
+}
+
+// RemoveVector removes the vector from the dictionary.
+func (t *vectorTree) RemoveVector(vec mgl32.Vec3) {
+	delete(t.entries, newvec3IFromVec3(vec))
+}
 
 // MaxNodeCount is the maximum number of nodes allowed.
 const MaxNodeCount = 2147483646
@@ -15,7 +61,7 @@ type Node struct {
 }
 
 type nodeStructure struct {
-	vectorTree   *geometry.VectorTree
+	vectorTree   *vectorTree
 	nodes        []Node
 	maxNodeCount uint32 // If 0 MaxNodeCount will be used.
 }

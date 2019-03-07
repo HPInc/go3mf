@@ -5,7 +5,6 @@ import (
 	"io"
 
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/qmuntal/go3mf/internal/geometry"
 	"github.com/qmuntal/go3mf/internal/mesh"
 )
 
@@ -70,10 +69,10 @@ func (e *binaryEncoder) encode(m *mesh.Mesh) error {
 		return err
 	}
 
-	for i := 0; i < int(faceCount); i++ {
-		node1, node2, node3 := m.FaceNodes(uint32(i))
+	for i := uint32(0); i < faceCount; i++ {
+		node1, node2, node3 := m.FaceNodes(i)
+		normal := m.FaceNormal(i)
 		n1, n2, n3 := node1.Position, node2.Position, node3.Position
-		normal := geometry.FaceNormal(n1, n2, n3)
 		facet := binaryFace{
 			Normal:   [3]float32{normal.X(), normal.Y(), normal.Z()},
 			Vertices: [3][3]float32{{n1.X(), n1.Y(), n1.Z()}, {n2.X(), n2.Y(), n2.Z()}, {n3.X(), n3.Y(), n3.Z()}},

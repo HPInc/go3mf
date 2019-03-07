@@ -297,3 +297,151 @@ func TestMesh_IsManifoldAndOriented(t *testing.T) {
 		})
 	}
 }
+
+func Test_faceNormal(t *testing.T) {
+	type args struct {
+		n1 mgl32.Vec3
+		n2 mgl32.Vec3
+		n3 mgl32.Vec3
+	}
+	tests := []struct {
+		name string
+		args args
+		want mgl32.Vec3
+	}{
+		{"X", args{mgl32.Vec3{0.0, 0.0, 0.0}, mgl32.Vec3{0.0, 20.0, -20.0}, mgl32.Vec3{0.0, 0.0019989014, 0.0019989014}}, mgl32.Vec3{1, 0, 0}},
+		{"-Y", args{mgl32.Vec3{0.0, 0.0, 0.0}, mgl32.Vec3{20.0, 0.0, -20.0}, mgl32.Vec3{0.0019989014, 0.0, 0.0019989014}}, mgl32.Vec3{0, -1, 0}},
+		{"Z", args{mgl32.Vec3{0.0, 0.0, 0.0}, mgl32.Vec3{20.0, -20.0, 0.0}, mgl32.Vec3{0.0019989014, 0.0019989014, 0.0}}, mgl32.Vec3{0, 0, 1}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := faceNormal(tt.args.n1, tt.args.n2, tt.args.n3); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("faceNormal() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMesh_FaceNormal(t *testing.T) {
+	m := NewMesh()
+	n1 := m.AddNode(mgl32.Vec3{0.0, 0.0, 0.0})
+	n2 := m.AddNode(mgl32.Vec3{20.0, -20.0, 0.0})
+	n3 := m.AddNode(mgl32.Vec3{0.0019989014, 0.0019989014, 0.0})
+	m.AddFace(n1.Index, n2.Index, n3.Index)
+	type args struct {
+		i uint32
+	}
+	tests := []struct {
+		name string
+		m    *Mesh
+		args args
+		want mgl32.Vec3
+	}{
+		{"base", m, args{0}, mgl32.Vec3{0,0,1}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.FaceNormal(tt.args.i); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Mesh.FaceNormal() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+
+func Test_newPairMatch(t *testing.T) {
+	tests := []struct {
+		name string
+		want *pairMatch
+	}{
+		{"new", &pairMatch{map[pairEntry]uint32{}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := newPairMatch(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("newPairMatch() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_pairMatch_AddMatch(t *testing.T) {
+	p := newPairMatch()
+	type args struct {
+		data1 uint32
+		data2 uint32
+		param uint32
+	}
+	tests := []struct {
+		name string
+		t    *pairMatch
+		args args
+	}{
+		{"new", p, args{1, 1, 2}},
+		{"old", p, args{1, 1, 4}},
+		{"new2", p, args{2, 1, 5}},
+		{"old2", p, args{2, 1, 1}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.t.AddMatch(tt.args.data1, tt.args.data2, tt.args.param)
+			got, ok := p.CheckMatch(tt.args.data1, tt.args.data2)
+			if !ok {
+				t.Error("pairMatch.AddMatch() haven't added the match")
+				return
+			}
+			if got != tt.args.param {
+				t.Errorf("pairMatch.CheckMatch() = %v, want %v", got, tt.args.param)
+			}
+		})
+	}
+}
+
+func Test_pairMatch_DeleteMatch(t *testing.T) {
+	p := newPairMatch()
+	p.AddMatch(1, 2, 5)
+	type args struct {
+		data1 uint32
+		data2 uint32
+	}
+	tests := []struct {
+		name string
+		t    *pairMatch
+		args args
+	}{
+		{"nil", p, args{2, 3}},
+		{"old", p, args{1, 2}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.t.DeleteMatch(tt.args.data1, tt.args.data2)
+			_, ok := p.CheckMatch(tt.args.data1, tt.args.data2)
+			if ok {
+				t.Error("pairMatch.DeleteMatch() haven't deleted the match")
+			}
+		})
+	}
+}
+
+func Test_newPairEntry(t *testing.T) {
+	type args struct {
+		data1 uint32
+		data2 uint32
+	}
+	tests := []struct {
+		name string
+		args args
+		want pairEntry
+	}{
+		{"d1=d2", args{1, 1}, pairEntry{1, 1}},
+		{"d1>d2", args{2, 1}, pairEntry{1, 2}},
+		{"d1<d2", args{1, 2}, pairEntry{1, 2}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := newPairEntry(tt.args.data1, tt.args.data2); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("newPairEntry() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

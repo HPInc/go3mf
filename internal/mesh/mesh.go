@@ -2,7 +2,6 @@ package mesh
 
 import (
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/qmuntal/go3mf/internal/geometry"
 	"github.com/qmuntal/go3mf/internal/meshinfo"
 )
 
@@ -56,7 +55,7 @@ func (m *Mesh) Clear() {
 // When the creationg process is finished EndCreation() must be called in order to clean temporary data.
 func (m *Mesh) StartCreation(opts CreationOptions) {
 	if opts.CalculateConnectivity {
-		m.nodeStructure.vectorTree = geometry.NewVectorTree()
+		m.nodeStructure.vectorTree = newVectorTree()
 	}
 }
 
@@ -110,11 +109,22 @@ func (m *Mesh) CheckSanity() bool {
 	return m.beamLattice.checkSanity(m.NodeCount())
 }
 
-// FaceNodes returns the three nodes of a face
+// FaceNodes returns the three nodes of a face.
 func (m *Mesh) FaceNodes(i uint32) (*Node, *Node, *Node) {
 	face := m.Face(uint32(i))
 	return m.Node(face.NodeIndices[0]), m.Node(face.NodeIndices[1]), m.Node(face.NodeIndices[2])
 }
+
+// FaceNormal returns the normal of a face.
+func (m *Mesh) FaceNormal(i uint32) mgl32.Vec3 {
+	node1, node2, node3 := m.FaceNodes(i)
+	return faceNormal(node1.Position, node2.Position, node3.Position)
+}
+
+func faceNormal(n1, n2, n3 mgl32.Vec3) mgl32.Vec3 {
+	return n2.Sub(n1).Cross(n3.Sub(n1)).Normalize()
+}
+
 
 // IsManifoldAndOriented returns true if the mesh is manifold and oriented.
 func (m *Mesh) IsManifoldAndOriented() bool {
@@ -123,7 +133,7 @@ func (m *Mesh) IsManifoldAndOriented() bool {
 	}
 
 	var edgeCounter uint32
-	pairMatching := geometry.NewPairMatch()
+	pairMatching := newPairMatch()
 	for i := uint32(0); i < m.FaceCount(); i++ {
 		face := m.Face(i)
 		for j := uint32(0); j < 3; j++ {
@@ -156,4 +166,48 @@ func (m *Mesh) IsManifoldAndOriented() bool {
 	}
 
 	return true
+}
+
+type pairEntry struct {
+	a, b uint32
+}
+
+// pairMatch implements a n-log-n tree class which is able to identify
+// duplicate pairs of numbers in a given data set.
+type pairMatch struct {
+	entries map[pairEntry]uint32
+}
+
+func newPairMatch() *pairMatch {
+	return &pairMatch{map[pairEntry]uint32{}}
+}
+
+// AddMatch adds a match to the set.
+// If the match exists it is overridden.
+func (t *pairMatch) AddMatch(data1, data2, param uint32) {
+	t.entries[newPairEntry(data1, data2)] = param
+}
+
+// CheckMatch check if a match is in the set.
+func (t *pairMatch) CheckMatch(data1, data2 uint32) (val uint32, ok bool) {
+	val, ok = t.entries[newPairEntry(data1, data2)]
+	return
+}
+
+// DeleteMatch deletes a match from the set.
+// If match doesn't exist it bevavhe as a no-op
+func (t *pairMatch) DeleteMatch(data1, data2 uint32) {
+	delete(t.entries, newPairEntry(data1, data2))
+}
+
+func newPairEntry(data1, data2 uint32) pairEntry {
+	entry := pairEntry{}
+	if data1 < data2 {
+		entry.a = data1
+		entry.b = data2
+	} else {
+		entry.a = data2
+		entry.b = data1
+	}
+	return entry
 }
