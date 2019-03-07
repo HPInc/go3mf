@@ -17,5 +17,5 @@ before_script:
   - make setup  
 
 script:
-  - go test  ./... -coverprofile=coverage.out -race -timeout=5s
+  - go test  ./... -coverprofile=coverage.out -race -timeout=30s
   - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
