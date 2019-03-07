@@ -4,13 +4,6 @@ import (
 	"fmt"
 )
 
-// HandlerOverflowError defines the error that happens when a handler cannot create new MeshInfos.
-type HandlerOverflowError struct{}
-
-func (e *HandlerOverflowError) Error() string {
-	return "handler overflow"
-}
-
 // FaceCountMissmatchError defines an error that happens when a mesh info operation is done with a not matching current face number.
 type FaceCountMissmatchError struct {
 	current, new uint32

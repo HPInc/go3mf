@@ -5,23 +5,6 @@ import (
 	"testing"
 )
 
-func TestHandlerOverflowError_Error(t *testing.T) {
-	tests := []struct {
-		name string
-		e    *HandlerOverflowError
-		want string
-	}{
-		{"error", new(HandlerOverflowError), "handler overflow"},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.Error(); got != tt.want {
-				t.Errorf("HandlerOverflowError.Error() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestFaceCountMissmatchError_Error(t *testing.T) {
 	tests := []struct {
 		name string

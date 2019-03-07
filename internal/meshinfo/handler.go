@@ -1,5 +1,7 @@
 package meshinfo
 
+import "errors"
+
 const maxInternalID = 9223372036854775808
 
 // DataType represents a type of data.
@@ -126,7 +128,7 @@ func (h *Handler) addInformation(info Handleable) {
 	info.setInternalID(h.internalIDCounter)
 	h.internalIDCounter++
 	if h.internalIDCounter > maxInternalID {
-		panic(new(HandlerOverflowError))
+		panic(errors.New("go3mf: handler overflow"))
 	}
 }
 
