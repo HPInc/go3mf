@@ -14,13 +14,8 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/go-test/deep"
 	mdl "github.com/qmuntal/go3mf/internal/model"
-	"github.com/qmuntal/go3mf/internal/progress"
 	"github.com/stretchr/testify/mock"
 )
-
-var callbackFalse = func(progress int, id progress.Stage, data interface{}) bool {
-	return false
-}
 
 type mockRelationship struct {
 	mock.Mock

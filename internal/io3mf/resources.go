@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	mdl "github.com/qmuntal/go3mf/internal/model"
-	"github.com/qmuntal/go3mf/internal/progress"
 )
 
 var emptyEntry struct{}
@@ -110,7 +109,7 @@ func (d *resourceDecoder) processCoreContent(se xml.StartElement) (err error) {
 	switch se.Name.Local {
 	case attrObject:
 		d.progressCount++
-		if !d.r.progress.Progress(1.0-2.0/float64(d.progressCount+2), progress.StageReadResources) {
+		if !d.r.progress.Progress(1.0-2.0/float64(d.progressCount+2), StageReadResources) {
 			return ErrUserAborted
 		}
 		d.r.progress.PushLevel(1.0-2.0/float64(d.progressCount+2), 1.0-2.0/float64(d.progressCount+1+2))

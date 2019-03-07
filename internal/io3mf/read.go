@@ -11,7 +11,6 @@ import (
 
 	"github.com/go-gl/mathgl/mgl32"
 	mdl "github.com/qmuntal/go3mf/internal/model"
-	"github.com/qmuntal/go3mf/internal/progress"
 )
 
 type relationship interface {
@@ -36,7 +35,7 @@ type Reader struct {
 	Model               *mdl.Model
 	Warnings            []error
 	AttachmentRelations []string
-	progress            progress.Monitor
+	progress            Monitor
 	r                   packageReader
 	namespaces          []string
 }
@@ -62,7 +61,7 @@ func (r *Reader) namespaceRegistered(ns string) bool {
 }
 
 // SetProgressCallback specifies the callback to be executed on every step of the progress.
-func (r *Reader) SetProgressCallback(callback progress.ProgressCallback, userData interface{}) {
+func (r *Reader) SetProgressCallback(callback ProgressCallback, userData interface{}) {
 	r.progress.SetProgressCallback(callback, userData)
 }
 
@@ -82,7 +81,7 @@ func (r *Reader) decode() error {
 }
 
 func (r *Reader) processRootModel() error {
-	if !r.progress.Progress(r.nonRootProgress(), progress.StageReadRootModel) {
+	if !r.progress.Progress(r.nonRootProgress(), StageReadRootModel) {
 		return ErrUserAborted
 	}
 	rootFile, ok := r.r.FindFileFromRel(relTypeModel3D)
@@ -118,7 +117,7 @@ mainLoop:
 }
 
 func (r *Reader) processNonRootModels() error {
-	if !r.progress.Progress(0.1, progress.StageReadNonRootModels) {
+	if !r.progress.Progress(0.1, StageReadNonRootModels) {
 		return ErrUserAborted
 	}
 	r.progress.PushLevel(0.1, r.nonRootProgress())
@@ -128,7 +127,7 @@ func (r *Reader) processNonRootModels() error {
 }
 
 func (r *Reader) processOPC() error {
-	if !r.progress.Progress(0.05, progress.StageExtractOPCPackage) {
+	if !r.progress.Progress(0.05, StageExtractOPCPackage) {
 		return ErrUserAborted
 	}
 	rootFile, ok := r.r.FindFileFromRel(relTypeModel3D)

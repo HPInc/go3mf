@@ -1,4 +1,4 @@
-package progress
+package io3mf
 
 import (
 	"math"

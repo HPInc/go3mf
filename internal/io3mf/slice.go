@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	mdl "github.com/qmuntal/go3mf/internal/model"
-	"github.com/qmuntal/go3mf/internal/progress"
 )
 
 type sliceStackDecoder struct {
@@ -93,7 +92,7 @@ func (d *sliceStackDecoder) parseContent() error {
 func (d *sliceStackDecoder) parseSlice() error {
 	if len(d.sliceStack.Slices)%readSliceUpdate == readSliceUpdate-1 {
 		d.progressCount++
-		if !d.r.progress.Progress(1.0-2.0/float64(d.progressCount+2), progress.StageReadSlices) {
+		if !d.r.progress.Progress(1.0-2.0/float64(d.progressCount+2), StageReadSlices) {
 			return ErrUserAborted
 		}
 	}

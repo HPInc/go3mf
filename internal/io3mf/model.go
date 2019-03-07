@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	mdl "github.com/qmuntal/go3mf/internal/model"
-	"github.com/qmuntal/go3mf/internal/progress"
 )
 
 type modelDecoder struct {
@@ -58,7 +57,7 @@ func (d *modelDecoder) parseBuild(se xml.StartElement) error {
 		d.withinIgnoredElement = true
 	} else {
 		d.withinIgnoredElement = false
-		if !d.r.progress.Progress(0.9, progress.StageReadBuild) {
+		if !d.r.progress.Progress(0.9, StageReadBuild) {
 			return ErrUserAborted
 		}
 		rd := buildDecoder{x: d.x, r: d.r, model: d.model}
@@ -72,7 +71,7 @@ func (d *modelDecoder) parseBuild(se xml.StartElement) error {
 
 func (d *modelDecoder) parseResources(se xml.StartElement) error {
 	d.withinIgnoredElement = false
-	if !d.r.progress.Progress(0.2, progress.StageReadResources) {
+	if !d.r.progress.Progress(0.2, StageReadResources) {
 		return ErrUserAborted
 	}
 	d.r.progress.PushLevel(0.2, 0.9)
