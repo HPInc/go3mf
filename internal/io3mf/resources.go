@@ -74,7 +74,15 @@ type resourceDecoder struct {
 	progressCount   int
 }
 
+func (d *resourceDecoder) init() {
+	d.colorMapping.entries = make(map[resourceEntry]color.RGBA)
+	d.colorMapping.resources = make(map[uint64]struct{})
+	d.texCoordMapping.entries = make(map[resourceEntry]texCoord)
+	d.texCoordMapping.resources = make(map[uint64]struct{})
+}
+
 func (d *resourceDecoder) Decode(se xml.StartElement) error {
+	d.init()
 	for {
 		t, err := d.x.Token()
 		if err != nil {
@@ -83,19 +91,22 @@ func (d *resourceDecoder) Decode(se xml.StartElement) error {
 		switch tp := t.(type) {
 		case xml.StartElement:
 			if tp.Name.Space == nsCoreSpec {
-				if err := d.processCoreContent(tp); err != nil {
-					return err
-				}
+				err = d.processCoreContent(tp)
 			} else if tp.Name.Space == nsMaterialSpec {
-				if err := d.processMaterialContent(tp); err != nil {
-					return err
-				}
+				err = d.processMaterialContent(tp)
 			}
+		case xml.EndElement:
+			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrResources {
+				return nil
+			}
+		}		
+		if err != nil {
+			return err
 		}
 	}
 }
 
-func (d *resourceDecoder) processCoreContent(se xml.StartElement) error {
+func (d *resourceDecoder) processCoreContent(se xml.StartElement) (err error) {
 	switch se.Name.Local {
 	case attrObject:
 		d.progressCount++
@@ -107,9 +118,9 @@ func (d *resourceDecoder) processCoreContent(se xml.StartElement) error {
 		d.r.progress.PopLevel()
 	case attrBaseMaterials:
 		md := baseMaterialsDecoder{x: d.x, r: d.r, model: d.model}
-		return md.Decode(se)
+		err = md.Decode(se)
 	}
-	return nil
+	return
 }
 
 func (d *resourceDecoder) processMaterialContent(se xml.StartElement) error {
@@ -136,23 +147,27 @@ type baseMaterialsDecoder struct {
 	baseMaterials *mdl.BaseMaterialsResource
 }
 
-func (d *baseMaterialsDecoder) parseAttr(se xml.StartElement) error {
+func (d *baseMaterialsDecoder) parseAttr(se xml.StartElement) (err error) {
 	for _, a := range se.Attr {
-		if a.Name.Space == "" && a.Name.Local == attrID {
-			if d.baseMaterials != nil {
-				return errors.New("go3mf: duplicated base materials id attribute")
-			}
-			id, err := strconv.ParseUint(a.Value, 10, 64)
+		if a.Name.Space != "" || a.Name.Local != attrID {
+			continue
+		}
+		if d.baseMaterials == nil {
+			var id uint64
+			id, err = strconv.ParseUint(a.Value, 10, 64)
 			if err != nil {
-				return errors.New("go3mf: base materials id is not valid")
+				err = errors.New("go3mf: base materials id is not valid")
+			} else {
+				d.baseMaterials, err = mdl.NewBaseMaterialsResource(id, d.model)
 			}
-			d.baseMaterials, err = mdl.NewBaseMaterialsResource(id, d.model)
-			if err != nil {
-				return err
-			}
+		} else {
+			err = errors.New("go3mf: duplicated base materials id attribute")			
+		}
+		if err != nil {
+			break
 		}
 	}
-	return nil
+	return
 }
 
 func (d *baseMaterialsDecoder) Decode(se xml.StartElement) error {
@@ -161,6 +176,9 @@ func (d *baseMaterialsDecoder) Decode(se xml.StartElement) error {
 	}
 	if d.baseMaterials == nil {
 		return errors.New("go3mf: missing base materials resource id attribute")
+	}
+	if err := d.parseContent(); err != nil {
+		return err
 	}
 	return d.model.AddResource(d.baseMaterials)
 }
@@ -177,6 +195,10 @@ func (d *baseMaterialsDecoder) parseContent() error {
 				if err := d.addBaseMaterial(tp.Attr); err != nil {
 					return err
 				}
+			}
+		case xml.EndElement:
+			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrBaseMaterials {
+				return nil
 			}
 		}
 	}

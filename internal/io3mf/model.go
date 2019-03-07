@@ -42,6 +42,10 @@ func (d *modelDecoder) Decode(se xml.StartElement) error {
 					}
 				}
 			}
+		case xml.EndElement:
+			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrModel {
+				return nil
+			}
 		}
 	}
 }

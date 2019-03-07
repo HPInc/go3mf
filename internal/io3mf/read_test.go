@@ -48,6 +48,12 @@ type modelBuilder struct {
 	hasModel bool
 }
 
+func (m *modelBuilder) withElement(s string) *modelBuilder {
+	m.str.WriteString(s)
+	m.str.WriteString("\n")
+	return m
+}
+
 func (m *modelBuilder) addAttr(prefix, name, value string) *modelBuilder {
 	if prefix != "" {
 		m.str.WriteString(fmt.Sprintf(`%s:`, prefix))
@@ -223,7 +229,17 @@ func TestReader_processOPC(t *testing.T) {
 func TestReader_processRootModel(t *testing.T) {
 	abortReader := &Reader{Model: new(mdl.Model), r: newMockPackage(newMockFile("/a.model", nil, nil, nil, false))}
 	abortReader.SetProgressCallback(callbackFalse, nil)
-
+	baseModel := mdl.NewModel()
+	baseMaterials, _ := mdl.NewBaseMaterialsResource(5, baseModel)
+	baseTetxure, _ := mdl.NewTexture2DResource(6, baseModel)
+	baseTetxure.Path = "/3D/Texture/msLogo.png"
+	baseTetxure.ContentType = mdl.PNGTexture
+	baseTetxure.TileStyleV = mdl.MirrorTile
+	baseMaterials.Materials = []*mdl.BaseMaterial{
+		{Name: "Blue PLA", Color: color.RGBA{0, 0, 85, 255}},
+		{Name: "Red ABS", Color: color.RGBA{85, 0, 0, 255}},
+	}
+	baseModel.Resources = []mdl.Identifier{baseMaterials, baseTetxure}
 	tests := []struct {
 		name    string
 		r       *Reader
@@ -235,9 +251,26 @@ func TestReader_processRootModel(t *testing.T) {
 		{"errOpen", &Reader{Model: new(mdl.Model), r: newMockPackage(newMockFile("/a.model", nil, nil, nil, true))}, new(mdl.Model), true},
 		{"errEncode", &Reader{Model: new(mdl.Model), r: newMockPackage(new(modelBuilder).withEncoding("utf16").build())}, new(mdl.Model), true},
 		{"invalidUnits", &Reader{Model: new(mdl.Model), r: newMockPackage(new(modelBuilder).withModel("other", "en-US").build())}, &mdl.Model{}, true},
-		{"base", &Reader{Model: new(mdl.Model), r: newMockPackage(new(modelBuilder).withDefaultModel().build())}, &mdl.Model{
-			Units: mdl.Millimeter, Language: "en-US",
-		}, false},
+		{"base", &Reader{Model: mdl.NewModel(), r: newMockPackage(new(modelBuilder).withDefaultModel().withElement(`
+		<resources>
+			<basematerials id="5">
+				<base name="Blue PLA" displaycolor="#0000FF" />
+				<base name="Red ABS" displaycolor="#FF0000" />
+			</basematerials>
+			<m:texture2d id="6" path="/3D/Texture/msLogo.png" contenttype="image/png" tilestyleu="wrap" tilestylev="mirror" filter="auto" />
+			<m:colorgroup id="1">
+				<m:color color="#FFFFFF" />
+				<m:color color="#000000" />
+				<m:color color="#1AB567" />
+				<m:color color="#DF045A" />
+			</m:colorgroup>
+			<m:texture2dgroup id="2" texid="6">
+				<m:tex2coord u="0.3" v="0.5" />
+				<m:tex2coord u="0.3" v="0.8" />
+				<m:tex2coord u="0.5" v="0.8" />
+				<m:tex2coord u="0.5" v="0.5" />
+			</m:texture2dgroup>
+		</resources>`).build())}, baseModel, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

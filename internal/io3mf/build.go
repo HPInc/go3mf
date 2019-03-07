@@ -33,13 +33,17 @@ func (d *buildDecoder) Decode(se xml.StartElement) error {
 					return err
 				}
 			}
+		case xml.EndElement:
+			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrBuild {
+				return nil
+			}
 		}
 	}
 }
 
 func (d *buildDecoder) parseAttr(se xml.StartElement) error {
 	for _, a := range se.Attr {
-		if a.Name.Space == nsProductionSpec && se.Name.Local == attrProdUUID {
+		if a.Name.Space == nsProductionSpec && a.Name.Local == attrProdUUID {
 			if d.model.UUID() != uuid.Nil {
 				return errors.New("go3mf: duplicated build uuid attribute")
 			}
@@ -109,7 +113,7 @@ func (d *buildItemDecoder) parseAttr(se xml.StartElement) error {
 	for _, a := range se.Attr {
 		switch a.Name.Space {
 		case nsProductionSpec:
-			if se.Name.Local == attrProdUUID {
+			if a.Name.Local == attrProdUUID {
 				if d.item.UUID() != uuid.Nil {
 					return errors.New("go3mf: duplicated build item uuid attribute")
 				}

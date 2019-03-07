@@ -36,13 +36,17 @@ func (d *colorGroupDecoder) Decode(se xml.StartElement) error {
 					return err
 				}
 			}
+		case xml.EndElement:
+			if tp.Name.Space == nsMaterialSpec && tp.Name.Local == attrColorGroup {
+				return nil
+			}
 		}
 	}
 }
 
 func (d *colorGroupDecoder) parseAttr(se xml.StartElement) error {
 	for _, a := range se.Attr {
-		if a.Name.Space == "" && se.Name.Local == attrID {
+		if a.Name.Space == "" && a.Name.Local == attrID {
 			if d.id != 0 {
 				return errors.New("go3mf: duplicated color group id attribute")
 			}
@@ -98,16 +102,20 @@ func (d *tex2DGroupDecoder) Decode(se xml.StartElement) error {
 					return err
 				}
 			}
+		case xml.EndElement:
+			if tp.Name.Space == nsMaterialSpec && tp.Name.Local == attrTexture2DGroup {
+				return nil
+			}
 		}
 	}
 }
 
 func (d *tex2DGroupDecoder) parseAttr(se xml.StartElement) error {
 	for _, a := range se.Attr {
-		if a.Name.Space == "" {
+		if a.Name.Space != "" {
 			continue
 		}
-		switch se.Name.Local {
+		switch a.Name.Local {
 		case attrID:
 			if d.id != 0 {
 				return errors.New("go3mf: duplicated tex2Coord group id attribute")
@@ -136,14 +144,11 @@ func (d *tex2DGroupDecoder) addTextureCoord(attrs []xml.Attr) error {
 		switch a.Name.Local {
 		case attrU:
 			u, err = strconv.ParseFloat(a.Value, 64)
-			if err != nil {
-				return err
-			}
 		case attrV:
 			v, err = strconv.ParseFloat(a.Value, 64)
-			if err != nil {
-				return err
-			}
+		}
+		if err != nil {
+			return err
 		}
 	}
 	d.texCoordMapping.register(d.id, d.texCoordIndex, d.textureID, float32(u), float32(v))
@@ -179,20 +184,26 @@ func (d *texture2DDecoder) Decode(se xml.StartElement) error {
 	}
 	texture2d.Path = d.path
 	texture2d.ContentType = d.contentType
-	texture2d.TileStyleU = d.styleU
-	texture2d.TileStyleV = d.styleV
-	texture2d.Filter = d.filter
+	if d.styleU != "" {
+		texture2d.TileStyleU = d.styleU
+	}
+	if d.styleV != "" {
+		texture2d.TileStyleV = d.styleV
+	}
+	if d.filter != "" {
+		texture2d.Filter = d.filter
+	}
 	return nil
 }
 
 func (d *texture2DDecoder) parseAttr(se xml.StartElement) error {
 	for _, a := range se.Attr {
-		if a.Name.Space == "" {
+		if a.Name.Space != "" {
 			continue
 		}
 		var err error
-		var ok bool
-		switch se.Name.Local {
+		ok := true
+		switch a.Name.Local {
 		case attrID:
 			if d.id != 0 {
 				err = errors.New("go3mf: duplicated texture2d id attribute")

@@ -405,3 +405,20 @@ func TestMeshResource_MergeToMesh(t *testing.T) {
 		})
 	}
 }
+
+func TestObjectResource_Type(t *testing.T) {
+	tests := []struct {
+		name string
+		o    *ObjectResource
+		want ObjectType
+	}{
+		{"base", &ObjectResource{objectType: ModelType}, ModelType},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.o.Type(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ObjectResource.Type() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
