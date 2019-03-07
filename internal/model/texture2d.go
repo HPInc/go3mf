@@ -19,9 +19,9 @@ func NewTexture2DResource(id uint64, model *Model) (*Texture2DResource, error) {
 	return &Texture2DResource{
 		Resource:    *r,
 		ContentType: PNGTexture,
-		TileStyleU:  WrapTile,
-		TileStyleV:  WrapTile,
-		Filter:      AutoFilter,
+		TileStyleU:  TileWrap,
+		TileStyleV:  TileWrap,
+		Filter:      TextureFilterAuto,
 	}, nil
 }
 

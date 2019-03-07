@@ -37,7 +37,7 @@ func TestNewModel(t *testing.T) {
 		want *Model
 	}{
 		{"base", &Model{
-			Units:              Millimeter,
+			Units:              UnitMillimeter,
 			Language:           langUS,
 			CustomContentTypes: make(map[string]string),
 			usedUUIDs:          make(map[uuid.UUID]struct{}),

@@ -3,6 +3,7 @@ package model
 import (
 	"errors"
 	"fmt"
+
 	"github.com/go-gl/mathgl/mgl32"
 )
 

@@ -11,7 +11,6 @@ import (
 type colorGroupDecoder struct {
 	x            *xml.Decoder
 	r            *Reader
-	model        *mdl.Model
 	colorMapping *colorMapping
 	id           uint64
 	colorIndex   uint64
@@ -76,7 +75,6 @@ func (d *colorGroupDecoder) addColor(attrs []xml.Attr) error {
 type tex2DGroupDecoder struct {
 	x               *xml.Decoder
 	r               *Reader
-	model           *mdl.Model
 	texCoordMapping *texCoordMapping
 	id              uint64
 	textureID       uint64
@@ -178,10 +176,6 @@ func (d *texture2DDecoder) Decode(se xml.StartElement) error {
 	if err != nil {
 		return err
 	}
-	err = d.model.AddResource(texture2d)
-	if err != nil {
-		return err
-	}
 	texture2d.Path = d.path
 	texture2d.ContentType = d.contentType
 	if d.styleU != "" {
@@ -193,7 +187,7 @@ func (d *texture2DDecoder) Decode(se xml.StartElement) error {
 	if d.filter != "" {
 		texture2d.Filter = d.filter
 	}
-	return nil
+	return d.model.AddResource(texture2d)
 }
 
 func (d *texture2DDecoder) parseAttr(se xml.StartElement) error {

@@ -54,7 +54,7 @@ type Model struct {
 // NewModel returns a new initialized model.
 func NewModel() *Model {
 	m := &Model{
-		Units:              Millimeter,
+		Units:              UnitMillimeter,
 		Language:           langUS,
 		CustomContentTypes: make(map[string]string),
 		usedUUIDs:          make(map[uuid.UUID]struct{}),

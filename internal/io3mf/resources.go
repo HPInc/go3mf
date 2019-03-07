@@ -126,10 +126,10 @@ func (d *resourceDecoder) processCoreContent(se xml.StartElement) (err error) {
 func (d *resourceDecoder) processMaterialContent(se xml.StartElement) error {
 	switch se.Name.Local {
 	case attrColorGroup:
-		cd := colorGroupDecoder{x: d.x, r: d.r, model: d.model, colorMapping: &d.colorMapping}
+		cd := colorGroupDecoder{x: d.x, r: d.r, colorMapping: &d.colorMapping}
 		return cd.Decode(se)
 	case attrTexture2DGroup:
-		td := tex2DGroupDecoder{x: d.x, r: d.r, model: d.model, texCoordMapping: &d.texCoordMapping}
+		td := tex2DGroupDecoder{x: d.x, r: d.r, texCoordMapping: &d.texCoordMapping}
 		return td.Decode(se)
 	case attrTexture2D:
 		td := texture2DDecoder{x: d.x, r: d.r, model: d.model}
