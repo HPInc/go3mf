@@ -99,7 +99,7 @@ func (d *resourceDecoder) Decode(se xml.StartElement) error {
 			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrResources {
 				return nil
 			}
-		}		
+		}
 		if err != nil {
 			return err
 		}
@@ -161,7 +161,7 @@ func (d *baseMaterialsDecoder) parseAttr(se xml.StartElement) (err error) {
 				d.baseMaterials, err = mdl.NewBaseMaterialsResource(id, d.model)
 			}
 		} else {
-			err = errors.New("go3mf: duplicated base materials id attribute")			
+			err = errors.New("go3mf: duplicated base materials id attribute")
 		}
 		if err != nil {
 			break

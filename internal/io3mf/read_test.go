@@ -234,7 +234,7 @@ func TestReader_processRootModel(t *testing.T) {
 	baseTetxure, _ := mdl.NewTexture2DResource(6, baseModel)
 	baseTetxure.Path = "/3D/Texture/msLogo.png"
 	baseTetxure.ContentType = mdl.PNGTexture
-	baseTetxure.TileStyleV = mdl.MirrorTile
+	baseTetxure.TileStyleV = mdl.TileMirror
 	baseMaterials.Materials = []*mdl.BaseMaterial{
 		{Name: "Blue PLA", Color: color.RGBA{0, 0, 85, 255}},
 		{Name: "Red ABS", Color: color.RGBA{85, 0, 0, 255}},

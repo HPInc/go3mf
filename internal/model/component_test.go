@@ -412,7 +412,7 @@ func TestObjectResource_Type(t *testing.T) {
 		o    *ObjectResource
 		want ObjectType
 	}{
-		{"base", &ObjectResource{objectType: ModelType}, ModelType},
+		{"base", &ObjectResource{objectType: ObjectTypeModel}, ObjectTypeModel},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
