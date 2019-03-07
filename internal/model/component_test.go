@@ -369,11 +369,11 @@ func TestMeshResource_IsValid(t *testing.T) {
 		want bool
 	}{
 		{"empty", new(MeshResource), false},
-		{"other", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{objectType: ObjectTypeOther}}, false},
-		{"surface", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{objectType: ObjectTypeSurface}}, true},
-		{"support", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{objectType: ObjectTypeSupport}}, true},
-		{"solidsupport", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{objectType: ObjectTypeSolidSupport}}, false},
-		{"model", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{objectType: ObjectTypeModel}}, false},
+		{"other", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeOther}}, false},
+		{"surface", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeSurface}}, true},
+		{"support", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeSupport}}, true},
+		{"solidsupport", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeSolidSupport}}, false},
+		{"model", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeModel}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -412,7 +412,7 @@ func TestObjectResource_Type(t *testing.T) {
 		o    *ObjectResource
 		want ObjectType
 	}{
-		{"base", &ObjectResource{objectType: ObjectTypeModel}, ObjectTypeModel},
+		{"base", &ObjectResource{ObjectType: ObjectTypeModel}, ObjectTypeModel},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

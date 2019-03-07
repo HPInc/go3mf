@@ -25,7 +25,7 @@ type ObjectResource struct {
 	SliceResoultion SliceResolution
 	Thumbnail       string
 	DefaultProperty interface{}
-	objectType      ObjectType
+	ObjectType      ObjectType
 	uuid            uuid.UUID
 }
 
@@ -41,7 +41,7 @@ func newObjectResource(id uint64, model *Model) (*ObjectResource, error) {
 
 // Type returns the type of the object.
 func (o *ObjectResource) Type() ObjectType {
-	return o.objectType
+	return o.ObjectType
 }
 
 // UUID returns the object UUID.
@@ -197,7 +197,7 @@ func (c *MeshResource) IsValid() bool {
 	if c.Mesh == nil {
 		return false
 	}
-	switch c.objectType {
+	switch c.ObjectType {
 	case ObjectTypeModel:
 		return c.Mesh.IsManifoldAndOriented()
 	case ObjectTypeSupport:
