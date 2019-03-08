@@ -221,13 +221,49 @@ func TestReader_processOPC(t *testing.T) {
 	}
 }
 
-func TestReader_processRootModel(t *testing.T) {
+func TestReader_processRootModel_Fail(t *testing.T) {
 	abortReader := &Reader{Model: new(mdl.Model), r: newMockPackage(newMockFile("/a.model", nil, nil, nil, false))}
 	abortReader.SetProgressCallback(callbackFalse, nil)
-	baseModel := mdl.NewModel()
-	baseMaterials, _ := mdl.NewBaseMaterialsResource(5, baseModel)
-	baseTetxure, _ := mdl.NewTexture2DResource(6, baseModel)
-	sliceStack, _ := mdl.NewSliceStackResource(3, baseModel, &mdl.SliceStack{
+	tests := []struct {
+		name    string
+		r       *Reader
+		wantErr bool
+	}{
+		{"noRoot", &Reader{Model: new(mdl.Model), r: newMockPackage(nil)}, true},
+		{"abort", abortReader, true},
+		{"errOpen", &Reader{Model: new(mdl.Model), r: newMockPackage(newMockFile("/a.model", nil, nil, nil, true))}, true},
+		{"errEncode", &Reader{Model: new(mdl.Model), r: newMockPackage(new(modelBuilder).withEncoding("utf16").build())}, true},
+		{"invalidUnits", &Reader{Model: new(mdl.Model), r: newMockPackage(new(modelBuilder).withModel("other", "en-US").build())}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.r.processRootModel(); (err != nil) != tt.wantErr {
+				t.Errorf("Reader.processRootModel() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if tt.r.Model != nil {
+				t.Errorf("Reader.processRootModel() got = %v, want nil", tt.r.Model)
+				return
+			}
+		})
+	}
+}
+
+func TestReader_processRootModel(t *testing.T) {
+	want := mdl.NewModel()
+	baseMaterials, _ := mdl.NewBaseMaterialsResource(5, want)
+	baseTexture, _ := mdl.NewTexture2DResource(6, want)
+	otherSlices :=  &mdl.SliceStack{
+		BottomZ: 2,
+		Slices: []*mdl.Slice{
+			{
+				TopZ:     1.2,
+				Vertices: []mgl32.Vec2{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
+				Polygons: [][]int{{1, 2, 3, 0}},
+			},
+		},
+	}
+	sliceStack, _ := mdl.NewSliceStackResource(3, want, &mdl.SliceStack{
 		BottomZ: 1,
 		Slices: []*mdl.Slice{
 			{
@@ -242,70 +278,78 @@ func TestReader_processRootModel(t *testing.T) {
 			},
 		},
 	})
-	baseTetxure.Path = "/3D/Texture/msLogo.png"
-	baseTetxure.ContentType = mdl.PNGTexture
-	baseTetxure.TileStyleV = mdl.TileMirror
+	want.Path = "/2D/2Dmodel.model"
+	sliceStackOtherFile, _ := mdl.NewSliceStackResource(10, want, otherSlices)
+	sliceStackOtherFile.TimesRefered = 1
+	want.AddResource(sliceStackOtherFile)
+	want.Path = ""
+	baseTexture.Path = "/3D/Texture/msLogo.png"
+	baseTexture.ContentType = mdl.PNGTexture
+	baseTexture.TileStyleV = mdl.TileMirror
 	baseMaterials.Materials = []*mdl.BaseMaterial{
 		{Name: "Blue PLA", Color: color.RGBA{0, 0, 85, 255}},
 		{Name: "Red ABS", Color: color.RGBA{85, 0, 0, 255}},
 	}
-	baseModel.Resources = []mdl.Identifier{baseMaterials, baseTetxure, sliceStack}
-	tests := []struct {
-		name    string
-		r       *Reader
-		want    *mdl.Model
-		wantErr bool
-	}{
-		{"noRoot", &Reader{Model: new(mdl.Model), r: newMockPackage(nil)}, new(mdl.Model), true},
-		{"abort", abortReader, new(mdl.Model), true},
-		{"errOpen", &Reader{Model: new(mdl.Model), r: newMockPackage(newMockFile("/a.model", nil, nil, nil, true))}, new(mdl.Model), true},
-		{"errEncode", &Reader{Model: new(mdl.Model), r: newMockPackage(new(modelBuilder).withEncoding("utf16").build())}, new(mdl.Model), true},
-		{"invalidUnits", &Reader{Model: new(mdl.Model), r: newMockPackage(new(modelBuilder).withModel("other", "en-US").build())}, &mdl.Model{}, true},
-		{"base", &Reader{Model: mdl.NewModel(), r: newMockPackage(new(modelBuilder).withDefaultModel().withElement(`
-		<resources>
-			<basematerials id="5">
-				<base name="Blue PLA" displaycolor="#0000FF" />
-				<base name="Red ABS" displaycolor="#FF0000" />
-			</basematerials>
-			<m:texture2d id="6" path="/3D/Texture/msLogo.png" contenttype="image/png" tilestyleu="wrap" tilestylev="mirror" filter="auto" />
-			<m:colorgroup id="1">
-				<m:color color="#FFFFFF" /> <m:color color="#000000" /> <m:color color="#1AB567" /> <m:color color="#DF045A" />
-			</m:colorgroup>
-			<m:texture2dgroup id="2" texid="6">
-				<m:tex2coord u="0.3" v="0.5" /> <m:tex2coord u="0.3" v="0.8" />	<m:tex2coord u="0.5" v="0.8" />	<m:tex2coord u="0.5" v="0.5" />
-			</m:texture2dgroup>
-			<s:slicestack id="3" zbottom="1">
-				<s:slice ztop="0">
-					<s:vertices>
-						<s:vertex x="1.01" y="1.02" /> <s:vertex x="9.03" y="1.04" /> <s:vertex x="9.05" y="9.06" /> <s:vertex x="1.07" y="9.08" />
-					</s:vertices>
-					<s:polygon startv="0">
-						<s:segment v2="1"></s:segment> <s:segment v2="2"></s:segment> <s:segment v2="3"></s:segment> <s:segment v2="0"></s:segment>
-					</s:polygon>
-				</s:slice>
-				<s:slice ztop="0.1">
-					<s:vertices>
-						<s:vertex x="1.01" y="1.02" /> <s:vertex x="9.03" y="1.04" /> <s:vertex x="9.05" y="9.06" /> <s:vertex x="1.07" y="9.08" />
-					</s:vertices>
-					<s:polygon startv="0"> 
-						<s:segment v2="2"></s:segment> <s:segment v2="1"></s:segment> <s:segment v2="3"></s:segment> <s:segment v2="0"></s:segment>
-					</s:polygon>
-				</s:slice>
-			</s:slicestack>
-		</resources>`).build())}, baseModel, false},
+	sliceStackRef, _ := mdl.NewSliceStackResource(7, want, otherSlices)
+	sliceStackRef.BottomZ = 1.1
+	sliceStackRef.UsesSliceRef = true
+	sliceStackRef.Slices = append(sliceStackRef.Slices, otherSlices.Slices...)
+	want.Resources = append(want.Resources, []mdl.Identifier{baseMaterials, baseTexture, sliceStack, sliceStackRef}...)
+	
+	got := mdl.NewModel()
+	got.Path = "/2D/2Dmodel.model"
+	sliceStackOtherFile2, _ := mdl.NewSliceStackResource(10, got, otherSlices)
+	got.AddResource(sliceStackOtherFile2)
+	got.Path = ""
+	r := &Reader{
+		Model: got, 
+		r: newMockPackage(new(modelBuilder).withDefaultModel().withElement(`
+			<resources>
+				<basematerials id="5">
+					<base name="Blue PLA" displaycolor="#0000FF" />
+					<base name="Red ABS" displaycolor="#FF0000" />
+				</basematerials>
+				<m:texture2d id="6" path="/3D/Texture/msLogo.png" contenttype="image/png" tilestyleu="wrap" tilestylev="mirror" filter="auto" />
+				<m:colorgroup id="1">
+					<m:color color="#FFFFFF" /> <m:color color="#000000" /> <m:color color="#1AB567" /> <m:color color="#DF045A" />
+				</m:colorgroup>
+				<m:texture2dgroup id="2" texid="6">
+					<m:tex2coord u="0.3" v="0.5" /> <m:tex2coord u="0.3" v="0.8" />	<m:tex2coord u="0.5" v="0.8" />	<m:tex2coord u="0.5" v="0.5" />
+				</m:texture2dgroup>
+				<s:slicestack id="3" zbottom="1">
+					<s:slice ztop="0">
+						<s:vertices>
+							<s:vertex x="1.01" y="1.02" /> <s:vertex x="9.03" y="1.04" /> <s:vertex x="9.05" y="9.06" /> <s:vertex x="1.07" y="9.08" />
+						</s:vertices>
+						<s:polygon startv="0">
+							<s:segment v2="1"></s:segment> <s:segment v2="2"></s:segment> <s:segment v2="3"></s:segment> <s:segment v2="0"></s:segment>
+						</s:polygon>
+					</s:slice>
+					<s:slice ztop="0.1">
+						<s:vertices>
+							<s:vertex x="1.01" y="1.02" /> <s:vertex x="9.03" y="1.04" /> <s:vertex x="9.05" y="9.06" /> <s:vertex x="1.07" y="9.08" />
+						</s:vertices>
+						<s:polygon startv="0"> 
+							<s:segment v2="2"></s:segment> <s:segment v2="1"></s:segment> <s:segment v2="3"></s:segment> <s:segment v2="0"></s:segment>
+						</s:polygon>
+					</s:slice>
+				</s:slicestack>
+				<s:slicestack id="7" zbottom="1.1">
+					<s:sliceref slicestackid="10" slicepath="/2D/2Dmodel.model" />
+				</s:slicestack>
+			</resources>`).build()),
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.r.processRootModel(); (err != nil) != tt.wantErr {
-				t.Errorf("Reader.processRootModel() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if diff := deep.Equal(tt.r.Model, tt.want); diff != nil {
-				t.Errorf("Reader.processRootModel() = %v", diff)
-				return
-			}
-		})
-	}
+	
+	t.Run("base", func(t *testing.T) {
+		if err := r.processRootModel(); err != nil  {
+			t.Errorf("Reader.processRootModel() unexpected error = %v", err)
+			return
+		}
+		if diff := deep.Equal(r.Model, want); diff != nil {
+			t.Errorf("Reader.processRootModel() = %v", diff)
+			return
+		}
+	})
 }
 
 func TestReader_namespaceRegistered(t *testing.T) {
