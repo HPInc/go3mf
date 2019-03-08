@@ -26,11 +26,6 @@ func (o *MockObject) Type() ObjectType {
 	return ObjectTypeOther
 }
 
-func (o *MockObject) RootModel() *Model {
-	o.Called()
-	return new(Model)
-}
-
 func (o *MockObject) MergeToMesh(args0 *mesh.Mesh, args1 mgl32.Mat4) error {
 	o.Called(args0, args1)
 	return nil
@@ -293,7 +288,7 @@ func TestNewComponentResource(t *testing.T) {
 		want    *ComponentResource
 		wantErr bool
 	}{
-		{"base", args{0, model}, &ComponentResource{ObjectResource: ObjectResource{Resource: Resource{Model: model, ResourceID: &ResourceID{"", 0, 1}}}}, false},
+		{"base", args{0, model}, &ComponentResource{ObjectResource: ObjectResource{Resource: Resource{ResourceID: &ResourceID{"", 0, 1}}}}, false},
 		{"dup", args{0, model}, nil, true},
 	}
 	for _, tt := range tests {
@@ -345,7 +340,7 @@ func TestNewMeshResource(t *testing.T) {
 		want    *MeshResource
 		wantErr bool
 	}{
-		{"base", args{0, model}, &MeshResource{ObjectResource: ObjectResource{Resource: Resource{Model: model, ResourceID: &ResourceID{"", 0, 1}}}}, false},
+		{"base", args{0, model}, &MeshResource{ObjectResource: ObjectResource{Resource: Resource{ResourceID: &ResourceID{"", 0, 1}}}}, false},
 		{"dup", args{0, model}, nil, true},
 	}
 	for _, tt := range tests {

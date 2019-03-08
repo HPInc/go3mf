@@ -4,7 +4,6 @@ import (
 	"image/color"
 
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/gofrs/uuid"
 )
 
 const (
@@ -168,12 +167,4 @@ type BeamLatticeAttributes struct {
 	HasRepresentationMeshID bool
 	ClippingMeshID          *ResourceID
 	RepresentationMeshID    *ResourceID
-}
-
-func registerUUID(old, new uuid.UUID, model *Model) error {
-	err := model.registerUUID(new)
-	if err == nil {
-		model.unregisterUUID(old)
-	}
-	return err
 }

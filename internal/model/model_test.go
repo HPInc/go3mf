@@ -9,23 +9,23 @@ import (
 	"github.com/qmuntal/go3mf/internal/mesh"
 )
 
-func TestModel_registerUUID(t *testing.T) {
+func Test_uuidRegister_register(t *testing.T) {
 	var a struct{}
 	type args struct {
 		id uuid.UUID
 	}
 	tests := []struct {
 		name    string
-		m       *Model
+		r       *uuidRegister
 		args    args
 		wantErr bool
 	}{
-		{"duplicated", &Model{usedUUIDs: map[uuid.UUID]struct{}{{}: a}}, args{uuid.UUID{}}, true},
+		{"duplicated", &uuidRegister{usedUUIDs: map[uuid.UUID]struct{}{{}: a}}, args{uuid.UUID{}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.m.registerUUID(tt.args.id); (err != nil) != tt.wantErr {
-				t.Errorf("Model.registerUUID() error = %v, wantErr %v", err, tt.wantErr)
+			if err := tt.r.register(uuid.UUID{}, tt.args.id); (err != nil) != tt.wantErr {
+				t.Errorf("uuidRegister.register() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
@@ -40,7 +40,6 @@ func TestNewModel(t *testing.T) {
 			Units:              UnitMillimeter,
 			Language:           langUS,
 			CustomContentTypes: make(map[string]string),
-			usedUUIDs:          make(map[uuid.UUID]struct{}),
 			resourceMap:        make(map[uint64]Identifier),
 		}},
 	}

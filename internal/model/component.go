@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/gofrs/uuid"
 	"github.com/qmuntal/go3mf/internal/mesh"
@@ -8,7 +9,6 @@ import (
 
 // Object defines a composable object.
 type Object interface {
-	RootModel() *Model
 	MergeToMesh(*mesh.Mesh, mgl32.Mat4) error
 	ID() uint64
 	IsValid() bool
@@ -27,6 +27,7 @@ type ObjectResource struct {
 	DefaultProperty interface{}
 	ObjectType      ObjectType
 	uuid            uuid.UUID
+	uuidRegister    register
 }
 
 func newObjectResource(id uint64, model *Model) (*ObjectResource, error) {
@@ -51,18 +52,15 @@ func (o *ObjectResource) UUID() uuid.UUID {
 
 // SetUUID sets the object UUID
 func (o *ObjectResource) SetUUID(id uuid.UUID) error {
-	err := registerUUID(o.uuid, id, o.Model)
+	if o.uuidRegister == nil {
+		return errors.New("go3mf: object resource uuid cannot be set as it is not inside any model")
+	}
+	err := o.uuidRegister.register(o.uuid, id)
 	if err == nil {
 		o.uuid = id
 	}
 	return err
 }
-
-// RootModel returns the model of the object.
-func (o *ObjectResource) RootModel() *Model {
-	return o.Model
-}
-
 // ID returns the id of the object.
 func (o *ObjectResource) ID() uint64 {
 	return o.ResourceID.UniqueID()
@@ -85,9 +83,10 @@ func (o *ObjectResource) IsValidForSlices(transform mgl32.Mat4) bool {
 
 // A Component is an in memory representation of the 3MF component.
 type Component struct {
-	Object    Object
-	Transform mgl32.Mat4
-	uuid      uuid.UUID
+	Object       Object
+	Transform    mgl32.Mat4
+	uuid         uuid.UUID
+	uuidRegister register
 }
 
 // UUID returns the object UUID.
@@ -97,7 +96,10 @@ func (c *Component) UUID() uuid.UUID {
 
 // SetUUID sets the object UUID
 func (c *Component) SetUUID(id uuid.UUID) error {
-	err := registerUUID(c.uuid, id, c.Object.RootModel())
+	if c.uuidRegister == nil {
+		return errors.New("go3mf: component uuid cannot be set as it is not inside any model")
+	}
+	err := c.uuidRegister.register(c.uuid, id)
 	if err == nil {
 		c.uuid = id
 	}

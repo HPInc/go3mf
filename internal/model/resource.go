@@ -83,7 +83,6 @@ func (r *resourceHandler) Clear() {
 
 // A Resource is an in memory representation of the 3MF resource object
 type Resource struct {
-	Model      *Model
 	ResourceID *ResourceID
 }
 
@@ -93,7 +92,6 @@ func newResource(id uint64, model *Model) (*Resource, error) {
 		return nil, err
 	}
 	return &Resource{
-		Model:      model,
 		ResourceID: packageID,
 	}, nil
 }

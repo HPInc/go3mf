@@ -8,6 +8,27 @@ import (
 	"github.com/qmuntal/go3mf/internal/mesh"
 )
 
+type register interface {
+	register(old, new uuid.UUID) error
+}
+
+type uuidRegister struct {
+	usedUUIDs map[uuid.UUID]struct{}
+}
+
+func (r *uuidRegister) register(oldID, newID uuid.UUID) error {
+	if _, ok := r.usedUUIDs[newID]; ok {
+		return errors.New("go3mf: duplicated UUID")
+	}
+	if len(r.usedUUIDs) == 0 {
+		r.usedUUIDs = make(map[uuid.UUID]struct{})
+	}
+	delete(r.usedUUIDs, oldID)
+	var tmp struct{}
+	r.usedUUIDs[newID] = tmp
+	return nil
+}
+
 // Identifier defines an object than can be uniquely identified.
 type Identifier interface {
 	UniqueID() uint64
@@ -41,7 +62,7 @@ type Model struct {
 	ProductionAttachments []*Attachment
 	CustomContentTypes    map[string]string
 
-	usedUUIDs       map[uuid.UUID]struct{}
+	uuidRegister    uuidRegister
 	resourceHandler resourceHandler
 	resourceMap     map[uint64]Identifier
 	uuid            uuid.UUID
@@ -57,7 +78,6 @@ func NewModel() *Model {
 		Units:              UnitMillimeter,
 		Language:           langUS,
 		CustomContentTypes: make(map[string]string),
-		usedUUIDs:          make(map[uuid.UUID]struct{}),
 		resourceMap:        make(map[uint64]Identifier),
 	}
 	m.SetUUID(uuid.Must(uuid.NewV4()))
@@ -71,7 +91,7 @@ func (m *Model) UUID() uuid.UUID {
 
 // SetUUID sets the build UUID
 func (m *Model) SetUUID(id uuid.UUID) error {
-	err := registerUUID(m.uuid, id, m)
+	err := m.uuidRegister.register(m.uuid, id)
 	if err == nil {
 		m.uuid = id
 	}
@@ -159,20 +179,4 @@ func (m *Model) addResourceToLookupTable(resource Identifier) {
 
 func (m *Model) generatePackageResourceID(id uint64) (*ResourceID, error) {
 	return m.resourceHandler.NewResourceID(m.Path, id)
-}
-
-func (m *Model) unregisterUUID(id uuid.UUID) {
-	delete(m.usedUUIDs, id)
-}
-
-func (m *Model) registerUUID(id uuid.UUID) error {
-	if _, ok := m.usedUUIDs[id]; ok {
-		return errors.New("go3mf: duplicated UUID")
-	}
-	if len(m.usedUUIDs) == 0 {
-		m.usedUUIDs = make(map[uuid.UUID]struct{})
-	}
-	var tmp struct{}
-	m.usedUUIDs[id] = tmp
-	return nil
 }

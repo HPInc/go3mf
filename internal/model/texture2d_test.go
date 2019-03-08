@@ -48,7 +48,7 @@ func TestNewTexture2DResource(t *testing.T) {
 		wantErr bool
 	}{
 		{"base", args{0, model}, &Texture2DResource{
-			Resource:    Resource{Model: model, ResourceID: &ResourceID{"", 0, 1}},
+			Resource:    Resource{ResourceID: &ResourceID{"", 0, 1}},
 			ContentType: PNGTexture,
 			TileStyleU:  TileWrap,
 			TileStyleV:  TileWrap,
