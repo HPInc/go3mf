@@ -66,6 +66,8 @@ const (
 	attrSegment           = "segment"
 	attrV2                = "v2"
 	attrStartV            = "startv"
+	attrSliceRefID        = "slicestackid"
+	attrSlicePath         = "slicepath"
 )
 
 const (

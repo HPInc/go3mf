@@ -80,6 +80,7 @@ func (d *sliceStackDecoder) parseContent() error {
 					err = errors.New("go3mf: slicestack contains slices and slicerefs")
 				} else {
 					hasSliceRef = true
+					err = d.parseSliceRef(tp)
 				}
 			}
 		case xml.EndElement:
@@ -91,6 +92,47 @@ func (d *sliceStackDecoder) parseContent() error {
 			return err
 		}
 	}
+}
+
+func (d *sliceStackDecoder) parseSliceRef(se xml.StartElement) error {
+	var sliceStackID uint64
+	var path string
+	var err error
+	for _, a := range se.Attr {
+		switch a.Name.Local {
+		case attrSliceRefID:
+			sliceStackID, err = strconv.ParseUint(a.Value, 10, 64)
+		case attrSlicePath:
+			path = a.Value
+		}
+	}
+	if err != nil {
+		return errors.New("go3mf: a sliceref has an invalid slicestackid attribute")
+	}
+
+	return d.addSliceRef(sliceStackID, path)
+}
+
+func (d *sliceStackDecoder) addSliceRef(sliceStackID uint64, path string) error {
+	if path == d.model.Path {
+		return errors.New("go3mf: a slicepath is invalid")
+	}
+	resource, ok := d.model.FindResourcePath(path, sliceStackID)
+	if !ok {
+		return errors.New("go3mf: a sliceref points to a unexisting resource")
+	}
+	sliceStackResource, ok := resource.(*mdl.SliceStackResource)
+	if !ok {
+		return errors.New("go3mf: a sliceref points to a resource that is not an slicestack")
+	}
+	sliceStackResource.TimesRefered++
+	for _, s := range sliceStackResource.Slices {
+		if _, err := d.sliceStack.AddSlice(s); err != nil {
+			return err
+		}
+	}
+	d.sliceStack.UsesSliceRef = true
+	return nil
 }
 
 func (d *sliceStackDecoder) parseSlice(se xml.StartElement) (err error) {
@@ -113,7 +155,7 @@ type sliceDecoder struct {
 }
 
 func (d *sliceDecoder) Decode(se xml.StartElement) error {
-	if err := d.parseAttr(se); err != nil {
+	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
 	if !d.hasTopZ {
@@ -126,8 +168,8 @@ func (d *sliceDecoder) Decode(se xml.StartElement) error {
 	return nil
 }
 
-func (d *sliceDecoder) parseAttr(se xml.StartElement) (err error) {
-	for _, a := range se.Attr {
+func (d *sliceDecoder) parseAttr(attrs []xml.Attr) (err error) {
+	for _, a := range attrs {
 		if a.Name.Local == attrZTop {
 			if d.hasTopZ {
 				err = errors.New("go3mf: duplicated slice topz attribute")
