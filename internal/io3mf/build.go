@@ -17,7 +17,7 @@ type buildDecoder struct {
 }
 
 func (d *buildDecoder) Decode(se xml.StartElement) error {
-	if err := d.parseAttr(se); err != nil {
+	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
 	for {
@@ -41,8 +41,8 @@ func (d *buildDecoder) Decode(se xml.StartElement) error {
 	}
 }
 
-func (d *buildDecoder) parseAttr(se xml.StartElement) error {
-	for _, a := range se.Attr {
+func (d *buildDecoder) parseAttr(attrs []xml.Attr) error {
+	for _, a := range attrs {
 		if a.Name.Space == nsProductionSpec && a.Name.Local == attrProdUUID {
 			if d.model.UUID() != uuid.Nil {
 				return errors.New("go3mf: duplicated build uuid attribute")
@@ -70,7 +70,7 @@ type buildItemDecoder struct {
 
 func (d *buildItemDecoder) Decode(se xml.StartElement) error {
 	d.item = new(mdl.BuildItem)
-	if err := d.parseAttr(se); err != nil {
+	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
 	if !d.hasObjectID {
@@ -109,8 +109,8 @@ func (d *buildItemDecoder) processItem() error {
 	return nil
 }
 
-func (d *buildItemDecoder) parseAttr(se xml.StartElement) error {
-	for _, a := range se.Attr {
+func (d *buildItemDecoder) parseAttr(attrs []xml.Attr) error {
+	for _, a := range attrs {
 		switch a.Name.Space {
 		case nsProductionSpec:
 			if a.Name.Local == attrProdUUID {

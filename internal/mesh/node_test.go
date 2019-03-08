@@ -151,7 +151,6 @@ func Test_nodeStructure_merge(t *testing.T) {
 	}
 }
 
-
 func Test_newvec3IFromVec3(t *testing.T) {
 	type args struct {
 		vec mgl32.Vec3

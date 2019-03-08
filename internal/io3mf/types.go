@@ -56,6 +56,16 @@ const (
 	attrZBottom           = "zbottom"
 	attrSlice             = "slice"
 	attrSliceRef          = "sliceref"
+	attrZTop              = "ztop"
+	attrVertices          = "vertices"
+	attrVertex            = "vertex"
+	attrPolygon           = "polygon"
+	attrSliceStack        = "slicestack"
+	attrX                 = "x"
+	attrY                 = "y"
+	attrSegment           = "segment"
+	attrV2                = "v2"
+	attrStartV            = "startv"
 )
 
 const (

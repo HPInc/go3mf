@@ -93,6 +93,8 @@ func (d *resourceDecoder) Decode(se xml.StartElement) error {
 				err = d.processCoreContent(tp)
 			} else if tp.Name.Space == nsMaterialSpec {
 				err = d.processMaterialContent(tp)
+			} else if tp.Name.Space == nsSliceSpec {
+
 			}
 		case xml.EndElement:
 			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrResources {
@@ -139,6 +141,21 @@ func (d *resourceDecoder) processMaterialContent(se xml.StartElement) error {
 	return nil
 }
 
+func (d *resourceDecoder) processSliceContent(se xml.StartElement) error {
+	if se.Name.Local != attrSliceStack {
+		return nil
+	}
+	d.progressCount++
+	if !d.r.progress.Progress(1.0-2.0/float64(d.progressCount+2), StageReadResources) {
+		return ErrUserAborted
+	}
+	d.r.progress.PushLevel(1.0-2.0/float64(d.progressCount+2), 1.0-2.0/float64(d.progressCount+1+2))
+	sd := sliceStackDecoder{x: d.x, r: d.r, model: d.model}
+	err := sd.Decode(se)
+	d.r.progress.PopLevel()
+	return err
+}
+
 type baseMaterialsDecoder struct {
 	x             *xml.Decoder
 	r             *Reader
@@ -146,8 +163,8 @@ type baseMaterialsDecoder struct {
 	baseMaterials *mdl.BaseMaterialsResource
 }
 
-func (d *baseMaterialsDecoder) parseAttr(se xml.StartElement) (err error) {
-	for _, a := range se.Attr {
+func (d *baseMaterialsDecoder) parseAttr(attrs []xml.Attr) (err error) {
+	for _, a := range attrs {
 		if a.Name.Space != "" || a.Name.Local != attrID {
 			continue
 		}
@@ -170,7 +187,7 @@ func (d *baseMaterialsDecoder) parseAttr(se xml.StartElement) (err error) {
 }
 
 func (d *baseMaterialsDecoder) Decode(se xml.StartElement) error {
-	if err := d.parseAttr(se); err != nil {
+	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
 	if d.baseMaterials == nil {

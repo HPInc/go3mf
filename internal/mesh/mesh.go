@@ -125,7 +125,6 @@ func faceNormal(n1, n2, n3 mgl32.Vec3) mgl32.Vec3 {
 	return n2.Sub(n1).Cross(n3.Sub(n1)).Normalize()
 }
 
-
 // IsManifoldAndOriented returns true if the mesh is manifold and oriented.
 func (m *Mesh) IsManifoldAndOriented() bool {
 	if m.NodeCount() < 3 || m.FaceCount() < 3 || !m.CheckSanity() {

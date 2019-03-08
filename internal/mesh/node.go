@@ -1,10 +1,9 @@
 package mesh
 
 import (
-	"math"
 	"github.com/go-gl/mathgl/mgl32"
+	"math"
 )
-
 
 // vec3I represents a 3D vector typed as int32
 type vec3I struct {

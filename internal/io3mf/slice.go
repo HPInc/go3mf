@@ -18,7 +18,7 @@ type sliceStackDecoder struct {
 }
 
 func (d *sliceStackDecoder) Decode(se xml.StartElement) error {
-	if err := d.parseAttr(se); err != nil {
+	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
 	if d.id == 0 {
@@ -34,10 +34,10 @@ func (d *sliceStackDecoder) Decode(se xml.StartElement) error {
 	return d.model.AddResource(sliceStackRes)
 }
 
-func (d *sliceStackDecoder) parseAttr(se xml.StartElement) error {
-	for _, a := range se.Attr {
+func (d *sliceStackDecoder) parseAttr(attrs []xml.Attr) error {
+	for _, a := range attrs {
 		var err error
-		switch se.Name.Local {
+		switch a.Name.Local {
 		case attrID:
 			if d.id != 0 {
 				err = errors.New("go3mf: duplicated slicestack id attribute")
@@ -73,7 +73,7 @@ func (d *sliceStackDecoder) parseContent() error {
 					err = errors.New("go3mf: slicestack contains slices and slicerefs")
 				} else {
 					hasSlice = true
-					err = d.parseSlice()
+					err = d.parseSlice(tp)
 				}
 			} else if tp.Name.Local == attrSliceRef {
 				if hasSlice {
@@ -82,6 +82,10 @@ func (d *sliceStackDecoder) parseContent() error {
 					hasSliceRef = true
 				}
 			}
+		case xml.EndElement:
+			if tp.Name.Space == nsSliceSpec && tp.Name.Local == attrSliceStack {
+				return nil
+			}
 		}
 		if err != nil {
 			return err
@@ -89,13 +93,179 @@ func (d *sliceStackDecoder) parseContent() error {
 	}
 }
 
-func (d *sliceStackDecoder) parseSlice() error {
+func (d *sliceStackDecoder) parseSlice(se xml.StartElement) (err error) {
 	if len(d.sliceStack.Slices)%readSliceUpdate == readSliceUpdate-1 {
 		d.progressCount++
 		if !d.r.progress.Progress(1.0-2.0/float64(d.progressCount+2), StageReadSlices) {
-			return ErrUserAborted
+			err = ErrUserAborted
+		} else {
+			sd := sliceDecoder{x: d.x, r: d.r, sliceStack: &d.sliceStack}
+			err = sd.Decode(se)
 		}
 	}
+	return
+}
 
+type sliceDecoder struct {
+	x          *xml.Decoder
+	r          *Reader
+	sliceStack *mdl.SliceStack
+	slice      mdl.Slice
+	hasTopZ    bool
+}
+
+func (d *sliceDecoder) Decode(se xml.StartElement) error {
+	if err := d.parseAttr(se); err != nil {
+		return err
+	}
+	if !d.hasTopZ {
+		return errors.New("go3mf: missing slice topz attribute")
+	}
+	if err := d.parseContent(); err != nil {
+		return err
+	}
+	d.sliceStack.Slices = append(d.sliceStack.Slices, &d.slice)
 	return nil
+}
+
+func (d *sliceDecoder) parseAttr(se xml.StartElement) (err error) {
+	for _, a := range se.Attr {
+		if a.Name.Local == attrZTop {
+			if d.hasTopZ {
+				err = errors.New("go3mf: duplicated slice topz attribute")
+			} else {
+				d.hasTopZ = true
+				var topZ float64
+				topZ, err = strconv.ParseFloat(a.Value, 32)
+				d.slice.TopZ = float32(topZ)
+			}
+		}
+	}
+	return
+}
+
+func (d *sliceDecoder) parseContent() error {
+	for {
+		t, err := d.x.Token()
+		if err != nil {
+			return err
+		}
+		switch tp := t.(type) {
+		case xml.StartElement:
+			if tp.Name.Space != nsSliceSpec {
+				continue
+			}
+			if tp.Name.Local == attrVertices {
+				err = d.parseVertices(tp)
+			} else if tp.Name.Local == attrPolygon {
+				err = d.parsePolygons(tp)
+			}
+		case xml.EndElement:
+			if tp.Name.Space == nsSliceSpec && tp.Name.Local == attrSlice {
+				return nil
+			}
+		}
+		if err != nil {
+			return err
+		}
+	}
+}
+
+func (d *sliceDecoder) parseVertices(se xml.StartElement) error {
+	for {
+		t, err := d.x.Token()
+		if err != nil {
+			return err
+		}
+		switch tp := t.(type) {
+		case xml.StartElement:
+			if tp.Name.Space == nsSliceSpec && tp.Name.Local == attrVertex {
+				if err = d.parseVertex(tp.Attr); err != nil {
+					return err
+				}
+			}
+		case xml.EndElement:
+			if tp.Name.Space == nsSliceSpec && tp.Name.Local == attrVertices {
+				return nil
+			}
+		}
+		if err != nil {
+			return err
+		}
+	}
+}
+
+func (d *sliceDecoder) parseVertex(attrs []xml.Attr) error {
+	var x, y float64
+	for _, a := range attrs {
+		var err error
+		switch a.Name.Local {
+		case attrX:
+			x, err = strconv.ParseFloat(a.Value, 32)
+		case attrY:
+			y, err = strconv.ParseFloat(a.Value, 32)
+		}
+		if err != nil {
+			return errors.New("go3mf: slice vertex has an invalid coordinate attribute")
+		}
+	}
+	d.slice.AddVertex(float32(x), float32(y))
+	return nil
+}
+
+func (d *sliceDecoder) parsePolygons(se xml.StartElement) error {
+	polygonIndex := d.slice.BeginPolygon()
+	if err := d.parsePolygonAttr(polygonIndex, se.Attr); err != nil {
+		return err
+	}
+	for {
+		t, err := d.x.Token()
+		if err != nil {
+			return err
+		}
+		switch tp := t.(type) {
+		case xml.StartElement:
+			if tp.Name.Space == nsSliceSpec && tp.Name.Local == attrSegment {
+				if err = d.parseVertex(tp.Attr); err != nil {
+					return err
+				}
+			}
+		case xml.EndElement:
+			if tp.Name.Space == nsSliceSpec && tp.Name.Local == attrPolygon {
+				if !d.slice.IsPolygonValid(polygonIndex) {
+					return errors.New("go3mf: a closed slice polygon is actually a line")
+				}
+				return nil
+			}
+		}
+		if err != nil {
+			return err
+		}
+	}
+}
+
+func (d *sliceDecoder) addSegment(polygonIndex int, attrs []xml.Attr) (err error) {
+	for _, a := range attrs {
+		if a.Name.Local == attrV2 {
+			var v264 uint64
+			v264, err = strconv.ParseUint(a.Value, 10, 32)
+			d.slice.AddPolygonIndex(polygonIndex, int(v264))
+			break
+		}
+	}
+	return nil
+}
+
+func (d *sliceDecoder) parsePolygonAttr(polygonIndex int, attrs []xml.Attr) (err error) {
+	var start64 uint64
+	for _, a := range attrs {
+		if a.Name.Local == attrStartV {
+			start64, err = strconv.ParseUint(a.Value, 10, 32)
+			break
+		}
+	}
+	if err != nil {
+		err = d.slice.AddPolygonIndex(polygonIndex, int(start64))
+	}
+	return
 }

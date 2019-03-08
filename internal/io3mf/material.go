@@ -17,7 +17,7 @@ type colorGroupDecoder struct {
 }
 
 func (d *colorGroupDecoder) Decode(se xml.StartElement) error {
-	if err := d.parseAttr(se); err != nil {
+	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
 	if d.id == 0 {
@@ -43,8 +43,8 @@ func (d *colorGroupDecoder) Decode(se xml.StartElement) error {
 	}
 }
 
-func (d *colorGroupDecoder) parseAttr(se xml.StartElement) error {
-	for _, a := range se.Attr {
+func (d *colorGroupDecoder) parseAttr(attrs []xml.Attr) error {
+	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrID {
 			if d.id != 0 {
 				return errors.New("go3mf: duplicated color group id attribute")
@@ -82,7 +82,7 @@ type tex2DGroupDecoder struct {
 }
 
 func (d *tex2DGroupDecoder) Decode(se xml.StartElement) error {
-	if err := d.parseAttr(se); err != nil {
+	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
 	if d.id == 0 {
@@ -108,8 +108,8 @@ func (d *tex2DGroupDecoder) Decode(se xml.StartElement) error {
 	}
 }
 
-func (d *tex2DGroupDecoder) parseAttr(se xml.StartElement) error {
-	for _, a := range se.Attr {
+func (d *tex2DGroupDecoder) parseAttr(attrs []xml.Attr) error {
+	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
 		}
@@ -166,7 +166,7 @@ type texture2DDecoder struct {
 }
 
 func (d *texture2DDecoder) Decode(se xml.StartElement) error {
-	if err := d.parseAttr(se); err != nil {
+	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
 	if d.id == 0 {
@@ -190,8 +190,8 @@ func (d *texture2DDecoder) Decode(se xml.StartElement) error {
 	return d.model.AddResource(texture2d)
 }
 
-func (d *texture2DDecoder) parseAttr(se xml.StartElement) error {
-	for _, a := range se.Attr {
+func (d *texture2DDecoder) parseAttr(attrs []xml.Attr) error {
+	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
 		}

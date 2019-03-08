@@ -20,7 +20,7 @@ type modelDecoder struct {
 }
 
 func (d *modelDecoder) Decode(se xml.StartElement) error {
-	if err := d.parseAttr(se); err != nil {
+	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
 	for {
@@ -87,10 +87,10 @@ func (d *modelDecoder) parseResources(se xml.StartElement) error {
 	return nil
 }
 
-func (d *modelDecoder) parseAttr(se xml.StartElement) error {
+func (d *modelDecoder) parseAttr(attrs []xml.Attr) error {
 	registeredNs := map[string]string{}
 	var requiredExts string
-	for _, a := range se.Attr {
+	for _, a := range attrs {
 		if a.Name.Space == "" {
 			switch a.Name.Local {
 			case attrUnit:

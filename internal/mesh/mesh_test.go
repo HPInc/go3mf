@@ -337,7 +337,7 @@ func TestMesh_FaceNormal(t *testing.T) {
 		args args
 		want mgl32.Vec3
 	}{
-		{"base", m, args{0}, mgl32.Vec3{0,0,1}},
+		{"base", m, args{0}, mgl32.Vec3{0, 0, 1}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -347,7 +347,6 @@ func TestMesh_FaceNormal(t *testing.T) {
 		})
 	}
 }
-
 
 func Test_newPairMatch(t *testing.T) {
 	tests := []struct {
