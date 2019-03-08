@@ -241,10 +241,6 @@ func TestReader_processRootModel_Fail(t *testing.T) {
 				t.Errorf("Reader.processRootModel() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if tt.r.Model != nil {
-				t.Errorf("Reader.processRootModel() got = %v, want nil", tt.r.Model)
-				return
-			}
 		})
 	}
 }
@@ -253,7 +249,7 @@ func TestReader_processRootModel(t *testing.T) {
 	want := mdl.NewModel()
 	baseMaterials, _ := mdl.NewBaseMaterialsResource(5, want)
 	baseTexture, _ := mdl.NewTexture2DResource(6, want)
-	otherSlices :=  &mdl.SliceStack{
+	otherSlices := &mdl.SliceStack{
 		BottomZ: 2,
 		Slices: []*mdl.Slice{
 			{
@@ -295,14 +291,14 @@ func TestReader_processRootModel(t *testing.T) {
 	sliceStackRef.UsesSliceRef = true
 	sliceStackRef.Slices = append(sliceStackRef.Slices, otherSlices.Slices...)
 	want.Resources = append(want.Resources, []mdl.Identifier{baseMaterials, baseTexture, sliceStack, sliceStackRef}...)
-	
+
 	got := mdl.NewModel()
 	got.Path = "/2D/2Dmodel.model"
 	sliceStackOtherFile2, _ := mdl.NewSliceStackResource(10, got, otherSlices)
 	got.AddResource(sliceStackOtherFile2)
 	got.Path = ""
 	r := &Reader{
-		Model: got, 
+		Model: got,
 		r: newMockPackage(new(modelBuilder).withDefaultModel().withElement(`
 			<resources>
 				<basematerials id="5">
@@ -339,9 +335,9 @@ func TestReader_processRootModel(t *testing.T) {
 				</s:slicestack>
 			</resources>`).build()),
 	}
-	
+
 	t.Run("base", func(t *testing.T) {
-		if err := r.processRootModel(); err != nil  {
+		if err := r.processRootModel(); err != nil {
 			t.Errorf("Reader.processRootModel() unexpected error = %v", err)
 			return
 		}
