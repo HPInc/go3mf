@@ -94,7 +94,7 @@ func (d *resourceDecoder) Decode(se xml.StartElement) error {
 			} else if tp.Name.Space == nsMaterialSpec {
 				err = d.processMaterialContent(tp)
 			} else if tp.Name.Space == nsSliceSpec {
-
+				err = d.processSliceContent(tp)
 			}
 		case xml.EndElement:
 			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrResources {

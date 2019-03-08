@@ -227,6 +227,21 @@ func TestReader_processRootModel(t *testing.T) {
 	baseModel := mdl.NewModel()
 	baseMaterials, _ := mdl.NewBaseMaterialsResource(5, baseModel)
 	baseTetxure, _ := mdl.NewTexture2DResource(6, baseModel)
+	sliceStack, _ := mdl.NewSliceStackResource(3, baseModel, &mdl.SliceStack{
+		BottomZ: 1,
+		Slices: []*mdl.Slice{
+			{
+				TopZ:     0,
+				Vertices: []mgl32.Vec2{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
+				Polygons: [][]int{{1, 2, 3, 0}},
+			},
+			{
+				TopZ:     0.1,
+				Vertices: []mgl32.Vec2{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
+				Polygons: [][]int{{2, 1, 3, 0}},
+			},
+		},
+	})
 	baseTetxure.Path = "/3D/Texture/msLogo.png"
 	baseTetxure.ContentType = mdl.PNGTexture
 	baseTetxure.TileStyleV = mdl.TileMirror
@@ -234,7 +249,7 @@ func TestReader_processRootModel(t *testing.T) {
 		{Name: "Blue PLA", Color: color.RGBA{0, 0, 85, 255}},
 		{Name: "Red ABS", Color: color.RGBA{85, 0, 0, 255}},
 	}
-	baseModel.Resources = []mdl.Identifier{baseMaterials, baseTetxure}
+	baseModel.Resources = []mdl.Identifier{baseMaterials, baseTetxure, sliceStack}
 	tests := []struct {
 		name    string
 		r       *Reader
@@ -254,17 +269,29 @@ func TestReader_processRootModel(t *testing.T) {
 			</basematerials>
 			<m:texture2d id="6" path="/3D/Texture/msLogo.png" contenttype="image/png" tilestyleu="wrap" tilestylev="mirror" filter="auto" />
 			<m:colorgroup id="1">
-				<m:color color="#FFFFFF" />
-				<m:color color="#000000" />
-				<m:color color="#1AB567" />
-				<m:color color="#DF045A" />
+				<m:color color="#FFFFFF" /> <m:color color="#000000" /> <m:color color="#1AB567" /> <m:color color="#DF045A" />
 			</m:colorgroup>
 			<m:texture2dgroup id="2" texid="6">
-				<m:tex2coord u="0.3" v="0.5" />
-				<m:tex2coord u="0.3" v="0.8" />
-				<m:tex2coord u="0.5" v="0.8" />
-				<m:tex2coord u="0.5" v="0.5" />
+				<m:tex2coord u="0.3" v="0.5" /> <m:tex2coord u="0.3" v="0.8" />	<m:tex2coord u="0.5" v="0.8" />	<m:tex2coord u="0.5" v="0.5" />
 			</m:texture2dgroup>
+			<s:slicestack id="3" zbottom="1">
+				<s:slice ztop="0">
+					<s:vertices>
+						<s:vertex x="1.01" y="1.02" /> <s:vertex x="9.03" y="1.04" /> <s:vertex x="9.05" y="9.06" /> <s:vertex x="1.07" y="9.08" />
+					</s:vertices>
+					<s:polygon startv="0">
+						<s:segment v2="1"></s:segment> <s:segment v2="2"></s:segment> <s:segment v2="3"></s:segment> <s:segment v2="0"></s:segment>
+					</s:polygon>
+				</s:slice>
+				<s:slice ztop="0.1">
+					<s:vertices>
+						<s:vertex x="1.01" y="1.02" /> <s:vertex x="9.03" y="1.04" /> <s:vertex x="9.05" y="9.06" /> <s:vertex x="1.07" y="9.08" />
+					</s:vertices>
+					<s:polygon startv="0"> 
+						<s:segment v2="2"></s:segment> <s:segment v2="1"></s:segment> <s:segment v2="3"></s:segment> <s:segment v2="0"></s:segment>
+					</s:polygon>
+				</s:slice>
+			</s:slicestack>
 		</resources>`).build())}, baseModel, false},
 	}
 	for _, tt := range tests {

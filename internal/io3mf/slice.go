@@ -97,13 +97,11 @@ func (d *sliceStackDecoder) parseSlice(se xml.StartElement) (err error) {
 	if len(d.sliceStack.Slices)%readSliceUpdate == readSliceUpdate-1 {
 		d.progressCount++
 		if !d.r.progress.Progress(1.0-2.0/float64(d.progressCount+2), StageReadSlices) {
-			err = ErrUserAborted
-		} else {
-			sd := sliceDecoder{x: d.x, r: d.r, sliceStack: &d.sliceStack}
-			err = sd.Decode(se)
+			return ErrUserAborted
 		}
 	}
-	return
+	sd := sliceDecoder{x: d.x, r: d.r, sliceStack: &d.sliceStack}
+	return sd.Decode(se)
 }
 
 type sliceDecoder struct {
@@ -226,7 +224,7 @@ func (d *sliceDecoder) parsePolygons(se xml.StartElement) error {
 		switch tp := t.(type) {
 		case xml.StartElement:
 			if tp.Name.Space == nsSliceSpec && tp.Name.Local == attrSegment {
-				if err = d.parseVertex(tp.Attr); err != nil {
+				if err = d.addSegment(polygonIndex, tp.Attr); err != nil {
 					return err
 				}
 			}
@@ -249,11 +247,15 @@ func (d *sliceDecoder) addSegment(polygonIndex int, attrs []xml.Attr) (err error
 		if a.Name.Local == attrV2 {
 			var v264 uint64
 			v264, err = strconv.ParseUint(a.Value, 10, 32)
-			d.slice.AddPolygonIndex(polygonIndex, int(v264))
+			if err != nil {
+				err = errors.New("go3mf: a polygon has an invalid v2 attribute")
+			} else {
+				d.slice.AddPolygonIndex(polygonIndex, int(v264))
+			}
 			break
 		}
 	}
-	return nil
+	return
 }
 
 func (d *sliceDecoder) parsePolygonAttr(polygonIndex int, attrs []xml.Attr) (err error) {
@@ -264,7 +266,7 @@ func (d *sliceDecoder) parsePolygonAttr(polygonIndex int, attrs []xml.Attr) (err
 			break
 		}
 	}
-	if err != nil {
+	if err == nil {
 		err = d.slice.AddPolygonIndex(polygonIndex, int(start64))
 	}
 	return

@@ -40,7 +40,7 @@ func (s *Slice) AddPolygonIndex(polygonIndex, index int) error {
 	if len(p) > 0 && p[len(p)-1] == index {
 		return errors.New("go3mf: duplicated slice segment index")
 	}
-	p = append(p, index)
+	s.Polygons[polygonIndex] = append(s.Polygons[polygonIndex], index)
 	return nil
 }
 
