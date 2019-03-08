@@ -80,23 +80,3 @@ func (r *resourceHandler) NewResourceID(path string, id uint64) (*ResourceID, er
 func (r *resourceHandler) Clear() {
 	r.resourceIDs = make(map[uint64]*ResourceID, 0)
 }
-
-// A Resource is an in memory representation of the 3MF resource object
-type Resource struct {
-	ResourceID *ResourceID
-}
-
-func newResource(id uint64, model *Model) (*Resource, error) {
-	packageID, err := model.generatePackageResourceID(id)
-	if err != nil {
-		return nil, err
-	}
-	return &Resource{
-		ResourceID: packageID,
-	}, nil
-}
-
-// UniqueID returns the unique ID.
-func (r Resource) UniqueID() uint64 {
-	return r.ResourceID.UniqueID()
-}

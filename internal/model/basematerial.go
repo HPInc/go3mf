@@ -20,19 +20,24 @@ func (m *BaseMaterial) ColorString() string {
 
 // BaseMaterialsResource defines a slice of BaseMaterial.
 type BaseMaterialsResource struct {
-	Resource
+	ID        uint64
 	Materials []*BaseMaterial
+	modelPath string
+	uniqueID  uint64
 }
 
-// NewBaseMaterialsResource returns a new texture 2D resource.
-func NewBaseMaterialsResource(id uint64, model *Model) (*BaseMaterialsResource, error) {
-	r, err := newResource(id, model)
-	if err != nil {
-		return nil, err
-	}
-	return &BaseMaterialsResource{
-		Resource: *r,
-	}, nil
+// ResourceID returns the resource ID, which has the same value as ID.
+func (ms *BaseMaterialsResource) ResourceID() uint64 {
+	return ms.ID
+}
+
+// UniqueID returns the unique ID.
+func (ms *BaseMaterialsResource) UniqueID() uint64 {
+	return ms.uniqueID
+}
+
+func (ms *BaseMaterialsResource) setUniqueID(id uint64) {
+	ms.uniqueID = id
 }
 
 // Merge appends all the other base materials.

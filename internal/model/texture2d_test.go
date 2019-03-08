@@ -5,11 +5,6 @@ import (
 	"testing"
 )
 
-func newTexture2D() *Texture2DResource {
-	r, _ := NewTexture2DResource(0, new(Model))
-	return r
-}
-
 func TestTexture2DResource_Copy(t *testing.T) {
 	type args struct {
 		other *Texture2DResource
@@ -36,33 +31,24 @@ func TestTexture2DResource_Copy(t *testing.T) {
 }
 
 func TestNewTexture2DResource(t *testing.T) {
-	model := new(Model)
 	type args struct {
-		id    uint64
-		model *Model
+		id uint64
 	}
 	tests := []struct {
-		name    string
-		args    args
-		want    *Texture2DResource
-		wantErr bool
+		name string
+		args args
+		want *Texture2DResource
 	}{
-		{"base", args{0, model}, &Texture2DResource{
-			Resource:    Resource{ResourceID: &ResourceID{"", 0, 1}},
+		{"base", args{0}, &Texture2DResource{
 			ContentType: PNGTexture,
 			TileStyleU:  TileWrap,
 			TileStyleV:  TileWrap,
 			Filter:      TextureFilterAuto,
-		}, false},
-		{"dup", args{0, model}, nil, true},
+		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewTexture2DResource(tt.args.id, tt.args.model)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("NewTexture2DResource() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			got := NewTexture2DResource(tt.args.id)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewTexture2DResource() = %v, want %v", got, tt.want)
 			}

@@ -81,25 +81,32 @@ func (s *SliceStack) AddSlice(slice *Slice) (int, error) {
 
 // SliceStackResource defines a slice stack resource.
 type SliceStackResource struct {
-	Resource
 	*SliceStack
+	ID           uint64
 	TimesRefered int
+	modelPath    string
+	uniqueID     uint64
 }
 
-// NewSliceStackResource returns a new SliceStackResource.
-func NewSliceStackResource(id uint64, model *Model, stack *SliceStack) (*SliceStackResource, error) {
-	r, err := newResource(id, model)
-	if err != nil {
-		return nil, err
-	}
-	return &SliceStackResource{SliceStack: stack, Resource: *r}, nil
+// ResourceID returns the resource ID, which has the same value as ID.
+func (s *SliceStackResource) ResourceID() uint64 {
+	return s.ID
+}
+
+// UniqueID returns the unique ID.
+func (s *SliceStackResource) UniqueID() uint64 {
+	return s.uniqueID
+}
+
+func (s *SliceStackResource) setUniqueID(id uint64) {
+	s.uniqueID = id
 }
 
 // ReferencePath returns the path to the file defining the slice stack and
 // empty if UsesSliceRef is false.
 func (s *SliceStackResource) ReferencePath() string {
 	if s.UsesSliceRef {
-		return fmt.Sprintf("/2D/2dmodel_%d.model", s.ResourceID.UniqueID())
+		return fmt.Sprintf("/2D/2dmodel_%d.model", s.uniqueID)
 	}
 	return ""
 }

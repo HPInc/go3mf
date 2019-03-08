@@ -155,8 +155,8 @@ func TestSliceStack_AddSlice(t *testing.T) {
 }
 
 func TestSliceStackResource_ReferencePath(t *testing.T) {
-	s1, _ := NewSliceStackResource(0, new(Model), new(SliceStack))
-	s2, _ := NewSliceStackResource(0, new(Model), &SliceStack{UsesSliceRef: true})
+	s1 := &SliceStackResource{SliceStack: new(SliceStack)}
+	s2 := &SliceStackResource{SliceStack: &SliceStack{UsesSliceRef: true}}
 	tests := []struct {
 		name string
 		s    *SliceStackResource
@@ -169,36 +169,6 @@ func TestSliceStackResource_ReferencePath(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.s.ReferencePath(); got != tt.want {
 				t.Errorf("SliceStackResource.ReferencePath() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestNewSliceStackResource(t *testing.T) {
-	model := new(Model)
-	type args struct {
-		id    uint64
-		model *Model
-		stack *SliceStack
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    *SliceStackResource
-		wantErr bool
-	}{
-		{"base", args{0, model, nil}, &SliceStackResource{Resource: Resource{ResourceID: &ResourceID{"", 0, 1}}}, false},
-		{"dup", args{0, model, nil}, nil, true},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewSliceStackResource(tt.args.id, tt.args.model, tt.args.stack)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("NewSliceStackResource() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewSliceStackResource() = %v, want %v", got, tt.want)
 			}
 		})
 	}

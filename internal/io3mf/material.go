@@ -172,10 +172,7 @@ func (d *texture2DDecoder) Decode(se xml.StartElement) error {
 	if d.id == 0 {
 		return errors.New("go3mf: missing texture2d id attribute")
 	}
-	texture2d, err := mdl.NewTexture2DResource(d.id, d.model)
-	if err != nil {
-		return err
-	}
+	texture2d := mdl.NewTexture2DResource(d.id)
 	texture2d.Path = d.path
 	texture2d.ContentType = d.contentType
 	if d.styleU != "" {

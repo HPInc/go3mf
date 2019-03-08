@@ -32,6 +32,8 @@ func (r *uuidRegister) register(oldID, newID uuid.UUID) error {
 // Identifier defines an object than can be uniquely identified.
 type Identifier interface {
 	UniqueID() uint64
+	ResourceID() uint64
+	setUniqueID(uint64)
 }
 
 // Metadata item is an in memory representation of the 3MF metadata,
@@ -139,11 +141,6 @@ func (m *Model) FindObject(uniqueID uint64) (o Object, ok bool) {
 	return
 }
 
-// FindPackageResourceID returns the package resource with the target unique ID.
-func (m *Model) FindPackageResourceID(uniqueID uint64) (*ResourceID, bool) {
-	return m.resourceHandler.FindResourceID(uniqueID)
-}
-
 // FindPackageResourcePath returns the package resource with the target path and ID.
 func (m *Model) FindPackageResourcePath(path string, id uint64) (*ResourceID, bool) {
 	return m.resourceHandler.FindResourcePath(path, id)
@@ -151,12 +148,16 @@ func (m *Model) FindPackageResourcePath(path string, id uint64) (*ResourceID, bo
 
 // AddResource adds a new resource to the model.
 func (m *Model) AddResource(resource Identifier) error {
-	id := resource.UniqueID()
-	if _, ok := m.FindResource(id); ok {
+	id, err := m.generatePackageResourceID(resource.ResourceID())
+	if err != nil {
+		return err
+	}
+	uniqueID := id.UniqueID()
+	if _, ok := m.FindResource(uniqueID); ok {
 		return errors.New("go3mf: duplicated model resource")
 	}
-
-	m.resourceMap[id] = resource
+	resource.setUniqueID(uniqueID)
+	m.resourceMap[uniqueID] = resource
 	m.Resources = append(m.Resources, resource)
 	m.addResourceToLookupTable(resource)
 	return nil

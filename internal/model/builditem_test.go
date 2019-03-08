@@ -36,7 +36,7 @@ func TestBuildItem_SetUUID(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"base", &BuildItem{Object: newObject()}, args{uuid.Must(uuid.NewV4())}, false},
+		{"base", &BuildItem{Object: new(ObjectResource)}, args{uuid.Must(uuid.NewV4())}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -92,7 +92,7 @@ func TestBuildItem_MergeToMesh(t *testing.T) {
 		b    *BuildItem
 		args args
 	}{
-		{"base", &BuildItem{Object: newObject()}, args{new(mesh.Mesh)}},
+		{"base", &BuildItem{Object: new(ObjectResource)}, args{new(mesh.Mesh)}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

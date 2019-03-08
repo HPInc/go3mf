@@ -10,7 +10,6 @@ import (
 // Object defines a composable object.
 type Object interface {
 	MergeToMesh(*mesh.Mesh, mgl32.Mat4) error
-	ID() uint64
 	IsValid() bool
 	IsValidForSlices(mgl32.Mat4) bool
 	Type() ObjectType
@@ -18,7 +17,7 @@ type Object interface {
 
 // An ObjectResource is an in memory representation of the 3MF model object.
 type ObjectResource struct {
-	Resource
+	ID              uint64
 	Name            string
 	PartNumber      string
 	SliceStackID    *ResourceID
@@ -28,16 +27,22 @@ type ObjectResource struct {
 	ObjectType      ObjectType
 	uuid            uuid.UUID
 	uuidRegister    register
+	modelPath       string
+	uniqueID        uint64
 }
 
-func newObjectResource(id uint64, model *Model) (*ObjectResource, error) {
-	r, err := newResource(id, model)
-	if err != nil {
-		return nil, err
-	}
-	return &ObjectResource{
-		Resource: *r,
-	}, nil
+// ResourceID returns the resource ID, which has the same value as ID.
+func (o *ObjectResource) ResourceID() uint64 {
+	return o.ID
+}
+
+// UniqueID returns the unique ID.
+func (o *ObjectResource) UniqueID() uint64 {
+	return o.uniqueID
+}
+
+func (o *ObjectResource) setUniqueID(id uint64) {
+	o.uniqueID = id
 }
 
 // Type returns the type of the object.
@@ -60,10 +65,6 @@ func (o *ObjectResource) SetUUID(id uuid.UUID) error {
 		o.uuid = id
 	}
 	return err
-}
-// ID returns the id of the object.
-func (o *ObjectResource) ID() uint64 {
-	return o.ResourceID.UniqueID()
 }
 
 // MergeToMesh left on purpose empty to be redefined in embedding class.
@@ -122,17 +123,6 @@ type ComponentResource struct {
 	Components []*Component
 }
 
-// NewComponentResource returns a new component resource.
-func NewComponentResource(id uint64, model *Model) (*ComponentResource, error) {
-	r, err := newObjectResource(id, model)
-	if err != nil {
-		return nil, err
-	}
-	return &ComponentResource{
-		ObjectResource: *r,
-	}, nil
-}
-
 // MergeToMesh merges the mesh with all the components.
 func (c *ComponentResource) MergeToMesh(m *mesh.Mesh, transform mgl32.Mat4) error {
 	for _, comp := range c.Components {
@@ -176,17 +166,6 @@ type MeshResource struct {
 	ObjectResource
 	Mesh                  *mesh.Mesh
 	BeamLatticeAttributes BeamLatticeAttributes
-}
-
-// NewMeshResource returns a new mesh resource.
-func NewMeshResource(id uint64, model *Model) (*MeshResource, error) {
-	r, err := newObjectResource(id, model)
-	if err != nil {
-		return nil, err
-	}
-	return &MeshResource{
-		ObjectResource: *r,
-	}, nil
 }
 
 // MergeToMesh merges the resource with the mesh.

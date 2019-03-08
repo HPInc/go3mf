@@ -27,11 +27,7 @@ func (d *sliceStackDecoder) Decode(se xml.StartElement) error {
 	if err := d.parseContent(); err != nil {
 		return err
 	}
-	sliceStackRes, err := mdl.NewSliceStackResource(d.id, d.model, &d.sliceStack)
-	if err != nil {
-		return err
-	}
-	return d.model.AddResource(sliceStackRes)
+	return d.model.AddResource(&mdl.SliceStackResource{ID: d.id, SliceStack: &d.sliceStack})
 }
 
 func (d *sliceStackDecoder) parseAttr(attrs []xml.Attr) error {

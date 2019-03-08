@@ -174,7 +174,7 @@ func (d *baseMaterialsDecoder) parseAttr(attrs []xml.Attr) (err error) {
 			if err != nil {
 				err = errors.New("go3mf: base materials id is not valid")
 			} else {
-				d.baseMaterials, err = mdl.NewBaseMaterialsResource(id, d.model)
+				d.baseMaterials = &mdl.BaseMaterialsResource{ID: id}
 			}
 		} else {
 			err = errors.New("go3mf: duplicated base materials id attribute")

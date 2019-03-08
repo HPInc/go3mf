@@ -91,12 +91,12 @@ func TestModel_AddResource(t *testing.T) {
 		wantResources int
 		wantErr       bool
 	}{
-		{"baseMaterial", m, args{mustIdentifier(NewBaseMaterialsResource(0, m))}, 1, false},
-		{"sliceStack", m, args{mustIdentifier(NewSliceStackResource(1, m, nil))}, 2, false},
-		{"texture2D", m, args{mustIdentifier(NewTexture2DResource(2, m))}, 3, false},
-		{"component", m, args{mustIdentifier(NewComponentResource(3, m))}, 4, false},
-		{"mesh", m, args{mustIdentifier(NewMeshResource(4, m))}, 5, false},
-		{"duplicated", m, args{&ResourceID{uniqueID: 4}}, 5, true},
+		{"baseMaterial", m, args{&BaseMaterialsResource{uniqueID: 0}}, 1, false},
+		{"sliceStack", m, args{&SliceStackResource{uniqueID: 1}}, 2, false},
+		{"texture2D", m, args{&Texture2DResource{uniqueID: 2}}, 3, false},
+		{"component", m, args{&ComponentResource{ObjectResource: ObjectResource{uniqueID: 3}}}, 4, false},
+		{"mesh", m, args{&MeshResource{ObjectResource: ObjectResource{uniqueID: 4}}}, 5, false},
+		{"duplicated", m, args{&MeshResource{ObjectResource: ObjectResource{uniqueID: 4}}}, 5, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -122,7 +122,7 @@ func TestModel_MergeToMesh(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"base", &Model{BuildItems: []*BuildItem{{Object: newObject()}}}, args{new(mesh.Mesh)}, false},
+		{"base", &Model{BuildItems: []*BuildItem{{Object: new(ObjectResource)}}}, args{new(mesh.Mesh)}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -166,8 +166,8 @@ func TestModel_generatePackageResourceID(t *testing.T) {
 
 func TestModel_FindResource(t *testing.T) {
 	model := new(Model)
-	id1, _ := newResource(0, model)
-	id2, _ := newResource(1, model)
+	id1 := &ObjectResource{uniqueID: 0}
+	id2 := &ObjectResource{uniqueID: 1}
 	model.resourceMap = map[uint64]Identifier{id1.UniqueID(): id1, id2.UniqueID(): id2}
 	type args struct {
 		id uint64
@@ -198,8 +198,8 @@ func TestModel_FindResource(t *testing.T) {
 
 func TestModel_FindResourcePath(t *testing.T) {
 	model := &Model{Path: "/3D/model.model"}
-	id1, _ := newResource(0, model)
-	id2, _ := newResource(1, model)
+	id1 := &ObjectResource{uniqueID: 0}
+	id2 := &ObjectResource{uniqueID: 1}
 	model.resourceMap = map[uint64]Identifier{id1.UniqueID(): id1, id2.UniqueID(): id2}
 	type args struct {
 		path string
@@ -230,44 +230,11 @@ func TestModel_FindResourcePath(t *testing.T) {
 	}
 }
 
-func TestModel_FindPackageResourceID(t *testing.T) {
-	model := new(Model)
-	id1, _ := newResource(0, model)
-	id2, _ := newResource(1, model)
-	type args struct {
-		uniqueID uint64
-	}
-	tests := []struct {
-		name  string
-		m     *Model
-		args  args
-		want  *ResourceID
-		want1 bool
-	}{
-		{"exist1", model, args{id1.UniqueID()}, id1.ResourceID, true},
-		{"exist2", model, args{id2.UniqueID()}, id2.ResourceID, true},
-		{"noexist", model, args{100}, nil, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := tt.m.FindPackageResourceID(tt.args.uniqueID)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Model.FindPackageResourceID() got = %v, want %v", got, tt.want)
-			}
-			if got1 != tt.want1 {
-				t.Errorf("Model.FindPackageResourceID() got1 = %v, want %v", got1, tt.want1)
-			}
-		})
-	}
-}
-
 func TestModel_FindObject(t *testing.T) {
 	model := new(Model)
-	id1 := newObject()
-	id1.ResourceID.uniqueID = 10
-	id2 := newObject()
-	id2.ResourceID.uniqueID = 11
-	id3, _ := newResource(0, model)
+	id1 := &ObjectResource{uniqueID: 10}
+	id2 := &ObjectResource{uniqueID: 11}
+	id3 := &Texture2DResource{uniqueID: 12}
 	model.resourceMap = map[uint64]Identifier{id1.UniqueID(): id1, id2.UniqueID(): id2, id3.UniqueID(): id3}
 	type args struct {
 		uniqueID uint64

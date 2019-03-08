@@ -247,8 +247,8 @@ func TestReader_processRootModel_Fail(t *testing.T) {
 
 func TestReader_processRootModel(t *testing.T) {
 	want := mdl.NewModel()
-	baseMaterials, _ := mdl.NewBaseMaterialsResource(5, want)
-	baseTexture, _ := mdl.NewTexture2DResource(6, want)
+	baseMaterials := &mdl.BaseMaterialsResource{ID: 5}
+	baseTexture := &mdl.Texture2DResource{ID: 6}
 	otherSlices := &mdl.SliceStack{
 		BottomZ: 2,
 		Slices: []*mdl.Slice{
@@ -259,7 +259,7 @@ func TestReader_processRootModel(t *testing.T) {
 			},
 		},
 	}
-	sliceStack, _ := mdl.NewSliceStackResource(3, want, &mdl.SliceStack{
+	sliceStack := &mdl.SliceStackResource{ID: 3, SliceStack: &mdl.SliceStack{
 		BottomZ: 1,
 		Slices: []*mdl.Slice{
 			{
@@ -273,9 +273,9 @@ func TestReader_processRootModel(t *testing.T) {
 				Polygons: [][]int{{2, 1, 3, 0}},
 			},
 		},
-	})
+	}}
 	want.Path = "/2D/2Dmodel.model"
-	sliceStackOtherFile, _ := mdl.NewSliceStackResource(10, want, otherSlices)
+	sliceStackOtherFile := &mdl.SliceStackResource{ID: 10, SliceStack: otherSlices}
 	sliceStackOtherFile.TimesRefered = 1
 	want.AddResource(sliceStackOtherFile)
 	want.Path = ""
@@ -286,7 +286,7 @@ func TestReader_processRootModel(t *testing.T) {
 		{Name: "Blue PLA", Color: color.RGBA{0, 0, 85, 255}},
 		{Name: "Red ABS", Color: color.RGBA{85, 0, 0, 255}},
 	}
-	sliceStackRef, _ := mdl.NewSliceStackResource(7, want, otherSlices)
+	sliceStackRef := &mdl.SliceStackResource{ID: 7, SliceStack: otherSlices}
 	sliceStackRef.BottomZ = 1.1
 	sliceStackRef.UsesSliceRef = true
 	sliceStackRef.Slices = append(sliceStackRef.Slices, otherSlices.Slices...)
@@ -294,7 +294,7 @@ func TestReader_processRootModel(t *testing.T) {
 
 	got := mdl.NewModel()
 	got.Path = "/2D/2Dmodel.model"
-	sliceStackOtherFile2, _ := mdl.NewSliceStackResource(10, got, otherSlices)
+	sliceStackOtherFile2 := &mdl.SliceStackResource{ID: 10, SliceStack: otherSlices}
 	got.AddResource(sliceStackOtherFile2)
 	got.Path = ""
 	r := &Reader{
