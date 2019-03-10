@@ -21,23 +21,13 @@ func (m *BaseMaterial) ColorString() string {
 // BaseMaterialsResource defines a slice of BaseMaterial.
 type BaseMaterialsResource struct {
 	ID        uint64
+	ModelPath string
 	Materials []*BaseMaterial
-	modelPath string
-	uniqueID  uint64
 }
 
-// ResourceID returns the resource ID, which has the same value as ID.
-func (ms *BaseMaterialsResource) ResourceID() uint64 {
-	return ms.ID
-}
-
-// UniqueID returns the unique ID.
-func (ms *BaseMaterialsResource) UniqueID() uint64 {
-	return ms.uniqueID
-}
-
-func (ms *BaseMaterialsResource) setUniqueID(id uint64) {
-	ms.uniqueID = id
+// Identify returns the resource ID and the ModelPath.
+func (ms *BaseMaterialsResource) Identify() (uint64, string) {
+	return ms.ID, ms.ModelPath
 }
 
 // Merge appends all the other base materials.

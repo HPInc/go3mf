@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/gofrs/uuid"
 	"github.com/qmuntal/go3mf/internal/mesh"
 	"github.com/stretchr/testify/mock"
 )
@@ -39,79 +38,6 @@ func (o *MockObject) IsValid() bool {
 func (o *MockObject) IsValidForSlices(args0 mgl32.Mat4) bool {
 	args := o.Called(args0)
 	return args.Bool(0)
-}
-
-func TestObjectResource_UUID(t *testing.T) {
-	tests := []struct {
-		name string
-		o    *ObjectResource
-		want uuid.UUID
-	}{
-		{"base", &ObjectResource{uuid: uuid.UUID{}}, uuid.UUID{}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.o.UUID(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ObjectResource.UUID() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestObjectResource_SetUUID(t *testing.T) {
-	type args struct {
-		id uuid.UUID
-	}
-	tests := []struct {
-		name string
-		o    *ObjectResource
-		args args
-	}{
-		{"base", new(ObjectResource), args{uuid.Must(uuid.NewV4())}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.o.SetUUID(tt.args.id)
-		})
-	}
-}
-
-func TestComponent_UUID(t *testing.T) {
-	tests := []struct {
-		name string
-		c    *Component
-		want uuid.UUID
-	}{
-		{"base", &Component{uuid: uuid.UUID{}}, uuid.UUID{}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.c.UUID(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Component.UUID() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestComponent_SetUUID(t *testing.T) {
-	type args struct {
-		id uuid.UUID
-	}
-	tests := []struct {
-		name    string
-		c       *Component
-		args    args
-		wantErr bool
-	}{
-		{"base", &Component{Object: new(ObjectResource)}, args{uuid.UUID{}}, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.c.SetUUID(tt.args.id); (err != nil) != tt.wantErr {
-				t.Errorf("Component.SetUUID() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
 }
 
 func TestComponent_HasTransform(t *testing.T) {
@@ -262,8 +188,8 @@ func TestMeshResource_IsValidForSlices(t *testing.T) {
 		want bool
 	}{
 		{"empty", new(MeshResource), args{mgl32.Mat4{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}}, true},
-		{"valid", &MeshResource{ObjectResource: ObjectResource{SliceStackID: &ResourceID{}}}, args{mgl32.Mat4{1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1}}, true},
-		{"invalid", &MeshResource{ObjectResource: ObjectResource{SliceStackID: &ResourceID{}}}, args{mgl32.Mat4{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}}, false},
+		{"valid", &MeshResource{ObjectResource: ObjectResource{SliceStackID: 0}}, args{mgl32.Mat4{1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1}}, true},
+		{"invalid", &MeshResource{ObjectResource: ObjectResource{SliceStackID: 1}}, args{mgl32.Mat4{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

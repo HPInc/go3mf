@@ -246,9 +246,14 @@ func TestReader_processRootModel_Fail(t *testing.T) {
 }
 
 func TestReader_processRootModel(t *testing.T) {
-	want := mdl.NewModel()
-	baseMaterials := &mdl.BaseMaterialsResource{ID: 5}
-	baseTexture := &mdl.Texture2DResource{ID: 6}
+	want := new(mdl.Model)
+	want.Units = mdl.UnitMillimeter
+	want.Language = "en-US"
+	baseMaterials := &mdl.BaseMaterialsResource{ID: 5, Materials: []*mdl.BaseMaterial{
+		{Name: "Blue PLA", Color: color.RGBA{0, 0, 85, 255}},
+		{Name: "Red ABS", Color: color.RGBA{85, 0, 0, 255}},
+	}}
+	baseTexture := &mdl.Texture2DResource{ID: 6, Path: "/3D/Texture/msLogo.png", ContentType: mdl.PNGTexture, TileStyleU: mdl.TileWrap, TileStyleV: mdl.TileMirror, Filter: mdl.TextureFilterAuto}
 	otherSlices := &mdl.SliceStack{
 		BottomZ: 2,
 		Slices: []*mdl.Slice{
@@ -274,29 +279,15 @@ func TestReader_processRootModel(t *testing.T) {
 			},
 		},
 	}}
-	want.Path = "/2D/2Dmodel.model"
-	sliceStackOtherFile := &mdl.SliceStackResource{ID: 10, SliceStack: otherSlices}
-	sliceStackOtherFile.TimesRefered = 1
-	want.AddResource(sliceStackOtherFile)
-	want.Path = ""
-	baseTexture.Path = "/3D/Texture/msLogo.png"
-	baseTexture.ContentType = mdl.PNGTexture
-	baseTexture.TileStyleV = mdl.TileMirror
-	baseMaterials.Materials = []*mdl.BaseMaterial{
-		{Name: "Blue PLA", Color: color.RGBA{0, 0, 85, 255}},
-		{Name: "Red ABS", Color: color.RGBA{85, 0, 0, 255}},
-	}
 	sliceStackRef := &mdl.SliceStackResource{ID: 7, SliceStack: otherSlices}
 	sliceStackRef.BottomZ = 1.1
 	sliceStackRef.UsesSliceRef = true
 	sliceStackRef.Slices = append(sliceStackRef.Slices, otherSlices.Slices...)
+	want.Resources = append(want.Resources, &mdl.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices, TimesRefered: 1})
 	want.Resources = append(want.Resources, []mdl.Identifier{baseMaterials, baseTexture, sliceStack, sliceStackRef}...)
 
-	got := mdl.NewModel()
-	got.Path = "/2D/2Dmodel.model"
-	sliceStackOtherFile2 := &mdl.SliceStackResource{ID: 10, SliceStack: otherSlices}
-	got.AddResource(sliceStackOtherFile2)
-	got.Path = ""
+	got := new(mdl.Model)
+	got.Resources = append(got.Resources, &mdl.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices})
 	r := &Reader{
 		Model: got,
 		r: newMockPackage(new(modelBuilder).withDefaultModel().withElement(`

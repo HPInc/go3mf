@@ -1,9 +1,7 @@
 package model
 
 import (
-	"errors"
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/gofrs/uuid"
 	"github.com/qmuntal/go3mf/internal/mesh"
 )
 
@@ -18,53 +16,25 @@ type Object interface {
 // An ObjectResource is an in memory representation of the 3MF model object.
 type ObjectResource struct {
 	ID              uint64
+	ModelPath       string
+	UUID            string
 	Name            string
 	PartNumber      string
-	SliceStackID    *ResourceID
+	SliceStackID    uint64
 	SliceResoultion SliceResolution
 	Thumbnail       string
 	DefaultProperty interface{}
 	ObjectType      ObjectType
-	uuid            uuid.UUID
-	uuidRegister    register
-	modelPath       string
-	uniqueID        uint64
 }
 
-// ResourceID returns the resource ID, which has the same value as ID.
-func (o *ObjectResource) ResourceID() uint64 {
-	return o.ID
-}
-
-// UniqueID returns the unique ID.
-func (o *ObjectResource) UniqueID() uint64 {
-	return o.uniqueID
-}
-
-func (o *ObjectResource) setUniqueID(id uint64) {
-	o.uniqueID = id
+// Identify returns the resource ID and the ModelPath.
+func (o *ObjectResource) Identify() (uint64, string) {
+	return o.ID, o.ModelPath
 }
 
 // Type returns the type of the object.
 func (o *ObjectResource) Type() ObjectType {
 	return o.ObjectType
-}
-
-// UUID returns the object UUID.
-func (o *ObjectResource) UUID() uuid.UUID {
-	return o.uuid
-}
-
-// SetUUID sets the object UUID
-func (o *ObjectResource) SetUUID(id uuid.UUID) error {
-	if o.uuidRegister == nil {
-		return errors.New("go3mf: object resource uuid cannot be set as it is not inside any model")
-	}
-	err := o.uuidRegister.register(o.uuid, id)
-	if err == nil {
-		o.uuid = id
-	}
-	return err
 }
 
 // MergeToMesh left on purpose empty to be redefined in embedding class.
@@ -84,27 +54,9 @@ func (o *ObjectResource) IsValidForSlices(transform mgl32.Mat4) bool {
 
 // A Component is an in memory representation of the 3MF component.
 type Component struct {
-	Object       Object
-	Transform    mgl32.Mat4
-	uuid         uuid.UUID
-	uuidRegister register
-}
-
-// UUID returns the object UUID.
-func (c *Component) UUID() uuid.UUID {
-	return c.uuid
-}
-
-// SetUUID sets the object UUID
-func (c *Component) SetUUID(id uuid.UUID) error {
-	if c.uuidRegister == nil {
-		return errors.New("go3mf: component uuid cannot be set as it is not inside any model")
-	}
-	err := c.uuidRegister.register(c.uuid, id)
-	if err == nil {
-		c.uuid = id
-	}
-	return err
+	Object    Object
+	Transform mgl32.Mat4
+	UUID      string
 }
 
 // HasTransform returns true if the transform is different than the identity.
@@ -194,5 +146,5 @@ func (c *MeshResource) IsValid() bool {
 
 // IsValidForSlices checks if the mesh resource are valid for slices.
 func (c *MeshResource) IsValidForSlices(t mgl32.Mat4) bool {
-	return c.SliceStackID == nil || t[2] == 0 && t[6] == 0 && t[8] == 0 && t[9] == 0 && t[10] == 1
+	return c.SliceStackID == 0 || t[2] == 0 && t[6] == 0 && t[8] == 0 && t[9] == 0 && t[10] == 1
 }

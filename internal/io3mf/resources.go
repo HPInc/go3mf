@@ -196,7 +196,8 @@ func (d *baseMaterialsDecoder) Decode(se xml.StartElement) error {
 	if err := d.parseContent(); err != nil {
 		return err
 	}
-	return d.model.AddResource(d.baseMaterials)
+	d.model.Resources = append(d.model.Resources, d.baseMaterials)
+	return nil
 }
 
 func (d *baseMaterialsDecoder) parseContent() error {

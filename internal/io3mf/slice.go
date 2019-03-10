@@ -27,7 +27,8 @@ func (d *sliceStackDecoder) Decode(se xml.StartElement) error {
 	if err := d.parseContent(); err != nil {
 		return err
 	}
-	return d.model.AddResource(&mdl.SliceStackResource{ID: d.id, SliceStack: &d.sliceStack})
+	d.model.Resources = append(d.model.Resources, &mdl.SliceStackResource{ID: d.id, SliceStack: &d.sliceStack})
+	return nil
 }
 
 func (d *sliceStackDecoder) parseAttr(attrs []xml.Attr) error {
@@ -113,7 +114,7 @@ func (d *sliceStackDecoder) addSliceRef(sliceStackID uint64, path string) error 
 	if path == d.model.Path {
 		return errors.New("go3mf: a slicepath is invalid")
 	}
-	resource, ok := d.model.FindResourcePath(path, sliceStackID)
+	resource, ok := d.model.FindResource(sliceStackID, path)
 	if !ok {
 		return errors.New("go3mf: a sliceref points to a unexisting resource")
 	}

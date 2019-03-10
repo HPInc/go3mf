@@ -1,37 +1,17 @@
 package model
 
 import (
-	"errors"
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/gofrs/uuid"
 	"github.com/qmuntal/go3mf/internal/mesh"
 )
 
 // A BuildItem is an in memory representation of the 3MF build item.
 type BuildItem struct {
-	Object       Object
-	Transform    mgl32.Mat4
-	PartNumber   string
-	Path         string
-	uuid         uuid.UUID
-	uuidRegister register
-}
-
-// UUID returns the object UUID.
-func (b *BuildItem) UUID() uuid.UUID {
-	return b.uuid
-}
-
-// SetUUID sets the object UUID
-func (b *BuildItem) SetUUID(id uuid.UUID) error {
-	if b.uuidRegister == nil {
-		return errors.New("go3mf: build item uuid cannot be set as it is not inside any model")
-	}
-	err := b.uuidRegister.register(b.uuid, id)
-	if err == nil {
-		b.uuid = id
-	}
-	return err
+	Object     Object
+	Transform  mgl32.Mat4
+	PartNumber string
+	Path       string
+	UUID       string
 }
 
 // HasTransform returns true if the transform is different than the identity.

@@ -44,15 +44,17 @@ func (d *buildDecoder) Decode(se xml.StartElement) error {
 func (d *buildDecoder) parseAttr(attrs []xml.Attr) error {
 	for _, a := range attrs {
 		if a.Name.Space == nsProductionSpec && a.Name.Local == attrProdUUID {
-			if d.model.UUID() != uuid.Nil {
+			if d.model.UUID != "" {
 				return errors.New("go3mf: duplicated build uuid attribute")
 			}
-			id := uuid.FromStringOrNil(a.Value)
-			return d.model.SetUUID(id)
+			if _, err := uuid.FromString(a.Value); err != nil {
+				return errors.New("go3mf: build uuid is not valid")
+			}
+			d.model.UUID = a.Value
 		}
 	}
 
-	if d.model.UUID() == uuid.Nil && d.model.RootPath == d.model.Path && d.r.namespaceRegistered(nsProductionSpec) {
+	if d.model.UUID == "" && d.model.RootPath == d.model.Path && d.r.namespaceRegistered(nsProductionSpec) {
 		d.r.Warnings = append(d.r.Warnings, &ReadError{MissingMandatoryValue, "go3mf: a UUID for a build is missing"})
 	}
 	return nil
@@ -90,11 +92,11 @@ func (d *buildItemDecoder) processItem() error {
 	} else {
 		path = d.model.Path
 	}
-	id, ok := d.model.FindPackageResourcePath(path, d.objectID)
+	resource, ok := d.model.FindResource(d.objectID, path)
 	if !ok {
 		return errors.New("go3mf: could not find build item object")
 	}
-	obj, ok := d.model.FindObject(id.UniqueID())
+	obj, ok := resource.(*mdl.ObjectResource)
 	if !ok {
 		return errors.New("go3mf: could not find build item object")
 	}
@@ -114,13 +116,13 @@ func (d *buildItemDecoder) parseAttr(attrs []xml.Attr) error {
 		switch a.Name.Space {
 		case nsProductionSpec:
 			if a.Name.Local == attrProdUUID {
-				if d.item.UUID() != uuid.Nil {
+				if d.item.UUID != "" {
 					return errors.New("go3mf: duplicated build item uuid attribute")
 				}
-				id := uuid.FromStringOrNil(a.Value)
-				if err := d.item.SetUUID(id); err != nil {
-					return err
+				if _, err := uuid.FromString(a.Value); err != nil {
+					return errors.New("go3mf: build item uuid is not valid")
 				}
+				d.item.UUID = a.Value
 			} else if a.Name.Local == attrPath {
 				if d.item.Path != "" {
 					return errors.New("go3mf: duplicated build item path attribute")
@@ -134,7 +136,7 @@ func (d *buildItemDecoder) parseAttr(attrs []xml.Attr) error {
 		}
 	}
 
-	if d.model.UUID() == uuid.Nil && d.model.RootPath == d.model.Path && d.r.namespaceRegistered(nsProductionSpec) {
+	if d.item.UUID == "" && d.model.RootPath == d.model.Path && d.r.namespaceRegistered(nsProductionSpec) {
 		d.r.Warnings = append(d.r.Warnings, &ReadError{MissingMandatoryValue, "go3mf: a UUID for a build item is missing"})
 	}
 	return nil

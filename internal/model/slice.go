@@ -2,7 +2,6 @@ package model
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/go-gl/mathgl/mgl32"
 )
@@ -83,30 +82,11 @@ func (s *SliceStack) AddSlice(slice *Slice) (int, error) {
 type SliceStackResource struct {
 	*SliceStack
 	ID           uint64
+	ModelPath    string
 	TimesRefered int
-	modelPath    string
-	uniqueID     uint64
 }
 
-// ResourceID returns the resource ID, which has the same value as ID.
-func (s *SliceStackResource) ResourceID() uint64 {
-	return s.ID
-}
-
-// UniqueID returns the unique ID.
-func (s *SliceStackResource) UniqueID() uint64 {
-	return s.uniqueID
-}
-
-func (s *SliceStackResource) setUniqueID(id uint64) {
-	s.uniqueID = id
-}
-
-// ReferencePath returns the path to the file defining the slice stack and
-// empty if UsesSliceRef is false.
-func (s *SliceStackResource) ReferencePath() string {
-	if s.UsesSliceRef {
-		return fmt.Sprintf("/2D/2dmodel_%d.model", s.uniqueID)
-	}
-	return ""
+// Identify returns the resource ID and the ModelPath.
+func (s *SliceStackResource) Identify() (uint64, string) {
+	return s.ID, s.ModelPath
 }

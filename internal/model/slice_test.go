@@ -153,23 +153,3 @@ func TestSliceStack_AddSlice(t *testing.T) {
 		})
 	}
 }
-
-func TestSliceStackResource_ReferencePath(t *testing.T) {
-	s1 := &SliceStackResource{SliceStack: new(SliceStack)}
-	s2 := &SliceStackResource{SliceStack: &SliceStack{UsesSliceRef: true}}
-	tests := []struct {
-		name string
-		s    *SliceStackResource
-		want string
-	}{
-		{"noref", s1, ""},
-		{"ref", s2, "/2D/2dmodel_1.model"},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.s.ReferencePath(); got != tt.want {
-				t.Errorf("SliceStackResource.ReferencePath() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}

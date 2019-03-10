@@ -184,7 +184,8 @@ func (d *texture2DDecoder) Decode(se xml.StartElement) error {
 	if d.filter != "" {
 		texture2d.Filter = d.filter
 	}
-	return d.model.AddResource(texture2d)
+	d.model.Resources = append(d.model.Resources, texture2d)
+	return nil
 }
 
 func (d *texture2DDecoder) parseAttr(attrs []xml.Attr) error {

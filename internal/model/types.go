@@ -165,6 +165,6 @@ type BeamLatticeAttributes struct {
 	ClipMode                ClipMode
 	HasClippingMeshID       bool
 	HasRepresentationMeshID bool
-	ClippingMeshID          *ResourceID
-	RepresentationMeshID    *ResourceID
+	ClippingMeshID          uint64
+	RepresentationMeshID    uint64
 }
