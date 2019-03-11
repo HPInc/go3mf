@@ -1,8 +1,9 @@
 package mesh
 
 import (
-	"github.com/go-gl/mathgl/mgl32"
 	"math"
+	"errors"
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 // vec3I represents a 3D vector typed as int32
@@ -88,7 +89,7 @@ func (n *nodeStructure) AddNode(position mgl32.Vec3) *Node {
 	}
 	nodeCount := n.NodeCount()
 	if nodeCount >= n.getMaxNodeCount() {
-		panic(new(MaxNodeError))
+		panic(errors.New("go3mf: too many nodes has been tried to add to a mesh"))
 	}
 
 	n.nodes = append(n.nodes, Node{

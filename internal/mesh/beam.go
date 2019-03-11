@@ -1,5 +1,7 @@
 package mesh
 
+import "errors"
+
 // MaxBeamCount is the maximum number of beams allowed.
 const MaxBeamCount = 2147483646
 
@@ -32,50 +34,20 @@ type Beam struct {
 
 // beamLattice defines a beam lattice structure.
 type beamLattice struct {
-	beams             []Beam
-	beamSets          []BeamSet
-	minLength, radius float64
-	capMode           BeamCapMode
-	maxBeamCount      uint32 // If 0 MaxBeamCount will be used.
+	beams                    []Beam
+	beamSets                 []BeamSet
+	MinLength, DefaultRadius float64
+	CapMode                  BeamCapMode
+	maxBeamCount             uint32 // If 0 MaxBeamCount will be used.
 }
 
 // newbeamLattice creates a new beamLattice with default values.
 func newbeamLattice() *beamLattice {
 	return &beamLattice{
-		capMode:   CapModeSphere,
-		radius:    1.0,
-		minLength: 0.0001,
+		CapMode:       CapModeSphere,
+		DefaultRadius: 1.0,
+		MinLength:     0.0001,
 	}
-}
-
-// BeamLatticeMinLength gets the minium length for a beam in this lattice.
-func (b *beamLattice) BeamLatticeMinLength() float64 {
-	return b.minLength
-}
-
-// DefaultBeamLatticeRadius gets the default radius of a beam in this lattice.
-func (b *beamLattice) DefaultBeamLatticeRadius() float64 {
-	return b.radius
-}
-
-// BeamLatticeCapMode gets the default capping mode of a beam in this lattice.
-func (b *beamLattice) BeamLatticeCapMode() BeamCapMode {
-	return b.capMode
-}
-
-// SetBeamLatticeMinLength sets the minimum length of a beam in this lattice.
-func (b *beamLattice) SetBeamLatticeMinLength(val float64) {
-	b.minLength = val
-}
-
-// SetDefaultBeamRadius sets the default radius of a beam in this lattice.
-func (b *beamLattice) SetDefaultBeamRadius(val float64) {
-	b.radius = val
-}
-
-// SetBeamLatticeCapMode sets the default capping mode of a beam in this lattice.
-func (b *beamLattice) SetBeamLatticeCapMode(val BeamCapMode) {
-	b.capMode = val
 }
 
 // ClearBeamLattice resets the value of Beams and BeamSets.
@@ -108,12 +80,12 @@ func (b *beamLattice) BeamSet(index uint32) *BeamSet {
 // AddBeam adds a beam to the mesh with the desried parameters.
 func (b *beamLattice) AddBeam(node1, node2 uint32, radius1, radius2 float64, capMode1, capMode2 BeamCapMode) (*Beam, error) {
 	if node1 == node2 {
-		return nil, new(DuplicatedNodeError)
+		return nil, errors.New("go3mf: a beam with two identical nodes has been tried to add to a mesh")
 	}
 
 	beamCount := b.BeamCount()
 	if beamCount >= b.getMaxBeamCount() {
-		panic(new(MaxBeamError))
+		panic(errors.New("go3mf: too many beams has been tried to add to a mesh"))
 	}
 
 	b.beams = append(b.beams, Beam{

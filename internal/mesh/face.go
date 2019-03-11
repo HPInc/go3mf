@@ -1,6 +1,9 @@
 package mesh
 
-import "github.com/qmuntal/go3mf/internal/meshinfo"
+import (
+	"errors"
+	"github.com/qmuntal/go3mf/internal/meshinfo"
+)
 
 // MaxFaceCount is the maximum number of faces allowed.
 const MaxFaceCount = 2147483646
@@ -34,12 +37,12 @@ func (f *faceStructure) Face(index uint32) *Face {
 // AddFace adds a face to the mesh that has the target nodes.
 func (f *faceStructure) AddFace(node1, node2, node3 uint32) (*Face, error) {
 	if (node1 == node2) || (node1 == node3) || (node2 == node3) {
-		return nil, new(DuplicatedNodeError)
+		return nil, errors.New("go3mf: a beam with two identical nodes has been tried to add to a mesh")
 	}
 
 	faceCount := f.FaceCount()
 	if faceCount >= f.getMaxFaceCount() {
-		panic(new(MaxFaceError))
+		panic(errors.New("go3mf: a face with too many face has been tried to add to a meshs"))
 	}
 
 	f.faces = append(f.faces, Face{
