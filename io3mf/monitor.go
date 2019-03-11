@@ -102,12 +102,12 @@ type Monitor struct {
 
 // QueryCancelled cancels the current process with a ProgressQueryCanceled identifier.
 func (p *Monitor) QueryCancelled() bool {
-	return p.Progress(-1, StageQueryCanceled)
+	return p.progress(-1, StageQueryCanceled)
 }
 
 // Progress updates the progress of the current process.
 // If the callback is nil or there is another progress being notified it does nothing and return true.
-func (p *Monitor) Progress(progress float64, identifier Stage) bool {
+func (p *Monitor) progress(progress float64, identifier Stage) bool {
 	if p.progressCallback == nil || !p.callbackMutex.CanRun() {
 		return true
 	}
@@ -123,15 +123,14 @@ func (p *Monitor) Progress(progress float64, identifier Stage) bool {
 	return p.lastCallbackAborted == false
 }
 
-// PushLevel adds a new level to the progress
-func (p *Monitor) PushLevel(relativeStart float64, relativeEnd float64) {
+func (p *Monitor) pushLevel(relativeStart float64, relativeEnd float64) {
 	curLevel := p.level()
 	curRange := curLevel.B - curLevel.A
 	p.levels.Push(float64Pair{curLevel.A + curRange*relativeStart, curLevel.A + curRange*relativeEnd})
 }
 
-// PopLevel removes a level from the progress
-func (p *Monitor) PopLevel() (a, b float64) {
+// popLevel removes a level from the progress
+func (p *Monitor) popLevel() (a, b float64) {
 	ret := p.level()
 	if !p.levels.Empty() {
 		p.levels.Pop()

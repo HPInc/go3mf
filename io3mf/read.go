@@ -81,7 +81,7 @@ func (r *Reader) decode() error {
 }
 
 func (r *Reader) processRootModel() error {
-	if !r.progress.Progress(r.nonRootProgress(), StageReadRootModel) {
+	if !r.progress.progress(r.nonRootProgress(), StageReadRootModel) {
 		return ErrUserAborted
 	}
 	rootFile, ok := r.r.FindFileFromRel(relTypeModel3D)
@@ -117,17 +117,17 @@ mainLoop:
 }
 
 func (r *Reader) processNonRootModels() error {
-	if !r.progress.Progress(0.1, StageReadNonRootModels) {
+	if !r.progress.progress(0.1, StageReadNonRootModels) {
 		return ErrUserAborted
 	}
-	r.progress.PushLevel(0.1, r.nonRootProgress())
+	r.progress.pushLevel(0.1, r.nonRootProgress())
 	// read production attachments
-	r.progress.PopLevel()
+	r.progress.popLevel()
 	return nil
 }
 
 func (r *Reader) processOPC() error {
-	if !r.progress.Progress(0.05, StageExtractOPCPackage) {
+	if !r.progress.progress(0.05, StageExtractOPCPackage) {
 		return ErrUserAborted
 	}
 	rootFile, ok := r.r.FindFileFromRel(relTypeModel3D)

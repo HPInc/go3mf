@@ -57,7 +57,7 @@ func (d *modelDecoder) parseBuild(se xml.StartElement) error {
 		d.withinIgnoredElement = true
 	} else {
 		d.withinIgnoredElement = false
-		if !d.r.progress.Progress(0.9, StageReadBuild) {
+		if !d.r.progress.progress(0.9, StageReadBuild) {
 			return ErrUserAborted
 		}
 		rd := buildDecoder{x: d.x, r: d.r, model: d.model}
@@ -71,10 +71,10 @@ func (d *modelDecoder) parseBuild(se xml.StartElement) error {
 
 func (d *modelDecoder) parseResources(se xml.StartElement) error {
 	d.withinIgnoredElement = false
-	if !d.r.progress.Progress(0.2, StageReadResources) {
+	if !d.r.progress.progress(0.2, StageReadResources) {
 		return ErrUserAborted
 	}
-	d.r.progress.PushLevel(0.2, 0.9)
+	d.r.progress.pushLevel(0.2, 0.9)
 	if d.hasResources {
 		return errors.New("go3mf: duplicate resources section in model file")
 	}
@@ -82,7 +82,7 @@ func (d *modelDecoder) parseResources(se xml.StartElement) error {
 	if err := rd.Decode(se); err != nil {
 		return err
 	}
-	d.r.progress.PopLevel()
+	d.r.progress.popLevel()
 	d.hasResources = true
 	return nil
 }

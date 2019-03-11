@@ -135,7 +135,7 @@ func (d *sliceStackDecoder) addSliceRef(sliceStackID uint64, path string) error 
 func (d *sliceStackDecoder) parseSlice(se xml.StartElement) (err error) {
 	if len(d.sliceStack.Slices)%readSliceUpdate == readSliceUpdate-1 {
 		d.progressCount++
-		if !d.r.progress.Progress(1.0-2.0/float64(d.progressCount+2), StageReadSlices) {
+		if !d.r.progress.progress(1.0-2.0/float64(d.progressCount+2), StageReadSlices) {
 			return ErrUserAborted
 		}
 	}

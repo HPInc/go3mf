@@ -39,9 +39,9 @@ func TestMonitor_Progress_True(t *testing.T) {
 	p := new(Monitor)
 	p.lastCallbackAborted = true
 	p.progressCallback = callbackTrue
-	ret := p.Progress(1.0, StageDone)
+	ret := p.progress(1.0, StageDone)
 	if ret == false {
-		t.Error("Progress should return true if callback return true but returned false")
+		t.Error("progress should return true if callback return true but returned false")
 	}
 }
 
@@ -49,9 +49,9 @@ func TestMonitor_Progress_False(t *testing.T) {
 	p := new(Monitor)
 	p.lastCallbackAborted = true
 	p.progressCallback = callbackFalse
-	ret := p.Progress(1.0, StageDone)
+	ret := p.progress(1.0, StageDone)
 	if ret == true {
-		t.Error("Progress should return false if callback return false but returned true")
+		t.Error("progress should return false if callback return false but returned true")
 	}
 }
 
@@ -59,9 +59,9 @@ func TestMonitor_Progress_Nil(t *testing.T) {
 	p := new(Monitor)
 	p.lastCallbackAborted = true
 	p.progressCallback = nil
-	ret := p.Progress(1.0, StageDone)
+	ret := p.progress(1.0, StageDone)
 	if ret == false {
-		t.Error("Progress should return true if callback is nil")
+		t.Error("progress should return true if callback is nil")
 	}
 }
 
@@ -70,9 +70,9 @@ func TestMonitor_Progress_CantRun(t *testing.T) {
 	p.lastCallbackAborted = true
 	p.progressCallback = callbackFalse
 	p.callbackMutex.CanRun()
-	ret := p.Progress(1.0, StageDone)
+	ret := p.progress(1.0, StageDone)
 	if ret == false {
-		t.Error("Progress should return true if can't run")
+		t.Error("progress should return true if can't run")
 	}
 }
 
@@ -81,13 +81,13 @@ func TestMonitor_Progress_Done(t *testing.T) {
 	p.progressCallback = callbackFalse
 	p.callbackMutex.CanRun()
 	p.callbackMutex.Done()
-	ret := p.Progress(1.0, StageDone)
+	ret := p.progress(1.0, StageDone)
 	if ret == true {
-		t.Error("Progress should return false if callback return false but returned true")
+		t.Error("progress should return false if callback return false but returned true")
 	}
 }
 
-func TestMonitor_PushLevel(t *testing.T) {
+func TestMonitor_pushLevel(t *testing.T) {
 	type args struct {
 		relativeStart float64
 		relativeEnd   float64
@@ -112,18 +112,18 @@ func TestMonitor_PushLevel(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.p.PushLevel(tt.args.relativeStart, tt.args.relativeEnd)
+			tt.p.pushLevel(tt.args.relativeStart, tt.args.relativeEnd)
 			if top := tt.p.level(); math.Abs(top.A-tt.want.A) > 0.001 || math.Abs(top.B-tt.want.B) > 0.001 {
-				t.Errorf("wrong level values, expected %f - %f but got %f - %f", tt.want.A, tt.want.B, top.A, top.B)
+				t.Errorf("Monitor.pushLevel() wrong level values, expected %f - %f but got %f - %f", tt.want.A, tt.want.B, top.A, top.B)
 			}
 		})
 	}
 }
 
-func TestMonitor_PopLevel(t *testing.T) {
+func TestMonitor_popLevel(t *testing.T) {
 	p := new(Monitor)
-	p.PushLevel(0.0, 1.0)
-	p.PushLevel(0.2, 1.0)
+	p.pushLevel(0.0, 1.0)
+	p.pushLevel(0.2, 1.0)
 	tests := []struct {
 		name string
 		p    *Monitor
@@ -135,8 +135,8 @@ func TestMonitor_PopLevel(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if a, b := tt.p.PopLevel(); a != tt.want.A || b != tt.want.B {
-				t.Errorf("Monitor.PopLevel() = %v, %v, want %v", a, b, tt.want)
+			if a, b := tt.p.popLevel(); a != tt.want.A || b != tt.want.B {
+				t.Errorf("Monitor.popLevel() = %v, %v, want %v", a, b, tt.want)
 			}
 		})
 	}
@@ -164,8 +164,8 @@ func TestMonitor_ResetLevels_Empty(t *testing.T) {
 
 func TestMonitor_ResetLevels(t *testing.T) {
 	p := new(Monitor)
-	p.PushLevel(0.0, 1.0)
-	p.PushLevel(0.2, 1.0)
+	p.pushLevel(0.0, 1.0)
+	p.pushLevel(0.2, 1.0)
 	tests := []struct {
 		name string
 		p    *Monitor

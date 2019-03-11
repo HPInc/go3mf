@@ -111,12 +111,12 @@ func (d *resourceDecoder) processCoreContent(se xml.StartElement) (err error) {
 	switch se.Name.Local {
 	case attrObject:
 		d.progressCount++
-		if !d.r.progress.Progress(1.0-2.0/float64(d.progressCount+2), StageReadResources) {
+		if !d.r.progress.progress(1.0-2.0/float64(d.progressCount+2), StageReadResources) {
 			return ErrUserAborted
 		}
-		d.r.progress.PushLevel(1.0-2.0/float64(d.progressCount+2), 1.0-2.0/float64(d.progressCount+1+2))
+		d.r.progress.pushLevel(1.0-2.0/float64(d.progressCount+2), 1.0-2.0/float64(d.progressCount+1+2))
 
-		d.r.progress.PopLevel()
+		d.r.progress.popLevel()
 	case attrBaseMaterials:
 		md := baseMaterialsDecoder{x: d.x, r: d.r, model: d.model}
 		err = md.Decode(se)
@@ -146,13 +146,13 @@ func (d *resourceDecoder) processSliceContent(se xml.StartElement) error {
 		return nil
 	}
 	d.progressCount++
-	if !d.r.progress.Progress(1.0-2.0/float64(d.progressCount+2), StageReadResources) {
+	if !d.r.progress.progress(1.0-2.0/float64(d.progressCount+2), StageReadResources) {
 		return ErrUserAborted
 	}
-	d.r.progress.PushLevel(1.0-2.0/float64(d.progressCount+2), 1.0-2.0/float64(d.progressCount+1+2))
+	d.r.progress.pushLevel(1.0-2.0/float64(d.progressCount+2), 1.0-2.0/float64(d.progressCount+1+2))
 	sd := sliceStackDecoder{x: d.x, r: d.r, model: d.model}
 	err := sd.Decode(se)
-	d.r.progress.PopLevel()
+	d.r.progress.popLevel()
 	return err
 }
 
