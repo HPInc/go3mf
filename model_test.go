@@ -27,9 +27,9 @@ func (o *MockObject) Type() ObjectType {
 	return ObjectTypeOther
 }
 
-func (o *MockObject) MergeToMesh(args0 *mesh.Mesh, args1 mgl32.Mat4) error {
+func (o *MockObject) MergeToMesh(args0 *mesh.Mesh, args1 mgl32.Mat4) {
 	o.Called(args0, args1)
-	return nil
+	return
 }
 
 func (o *MockObject) IsValid() bool {
@@ -75,15 +75,12 @@ func TestModel_MergeToMesh(t *testing.T) {
 		name    string
 		m       *Model
 		args    args
-		wantErr bool
 	}{
-		{"base", &Model{BuildItems: []*BuildItem{{Object: new(ObjectResource)}}}, args{new(mesh.Mesh)}, false},
+		{"base", &Model{BuildItems: []*BuildItem{{Object: new(ObjectResource)}}}, args{new(mesh.Mesh)}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.m.MergeToMesh(tt.args.msh); (err != nil) != tt.wantErr {
-				t.Errorf("Model.MergeToMesh() error = %v, wantErr %v", err, tt.wantErr)
-			}
+			tt.m.MergeToMesh(tt.args.msh)
 		})
 	}
 }
@@ -408,15 +405,12 @@ func TestMeshResource_MergeToMesh(t *testing.T) {
 		name    string
 		c       *MeshResource
 		args    args
-		wantErr bool
 	}{
-		{"base", &MeshResource{Mesh: new(mesh.Mesh)}, args{new(mesh.Mesh), mgl32.Ident4()}, false},
+		{"base", &MeshResource{Mesh: new(mesh.Mesh)}, args{new(mesh.Mesh), mgl32.Ident4()}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.c.MergeToMesh(tt.args.m, tt.args.transform); (err != nil) != tt.wantErr {
-				t.Errorf("MeshResource.MergeToMesh() error = %v, wantErr %v", err, tt.wantErr)
-			}
+			tt.c.MergeToMesh(tt.args.m, tt.args.transform)
 		})
 	}
 }

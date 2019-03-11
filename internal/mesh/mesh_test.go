@@ -33,17 +33,12 @@ func TestMesh_Clone(t *testing.T) {
 		name    string
 		m       *Mesh
 		want    *Mesh
-		wantErr bool
 	}{
-		{"base", NewMesh(), NewMesh(), false},
+		{"base", NewMesh(), NewMesh()},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.m.Clone()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Mesh.Clone() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			got := tt.m.Clone()
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Mesh.Clone() = %v, want %v", got, tt.want)
 			}
@@ -91,17 +86,14 @@ func TestMesh_Merge(t *testing.T) {
 		name    string
 		m       *Mesh
 		args    args
-		wantErr bool
 	}{
-		{"empty", new(Mesh), args{&Mesh{}, mgl32.Ident4()}, false},
-		{"error2", new(Mesh), args{&Mesh{nodeStructure: nodeStructure{nodes: make([]Node, 1)}}, mgl32.Ident4()}, false},
-		{"base", new(Mesh), args{&Mesh{faceStructure: faceStructure{faces: make([]Face, 1)}, nodeStructure: nodeStructure{nodes: make([]Node, 1)}}, mgl32.Ident4()}, true},
+		{"empty", new(Mesh), args{&Mesh{}, mgl32.Ident4()}},
+		{"error2", new(Mesh), args{&Mesh{nodeStructure: nodeStructure{Nodes: make([]Node, 1)}}, mgl32.Ident4()}},
+		{"base", new(Mesh), args{&Mesh{faceStructure: faceStructure{Faces: make([]Face, 1)}, nodeStructure: nodeStructure{Nodes: make([]Node, 1)}}, mgl32.Ident4()}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.m.Merge(tt.args.mesh, tt.args.matrix); (err != nil) != tt.wantErr {
-				t.Errorf("Mesh.Merge() error = %v, wantErr %v", err, tt.wantErr)
-			}
+			tt.m.Merge(tt.args.mesh, tt.args.matrix)
 		})
 	}
 }
@@ -113,8 +105,8 @@ func TestMesh_CheckSanity(t *testing.T) {
 		want bool
 	}{
 		{"new", NewMesh(), true},
-		{"nodefail", &Mesh{nodeStructure: nodeStructure{maxNodeCount: 1, nodes: make([]Node, 2)}}, false},
-		{"facefail", &Mesh{faceStructure: faceStructure{maxFaceCount: 1, faces: make([]Face, 2)}}, false},
+		{"nodefail", &Mesh{nodeStructure: nodeStructure{maxNodeCount: 1, Nodes: make([]Node, 2)}}, false},
+		{"facefail", &Mesh{faceStructure: faceStructure{maxFaceCount: 1, Faces: make([]Face, 2)}}, false},
 		{"beamfail", &Mesh{beamLattice: beamLattice{maxBeamCount: 1, Beams: make([]Beam, 2)}}, false},
 	}
 	for _, tt := range tests {
@@ -213,8 +205,8 @@ func TestMesh_IsManifoldAndOriented(t *testing.T) {
 		want bool
 	}{
 		{"valid", &Mesh{
-			nodeStructure: nodeStructure{nodes: []Node{{Index: 0}, {Index: 1}, {Index: 2}, {Index: 3}}},
-			faceStructure: faceStructure{faces: []Face{
+			nodeStructure: nodeStructure{Nodes: []Node{{Index: 0}, {Index: 1}, {Index: 2}, {Index: 3}}},
+			faceStructure: faceStructure{Faces: []Face{
 				{NodeIndices: [3]uint32{0, 1, 2}},
 				{NodeIndices: [3]uint32{0, 3, 1}},
 				{NodeIndices: [3]uint32{0, 2, 3}},
@@ -222,8 +214,8 @@ func TestMesh_IsManifoldAndOriented(t *testing.T) {
 			}},
 		}, true},
 		{"nonmanifold", &Mesh{
-			nodeStructure: nodeStructure{nodes: []Node{{Index: 0}, {Index: 1}, {Index: 2}, {Index: 3}}},
-			faceStructure: faceStructure{faces: []Face{
+			nodeStructure: nodeStructure{Nodes: []Node{{Index: 0}, {Index: 1}, {Index: 2}, {Index: 3}}},
+			faceStructure: faceStructure{Faces: []Face{
 				{NodeIndices: [3]uint32{0, 1, 2}},
 				{NodeIndices: [3]uint32{0, 1, 3}},
 				{NodeIndices: [3]uint32{0, 2, 3}},
@@ -232,12 +224,12 @@ func TestMesh_IsManifoldAndOriented(t *testing.T) {
 		}, false},
 		{"empty", NewMesh(), false},
 		{"2nodes", &Mesh{
-			nodeStructure: nodeStructure{nodes: make([]Node, 2)},
-			faceStructure: faceStructure{faces: make([]Face, 3)},
+			nodeStructure: nodeStructure{Nodes: make([]Node, 2)},
+			faceStructure: faceStructure{Faces: make([]Face, 3)},
 		}, false},
 		{"2faces", &Mesh{
-			nodeStructure: nodeStructure{nodes: make([]Node, 3)},
-			faceStructure: faceStructure{faces: make([]Face, 2)},
+			nodeStructure: nodeStructure{Nodes: make([]Node, 3)},
+			faceStructure: faceStructure{Faces: make([]Face, 2)},
 		}, false},
 	}
 	for _, tt := range tests {

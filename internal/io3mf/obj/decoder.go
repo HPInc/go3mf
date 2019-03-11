@@ -100,9 +100,9 @@ func (d *Decoder) addTextureCoords(i1, i2, i3 int) {
 	coords, ok := d.getTextureCoords(i1, i2, i3)
 	if ok {
 		if d.textureCoordsInfo == nil {
-			d.textureCoordsInfo = d.m.InformationHandler().AddTextureCoordsInfo(d.m.FaceCount())
+			d.textureCoordsInfo = d.m.InformationHandler().AddTextureCoordsInfo(uint32(len(d.m.Faces)))
 		}
-		data := d.textureCoordsInfo.FaceData(d.m.FaceCount() - 1).(*meshinfo.TextureCoords)
+		data := d.textureCoordsInfo.FaceData(uint32(len(d.m.Faces)) - 1).(*meshinfo.TextureCoords)
 		data.Coords = coords
 	}
 }
@@ -111,9 +111,9 @@ func (d *Decoder) addFaceColors(i1, i2, i3 int) {
 	colors, ok := d.getFaceColor(i1, i2, i3)
 	if ok {
 		if d.colorInfo == nil {
-			d.colorInfo = d.m.InformationHandler().AddNodeColorInfo(d.m.FaceCount())
+			d.colorInfo = d.m.InformationHandler().AddNodeColorInfo(uint32(len(d.m.Faces)))
 		}
-		data := d.colorInfo.FaceData(d.m.FaceCount() - 1).(*meshinfo.NodeColor)
+		data := d.colorInfo.FaceData(uint32(len(d.m.Faces)) - 1).(*meshinfo.NodeColor)
 		data.Colors = colors
 	}
 }

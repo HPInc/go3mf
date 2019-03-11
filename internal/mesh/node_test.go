@@ -12,12 +12,12 @@ func Test_nodeStructure_clear(t *testing.T) {
 		name string
 		n    *nodeStructure
 	}{
-		{"base", &nodeStructure{nodes: make([]Node, 2)}},
+		{"base", &nodeStructure{Nodes: make([]Node, 2)}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.n.clear()
-			if got := len(tt.n.nodes); got != 0 {
+			if got := len(tt.n.Nodes); got != 0 {
 				t.Errorf("nodeStructure.clear() = %v, want %v", got, 0)
 			}
 		})
@@ -38,7 +38,7 @@ func Test_nodeStructure_AddNode(t *testing.T) {
 		want      *Node
 	}{
 		{"existing", existingStruct, args{pos}, &Node{Index: 0, Position: pos}},
-		{"base", &nodeStructure{nodes: []Node{{}}}, args{mgl32.Vec3{1.0, 2.0, 3.0}}, &Node{
+		{"base", &nodeStructure{Nodes: []Node{{}}}, args{mgl32.Vec3{1.0, 2.0, 3.0}}, &Node{
 			Index:    1,
 			Position: mgl32.Vec3{1.0, 2.0, 3.0},
 		}},
@@ -59,9 +59,9 @@ func Test_nodeStructure_checkSanity(t *testing.T) {
 		n    *nodeStructure
 		want bool
 	}{
-		{"max", &nodeStructure{maxNodeCount: 1, nodes: []Node{{}, {}}}, false},
-		{"badindex", &nodeStructure{nodes: []Node{{}, {Index: 2}}}, false},
-		{"good", &nodeStructure{nodes: []Node{{}, {Index: 1}}}, true},
+		{"max", &nodeStructure{maxNodeCount: 1, Nodes: []Node{{}, {}}}, false},
+		{"badindex", &nodeStructure{Nodes: []Node{{}, {Index: 2}}}, false},
+		{"good", &nodeStructure{Nodes: []Node{{}, {Index: 1}}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -91,7 +91,7 @@ func Test_nodeStructure_merge(t *testing.T) {
 			node := Node{}
 			mockMesh := NewMesh()
 			for i := 0; i < tt.times; i++ {
-				mockMesh.nodes = append(mockMesh.nodes, node)
+				mockMesh.Nodes = append(mockMesh.Nodes, node)
 			}
 			got := tt.n.merge(&mockMesh.nodeStructure, tt.args.matrix)
 			if !reflect.DeepEqual(got, tt.want) {

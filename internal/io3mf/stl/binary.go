@@ -62,7 +62,7 @@ type binaryEncoder struct {
 }
 
 func (e *binaryEncoder) encode(m *mesh.Mesh) error {
-	faceCount := m.FaceCount()
+	faceCount := uint32(len(m.Faces))
 	header := binaryHeader{FaceCount: faceCount}
 	err := binary.Write(e.w, binary.LittleEndian, header)
 	if err != nil {

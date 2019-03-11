@@ -36,10 +36,10 @@ func NewMesh() *Mesh {
 }
 
 // Clone creates a deep clone of the mesh.
-func (m *Mesh) Clone() (*Mesh, error) {
+func (m *Mesh) Clone() *Mesh {
 	new := NewMesh()
-	err := new.Merge(m, mgl32.Ident4())
-	return new, err
+	new.Merge(m, mgl32.Ident4())
+	return new
 }
 
 // Clear resets all the mesh nodes, faces, beams and informations.
@@ -70,23 +70,17 @@ func (m *Mesh) InformationHandler() *meshinfo.Handler {
 }
 
 // Merge merges the mesh with another mesh. This includes the nodes, faces, beams and all the informations.
-func (m *Mesh) Merge(mesh *Mesh, matrix mgl32.Mat4) error {
+func (m *Mesh) Merge(mesh *Mesh, matrix mgl32.Mat4) {
 	m.StartCreation(CreationOptions{CalculateConnectivity: true})
 	defer m.EndCreation()
-	m.informationHandler.AddInfoFrom(mesh.InformationHandler(), m.FaceCount())
+	m.informationHandler.AddInfoFrom(mesh.InformationHandler(), uint32(len(m.Faces)))
 
 	newNodes := m.nodeStructure.merge(&mesh.nodeStructure, matrix)
 	if len(newNodes) == 0 {
-		return nil
+		return
 	}
-
-	err := m.faceStructure.merge(&mesh.faceStructure, newNodes)
-	if err != nil {
-		return err
-	}
-
+	m.faceStructure.merge(&mesh.faceStructure, newNodes)
 	m.beamLattice.merge(&mesh.beamLattice, newNodes)
-	return nil
 }
 
 // CheckSanity checks if the mesh is well formated.
@@ -94,16 +88,16 @@ func (m *Mesh) CheckSanity() bool {
 	if !m.nodeStructure.checkSanity() {
 		return false
 	}
-	if !m.faceStructure.checkSanity(uint32(len(m.nodes))) {
+	if !m.faceStructure.checkSanity(uint32(len(m.Nodes))) {
 		return false
 	}
-	return m.beamLattice.checkSanity(uint32(len(m.nodes)))
+	return m.beamLattice.checkSanity(uint32(len(m.Nodes)))
 }
 
 // FaceNodes returns the three nodes of a face.
 func (m *Mesh) FaceNodes(i uint32) (*Node, *Node, *Node) {
-	face := m.Face(uint32(i))
-	return &m.nodes[face.NodeIndices[0]], &m.nodes[face.NodeIndices[1]], &m.nodes[face.NodeIndices[2]]
+	face := m.Faces[i]
+	return &m.Nodes[face.NodeIndices[0]], &m.Nodes[face.NodeIndices[1]], &m.Nodes[face.NodeIndices[2]]
 }
 
 // FaceNormal returns the normal of a face.
@@ -118,14 +112,13 @@ func faceNormal(n1, n2, n3 mgl32.Vec3) mgl32.Vec3 {
 
 // IsManifoldAndOriented returns true if the mesh is manifold and oriented.
 func (m *Mesh) IsManifoldAndOriented() bool {
-	if len(m.nodes) < 3 || m.FaceCount() < 3 || !m.CheckSanity() {
+	if len(m.Nodes) < 3 || len(m.Faces) < 3 || !m.CheckSanity() {
 		return false
 	}
 
 	var edgeCounter uint32
 	pairMatching := newPairMatch()
-	for i := uint32(0); i < m.FaceCount(); i++ {
-		face := m.Face(i)
+	for _, face := range m.Faces {
 		for j := uint32(0); j < 3; j++ {
 			n1, n2 := face.NodeIndices[j], face.NodeIndices[(j+1)%3]
 			if _, ok := pairMatching.CheckMatch(n1, n2); !ok {
@@ -136,8 +129,7 @@ func (m *Mesh) IsManifoldAndOriented() bool {
 	}
 
 	positive, negative := make([]uint32, edgeCounter), make([]uint32, edgeCounter)
-	for i := uint32(0); i < m.FaceCount(); i++ {
-		face := m.Face(i)
+	for _, face := range m.Faces {
 		for j := uint32(0); j < 3; j++ {
 			n1, n2 := face.NodeIndices[j], face.NodeIndices[(j+1)%3]
 			edgeIndex, _ := pairMatching.CheckMatch(n1, n2)
