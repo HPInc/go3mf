@@ -2,16 +2,16 @@ package mesh
 
 import "github.com/qmuntal/go3mf/internal/meshinfo"
 
-// mergeableNodes defines a structure that can be merged with another node structure.
-type mergeableNodes interface {
+// MergeableNodes defines a structure that can be merged with another node structure.
+type MergeableNodes interface {
 	// NodeCount returns the number of nodes in the mesh.
 	NodeCount() uint32
 	// Node retrieve the node with the target index.
 	Node(index uint32) *Node
 }
 
-// mergeableFaces defines a structure that can be merged with another face structure.
-type mergeableFaces interface {
+// MergeableFaces defines a structure that can be merged with another face structure.
+type MergeableFaces interface {
 	// FaceCount returns the number of faces in the mesh.
 	FaceCount() uint32
 	// Face retrieve the face with the target index.
@@ -20,8 +20,8 @@ type mergeableFaces interface {
 	InformationHandler() *meshinfo.Handler
 }
 
-// mergeableBeams defines a structure that can be merged with another beam lattice.
-type mergeableBeams interface {
+// MergeableBeams defines a structure that can be merged with another beam lattice.
+type MergeableBeams interface {
 	// BeamCount returns the number of beams in the mesh.
 	BeamCount() uint32
 	// Beam retrieve the beam with the target index.
@@ -30,7 +30,7 @@ type mergeableBeams interface {
 
 // MergeableMesh defines a structure that can be merged with another mesh.
 type MergeableMesh interface {
-	mergeableNodes
-	mergeableFaces
-	mergeableBeams
+	MergeableNodes
+	MergeableFaces
+	MergeableBeams
 }

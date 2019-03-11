@@ -72,7 +72,7 @@ func (f *faceStructure) checkSanity(nodeCount uint32) bool {
 	return true
 }
 
-func (f *faceStructure) merge(other mergeableFaces, newNodes []uint32) error {
+func (f *faceStructure) merge(other MergeableFaces, newNodes []uint32) error {
 	faceCount := other.FaceCount()
 	if faceCount == 0 {
 		return nil
