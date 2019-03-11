@@ -70,8 +70,7 @@ func (h *Handler) NodeColorInfo() (*FacesData, bool) {
 // AddFace adds a new face to the handler.
 func (h *Handler) AddFace(newFaceCount uint32) {
 	for _, info := range h.lookup {
-		data := info.AddFaceData(newFaceCount)
-		data.Invalidate()
+		info.AddFaceData(newFaceCount).Invalidate()
 	}
 }
 

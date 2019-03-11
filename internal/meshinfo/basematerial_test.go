@@ -112,8 +112,8 @@ func Test_newbaseMaterialContainer(t *testing.T) {
 		args args
 		want *baseMaterialContainer
 	}{
-		{"zero", args{0}, &baseMaterialContainer{make([]*BaseMaterial, 0)}},
-		{"one", args{1}, &baseMaterialContainer{[]*BaseMaterial{new(BaseMaterial)}}},
+		{"zero", args{0}, &baseMaterialContainer{make([]BaseMaterial, 0)}},
+		{"one", args{1}, &baseMaterialContainer{[]BaseMaterial{{}}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -134,8 +134,8 @@ func Test_baseMaterialContainer_clone(t *testing.T) {
 		args args
 		want Container
 	}{
-		{"zero", &baseMaterialContainer{make([]*BaseMaterial, 0)}, args{0}, &baseMaterialContainer{make([]*BaseMaterial, 0)}},
-		{"one", &baseMaterialContainer{[]*BaseMaterial{new(BaseMaterial)}}, args{1}, &baseMaterialContainer{[]*BaseMaterial{new(BaseMaterial)}}},
+		{"zero", &baseMaterialContainer{make([]BaseMaterial, 0)}, args{0}, &baseMaterialContainer{make([]BaseMaterial, 0)}},
+		{"one", &baseMaterialContainer{[]BaseMaterial{{}}}, args{1}, &baseMaterialContainer{[]BaseMaterial{{}}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -31,7 +31,7 @@ func (t *TextureCoords) Copy(from FaceData) {
 }
 
 // HasData returns true if the texture id is different from zero.
-func (t *TextureCoords) HasData() bool {
+func (t TextureCoords) HasData() bool {
 	return t.TextureID != 0
 }
 
@@ -49,17 +49,13 @@ func (t *TextureCoords) Merge(other FaceData) {
 }
 
 type textureCoordsContainer struct {
-	dataBlocks []*TextureCoords
+	dataBlocks []TextureCoords
 }
 
 func newtextureCoordsContainer(currentFaceCount uint32) *textureCoordsContainer {
-	m := &textureCoordsContainer{
-		dataBlocks: make([]*TextureCoords, 0, int(currentFaceCount)),
+	return &textureCoordsContainer{
+		dataBlocks: make([]TextureCoords, currentFaceCount),
 	}
-	for i := uint32(1); i <= currentFaceCount; i++ {
-		m.AddFaceData(i)
-	}
-	return m
 }
 
 func (m *textureCoordsContainer) clone(currentFaceCount uint32) Container {
@@ -71,16 +67,15 @@ func (m *textureCoordsContainer) InfoType() DataType {
 }
 
 func (m *textureCoordsContainer) AddFaceData(newFaceCount uint32) FaceData {
-	faceData := new(TextureCoords)
-	m.dataBlocks = append(m.dataBlocks, faceData)
+	m.dataBlocks = append(m.dataBlocks, TextureCoords{})
 	if len(m.dataBlocks) != int(newFaceCount) {
 		panic(errFaceCountMissmatch)
 	}
-	return faceData
+	return &m.dataBlocks[newFaceCount-1]
 }
 
 func (m *textureCoordsContainer) FaceData(faceIndex uint32) FaceData {
-	return m.dataBlocks[int(faceIndex)]
+	return &m.dataBlocks[faceIndex]
 }
 
 func (m *textureCoordsContainer) FaceCount() uint32 {

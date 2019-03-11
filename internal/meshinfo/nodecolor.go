@@ -27,7 +27,7 @@ func (n *NodeColor) Copy(from FaceData) {
 }
 
 // HasData returns true if the any of the colors is different from zero.
-func (n *NodeColor) HasData() bool {
+func (n NodeColor) HasData() bool {
 	return (n.Colors[0] != color.RGBA{}) || (n.Colors[1] != color.RGBA{}) || (n.Colors[2] != color.RGBA{})
 }
 
@@ -45,17 +45,13 @@ func (n *NodeColor) Merge(other FaceData) {
 }
 
 type nodeColorContainer struct {
-	dataBlocks []*NodeColor
+	dataBlocks []NodeColor
 }
 
 func newnodeColorContainer(currentFaceCount uint32) *nodeColorContainer {
-	m := &nodeColorContainer{
-		dataBlocks: make([]*NodeColor, 0, int(currentFaceCount)),
+	return &nodeColorContainer{
+		dataBlocks: make([]NodeColor, currentFaceCount),
 	}
-	for i := uint32(1); i <= currentFaceCount; i++ {
-		m.AddFaceData(i)
-	}
-	return m
 }
 
 func (m *nodeColorContainer) clone(currentFaceCount uint32) Container {
@@ -67,16 +63,15 @@ func (m *nodeColorContainer) InfoType() DataType {
 }
 
 func (m *nodeColorContainer) AddFaceData(newFaceCount uint32) FaceData {
-	faceData := new(NodeColor)
-	m.dataBlocks = append(m.dataBlocks, faceData)
+	m.dataBlocks = append(m.dataBlocks, NodeColor{})
 	if len(m.dataBlocks) != int(newFaceCount) {
 		panic(errFaceCountMissmatch)
 	}
-	return faceData
+	return &m.dataBlocks[newFaceCount-1]
 }
 
 func (m *nodeColorContainer) FaceData(faceIndex uint32) FaceData {
-	return m.dataBlocks[int(faceIndex)]
+	return &m.dataBlocks[faceIndex]
 }
 
 func (m *nodeColorContainer) FaceCount() uint32 {

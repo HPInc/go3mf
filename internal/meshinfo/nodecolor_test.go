@@ -128,8 +128,8 @@ func Test_newnodeColorContainer(t *testing.T) {
 		args args
 		want *nodeColorContainer
 	}{
-		{"zero", args{0}, &nodeColorContainer{make([]*NodeColor, 0)}},
-		{"one", args{1}, &nodeColorContainer{[]*NodeColor{new(NodeColor)}}},
+		{"zero", args{0}, &nodeColorContainer{make([]NodeColor, 0)}},
+		{"one", args{1}, &nodeColorContainer{[]NodeColor{{}}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -150,8 +150,8 @@ func Test_nodeColorContainer_clone(t *testing.T) {
 		args args
 		want Container
 	}{
-		{"zero", &nodeColorContainer{make([]*NodeColor, 0)}, args{0}, &nodeColorContainer{make([]*NodeColor, 0)}},
-		{"one", &nodeColorContainer{[]*NodeColor{new(NodeColor)}}, args{1}, &nodeColorContainer{[]*NodeColor{new(NodeColor)}}},
+		{"zero", &nodeColorContainer{make([]NodeColor, 0)}, args{0}, &nodeColorContainer{make([]NodeColor, 0)}},
+		{"one", &nodeColorContainer{[]NodeColor{{}}}, args{1}, &nodeColorContainer{[]NodeColor{{}}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

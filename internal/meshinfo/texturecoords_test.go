@@ -125,8 +125,8 @@ func Test_newtextureCoordsContainer(t *testing.T) {
 		args args
 		want *textureCoordsContainer
 	}{
-		{"zero", args{0}, &textureCoordsContainer{make([]*TextureCoords, 0)}},
-		{"one", args{1}, &textureCoordsContainer{[]*TextureCoords{new(TextureCoords)}}},
+		{"zero", args{0}, &textureCoordsContainer{make([]TextureCoords, 0)}},
+		{"one", args{1}, &textureCoordsContainer{[]TextureCoords{{}}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -147,8 +147,8 @@ func Test_textureCoordsContainer_clone(t *testing.T) {
 		args args
 		want Container
 	}{
-		{"zero", &textureCoordsContainer{make([]*TextureCoords, 0)}, args{0}, &textureCoordsContainer{make([]*TextureCoords, 0)}},
-		{"one", &textureCoordsContainer{[]*TextureCoords{new(TextureCoords)}}, args{1}, &textureCoordsContainer{[]*TextureCoords{new(TextureCoords)}}},
+		{"zero", &textureCoordsContainer{make([]TextureCoords, 0)}, args{0}, &textureCoordsContainer{make([]TextureCoords, 0)}},
+		{"one", &textureCoordsContainer{[]TextureCoords{{}}}, args{1}, &textureCoordsContainer{[]TextureCoords{{}}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

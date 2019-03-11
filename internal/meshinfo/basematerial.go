@@ -23,7 +23,7 @@ func (b *BaseMaterial) Copy(from FaceData) {
 }
 
 // HasData returns true if the group id is different from zero.
-func (b *BaseMaterial) HasData() bool {
+func (b BaseMaterial) HasData() bool {
 	return b.GroupID != 0
 }
 
@@ -38,17 +38,13 @@ func (b *BaseMaterial) Merge(other FaceData) {
 }
 
 type baseMaterialContainer struct {
-	dataBlocks []*BaseMaterial
+	dataBlocks []BaseMaterial
 }
 
 func newbaseMaterialContainer(currentFaceCount uint32) *baseMaterialContainer {
-	m := &baseMaterialContainer{
-		dataBlocks: make([]*BaseMaterial, 0, int(currentFaceCount)),
+	return &baseMaterialContainer{
+		dataBlocks: make([]BaseMaterial, currentFaceCount),
 	}
-	for i := uint32(1); i <= currentFaceCount; i++ {
-		m.AddFaceData(i)
-	}
-	return m
 }
 
 func (m *baseMaterialContainer) clone(currentFaceCount uint32) Container {
@@ -60,16 +56,15 @@ func (m *baseMaterialContainer) InfoType() DataType {
 }
 
 func (m *baseMaterialContainer) AddFaceData(newFaceCount uint32) FaceData {
-	faceData := new(BaseMaterial)
-	m.dataBlocks = append(m.dataBlocks, faceData)
+	m.dataBlocks = append(m.dataBlocks, BaseMaterial{})
 	if len(m.dataBlocks) != int(newFaceCount) {
 		panic(errFaceCountMissmatch)
 	}
-	return faceData
+	return &m.dataBlocks[newFaceCount-1]
 }
 
 func (m *baseMaterialContainer) FaceData(faceIndex uint32) FaceData {
-	return m.dataBlocks[int(faceIndex)]
+	return &m.dataBlocks[faceIndex]
 }
 
 func (m *baseMaterialContainer) FaceCount() uint32 {
