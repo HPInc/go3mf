@@ -22,7 +22,7 @@ func Test_newbeamLattice(t *testing.T) {
 	}
 }
 
-func Test_beamLattice_ClearBeamLattice(t *testing.T) {
+func Test_beamLattice_clearBeamLattice(t *testing.T) {
 	b := new(beamLattice)
 	b.beams = append(b.beams, Beam{})
 	b.beamSets = append(b.beamSets, BeamSet{})
@@ -34,9 +34,9 @@ func Test_beamLattice_ClearBeamLattice(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.b.ClearBeamLattice()
+			tt.b.clearBeamLattice()
 			if len(tt.b.beams) != 0 || len(tt.b.beamSets) != 0 {
-				t.Error("beamLattice.ClearBeamLattice() have not cleared all the arrays")
+				t.Error("beamLattice.clearBeamLattice() have not cleared all the arrays")
 			}
 		})
 	}

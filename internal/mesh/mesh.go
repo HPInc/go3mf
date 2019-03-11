@@ -47,7 +47,7 @@ func (m *Mesh) Clear() {
 	m.ClearInformationHandler()
 	m.nodeStructure.clear()
 	m.faceStructure.clear()
-	m.ClearBeamLattice()
+	m.clearBeamLattice()
 }
 
 // StartCreation can be called before populating the mesh.

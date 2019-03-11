@@ -50,8 +50,7 @@ func newbeamLattice() *beamLattice {
 	}
 }
 
-// ClearBeamLattice resets the value of Beams and BeamSets.
-func (b *beamLattice) ClearBeamLattice() {
+func (b *beamLattice) clearBeamLattice() {
 	b.beams = make([]Beam, 0)
 	b.beamSets = make([]BeamSet, 0)
 }
