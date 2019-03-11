@@ -7,13 +7,13 @@ import (
 	"strconv"
 
 	"github.com/gofrs/uuid"
-	mdl "github.com/qmuntal/go3mf/internal/model"
+	go3mf "github.com/qmuntal/go3mf"
 )
 
 type buildDecoder struct {
 	x     *xml.Decoder
 	r     *Reader
-	model *mdl.Model
+	model *go3mf.Model
 }
 
 func (d *buildDecoder) Decode(se xml.StartElement) error {
@@ -63,15 +63,15 @@ func (d *buildDecoder) parseAttr(attrs []xml.Attr) error {
 type buildItemDecoder struct {
 	x           *xml.Decoder
 	r           *Reader
-	model       *mdl.Model
-	item        *mdl.BuildItem
+	model       *go3mf.Model
+	item        *go3mf.BuildItem
 	objectID    uint64
 	hasObjectID bool
 	transform   mgl32.Mat4
 }
 
 func (d *buildItemDecoder) Decode(se xml.StartElement) error {
-	d.item = new(mdl.BuildItem)
+	d.item = new(go3mf.BuildItem)
 	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
@@ -96,11 +96,11 @@ func (d *buildItemDecoder) processItem() error {
 	if !ok {
 		return errors.New("go3mf: could not find build item object")
 	}
-	obj, ok := resource.(*mdl.ObjectResource)
+	obj, ok := resource.(*go3mf.ObjectResource)
 	if !ok {
 		return errors.New("go3mf: could not find build item object")
 	}
-	if obj.Type() == mdl.ObjectTypeOther {
+	if obj.Type() == go3mf.ObjectTypeOther {
 		d.r.Warnings = append(d.r.Warnings, &ReadError{InvalidMandatoryValue, "go3mf: build item must not reference object of type OTHER"})
 	}
 	d.item.Object = obj

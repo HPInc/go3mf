@@ -6,7 +6,7 @@ import (
 	"image/color"
 	"strconv"
 
-	mdl "github.com/qmuntal/go3mf/internal/model"
+	go3mf "github.com/qmuntal/go3mf"
 )
 
 var emptyEntry struct{}
@@ -67,7 +67,7 @@ func (m *texCoordMapping) hasResource(id uint64) bool {
 type resourceDecoder struct {
 	x               *xml.Decoder
 	r               *Reader
-	model           *mdl.Model
+	model           *go3mf.Model
 	colorMapping    colorMapping
 	texCoordMapping texCoordMapping
 	progressCount   int
@@ -159,8 +159,8 @@ func (d *resourceDecoder) processSliceContent(se xml.StartElement) error {
 type baseMaterialsDecoder struct {
 	x             *xml.Decoder
 	r             *Reader
-	model         *mdl.Model
-	baseMaterials *mdl.BaseMaterialsResource
+	model         *go3mf.Model
+	baseMaterials *go3mf.BaseMaterialsResource
 }
 
 func (d *baseMaterialsDecoder) parseAttr(attrs []xml.Attr) (err error) {
@@ -174,7 +174,7 @@ func (d *baseMaterialsDecoder) parseAttr(attrs []xml.Attr) (err error) {
 			if err != nil {
 				err = errors.New("go3mf: base materials id is not valid")
 			} else {
-				d.baseMaterials = &mdl.BaseMaterialsResource{ID: id}
+				d.baseMaterials = &go3mf.BaseMaterialsResource{ID: id}
 			}
 		} else {
 			err = errors.New("go3mf: duplicated base materials id attribute")
@@ -241,6 +241,6 @@ func (d *baseMaterialsDecoder) addBaseMaterial(attrs []xml.Attr) error {
 	if name == "" || !withColor {
 		return errors.New("go3mf: missing base material attributes")
 	}
-	d.baseMaterials.Materials = append(d.baseMaterials.Materials, mdl.BaseMaterial{Name: name, Color: baseColor})
+	d.baseMaterials.Materials = append(d.baseMaterials.Materials, go3mf.BaseMaterial{Name: name, Color: baseColor})
 	return nil
 }

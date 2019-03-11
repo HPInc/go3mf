@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/go-gl/mathgl/mgl32"
-	mdl "github.com/qmuntal/go3mf/internal/model"
+	go3mf "github.com/qmuntal/go3mf"
 )
 
 type relationship interface {
@@ -32,7 +32,7 @@ type packageReader interface {
 
 // Reader implements a 3mf file reader.
 type Reader struct {
-	Model               *mdl.Model
+	Model               *go3mf.Model
 	Warnings            []error
 	AttachmentRelations []string
 	progress            Monitor
@@ -193,10 +193,10 @@ func (r *Reader) extractModelAttachments(rootFile packageFile) {
 	}
 }
 
-func (r *Reader) addAttachment(attachments []*mdl.Attachment, file packageFile, relType string) []*mdl.Attachment {
+func (r *Reader) addAttachment(attachments []*go3mf.Attachment, file packageFile, relType string) []*go3mf.Attachment {
 	buff, err := copyFile(file)
 	if err == nil {
-		return append(attachments, &mdl.Attachment{
+		return append(attachments, &go3mf.Attachment{
 			RelationshipType: relType,
 			Path:             file.Name(),
 			Stream:           buff,

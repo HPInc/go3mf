@@ -13,7 +13,7 @@ import (
 
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/go-test/deep"
-	mdl "github.com/qmuntal/go3mf/internal/model"
+	go3mf "github.com/qmuntal/go3mf"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -64,7 +64,7 @@ func (m *modelBuilder) withDefaultModel() *modelBuilder {
 	return m
 }
 
-func (m *modelBuilder) withModel(unit mdl.Units, lang string) *modelBuilder {
+func (m *modelBuilder) withModel(unit go3mf.Units, lang string) *modelBuilder {
 	m.str.WriteString(`<model `)
 	m.addAttr("", "unit", string(unit)).addAttr("xml", "lang", lang)
 	m.addAttr("", "xmlns", nsCoreSpec).addAttr("xmlns", "m", nsMaterialSpec).addAttr("xmlns", "p", nsProductionSpec)
@@ -167,43 +167,43 @@ func TestReadError_Error(t *testing.T) {
 }
 
 func TestReader_processOPC(t *testing.T) {
-	abortReader := &Reader{Model: new(mdl.Model), r: newMockPackage(newMockFile("/a.model", nil, nil, nil, false))}
+	abortReader := &Reader{Model: new(go3mf.Model), r: newMockPackage(newMockFile("/a.model", nil, nil, nil, false))}
 	abortReader.SetProgressCallback(callbackFalse, nil)
 	thumbFile := newMockFile("/a.png", nil, nil, nil, false)
 	thumbErr := newMockFile("/a.png", nil, nil, nil, true)
 	tests := []struct {
 		name    string
 		d       *Reader
-		want    *mdl.Model
+		want    *go3mf.Model
 		wantErr bool
 	}{
-		{"noRoot", &Reader{Model: new(mdl.Model), r: newMockPackage(nil)}, &mdl.Model{}, true},
-		{"abort", abortReader, &mdl.Model{}, true},
-		{"noRels", &Reader{Model: new(mdl.Model), r: newMockPackage(newMockFile("/a.model", nil, nil, nil, false))}, &mdl.Model{RootPath: "/a.model"}, false},
-		{"withThumb", &Reader{Model: new(mdl.Model),
+		{"noRoot", &Reader{Model: new(go3mf.Model), r: newMockPackage(nil)}, &go3mf.Model{}, true},
+		{"abort", abortReader, &go3mf.Model{}, true},
+		{"noRels", &Reader{Model: new(go3mf.Model), r: newMockPackage(newMockFile("/a.model", nil, nil, nil, false))}, &go3mf.Model{RootPath: "/a.model"}, false},
+		{"withThumb", &Reader{Model: new(go3mf.Model),
 			r: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeThumbnail, "/a.png")}, thumbFile, thumbFile, false)),
-		}, &mdl.Model{
+		}, &go3mf.Model{
 			RootPath:    "/a.model",
-			Thumbnail:   &mdl.Attachment{RelationshipType: relTypeThumbnail, Path: "/Metadata/thumbnail.png", Stream: new(bytes.Buffer)},
-			Attachments: []*mdl.Attachment{{RelationshipType: relTypeThumbnail, Path: "/a.png", Stream: new(bytes.Buffer)}},
+			Thumbnail:   &go3mf.Attachment{RelationshipType: relTypeThumbnail, Path: "/Metadata/thumbnail.png", Stream: new(bytes.Buffer)},
+			Attachments: []*go3mf.Attachment{{RelationshipType: relTypeThumbnail, Path: "/a.png", Stream: new(bytes.Buffer)}},
 		}, false},
-		{"withThumbErr", &Reader{Model: new(mdl.Model),
+		{"withThumbErr", &Reader{Model: new(go3mf.Model),
 			r: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeThumbnail, "/a.png")}, thumbErr, thumbErr, false)),
-		}, &mdl.Model{RootPath: "/a.model"}, false},
-		{"withOtherRel", &Reader{Model: new(mdl.Model),
+		}, &go3mf.Model{RootPath: "/a.model"}, false},
+		{"withOtherRel", &Reader{Model: new(go3mf.Model),
 			r: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship("other", "/a.png")}, nil, nil, false)),
-		}, &mdl.Model{RootPath: "/a.model"}, false},
-		{"withModelAttachment", &Reader{Model: new(mdl.Model),
+		}, &go3mf.Model{RootPath: "/a.model"}, false},
+		{"withModelAttachment", &Reader{Model: new(go3mf.Model),
 			r: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeModel3D, "/a.model")}, nil, newMockFile("/a.model", nil, nil, nil, false), false)),
-		}, &mdl.Model{
+		}, &go3mf.Model{
 			RootPath:              "/a.model",
-			ProductionAttachments: []*mdl.Attachment{{RelationshipType: relTypeModel3D, Path: "/a.model", Stream: new(bytes.Buffer)}},
+			ProductionAttachments: []*go3mf.Attachment{{RelationshipType: relTypeModel3D, Path: "/a.model", Stream: new(bytes.Buffer)}},
 		}, false},
-		{"withAttRel", &Reader{Model: new(mdl.Model), AttachmentRelations: []string{"b"},
+		{"withAttRel", &Reader{Model: new(go3mf.Model), AttachmentRelations: []string{"b"},
 			r: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship("b", "/a.xml")}, nil, newMockFile("/a.xml", nil, nil, nil, false), false)),
-		}, &mdl.Model{
+		}, &go3mf.Model{
 			RootPath:    "/a.model",
-			Attachments: []*mdl.Attachment{{RelationshipType: "b", Path: "/a.xml", Stream: new(bytes.Buffer)}},
+			Attachments: []*go3mf.Attachment{{RelationshipType: "b", Path: "/a.xml", Stream: new(bytes.Buffer)}},
 		}, false},
 	}
 	for _, tt := range tests {
@@ -222,18 +222,18 @@ func TestReader_processOPC(t *testing.T) {
 }
 
 func TestReader_processRootModel_Fail(t *testing.T) {
-	abortReader := &Reader{Model: new(mdl.Model), r: newMockPackage(newMockFile("/a.model", nil, nil, nil, false))}
+	abortReader := &Reader{Model: new(go3mf.Model), r: newMockPackage(newMockFile("/a.model", nil, nil, nil, false))}
 	abortReader.SetProgressCallback(callbackFalse, nil)
 	tests := []struct {
 		name    string
 		r       *Reader
 		wantErr bool
 	}{
-		{"noRoot", &Reader{Model: new(mdl.Model), r: newMockPackage(nil)}, true},
+		{"noRoot", &Reader{Model: new(go3mf.Model), r: newMockPackage(nil)}, true},
 		{"abort", abortReader, true},
-		{"errOpen", &Reader{Model: new(mdl.Model), r: newMockPackage(newMockFile("/a.model", nil, nil, nil, true))}, true},
-		{"errEncode", &Reader{Model: new(mdl.Model), r: newMockPackage(new(modelBuilder).withEncoding("utf16").build())}, true},
-		{"invalidUnits", &Reader{Model: new(mdl.Model), r: newMockPackage(new(modelBuilder).withModel("other", "en-US").build())}, true},
+		{"errOpen", &Reader{Model: new(go3mf.Model), r: newMockPackage(newMockFile("/a.model", nil, nil, nil, true))}, true},
+		{"errEncode", &Reader{Model: new(go3mf.Model), r: newMockPackage(new(modelBuilder).withEncoding("utf16").build())}, true},
+		{"invalidUnits", &Reader{Model: new(go3mf.Model), r: newMockPackage(new(modelBuilder).withModel("other", "en-US").build())}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -246,17 +246,17 @@ func TestReader_processRootModel_Fail(t *testing.T) {
 }
 
 func TestReader_processRootModel(t *testing.T) {
-	want := new(mdl.Model)
-	want.Units = mdl.UnitMillimeter
+	want := new(go3mf.Model)
+	want.Units = go3mf.UnitMillimeter
 	want.Language = "en-US"
-	baseMaterials := &mdl.BaseMaterialsResource{ID: 5, Materials: []mdl.BaseMaterial{
+	baseMaterials := &go3mf.BaseMaterialsResource{ID: 5, Materials: []go3mf.BaseMaterial{
 		{Name: "Blue PLA", Color: color.RGBA{0, 0, 85, 255}},
 		{Name: "Red ABS", Color: color.RGBA{85, 0, 0, 255}},
 	}}
-	baseTexture := &mdl.Texture2DResource{ID: 6, Path: "/3D/Texture/msLogo.png", ContentType: mdl.PNGTexture, TileStyleU: mdl.TileWrap, TileStyleV: mdl.TileMirror, Filter: mdl.TextureFilterAuto}
-	otherSlices := &mdl.SliceStack{
+	baseTexture := &go3mf.Texture2DResource{ID: 6, Path: "/3D/Texture/msLogo.png", ContentType: go3mf.PNGTexture, TileStyleU: go3mf.TileWrap, TileStyleV: go3mf.TileMirror, Filter: go3mf.TextureFilterAuto}
+	otherSlices := &go3mf.SliceStack{
 		BottomZ: 2,
-		Slices: []*mdl.Slice{
+		Slices: []*go3mf.Slice{
 			{
 				TopZ:     1.2,
 				Vertices: []mgl32.Vec2{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
@@ -264,9 +264,9 @@ func TestReader_processRootModel(t *testing.T) {
 			},
 		},
 	}
-	sliceStack := &mdl.SliceStackResource{ID: 3, SliceStack: &mdl.SliceStack{
+	sliceStack := &go3mf.SliceStackResource{ID: 3, SliceStack: &go3mf.SliceStack{
 		BottomZ: 1,
-		Slices: []*mdl.Slice{
+		Slices: []*go3mf.Slice{
 			{
 				TopZ:     0,
 				Vertices: []mgl32.Vec2{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
@@ -279,15 +279,15 @@ func TestReader_processRootModel(t *testing.T) {
 			},
 		},
 	}}
-	sliceStackRef := &mdl.SliceStackResource{ID: 7, SliceStack: otherSlices}
+	sliceStackRef := &go3mf.SliceStackResource{ID: 7, SliceStack: otherSlices}
 	sliceStackRef.BottomZ = 1.1
 	sliceStackRef.UsesSliceRef = true
 	sliceStackRef.Slices = append(sliceStackRef.Slices, otherSlices.Slices...)
-	want.Resources = append(want.Resources, &mdl.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices, TimesRefered: 1})
-	want.Resources = append(want.Resources, []mdl.Identifier{baseMaterials, baseTexture, sliceStack, sliceStackRef}...)
+	want.Resources = append(want.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices, TimesRefered: 1})
+	want.Resources = append(want.Resources, []go3mf.Identifier{baseMaterials, baseTexture, sliceStack, sliceStackRef}...)
 
-	got := new(mdl.Model)
-	got.Resources = append(got.Resources, &mdl.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices})
+	got := new(go3mf.Model)
+	got.Resources = append(got.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices})
 	r := &Reader{
 		Model: got,
 		r: newMockPackage(new(modelBuilder).withDefaultModel().withElement(`

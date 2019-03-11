@@ -5,7 +5,7 @@ import (
 	"errors"
 	"strconv"
 
-	mdl "github.com/qmuntal/go3mf/internal/model"
+	go3mf "github.com/qmuntal/go3mf"
 )
 
 type colorGroupDecoder struct {
@@ -157,12 +157,12 @@ func (d *tex2DGroupDecoder) addTextureCoord(attrs []xml.Attr) error {
 type texture2DDecoder struct {
 	x              *xml.Decoder
 	r              *Reader
-	model          *mdl.Model
+	model          *go3mf.Model
 	id             uint64
 	path           string
-	contentType    mdl.Texture2DType
-	styleU, styleV mdl.TileStyle
-	filter         mdl.TextureFilter
+	contentType    go3mf.Texture2DType
+	styleU, styleV go3mf.TileStyle
+	filter         go3mf.TextureFilter
 }
 
 func (d *texture2DDecoder) Decode(se xml.StartElement) error {
@@ -172,7 +172,7 @@ func (d *texture2DDecoder) Decode(se xml.StartElement) error {
 	if d.id == 0 {
 		return errors.New("go3mf: missing texture2d id attribute")
 	}
-	texture2d := mdl.NewTexture2DResource(d.id)
+	texture2d := go3mf.NewTexture2DResource(d.id)
 	texture2d.Path = d.path
 	texture2d.ContentType = d.contentType
 	if d.styleU != "" {
@@ -205,13 +205,13 @@ func (d *texture2DDecoder) parseAttr(attrs []xml.Attr) error {
 		case attrPath:
 			d.path = a.Value
 		case attrContentType:
-			d.contentType, ok = mdl.NewTexture2DType(a.Value)
+			d.contentType, ok = go3mf.NewTexture2DType(a.Value)
 		case attrTileStyleU:
-			d.styleU, ok = mdl.NewTileStyle(a.Value)
+			d.styleU, ok = go3mf.NewTileStyle(a.Value)
 		case attrTileStyleV:
-			d.styleV, ok = mdl.NewTileStyle(a.Value)
+			d.styleV, ok = go3mf.NewTileStyle(a.Value)
 		case attrFilter:
-			d.filter, ok = mdl.NewTextureFilter(a.Value)
+			d.filter, ok = go3mf.NewTextureFilter(a.Value)
 		}
 		if err != nil || !ok {
 			return errors.New("go3mf: texture2d attribute not valid")

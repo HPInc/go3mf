@@ -5,13 +5,13 @@ import (
 	"errors"
 	"strings"
 
-	mdl "github.com/qmuntal/go3mf/internal/model"
+	go3mf "github.com/qmuntal/go3mf"
 )
 
 type modelDecoder struct {
 	x                    *xml.Decoder
 	r                    *Reader
-	model                *mdl.Model
+	model                *go3mf.Model
 	hasResources         bool
 	hasBuild             bool
 	ignoreBuild          bool
@@ -95,7 +95,7 @@ func (d *modelDecoder) parseAttr(attrs []xml.Attr) error {
 			switch a.Name.Local {
 			case attrUnit:
 				var ok bool
-				if d.model.Units, ok = mdl.NewUnits(a.Value); !ok {
+				if d.model.Units, ok = go3mf.NewUnits(a.Value); !ok {
 					return errors.New("go3mf: invalid model units")
 				}
 			case attrReqExt:

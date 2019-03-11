@@ -5,14 +5,14 @@ import (
 	"errors"
 	"strconv"
 
-	mdl "github.com/qmuntal/go3mf/internal/model"
+	go3mf "github.com/qmuntal/go3mf"
 )
 
 type sliceStackDecoder struct {
 	x             *xml.Decoder
 	r             *Reader
-	model         *mdl.Model
-	sliceStack    mdl.SliceStack
+	model         *go3mf.Model
+	sliceStack    go3mf.SliceStack
 	id            uint64
 	progressCount uint64
 }
@@ -27,7 +27,7 @@ func (d *sliceStackDecoder) Decode(se xml.StartElement) error {
 	if err := d.parseContent(); err != nil {
 		return err
 	}
-	d.model.Resources = append(d.model.Resources, &mdl.SliceStackResource{ID: d.id, SliceStack: &d.sliceStack})
+	d.model.Resources = append(d.model.Resources, &go3mf.SliceStackResource{ID: d.id, SliceStack: &d.sliceStack})
 	return nil
 }
 
@@ -118,7 +118,7 @@ func (d *sliceStackDecoder) addSliceRef(sliceStackID uint64, path string) error 
 	if !ok {
 		return errors.New("go3mf: a sliceref points to a unexisting resource")
 	}
-	sliceStackResource, ok := resource.(*mdl.SliceStackResource)
+	sliceStackResource, ok := resource.(*go3mf.SliceStackResource)
 	if !ok {
 		return errors.New("go3mf: a sliceref points to a resource that is not an slicestack")
 	}
@@ -146,8 +146,8 @@ func (d *sliceStackDecoder) parseSlice(se xml.StartElement) (err error) {
 type sliceDecoder struct {
 	x          *xml.Decoder
 	r          *Reader
-	sliceStack *mdl.SliceStack
-	slice      mdl.Slice
+	sliceStack *go3mf.SliceStack
+	slice      go3mf.Slice
 	hasTopZ    bool
 }
 
