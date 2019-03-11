@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/go-test/deep"
-	"github.com/qmuntal/go3mf/internal/mesh"
+	"github.com/qmuntal/go3mf/mesh"
 )
 
 func TestNewDecoder(t *testing.T) {

@@ -3,7 +3,7 @@ package stl
 import (
 	"io"
 
-	"github.com/qmuntal/go3mf/internal/mesh"
+	"github.com/qmuntal/go3mf/mesh"
 )
 
 // EncodingType is the type of encoding used in the file.

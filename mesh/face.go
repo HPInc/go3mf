@@ -1,7 +1,7 @@
 package mesh
 
 import (
-	"github.com/qmuntal/go3mf/internal/meshinfo"
+	"github.com/qmuntal/go3mf/mesh/meshinfo"
 )
 
 const maxFaceCount = 2147483646

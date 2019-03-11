@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/qmuntal/go3mf/internal/meshinfo"
+	"github.com/qmuntal/go3mf/mesh/meshinfo"
 )
 
 func Test_faceStructure_clear(t *testing.T) {

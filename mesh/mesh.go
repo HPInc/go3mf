@@ -2,7 +2,7 @@ package mesh
 
 import (
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/qmuntal/go3mf/internal/meshinfo"
+	"github.com/qmuntal/go3mf/mesh/meshinfo"
 )
 
 // CreationOptions defines a set of options for helping in the mesh creation process

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/qmuntal/go3mf/internal/meshinfo"
+	"github.com/qmuntal/go3mf/mesh/meshinfo"
 )
 
 func TestNewMesh(t *testing.T) {

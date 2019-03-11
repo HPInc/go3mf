@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/qmuntal/go3mf/internal/mesh"
-	"github.com/qmuntal/go3mf/internal/meshinfo"
+	"github.com/qmuntal/go3mf/mesh"
+	"github.com/qmuntal/go3mf/mesh/meshinfo"
 )
 
 // Decoder can decode a mesh from an stream

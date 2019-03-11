@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/qmuntal/go3mf/internal/mesh"
+	"github.com/qmuntal/go3mf/mesh"
 )
 
 func TestNewEncoder(t *testing.T) {

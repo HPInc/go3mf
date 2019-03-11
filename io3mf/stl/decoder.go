@@ -5,7 +5,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/qmuntal/go3mf/internal/mesh"
+	"github.com/qmuntal/go3mf/mesh"
 	"golang.org/x/exp/utf8string"
 )
 
