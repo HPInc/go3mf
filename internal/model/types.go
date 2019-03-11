@@ -2,6 +2,7 @@ package model
 
 import (
 	"image/color"
+	"io"
 
 	"github.com/go-gl/mathgl/mgl32"
 )
@@ -142,6 +143,20 @@ func NewTextureFilter(s string) (TextureFilter, bool) {
 }
 
 var identityTransform = mgl32.Ident4()
+
+// Metadata item is an in memory representation of the 3MF metadata,
+// and can be attached to any 3MF model node.
+type Metadata struct {
+	Name  string
+	Value string
+}
+
+// Attachment defines the Model Attachment.
+type Attachment struct {
+	Stream           io.Reader
+	RelationshipType string
+	Path             string
+}
 
 // DefaultBaseMaterial defines the default base material property.
 type DefaultBaseMaterial struct {

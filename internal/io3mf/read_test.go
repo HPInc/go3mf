@@ -249,7 +249,7 @@ func TestReader_processRootModel(t *testing.T) {
 	want := new(mdl.Model)
 	want.Units = mdl.UnitMillimeter
 	want.Language = "en-US"
-	baseMaterials := &mdl.BaseMaterialsResource{ID: 5, Materials: []*mdl.BaseMaterial{
+	baseMaterials := &mdl.BaseMaterialsResource{ID: 5, Materials: []mdl.BaseMaterial{
 		{Name: "Blue PLA", Color: color.RGBA{0, 0, 85, 255}},
 		{Name: "Red ABS", Color: color.RGBA{85, 0, 0, 255}},
 	}}

@@ -222,21 +222,25 @@ func (d *baseMaterialsDecoder) parseContent() error {
 }
 
 func (d *baseMaterialsDecoder) addBaseMaterial(attrs []xml.Attr) error {
-	baseMaterial := mdl.BaseMaterial{
-		Color: defaultColor,
-	}
+	var name string
+	var withColor bool
+	baseColor := color.RGBA{}
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrBaseMaterialName:
-			baseMaterial.Name = a.Value
+			name = a.Value
 		case attrBaseMaterialColor:
-			c, err := strToSRGB(a.Value)
+			var err error
+			baseColor, err = strToSRGB(a.Value)
 			if err != nil {
 				return err
 			}
-			baseMaterial.Color = c
+			withColor = true
 		}
 	}
-	d.baseMaterials.Materials = append(d.baseMaterials.Materials, &baseMaterial)
+	if name == "" || !withColor {
+		return errors.New("go3mf: missing base material attributes")
+	}
+	d.baseMaterials.Materials = append(d.baseMaterials.Materials, mdl.BaseMaterial{Name: name, Color: baseColor})
 	return nil
 }
