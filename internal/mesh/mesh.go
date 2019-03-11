@@ -44,7 +44,7 @@ func (m *Mesh) Clone() (*Mesh, error) {
 
 // Clear resets all the mesh nodes, faces, beams and informations.
 func (m *Mesh) Clear() {
-	m.ClearInformationHandler()
+	m.InformationHandler().RemoveAllInformations()
 	m.nodeStructure.clear()
 	m.faceStructure.clear()
 	m.clearBeamLattice()
@@ -67,11 +67,6 @@ func (m *Mesh) EndCreation() {
 // InformationHandler returns the information handler of the mesh.
 func (m *Mesh) InformationHandler() *meshinfo.Handler {
 	return &m.informationHandler
-}
-
-// ClearInformationHandler sets the information handler to nil.
-func (m *Mesh) ClearInformationHandler() {
-	m.informationHandler.RemoveAllInformations()
 }
 
 // Merge merges the mesh with another mesh. This includes the nodes, faces, beams and all the informations.

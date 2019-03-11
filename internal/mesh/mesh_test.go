@@ -83,25 +83,6 @@ func TestMesh_InformationHandler(t *testing.T) {
 	}
 }
 
-func TestMesh_ClearInformationHandler(t *testing.T) {
-	tests := []struct {
-		name string
-		m    *Mesh
-	}{
-		{"base", &Mesh{informationHandler: *meshinfo.NewHandler()}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.m.informationHandler.AddBaseMaterialInfo(0)
-			tt.m.informationHandler.AddNodeColorInfo(0)
-			tt.m.ClearInformationHandler()
-			if tt.m.informationHandler.InformationCount() != 0 {
-				t.Error("Mesh.ClearInformationHandler expected to clear the handler")
-			}
-		})
-	}
-}
-
 func TestMesh_Merge(t *testing.T) {
 	type args struct {
 		mesh   *MockMergeableMesh
