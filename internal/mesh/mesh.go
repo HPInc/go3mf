@@ -94,16 +94,16 @@ func (m *Mesh) CheckSanity() bool {
 	if !m.nodeStructure.checkSanity() {
 		return false
 	}
-	if !m.faceStructure.checkSanity(m.NodeCount()) {
+	if !m.faceStructure.checkSanity(uint32(len(m.nodes))) {
 		return false
 	}
-	return m.beamLattice.checkSanity(m.NodeCount())
+	return m.beamLattice.checkSanity(uint32(len(m.nodes)))
 }
 
 // FaceNodes returns the three nodes of a face.
 func (m *Mesh) FaceNodes(i uint32) (*Node, *Node, *Node) {
 	face := m.Face(uint32(i))
-	return m.Node(face.NodeIndices[0]), m.Node(face.NodeIndices[1]), m.Node(face.NodeIndices[2])
+	return &m.nodes[face.NodeIndices[0]], &m.nodes[face.NodeIndices[1]], &m.nodes[face.NodeIndices[2]]
 }
 
 // FaceNormal returns the normal of a face.
@@ -118,7 +118,7 @@ func faceNormal(n1, n2, n3 mgl32.Vec3) mgl32.Vec3 {
 
 // IsManifoldAndOriented returns true if the mesh is manifold and oriented.
 func (m *Mesh) IsManifoldAndOriented() bool {
-	if m.NodeCount() < 3 || m.FaceCount() < 3 || !m.CheckSanity() {
+	if len(m.nodes) < 3 || m.FaceCount() < 3 || !m.CheckSanity() {
 		return false
 	}
 

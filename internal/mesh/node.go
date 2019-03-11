@@ -2,7 +2,6 @@ package mesh
 
 import (
 	"math"
-	"errors"
 	"github.com/go-gl/mathgl/mgl32"
 )
 
@@ -62,35 +61,21 @@ type Node struct {
 type nodeStructure struct {
 	vectorTree   *vectorTree
 	nodes        []Node
-	maxNodeCount uint32
+	maxNodeCount int
 }
 
 func (n *nodeStructure) clear() {
 	n.nodes = make([]Node, 0)
 }
 
-// NodeCount returns the number of nodes in the mesh.
-func (n *nodeStructure) NodeCount() uint32 {
-	return uint32(len(n.nodes))
-}
-
-// Node retrieve the node with the target index.
-func (n *nodeStructure) Node(index uint32) *Node {
-	return &n.nodes[uint32(index)]
-}
-
 // AddNode adds a node the the mesh at the target position.
 func (n *nodeStructure) AddNode(position mgl32.Vec3) *Node {
 	if n.vectorTree != nil {
 		if index, ok := n.vectorTree.FindVector(position); ok {
-			return n.Node(index)
+			return &n.nodes[index]
 		}
 	}
-	nodeCount := n.NodeCount()
-	if nodeCount >= n.getMaxNodeCount() {
-		panic(errors.New("go3mf: too many nodes has been tried to add to a mesh"))
-	}
-
+	nodeCount := uint32(len(n.nodes))
 	n.nodes = append(n.nodes, Node{
 		Index:    nodeCount,
 		Position: position,
@@ -102,12 +87,11 @@ func (n *nodeStructure) AddNode(position mgl32.Vec3) *Node {
 }
 
 func (n *nodeStructure) checkSanity() bool {
-	nodeCount := n.NodeCount()
-	if nodeCount > n.getMaxNodeCount() {
+	if len(n.nodes) > n.getMaxNodeCount() {
 		return false
 	}
-	for i := uint32(0); i < nodeCount; i++ {
-		if n.Node(i).Index != i {
+	for i := range n.nodes {
+		if n.nodes[i].Index != uint32(i) {
 			return false
 		}
 	}
@@ -115,21 +99,19 @@ func (n *nodeStructure) checkSanity() bool {
 }
 
 func (n *nodeStructure) merge(other *nodeStructure, matrix mgl32.Mat4) []uint32 {
-	nodeCount := other.NodeCount()
-	newNodes := make([]uint32, nodeCount)
-	if nodeCount == 0 {
+	newNodes := make([]uint32, len(other.nodes))
+	if len(other.nodes) == 0 {
 		return newNodes
 	}
 
-	for i := uint32(0); i < nodeCount; i++ {
-		node := other.Node(i)
-		position := mgl32.TransformCoordinate(node.Position, matrix)
+	for i := range other.nodes {
+		position := mgl32.TransformCoordinate(other.nodes[i].Position, matrix)
 		newNodes[i] = n.AddNode(position).Index
 	}
 	return newNodes
 }
 
-func (n *nodeStructure) getMaxNodeCount() uint32 {
+func (n *nodeStructure) getMaxNodeCount() int {
 	if n.maxNodeCount == 0 {
 		return maxNodeCount
 	}
