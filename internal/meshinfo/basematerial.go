@@ -38,7 +38,6 @@ func (b *BaseMaterial) Merge(other FaceData) {
 }
 
 type baseMaterialContainer struct {
-	faceCount  uint32
 	dataBlocks []*BaseMaterial
 }
 
@@ -63,8 +62,7 @@ func (m *baseMaterialContainer) InfoType() DataType {
 func (m *baseMaterialContainer) AddFaceData(newFaceCount uint32) FaceData {
 	faceData := new(BaseMaterial)
 	m.dataBlocks = append(m.dataBlocks, faceData)
-	m.faceCount++
-	if m.faceCount != newFaceCount {
+	if len(m.dataBlocks) != int(newFaceCount) {
 		panic(errFaceCountMissmatch)
 	}
 	return faceData
@@ -75,10 +73,9 @@ func (m *baseMaterialContainer) FaceData(faceIndex uint32) FaceData {
 }
 
 func (m *baseMaterialContainer) FaceCount() uint32 {
-	return m.faceCount
+	return uint32(len(m.dataBlocks))
 }
 
 func (m *baseMaterialContainer) Clear() {
 	m.dataBlocks = m.dataBlocks[:0]
-	m.faceCount = 0
 }

@@ -45,7 +45,6 @@ func (n *NodeColor) Merge(other FaceData) {
 }
 
 type nodeColorContainer struct {
-	faceCount  uint32
 	dataBlocks []*NodeColor
 }
 
@@ -70,8 +69,7 @@ func (m *nodeColorContainer) InfoType() DataType {
 func (m *nodeColorContainer) AddFaceData(newFaceCount uint32) FaceData {
 	faceData := new(NodeColor)
 	m.dataBlocks = append(m.dataBlocks, faceData)
-	m.faceCount++
-	if m.faceCount != newFaceCount {
+	if len(m.dataBlocks) != int(newFaceCount) {
 		panic(errFaceCountMissmatch)
 	}
 	return faceData
@@ -82,10 +80,9 @@ func (m *nodeColorContainer) FaceData(faceIndex uint32) FaceData {
 }
 
 func (m *nodeColorContainer) FaceCount() uint32 {
-	return m.faceCount
+	return uint32(len(m.dataBlocks))
 }
 
 func (m *nodeColorContainer) Clear() {
 	m.dataBlocks = m.dataBlocks[:0]
-	m.faceCount = 0
 }

@@ -49,7 +49,6 @@ func (t *TextureCoords) Merge(other FaceData) {
 }
 
 type textureCoordsContainer struct {
-	faceCount  uint32
 	dataBlocks []*TextureCoords
 }
 
@@ -74,8 +73,7 @@ func (m *textureCoordsContainer) InfoType() DataType {
 func (m *textureCoordsContainer) AddFaceData(newFaceCount uint32) FaceData {
 	faceData := new(TextureCoords)
 	m.dataBlocks = append(m.dataBlocks, faceData)
-	m.faceCount++
-	if m.faceCount != newFaceCount {
+	if len(m.dataBlocks) != int(newFaceCount) {
 		panic(errFaceCountMissmatch)
 	}
 	return faceData
@@ -86,10 +84,9 @@ func (m *textureCoordsContainer) FaceData(faceIndex uint32) FaceData {
 }
 
 func (m *textureCoordsContainer) FaceCount() uint32 {
-	return m.faceCount
+	return uint32(len(m.dataBlocks))
 }
 
 func (m *textureCoordsContainer) Clear() {
 	m.dataBlocks = m.dataBlocks[:0]
-	m.faceCount = 0
 }
