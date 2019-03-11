@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"testing"
 
+	"github.com/go-test/deep"
 	"github.com/qmuntal/go3mf/internal/mesh"
 )
 
@@ -25,8 +26,11 @@ func Test_asciiDecoder_decode(t *testing.T) {
 				t.Errorf("asciiDecoder.decode() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !tt.wantErr && !got.ApproxEqual(tt.want) {
-				t.Errorf("asciiDecoder.decode() = %v, want %v", got, tt.want)
+			if !tt.wantErr {
+				if diff := deep.Equal(got, tt.want); diff != nil {
+					t.Errorf("asciiDecoder.decode() = %v", diff)
+					return
+				}
 			}
 		})
 	}
@@ -56,8 +60,9 @@ func Test_asciiEncoder_encode(t *testing.T) {
 				// We do decoder and then encoder again, and the result must be the same
 				decoder := &asciiDecoder{r: tt.e.w.(*bytes.Buffer)}
 				got, _ := decoder.decode()
-				if !got.ApproxEqual(tt.args.m) {
-					t.Errorf("asciiDecoder.encode() = %v, want %v", got, tt.args.m)
+				if diff := deep.Equal(got, tt.args.m); diff != nil {
+					t.Errorf("asciiDecoder.encode() = %v", diff)
+					return
 				}
 			}
 		})

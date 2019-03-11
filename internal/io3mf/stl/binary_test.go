@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/go-test/deep"
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/qmuntal/go3mf/internal/mesh"
 )
@@ -29,8 +30,11 @@ func Test_binaryDecoder_decode(t *testing.T) {
 				t.Errorf("binaryDecoder.decode() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !tt.wantErr && !got.ApproxEqual(tt.want) {
-				t.Errorf("binaryDecoder.decode() = %v, want %v", got, tt.want)
+			if !tt.wantErr {
+				if diff := deep.Equal(got, tt.want); diff != nil {
+					t.Errorf("binaryDecoder.decode() = %v", diff)
+					return
+				}
 			}
 		})
 	}
@@ -58,10 +62,12 @@ func Test_binaryEncoder_encode(t *testing.T) {
 				return
 			}
 			if !tt.wantErr {
+				// We do decoder and then encoder again, and the result must be the same
 				decoder := &binaryDecoder{r: tt.e.w.(*bytes.Buffer)}
 				got, _ := decoder.decode()
-				if !got.ApproxEqual(tt.args.m) {
-					t.Errorf("binaryDecoder.encode() = %v, want %v", got, tt.args.m)
+				if diff := deep.Equal(got, tt.args.m); diff != nil {
+					t.Errorf("binaryDecoder.encode() = %v", diff)
+					return
 				}
 			}
 		})

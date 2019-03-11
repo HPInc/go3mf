@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/go-test/deep"
 	"github.com/qmuntal/go3mf/internal/mesh"
 )
 
@@ -54,8 +55,11 @@ func TestDecoder_Decode(t *testing.T) {
 				t.Errorf("Decoder.Decode() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !tt.wantErr && !got.ApproxEqual(tt.want) {
-				t.Errorf("Decoder.Decode() = %v, want %v", got, tt.want)
+			if !tt.wantErr {
+				if diff := deep.Equal(got, tt.want); diff != nil {
+					t.Errorf("Decoder.Decode() = %v", diff)
+					return
+				}
 			}
 		})
 	}

@@ -154,27 +154,6 @@ func TestMesh_CheckSanity(t *testing.T) {
 	}
 }
 
-func TestMesh_ApproxEqual(t *testing.T) {
-	type args struct {
-		mesh *Mesh
-	}
-	tests := []struct {
-		name string
-		m    *Mesh
-		args args
-		want bool
-	}{
-		{"base", NewMesh(), args{nil}, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.m.ApproxEqual(tt.args.mesh); got != tt.want {
-				t.Errorf("Mesh.ApproxEqual() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestMesh_StartCreation(t *testing.T) {
 	type args struct {
 		opts CreationOptions

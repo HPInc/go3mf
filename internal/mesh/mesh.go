@@ -74,11 +74,6 @@ func (m *Mesh) ClearInformationHandler() {
 	m.informationHandler.RemoveAllInformations()
 }
 
-// ApproxEqual compares the geometry of two meshes to check if they are equal.The mesh properties are not compared.
-func (m *Mesh) ApproxEqual(mesh *Mesh) bool {
-	return comparer{}.CompareGeometry(m, mesh)
-}
-
 // Merge merges the mesh with another mesh. This includes the nodes, faces, beams and all the informations.
 func (m *Mesh) Merge(mesh MergeableMesh, matrix mgl32.Mat4) error {
 	m.StartCreation(CreationOptions{CalculateConnectivity: true})
