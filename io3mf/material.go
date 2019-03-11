@@ -155,36 +155,20 @@ func (d *tex2DGroupDecoder) addTextureCoord(attrs []xml.Attr) error {
 }
 
 type texture2DDecoder struct {
-	x              *xml.Decoder
-	r              *Reader
-	model          *go3mf.Model
-	id             uint64
-	path           string
-	contentType    go3mf.Texture2DType
-	styleU, styleV go3mf.TileStyle
-	filter         go3mf.TextureFilter
+	x       *xml.Decoder
+	r       *Reader
+	model   *go3mf.Model
+	texture go3mf.Texture2DResource
 }
 
 func (d *texture2DDecoder) Decode(se xml.StartElement) error {
 	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
-	if d.id == 0 {
+	if d.texture.ID == 0 {
 		return errors.New("go3mf: missing texture2d id attribute")
 	}
-	texture2d := go3mf.NewTexture2DResource(d.id)
-	texture2d.Path = d.path
-	texture2d.ContentType = d.contentType
-	if d.styleU != "" {
-		texture2d.TileStyleU = d.styleU
-	}
-	if d.styleV != "" {
-		texture2d.TileStyleV = d.styleV
-	}
-	if d.filter != "" {
-		texture2d.Filter = d.filter
-	}
-	d.model.Resources = append(d.model.Resources, texture2d)
+	d.model.Resources = append(d.model.Resources, &d.texture)
 	return nil
 }
 
@@ -197,21 +181,21 @@ func (d *texture2DDecoder) parseAttr(attrs []xml.Attr) error {
 		ok := true
 		switch a.Name.Local {
 		case attrID:
-			if d.id != 0 {
+			if d.texture.ID != 0 {
 				err = errors.New("go3mf: duplicated texture2d id attribute")
 			} else {
-				d.id, err = strconv.ParseUint(a.Value, 10, 64)
+				d.texture.ID, err = strconv.ParseUint(a.Value, 10, 64)
 			}
 		case attrPath:
-			d.path = a.Value
+			d.texture.Path = a.Value
 		case attrContentType:
-			d.contentType, ok = go3mf.NewTexture2DType(a.Value)
+			d.texture.ContentType, ok = go3mf.NewTexture2DType(a.Value)
 		case attrTileStyleU:
-			d.styleU, ok = go3mf.NewTileStyle(a.Value)
+			d.texture.TileStyleU, ok = go3mf.NewTileStyle(a.Value)
 		case attrTileStyleV:
-			d.styleV, ok = go3mf.NewTileStyle(a.Value)
+			d.texture.TileStyleV, ok = go3mf.NewTileStyle(a.Value)
 		case attrFilter:
-			d.filter, ok = go3mf.NewTextureFilter(a.Value)
+			d.texture.Filter, ok = go3mf.NewTextureFilter(a.Value)
 		}
 		if err != nil || !ok {
 			return errors.New("go3mf: texture2d attribute not valid")

@@ -348,17 +348,6 @@ type Texture2DResource struct {
 	Filter      TextureFilter
 }
 
-// NewTexture2DResource returns a new texture 2D resource.
-func NewTexture2DResource(id uint64) *Texture2DResource {
-	return &Texture2DResource{
-		ID:          id,
-		ContentType: PNGTexture,
-		TileStyleU:  TileWrap,
-		TileStyleV:  TileWrap,
-		Filter:      TextureFilterAuto,
-	}
-}
-
 // Identify returns the resource ID and the ModelPath.
 func (t *Texture2DResource) Identify() (uint64, string) {
 	return t.ID, t.ModelPath

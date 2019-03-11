@@ -64,9 +64,9 @@ func (m *modelBuilder) withDefaultModel() *modelBuilder {
 	return m
 }
 
-func (m *modelBuilder) withModel(unit go3mf.Units, lang string) *modelBuilder {
+func (m *modelBuilder) withModel(unit string, lang string) *modelBuilder {
 	m.str.WriteString(`<model `)
-	m.addAttr("", "unit", string(unit)).addAttr("xml", "lang", lang)
+	m.addAttr("", "unit", unit).addAttr("xml", "lang", lang)
 	m.addAttr("", "xmlns", nsCoreSpec).addAttr("xmlns", "m", nsMaterialSpec).addAttr("xmlns", "p", nsProductionSpec)
 	m.addAttr("xmlns", "b", nsBeamLatticeSpec).addAttr("xmlns", "s", nsSliceSpec).addAttr("", "requiredextensions", "m p b s")
 	m.str.WriteString(">\n")

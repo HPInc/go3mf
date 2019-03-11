@@ -603,29 +603,3 @@ func TestTexture2DResource_Copy(t *testing.T) {
 		})
 	}
 }
-
-func TestNewTexture2DResource(t *testing.T) {
-	type args struct {
-		id uint64
-	}
-	tests := []struct {
-		name string
-		args args
-		want *Texture2DResource
-	}{
-		{"base", args{0}, &Texture2DResource{
-			ContentType: PNGTexture,
-			TileStyleU:  TileWrap,
-			TileStyleV:  TileWrap,
-			Filter:      TextureFilterAuto,
-		}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := NewTexture2DResource(tt.args.id)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewTexture2DResource() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}

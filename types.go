@@ -13,30 +13,45 @@ const (
 )
 
 // Units define the allowed model units.
-type Units string
+type Units uint8
 
 const (
-	// UnitMicrometer for microns
-	UnitMicrometer Units = "micron"
 	// UnitMillimeter for millimeter
-	UnitMillimeter = "millimeter"
+	UnitMillimeter Units = iota
+	// UnitMicrometer for microns
+	UnitMicrometer
 	// UnitCentimeter for centimeter
-	UnitCentimeter = "centimeter"
+	UnitCentimeter
 	// UnitInch for inch
-	UnitInch = "inch"
+	UnitInch
 	// UnitFoot for foot
-	UnitFoot = "foot"
+	UnitFoot
 	// UnitMeter for meter
-	UnitMeter = "meter"
+	UnitMeter
 )
 
 // NewUnits returns a new unit from a string.
-func NewUnits(s string) (Units, bool) {
-	u := Units(s)
-	if u == UnitMillimeter || u == UnitInch || u == UnitMicrometer || u == UnitCentimeter || u == UnitFoot || u == UnitMeter {
-		return u, true
-	}
-	return "", false
+func NewUnits(s string) (u Units, ok bool) {
+	u, ok = map[string]Units{
+		"millimeter": UnitMillimeter,
+		"micron": UnitMicrometer,
+		"centimeter": UnitCentimeter,
+		"inch": UnitInch,
+		"foot": UnitFoot,
+		"meter": UnitMeter,
+	}[s]
+	return
+}
+
+func (u Units) String() string {
+	return map[Units]string{
+		UnitMillimeter: "millimeter",
+		UnitMicrometer: "micron",
+		UnitCentimeter: "centimeter",
+		UnitInch: "inch",
+		UnitFoot: "foot",
+		UnitMeter: "meter",
+	}[u]
 }
 
 // ClipMode defines the clipping modes for the beam lattices.
@@ -99,47 +114,67 @@ func NewTexture2DType(s string) (Texture2DType, bool) {
 }
 
 // TileStyle defines the allowed tile styles.
-type TileStyle string
+type TileStyle uint8
 
 const (
 	// TileWrap wraps the tile.
-	TileWrap TileStyle = "wrap"
+	TileWrap TileStyle = iota
 	// TileMirror mirrors the tile.
-	TileMirror = "mirror"
+	TileMirror
 	// TileClamp clamps the tile.
-	TileClamp = "clamp"
+	TileClamp
 	// TileNone apply no style.
-	TileNone = "none"
+	TileNone
 )
 
 // NewTileStyle returns a new TileStyle from a string.
-func NewTileStyle(s string) (TileStyle, bool) {
-	u := TileStyle(s)
-	if u == TileWrap || u == TileMirror || u == TileClamp || u == TileNone {
-		return u, true
-	}
-	return "", false
+func NewTileStyle(s string) (t TileStyle, ok bool) {
+	t, ok = map[string]TileStyle{
+		"wrap": TileWrap,
+		"mirror": TileMirror,
+		"clamp": TileClamp,
+		"none": TileNone,
+	}[s]
+	return
+}
+
+func (t TileStyle) String() string {
+	return map[TileStyle]string{
+		TileWrap: "wrap",
+		TileMirror: "mirror",
+		TileClamp: "clamp",
+		TileNone: "none",
+	}[t]
 }
 
 // TextureFilter defines the allowed texture filters.
-type TextureFilter string
+type TextureFilter uint8
 
 const (
 	// TextureFilterAuto applies an automatic filter.
-	TextureFilterAuto TextureFilter = "auto"
+	TextureFilterAuto TextureFilter = iota
 	// TextureFilterLinear applies a linear filter.
-	TextureFilterLinear = "linear"
+	TextureFilterLinear
 	// TextureFilterNearest applies an nearest filter.
-	TextureFilterNearest = "nearest"
+	TextureFilterNearest
 )
 
 // NewTextureFilter returns a new TextureFilter from a string.
-func NewTextureFilter(s string) (TextureFilter, bool) {
-	u := TextureFilter(s)
-	if u == TextureFilterAuto || u == TextureFilterLinear || u == TextureFilterNearest {
-		return u, true
-	}
-	return "", false
+func NewTextureFilter(s string) (t TextureFilter, ok bool) {
+	t, ok = map[string]TextureFilter{
+		"auto": TextureFilterAuto,
+		"linear": TextureFilterLinear,
+		"nearest": TextureFilterNearest,
+	}[s]
+	return
+}
+
+func (t TextureFilter) String() string {
+	return map[TextureFilter]string{
+		TextureFilterAuto: "auto",
+		TextureFilterLinear: "linear",
+		TextureFilterNearest: "nearest",
+	}[t]
 }
 
 var identityTransform = mgl32.Ident4()
