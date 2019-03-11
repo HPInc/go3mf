@@ -6,55 +6,7 @@ import (
 
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/qmuntal/go3mf/internal/meshinfo"
-	"github.com/stretchr/testify/mock"
 )
-
-// MockMergeableMesh is a mock of MergeableMesh interface
-type MockMergeableMesh struct {
-	mock.Mock
-}
-
-// Beam mocks base method
-func (m *MockMergeableMesh) Beam(arg0 uint32) *Beam {
-	args := m.Called(arg0)
-	return args.Get(0).(*Beam)
-}
-
-// BeamCount mocks base method
-func (m *MockMergeableMesh) BeamCount() uint32 {
-	args := m.Called()
-	return args.Get(0).(uint32)
-}
-
-// Face mocks base method
-func (m *MockMergeableMesh) Face(arg0 uint32) *Face {
-	args := m.Called(arg0)
-	return args.Get(0).(*Face)
-}
-
-// FaceCount mocks base method
-func (m *MockMergeableMesh) FaceCount() uint32 {
-	args := m.Called()
-	return args.Get(0).(uint32)
-}
-
-// InformationHandler mocks base method
-func (m *MockMergeableMesh) InformationHandler() *meshinfo.Handler {
-	args := m.Called()
-	return args.Get(0).(*meshinfo.Handler)
-}
-
-// Node mocks base method
-func (m *MockMergeableMesh) Node(arg0 uint32) *Node {
-	args := m.Called(arg0)
-	return args.Get(0).(*Node)
-}
-
-// NodeCount mocks base method
-func (m *MockMergeableMesh) NodeCount() uint32 {
-	args := m.Called()
-	return args.Get(0).(uint32)
-}
 
 func TestNewMesh(t *testing.T) {
 	tests := []struct {
@@ -132,29 +84,21 @@ func TestMesh_InformationHandler(t *testing.T) {
 
 func TestMesh_Merge(t *testing.T) {
 	type args struct {
-		mesh   *MockMergeableMesh
+		mesh   *Mesh
 		matrix mgl32.Mat4
 	}
 	tests := []struct {
 		name    string
 		m       *Mesh
 		args    args
-		nodes   uint32
-		faces   uint32
 		wantErr bool
 	}{
-		{"error1", new(Mesh), args{new(MockMergeableMesh), mgl32.Ident4()}, 0, 0, false},
-		{"error2", new(Mesh), args{new(MockMergeableMesh), mgl32.Ident4()}, 1, 0, false},
-		{"base", new(Mesh), args{new(MockMergeableMesh), mgl32.Ident4()}, 1, 1, true},
+		{"empty", new(Mesh), args{&Mesh{}, mgl32.Ident4()}, false},
+		{"error2", new(Mesh), args{&Mesh{nodeStructure: nodeStructure{nodes: make([]Node, 1)}}, mgl32.Ident4()}, false},
+		{"base", new(Mesh), args{&Mesh{faceStructure: faceStructure{faces: make([]Face, 1)}, nodeStructure: nodeStructure{nodes: make([]Node, 1)}}, mgl32.Ident4()}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.args.mesh.On("InformationHandler").Return(meshinfo.NewHandler())
-			tt.args.mesh.On("NodeCount").Return(tt.nodes)
-			tt.args.mesh.On("Node", mock.Anything).Return(new(Node))
-			tt.args.mesh.On("FaceCount").Return(tt.faces)
-			tt.args.mesh.On("Face", mock.Anything).Return(new(Face))
-			tt.args.mesh.On("BeamCount").Return(uint32(0))
 			if err := tt.m.Merge(tt.args.mesh, tt.args.matrix); (err != nil) != tt.wantErr {
 				t.Errorf("Mesh.Merge() error = %v, wantErr %v", err, tt.wantErr)
 			}

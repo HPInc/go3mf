@@ -1,7 +1,6 @@
 package mesh
 
 import (
-	"github.com/stretchr/testify/mock"
 	"reflect"
 	"testing"
 )
@@ -207,7 +206,7 @@ func Test_beamLattice_merge(t *testing.T) {
 		b       *beamLattice
 		args    args
 		wantErr bool
-		times   uint32
+		times   int
 	}{
 		{"err", &beamLattice{beams: []Beam{{}}}, args{[]uint32{0, 0}}, true, 1},
 		{"zero", new(beamLattice), args{make([]uint32, 0)}, false, 0},
@@ -215,18 +214,19 @@ func Test_beamLattice_merge(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockMesh := new(MockMergeableMesh)
-			mockMesh.On("BeamCount").Return(tt.times)
-			beam := &Beam{NodeIndices: [2]uint32{0, 1}, Radius: [2]float64{1.0, 2.0}, CapMode: [2]BeamCapMode{CapModeButt, CapModeHemisphere}}
-			mockMesh.On("Beam", mock.Anything).Return(beam)
-			if err := tt.b.merge(mockMesh, tt.args.newNodes); (err != nil) != tt.wantErr {
+			beam := Beam{NodeIndices: [2]uint32{0, 1}, Radius: [2]float64{1.0, 2.0}, CapMode: [2]BeamCapMode{CapModeButt, CapModeHemisphere}}
+			mockMesh := NewMesh()
+			for i := 0; i < tt.times; i++ {
+				mockMesh.beams = append(mockMesh.beams, beam)
+			}
+			if err := tt.b.merge(&mockMesh.beamLattice, tt.args.newNodes); (err != nil) != tt.wantErr {
 				t.Errorf("beamLattice.merge() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			emptyBeam := Beam{}
 			if !tt.wantErr && len(tt.b.beams) > 0 && tt.b.beams[0] != emptyBeam {
 				for i := 0; i < len(tt.b.beams); i++ {
-					want := *beam
+					want := beam
 					want.Index = uint32(i)
 					if got := tt.b.Beam(uint32(i)); *got != want {
 						t.Errorf("beamLattice.merge() = %v, want %v", got, want)

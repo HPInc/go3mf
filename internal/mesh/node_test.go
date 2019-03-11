@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/stretchr/testify/mock"
 )
 
 func Test_nodeStructure_clear(t *testing.T) {
@@ -132,17 +131,19 @@ func Test_nodeStructure_merge(t *testing.T) {
 		n     *nodeStructure
 		args  args
 		want  []uint32
-		times uint32
+		times int
 	}{
 		{"zero", new(nodeStructure), args{mgl32.Ident4()}, make([]uint32, 0), 0},
 		{"merged", new(nodeStructure), args{mgl32.Translate3D(1.0, 2.0, 3.0)}, []uint32{0, 1}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockMesh := new(MockMergeableMesh)
-			mockMesh.On("NodeCount").Return(tt.times)
-			mockMesh.On("Node", mock.Anything).Return(new(Node))
-			got := tt.n.merge(mockMesh, tt.args.matrix)
+			node := Node{}
+			mockMesh := NewMesh()
+			for i := 0; i < tt.times; i++ {
+				mockMesh.nodes = append(mockMesh.nodes, node)
+			}
+			got := tt.n.merge(&mockMesh.nodeStructure, tt.args.matrix)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("nodeStructure.merge() = %v, want %v", got, tt.want)
 				return

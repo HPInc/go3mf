@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/qmuntal/go3mf/internal/meshinfo"
-	"github.com/stretchr/testify/mock"
 )
 
 func Test_faceStructure_clear(t *testing.T) {
@@ -144,7 +143,7 @@ func Test_faceStructure_merge(t *testing.T) {
 		f       *faceStructure
 		args    args
 		wantErr bool
-		times   uint32
+		times   int
 	}{
 		{"err", &faceStructure{maxFaceCount: 1, faces: make([]Face, 1)}, args{[]uint32{0, 1, 2}}, true, 1},
 		{"zero", new(faceStructure), args{make([]uint32, 0)}, false, 0},
@@ -157,13 +156,12 @@ func Test_faceStructure_merge(t *testing.T) {
 					t.Error("faceStructure.merge() want panic")
 				}
 			}()
-			mockMesh := new(MockMergeableMesh)
-			mockMesh.On("FaceCount").Return(tt.times)
-			mockMesh.On("InformationHandler").Return(meshinfo.NewHandler())
-			tt.f.informationHandler = meshinfo.NewHandler()
-			face := &Face{NodeIndices: [3]uint32{0, 1, 2}}
-			mockMesh.On("Face", mock.Anything).Return(face)
-			if err := tt.f.merge(mockMesh, tt.args.newNodes); (err != nil) != tt.wantErr {
+			face := Face{NodeIndices: [3]uint32{0, 1, 2}}
+			mockMesh := NewMesh()
+			for i := 0; i < tt.times; i++ {
+				mockMesh.faces = append(mockMesh.faces, face)
+			}
+			if err := tt.f.merge(&mockMesh.faceStructure, tt.args.newNodes); (err != nil) != tt.wantErr {
 				t.Errorf("faceStructure.merge() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}

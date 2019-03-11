@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-// MockMergeableMesh is a mock of MergeableMesh interface
+// MockObject is a mock of Object interface
 type MockObject struct {
 	mock.Mock
 }

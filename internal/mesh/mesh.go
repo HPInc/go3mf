@@ -70,22 +70,22 @@ func (m *Mesh) InformationHandler() *meshinfo.Handler {
 }
 
 // Merge merges the mesh with another mesh. This includes the nodes, faces, beams and all the informations.
-func (m *Mesh) Merge(mesh MergeableMesh, matrix mgl32.Mat4) error {
+func (m *Mesh) Merge(mesh *Mesh, matrix mgl32.Mat4) error {
 	m.StartCreation(CreationOptions{CalculateConnectivity: true})
 	defer m.EndCreation()
 	m.informationHandler.AddInfoFrom(mesh.InformationHandler(), m.FaceCount())
 
-	newNodes := m.nodeStructure.merge(mesh, matrix)
+	newNodes := m.nodeStructure.merge(&mesh.nodeStructure, matrix)
 	if len(newNodes) == 0 {
 		return nil
 	}
 
-	err := m.faceStructure.merge(mesh, newNodes)
+	err := m.faceStructure.merge(&mesh.faceStructure, newNodes)
 	if err != nil {
 		return err
 	}
 
-	return m.beamLattice.merge(mesh, newNodes)
+	return m.beamLattice.merge(&mesh.beamLattice, newNodes)
 }
 
 // CheckSanity checks if the mesh is well formated.

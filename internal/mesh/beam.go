@@ -113,7 +113,7 @@ func (b *beamLattice) checkSanity(nodeCount uint32) bool {
 	return true
 }
 
-func (b *beamLattice) merge(other MergeableBeams, newNodes []uint32) error {
+func (b *beamLattice) merge(other *beamLattice, newNodes []uint32) error {
 	beamCount := other.BeamCount()
 	if beamCount == 0 {
 		return nil
