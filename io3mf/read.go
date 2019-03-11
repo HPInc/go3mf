@@ -35,7 +35,7 @@ type Reader struct {
 	Model               *go3mf.Model
 	Warnings            []error
 	AttachmentRelations []string
-	progress            Monitor
+	progress            monitor
 	r                   packageReader
 	namespaces          []string
 }

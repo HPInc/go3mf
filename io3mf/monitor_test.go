@@ -17,8 +17,8 @@ var callbackFalse = func(progress int, id Stage, data interface{}) bool {
 	return false
 }
 
-func TestMonitor_QueryCancelled_True(t *testing.T) {
-	p := new(Monitor)
+func Test_monitor_QueryCancelled_True(t *testing.T) {
+	p := new(monitor)
 	p.progressCallback = callbackTrue
 	ret := p.QueryCancelled()
 	if ret == false {
@@ -26,8 +26,8 @@ func TestMonitor_QueryCancelled_True(t *testing.T) {
 	}
 }
 
-func TestMonitor_QueryCancelled_False(t *testing.T) {
-	p := new(Monitor)
+func Test_monitor_QueryCancelled_False(t *testing.T) {
+	p := new(monitor)
 	p.progressCallback = callbackFalse
 	ret := p.QueryCancelled()
 	if ret == true {
@@ -35,8 +35,8 @@ func TestMonitor_QueryCancelled_False(t *testing.T) {
 	}
 }
 
-func TestMonitor_Progress_True(t *testing.T) {
-	p := new(Monitor)
+func Test_monitor_Progress_True(t *testing.T) {
+	p := new(monitor)
 	p.lastCallbackAborted = true
 	p.progressCallback = callbackTrue
 	ret := p.progress(1.0, StageDone)
@@ -45,8 +45,8 @@ func TestMonitor_Progress_True(t *testing.T) {
 	}
 }
 
-func TestMonitor_Progress_False(t *testing.T) {
-	p := new(Monitor)
+func Test_monitor_Progress_False(t *testing.T) {
+	p := new(monitor)
 	p.lastCallbackAborted = true
 	p.progressCallback = callbackFalse
 	ret := p.progress(1.0, StageDone)
@@ -55,8 +55,8 @@ func TestMonitor_Progress_False(t *testing.T) {
 	}
 }
 
-func TestMonitor_Progress_Nil(t *testing.T) {
-	p := new(Monitor)
+func Test_monitor_Progress_Nil(t *testing.T) {
+	p := new(monitor)
 	p.lastCallbackAborted = true
 	p.progressCallback = nil
 	ret := p.progress(1.0, StageDone)
@@ -65,8 +65,8 @@ func TestMonitor_Progress_Nil(t *testing.T) {
 	}
 }
 
-func TestMonitor_Progress_CantRun(t *testing.T) {
-	p := new(Monitor)
+func Test_monitor_Progress_CantRun(t *testing.T) {
+	p := new(monitor)
 	p.lastCallbackAborted = true
 	p.progressCallback = callbackFalse
 	p.callbackMutex.CanRun()
@@ -76,8 +76,8 @@ func TestMonitor_Progress_CantRun(t *testing.T) {
 	}
 }
 
-func TestMonitor_Progress_Done(t *testing.T) {
-	p := new(Monitor)
+func Test_monitor_Progress_Done(t *testing.T) {
+	p := new(monitor)
 	p.progressCallback = callbackFalse
 	p.callbackMutex.CanRun()
 	p.callbackMutex.Done()
@@ -87,7 +87,7 @@ func TestMonitor_Progress_Done(t *testing.T) {
 	}
 }
 
-func TestMonitor_pushLevel(t *testing.T) {
+func Test_monitor_pushLevel(t *testing.T) {
 	type args struct {
 		relativeStart float64
 		relativeEnd   float64
@@ -96,10 +96,10 @@ func TestMonitor_pushLevel(t *testing.T) {
 		A float64
 		B float64
 	}
-	p := new(Monitor)
+	p := new(monitor)
 	tests := []struct {
 		name string
-		p    *Monitor
+		p    *monitor
 		args args
 		want want
 	}{
@@ -114,19 +114,19 @@ func TestMonitor_pushLevel(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.p.pushLevel(tt.args.relativeStart, tt.args.relativeEnd)
 			if top := tt.p.level(); math.Abs(top.A-tt.want.A) > 0.001 || math.Abs(top.B-tt.want.B) > 0.001 {
-				t.Errorf("Monitor.pushLevel() wrong level values, expected %f - %f but got %f - %f", tt.want.A, tt.want.B, top.A, top.B)
+				t.Errorf("monitor.pushLevel() wrong level values, expected %f - %f but got %f - %f", tt.want.A, tt.want.B, top.A, top.B)
 			}
 		})
 	}
 }
 
-func TestMonitor_popLevel(t *testing.T) {
-	p := new(Monitor)
+func Test_monitor_popLevel(t *testing.T) {
+	p := new(monitor)
 	p.pushLevel(0.0, 1.0)
 	p.pushLevel(0.2, 1.0)
 	tests := []struct {
 		name string
-		p    *Monitor
+		p    *monitor
 		want float64Pair
 	}{
 		{"2", p, float64Pair{0.2, 1.0}},
@@ -136,17 +136,17 @@ func TestMonitor_popLevel(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if a, b := tt.p.popLevel(); a != tt.want.A || b != tt.want.B {
-				t.Errorf("Monitor.popLevel() = %v, %v, want %v", a, b, tt.want)
+				t.Errorf("monitor.popLevel() = %v, %v, want %v", a, b, tt.want)
 			}
 		})
 	}
 }
 
-func TestMonitor_ResetLevels_Empty(t *testing.T) {
-	p := new(Monitor)
+func Test_monitor_ResetLevels_Empty(t *testing.T) {
+	p := new(monitor)
 	tests := []struct {
 		name string
-		p    *Monitor
+		p    *monitor
 	}{
 		{"2", p},
 		{"1", p},
@@ -162,13 +162,13 @@ func TestMonitor_ResetLevels_Empty(t *testing.T) {
 	}
 }
 
-func TestMonitor_ResetLevels(t *testing.T) {
-	p := new(Monitor)
+func Test_monitor_ResetLevels(t *testing.T) {
+	p := new(monitor)
 	p.pushLevel(0.0, 1.0)
 	p.pushLevel(0.2, 1.0)
 	tests := []struct {
 		name string
-		p    *Monitor
+		p    *monitor
 	}{
 		{"2", p},
 		{"1", p},
@@ -184,7 +184,7 @@ func TestMonitor_ResetLevels(t *testing.T) {
 	}
 }
 
-func TestMonitor_SetProgressCallback(t *testing.T) {
+func Test_monitor_SetProgressCallback(t *testing.T) {
 	pr := float64Pair{0.0, 1.0}
 	type args struct {
 		callback ProgressCallback
@@ -192,12 +192,12 @@ func TestMonitor_SetProgressCallback(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		p    *Monitor
+		p    *monitor
 		args args
-		want *Monitor
+		want *monitor
 	}{
-		{"true", new(Monitor), args{callbackTrue, 2}, &Monitor{callbackTrue, 2, true, stack.ItemStack{}, semaphore.Semaphore{}}},
-		{"false", new(Monitor), args{callbackFalse, "aaa"}, &Monitor{callbackFalse, "aaa", true, stack.ItemStack{}, semaphore.Semaphore{}}},
+		{"true", new(monitor), args{callbackTrue, 2}, &monitor{callbackTrue, 2, true, stack.ItemStack{}, semaphore.Semaphore{}}},
+		{"false", new(monitor), args{callbackFalse, "aaa"}, &monitor{callbackFalse, "aaa", true, stack.ItemStack{}, semaphore.Semaphore{}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -209,13 +209,13 @@ func TestMonitor_SetProgressCallback(t *testing.T) {
 	}
 }
 
-func TestMonitor_ClearProgressCallback(t *testing.T) {
-	p := new(Monitor)
+func Test_monitor_ClearProgressCallback(t *testing.T) {
+	p := new(monitor)
 	p.progressCallback = callbackTrue
 	p.userData = 2
 	tests := []struct {
 		name string
-		p    *Monitor
+		p    *monitor
 	}{
 		{"base", p},
 	}
@@ -233,8 +233,8 @@ func TestMonitor_ClearProgressCallback(t *testing.T) {
 	}
 }
 
-func TestMonitor_WasAborted_False(t *testing.T) {
-	p := new(Monitor)
+func Test_monitor_WasAborted_False(t *testing.T) {
+	p := new(monitor)
 	p.lastCallbackAborted = false
 	ret := p.WasAborted()
 	if ret == true {
@@ -242,8 +242,8 @@ func TestMonitor_WasAborted_False(t *testing.T) {
 	}
 }
 
-func TestMonitor_WasAborted_True(t *testing.T) {
-	p := new(Monitor)
+func Test_monitor_WasAborted_True(t *testing.T) {
+	p := new(monitor)
 	p.lastCallbackAborted = true
 	ret := p.WasAborted()
 	if ret == false {
@@ -251,14 +251,14 @@ func TestMonitor_WasAborted_True(t *testing.T) {
 	}
 }
 
-func TestMonitor_ProgressMessage(t *testing.T) {
-	p := new(Monitor)
+func Test_monitor_ProgressMessage(t *testing.T) {
+	p := new(monitor)
 	type args struct {
 		progressIdentifier Stage
 	}
 	tests := []struct {
 		name string
-		p    *Monitor
+		p    *monitor
 		args args
 		want string
 	}{
@@ -288,7 +288,7 @@ func TestMonitor_ProgressMessage(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.p.ProgressMessage(tt.args.progressIdentifier); got != tt.want {
-				t.Errorf("Monitor.ProgressMessage() = %v, want %v", got, tt.want)
+				t.Errorf("monitor.ProgressMessage() = %v, want %v", got, tt.want)
 			}
 		})
 	}

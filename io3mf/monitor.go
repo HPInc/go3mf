@@ -90,9 +90,9 @@ var progressMap = map[Stage]string{
 	StageWriteSlices:         "Writing slices",
 }
 
-// Monitor is the reference implementation for the Progress interface.
+// monitor is the reference implementation for the Progress interface.
 // It uses semaphores for managing concurrent notification and stacks for managing the process.
-type Monitor struct {
+type monitor struct {
 	progressCallback    ProgressCallback
 	userData            interface{}
 	lastCallbackAborted bool
@@ -101,13 +101,13 @@ type Monitor struct {
 }
 
 // QueryCancelled cancels the current process with a ProgressQueryCanceled identifier.
-func (p *Monitor) QueryCancelled() bool {
+func (p *monitor) QueryCancelled() bool {
 	return p.progress(-1, StageQueryCanceled)
 }
 
 // Progress updates the progress of the current process.
 // If the callback is nil or there is another progress being notified it does nothing and return true.
-func (p *Monitor) progress(progress float64, identifier Stage) bool {
+func (p *monitor) progress(progress float64, identifier Stage) bool {
 	if p.progressCallback == nil || !p.callbackMutex.CanRun() {
 		return true
 	}
@@ -123,14 +123,14 @@ func (p *Monitor) progress(progress float64, identifier Stage) bool {
 	return p.lastCallbackAborted == false
 }
 
-func (p *Monitor) pushLevel(relativeStart float64, relativeEnd float64) {
+func (p *monitor) pushLevel(relativeStart float64, relativeEnd float64) {
 	curLevel := p.level()
 	curRange := curLevel.B - curLevel.A
 	p.levels.Push(float64Pair{curLevel.A + curRange*relativeStart, curLevel.A + curRange*relativeEnd})
 }
 
 // popLevel removes a level from the progress
-func (p *Monitor) popLevel() (a, b float64) {
+func (p *monitor) popLevel() (a, b float64) {
 	ret := p.level()
 	if !p.levels.Empty() {
 		p.levels.Pop()
@@ -139,13 +139,13 @@ func (p *Monitor) popLevel() (a, b float64) {
 }
 
 // ResetLevels empty the level stack
-func (p *Monitor) ResetLevels() {
+func (p *monitor) ResetLevels() {
 	for !p.levels.Empty() {
 		p.levels.Pop()
 	}
 }
 
-func (p *Monitor) level() float64Pair {
+func (p *monitor) level() float64Pair {
 	if p.levels.Empty() {
 		p.levels.Push(float64Pair{0.0, 1.0})
 	}
@@ -154,7 +154,7 @@ func (p *Monitor) level() float64Pair {
 
 // SetProgressCallback restarts the progress and specifies the callback to be executed on every step of the progress.
 // Optionaly usedData can be defined, which will be passed as parameter to the callback.
-func (p *Monitor) SetProgressCallback(callback ProgressCallback, userData interface{}) {
+func (p *monitor) SetProgressCallback(callback ProgressCallback, userData interface{}) {
 	p.progressCallback = callback
 	p.userData = userData
 	p.lastCallbackAborted = false
@@ -162,17 +162,17 @@ func (p *Monitor) SetProgressCallback(callback ProgressCallback, userData interf
 }
 
 // ClearProgressCallback restarts the process and clears the progress callback.
-func (p *Monitor) ClearProgressCallback() {
+func (p *monitor) ClearProgressCallback() {
 	p.SetProgressCallback(nil, nil)
 }
 
 // WasAborted returns true if the callback asked for aborting the progress, false otherwise.
-func (p *Monitor) WasAborted() bool {
+func (p *monitor) WasAborted() bool {
 	return p.lastCallbackAborted
 }
 
 // ProgressMessage stringify the progress identifiers.
-func (p *Monitor) ProgressMessage(progressIdentifier Stage) string {
+func (p *monitor) ProgressMessage(progressIdentifier Stage) string {
 	if val, ok := progressMap[progressIdentifier]; ok {
 		return val
 	}
