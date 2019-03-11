@@ -32,10 +32,10 @@ func Test_nodeStructure_AddNode(t *testing.T) {
 		position mgl32.Vec3
 	}
 	tests := []struct {
-		name      string
-		n         *nodeStructure
-		args      args
-		want      *Node
+		name string
+		n    *nodeStructure
+		args args
+		want *Node
 	}{
 		{"existing", existingStruct, args{pos}, &Node{Index: 0, Position: pos}},
 		{"base", &nodeStructure{Nodes: []Node{{}}}, args{mgl32.Vec3{1.0, 2.0, 3.0}}, &Node{

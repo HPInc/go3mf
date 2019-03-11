@@ -30,9 +30,9 @@ func TestNewMesh(t *testing.T) {
 
 func TestMesh_Clone(t *testing.T) {
 	tests := []struct {
-		name    string
-		m       *Mesh
-		want    *Mesh
+		name string
+		m    *Mesh
+		want *Mesh
 	}{
 		{"base", NewMesh(), NewMesh()},
 	}
@@ -83,9 +83,9 @@ func TestMesh_Merge(t *testing.T) {
 		matrix mgl32.Mat4
 	}
 	tests := []struct {
-		name    string
-		m       *Mesh
-		args    args
+		name string
+		m    *Mesh
+		args args
 	}{
 		{"empty", new(Mesh), args{&Mesh{}, mgl32.Ident4()}},
 		{"error2", new(Mesh), args{&Mesh{nodeStructure: nodeStructure{Nodes: make([]Node, 1)}}, mgl32.Ident4()}},

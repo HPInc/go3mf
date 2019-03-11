@@ -31,10 +31,10 @@ func Test_faceStructure_AddFace(t *testing.T) {
 		node3 uint32
 	}
 	tests := []struct {
-		name      string
-		f         *faceStructure
-		args      args
-		want      *Face
+		name string
+		f    *faceStructure
+		args args
+		want *Face
 	}{
 		{"base", &faceStructure{informationHandler: meshinfo.NewHandler(), Faces: []Face{{}}}, args{0, 1, 2}, &Face{Index: 1, NodeIndices: [3]uint32{0, 1, 2}}},
 	}
@@ -81,10 +81,10 @@ func Test_faceStructure_merge(t *testing.T) {
 		newNodes []uint32
 	}
 	tests := []struct {
-		name    string
-		f       *faceStructure
-		args    args
-		times   int
+		name  string
+		f     *faceStructure
+		args  args
+		times int
 	}{
 		{"zero", new(faceStructure), args{make([]uint32, 0)}, 0},
 		{"merged", new(faceStructure), args{[]uint32{0, 1, 2}}, 2},

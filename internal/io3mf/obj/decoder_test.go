@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/qmuntal/go3mf/internal/mesh"
 	"github.com/go-test/deep"
+	"github.com/qmuntal/go3mf/internal/mesh"
 )
 
 func TestDecoderDecode(t *testing.T) {

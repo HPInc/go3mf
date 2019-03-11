@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/go-test/deep"
 	"github.com/go-gl/mathgl/mgl32"
+	"github.com/go-test/deep"
 	"github.com/qmuntal/go3mf/internal/mesh"
 )
 

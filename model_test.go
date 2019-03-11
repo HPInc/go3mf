@@ -72,9 +72,9 @@ func TestModel_MergeToMesh(t *testing.T) {
 		msh *mesh.Mesh
 	}
 	tests := []struct {
-		name    string
-		m       *Model
-		args    args
+		name string
+		m    *Model
+		args args
 	}{
 		{"base", &Model{BuildItems: []*BuildItem{{Object: new(ObjectResource)}}}, args{new(mesh.Mesh)}},
 	}
@@ -402,9 +402,9 @@ func TestMeshResource_MergeToMesh(t *testing.T) {
 		transform mgl32.Mat4
 	}
 	tests := []struct {
-		name    string
-		c       *MeshResource
-		args    args
+		name string
+		c    *MeshResource
+		args args
 	}{
 		{"base", &MeshResource{Mesh: new(mesh.Mesh)}, args{new(mesh.Mesh), mgl32.Ident4()}},
 	}
