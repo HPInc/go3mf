@@ -62,7 +62,7 @@ func TestNewTexture2DType(t *testing.T) {
 	}{
 		{"image/png", PNGTexture, true},
 		{"image/jpeg", JPEGTexture, true},
-		{"empty", Texture2DType(""), false},
+		{"", Texture2DType(0), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -72,6 +72,23 @@ func TestNewTexture2DType(t *testing.T) {
 			}
 			if got1 != tt.want1 {
 				t.Errorf("NewTexture2DType() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+func TestTexture2DType_String(t *testing.T) {
+	tests := []struct {
+		name string
+		t    Texture2DType
+	}{
+		{"image/png", PNGTexture},
+		{"image/jpeg", JPEGTexture},
+		{"", Texture2DType(0)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.t.String(); got != tt.name {
+				t.Errorf("Texture2DType.String() = %v, want %v", got, tt.name)
 			}
 		})
 	}
@@ -158,6 +175,132 @@ func TestTextureFilter_String(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.t.String(); got != tt.name {
 				t.Errorf("TextureFilter.String() = %v, want %v", got, tt.name)
+			}
+		})
+	}
+}
+
+func TestNewClipMode(t *testing.T) {
+	tests := []struct {
+		name   string
+		wantC  ClipMode
+		wantOk bool
+	}{
+		{"none", ClipNone, true},
+		{"inside", ClipInside, true},
+		{"outside", ClipOutside, true},
+		{"empty", ClipNone, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotC, gotOk := NewClipMode(tt.name)
+			if !reflect.DeepEqual(gotC, tt.wantC) {
+				t.Errorf("NewClipMode() gotC = %v, want %v", gotC, tt.wantC)
+			}
+			if gotOk != tt.wantOk {
+				t.Errorf("NewClipMode() gotOk = %v, want %v", gotOk, tt.wantOk)
+			}
+		})
+	}
+}
+
+func TestClipMode_String(t *testing.T) {
+	tests := []struct {
+		name string
+		c    ClipMode
+	}{
+		{"none", ClipNone},
+		{"inside", ClipInside},
+		{"outside", ClipOutside},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.c.String(); got != tt.name {
+				t.Errorf("ClipMode.String() = %v, want %v", got, tt.name)
+			}
+		})
+	}
+}
+
+func TestNewSliceResolution(t *testing.T) {
+	tests := []struct {
+		name   string
+		wantR  SliceResolution
+		wantOk bool
+	}{
+		{"fullres", ResolutionFull, true},
+		{"lowres", ResolutionLow, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotR, gotOk := NewSliceResolution(tt.name)
+			if !reflect.DeepEqual(gotR, tt.wantR) {
+				t.Errorf("NewSliceResolution() gotR = %v, want %v", gotR, tt.wantR)
+			}
+			if gotOk != tt.wantOk {
+				t.Errorf("NewSliceResolution() gotOk = %v, want %v", gotOk, tt.wantOk)
+			}
+		})
+	}
+}
+
+func TestSliceResolution_String(t *testing.T) {
+	tests := []struct {
+		name string
+		c    SliceResolution
+	}{
+		{"fullres", ResolutionFull},
+		{"lowres", ResolutionLow},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.c.String(); got != tt.name {
+				t.Errorf("SliceResolution.String() = %v, want %v", got, tt.name)
+			}
+		})
+	}
+}
+
+func TestNewObjectType(t *testing.T) {
+	tests := []struct {
+		name   string
+		wantO  ObjectType
+		wantOk bool
+	}{
+		{"model", ObjectTypeModel, true},
+		{"other", ObjectTypeOther, true},
+		{"support", ObjectTypeSupport, true},
+		{"solidsupport", ObjectTypeSolidSupport, true},
+		{"surface", ObjectTypeSurface, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotO, gotOk := NewObjectType(tt.name)
+			if !reflect.DeepEqual(gotO, tt.wantO) {
+				t.Errorf("NewObjectType() gotO = %v, want %v", gotO, tt.wantO)
+			}
+			if gotOk != tt.wantOk {
+				t.Errorf("NewObjectType() gotOk = %v, want %v", gotOk, tt.wantOk)
+			}
+		})
+	}
+}
+
+func TestObjectType_String(t *testing.T) {
+	tests := []struct {
+		name string
+		o    ObjectType
+	}{
+		{"model", ObjectTypeModel},
+		{"other", ObjectTypeOther},
+		{"support", ObjectTypeSupport},
+		{"solidsupport", ObjectTypeSolidSupport},
+		{"surface", ObjectTypeSurface},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.o.String(); got != tt.name {
+				t.Errorf("ObjectType.String() = %v, want %v", got, tt.name)
 			}
 		})
 	}

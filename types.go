@@ -34,11 +34,11 @@ const (
 func NewUnits(s string) (u Units, ok bool) {
 	u, ok = map[string]Units{
 		"millimeter": UnitMillimeter,
-		"micron": UnitMicrometer,
+		"micron":     UnitMicrometer,
 		"centimeter": UnitCentimeter,
-		"inch": UnitInch,
-		"foot": UnitFoot,
-		"meter": UnitMeter,
+		"inch":       UnitInch,
+		"foot":       UnitFoot,
+		"meter":      UnitMeter,
 	}[s]
 	return
 }
@@ -48,69 +48,130 @@ func (u Units) String() string {
 		UnitMillimeter: "millimeter",
 		UnitMicrometer: "micron",
 		UnitCentimeter: "centimeter",
-		UnitInch: "inch",
-		UnitFoot: "foot",
-		UnitMeter: "meter",
+		UnitInch:       "inch",
+		UnitFoot:       "foot",
+		UnitMeter:      "meter",
 	}[u]
 }
 
 // ClipMode defines the clipping modes for the beam lattices.
-type ClipMode string
+type ClipMode uint8
 
 const (
 	// ClipNone defines a beam lattice without clipping.
-	ClipNone ClipMode = "none"
+	ClipNone ClipMode = iota
 	// ClipInside defines a beam lattice with clipping inside.
-	ClipInside = "inside"
+	ClipInside
 	// ClipOutside defines a beam lattice with clipping outside.
-	ClipOutside = "outside"
+	ClipOutside
 )
 
+// NewClipMode returns a new ClipMode from a string.
+func NewClipMode(s string) (c ClipMode, ok bool) {
+	c, ok = map[string]ClipMode{
+		"none":    ClipNone,
+		"inside":  ClipInside,
+		"outside": ClipOutside,
+	}[s]
+	return
+}
+
+func (c ClipMode) String() string {
+	return map[ClipMode]string{
+		ClipNone:    "none",
+		ClipInside:  "inside",
+		ClipOutside: "outside",
+	}[c]
+}
+
 // SliceResolution defines the resolutions for a slice.
-type SliceResolution string
+type SliceResolution uint8
 
 const (
 	// ResolutionFull defines a full resolution slice.
-	ResolutionFull SliceResolution = "fullres"
+	ResolutionFull SliceResolution = iota
 	// ResolutionLow defines a low resolution slice.
-	ResolutionLow = "lowres"
+	ResolutionLow
 )
+
+// NewSliceResolution returns a new SliceResolution from a string.
+func NewSliceResolution(s string) (r SliceResolution, ok bool) {
+	r, ok = map[string]SliceResolution{
+		"fullres": ResolutionFull,
+		"lowres":  ResolutionLow,
+	}[s]
+	return
+}
+
+func (c SliceResolution) String() string {
+	return map[SliceResolution]string{
+		ResolutionFull: "fullres",
+		ResolutionLow:  "lowres",
+	}[c]
+}
 
 // ObjectType defines the allowed object types.
-type ObjectType string
+type ObjectType int8
 
 const (
-	// ObjectTypeOther defines a generic object type.
-	ObjectTypeOther ObjectType = "other"
 	// ObjectTypeModel defines a model object type.
-	ObjectTypeModel = "model"
+	ObjectTypeModel ObjectType = iota
+	// ObjectTypeOther defines a generic object type.
+	ObjectTypeOther
 	// ObjectTypeSupport defines a support object type.
-	ObjectTypeSupport = "support"
+	ObjectTypeSupport
 	// ObjectTypeSolidSupport defines a solid support object type.
-	ObjectTypeSolidSupport = "solidsupport"
+	ObjectTypeSolidSupport
 	// ObjectTypeSurface defines a surface object type.
-	ObjectTypeSurface = "surface"
+	ObjectTypeSurface
 )
 
+// NewObjectType returns a new ObjectType from a string.
+func NewObjectType(s string) (o ObjectType, ok bool) {
+	o, ok = map[string]ObjectType{
+		"model":        ObjectTypeModel,
+		"other":        ObjectTypeOther,
+		"support":      ObjectTypeSupport,
+		"solidsupport": ObjectTypeSolidSupport,
+		"surface":      ObjectTypeSurface,
+	}[s]
+	return
+}
+
+func (o ObjectType) String() string {
+	return map[ObjectType]string{
+		ObjectTypeModel:        "model",
+		ObjectTypeOther:        "other",
+		ObjectTypeSupport:      "support",
+		ObjectTypeSolidSupport: "solidsupport",
+		ObjectTypeSurface:      "surface",
+	}[o]
+}
+
 // Texture2DType defines the allowed texture 2D types.
-type Texture2DType string
+type Texture2DType uint8
 
 const (
 	// PNGTexture defines a png texture type.
-	PNGTexture Texture2DType = "image/png"
+	PNGTexture Texture2DType = iota + 1
 	// JPEGTexture defines a jpeg texture type.
-	JPEGTexture = "image/jpeg"
-	// UnknownTexture defines an unknown texture type.
-	UnknownTexture = ""
+	JPEGTexture
 )
 
 // NewTexture2DType returns a new Texture2DType from a string.
-func NewTexture2DType(s string) (Texture2DType, bool) {
-	u := Texture2DType(s)
-	if u == PNGTexture || u == JPEGTexture {
-		return u, true
-	}
-	return "", false
+func NewTexture2DType(s string) (t Texture2DType, ok bool) {
+	t, ok = map[string]Texture2DType{
+		"image/png":  PNGTexture,
+		"image/jpeg": JPEGTexture,
+	}[s]
+	return
+}
+
+func (t Texture2DType) String() string {
+	return map[Texture2DType]string{
+		PNGTexture:  "image/png",
+		JPEGTexture: "image/jpeg",
+	}[t]
 }
 
 // TileStyle defines the allowed tile styles.
@@ -130,20 +191,20 @@ const (
 // NewTileStyle returns a new TileStyle from a string.
 func NewTileStyle(s string) (t TileStyle, ok bool) {
 	t, ok = map[string]TileStyle{
-		"wrap": TileWrap,
+		"wrap":   TileWrap,
 		"mirror": TileMirror,
-		"clamp": TileClamp,
-		"none": TileNone,
+		"clamp":  TileClamp,
+		"none":   TileNone,
 	}[s]
 	return
 }
 
 func (t TileStyle) String() string {
 	return map[TileStyle]string{
-		TileWrap: "wrap",
+		TileWrap:   "wrap",
 		TileMirror: "mirror",
-		TileClamp: "clamp",
-		TileNone: "none",
+		TileClamp:  "clamp",
+		TileNone:   "none",
 	}[t]
 }
 
@@ -162,8 +223,8 @@ const (
 // NewTextureFilter returns a new TextureFilter from a string.
 func NewTextureFilter(s string) (t TextureFilter, ok bool) {
 	t, ok = map[string]TextureFilter{
-		"auto": TextureFilterAuto,
-		"linear": TextureFilterLinear,
+		"auto":    TextureFilterAuto,
+		"linear":  TextureFilterLinear,
 		"nearest": TextureFilterNearest,
 	}[s]
 	return
@@ -171,8 +232,8 @@ func NewTextureFilter(s string) (t TextureFilter, ok bool) {
 
 func (t TextureFilter) String() string {
 	return map[TextureFilter]string{
-		TextureFilterAuto: "auto",
-		TextureFilterLinear: "linear",
+		TextureFilterAuto:    "auto",
+		TextureFilterLinear:  "linear",
 		TextureFilterNearest: "nearest",
 	}[t]
 }
