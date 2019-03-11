@@ -1,7 +1,5 @@
 package mesh
 
-import "errors"
-
 const maxBeamCount = 2147483646
 
 // BeamSet defines a set of beams.
@@ -33,11 +31,11 @@ type Beam struct {
 
 // beamLattice defines a beam lattice structure.
 type beamLattice struct {
-	beams                    []Beam
-	beamSets                 []BeamSet
+	Beams                    []Beam
+	BeamSets                 []BeamSet
 	MinLength, DefaultRadius float64
 	CapMode                  BeamCapMode
-	maxBeamCount             uint32
+	maxBeamCount             int
 }
 
 // newbeamLattice creates a new beamLattice with default values.
@@ -50,58 +48,15 @@ func newbeamLattice() *beamLattice {
 }
 
 func (b *beamLattice) clearBeamLattice() {
-	b.beams = make([]Beam, 0)
-	b.beamSets = make([]BeamSet, 0)
-}
-
-// BeamCount returns the number of beams in the mesh.
-func (b *beamLattice) BeamCount() uint32 {
-	return uint32(len(b.beams))
-}
-
-// Beam retrieve the beam with the target index.
-func (b *beamLattice) Beam(index uint32) *Beam {
-	return &b.beams[uint32(index)]
-}
-
-// AddBeamSet adds a new beam set to the mesh.
-func (b *beamLattice) AddBeamSet() *BeamSet {
-	b.beamSets = append(b.beamSets, BeamSet{})
-	return &b.beamSets[len(b.beamSets)-1]
-}
-
-// BeamSet retrieve the beam set with the target index.
-func (b *beamLattice) BeamSet(index uint32) *BeamSet {
-	return &b.beamSets[int(index)]
-}
-
-// AddBeam adds a beam to the mesh with the desried parameters.
-func (b *beamLattice) AddBeam(node1, node2 uint32, radius1, radius2 float64, capMode1, capMode2 BeamCapMode) (*Beam, error) {
-	if node1 == node2 {
-		return nil, errors.New("go3mf: a beam with two identical nodes has been tried to add to a mesh")
-	}
-
-	beamCount := b.BeamCount()
-	if beamCount >= b.getMaxBeamCount() {
-		panic(errors.New("go3mf: too many beams has been tried to add to a mesh"))
-	}
-
-	b.beams = append(b.beams, Beam{
-		Index:       beamCount,
-		NodeIndices: [2]uint32{node1, node2},
-		Radius:      [2]float64{radius1, radius2},
-		CapMode:     [2]BeamCapMode{capMode1, capMode2},
-	})
-	return &b.beams[len(b.beams)-1], nil
+	b.Beams = make([]Beam, 0)
+	b.BeamSets = make([]BeamSet, 0)
 }
 
 func (b *beamLattice) checkSanity(nodeCount uint32) bool {
-	beamCount := b.BeamCount()
-	if beamCount > b.getMaxBeamCount() {
+	if len(b.Beams) > b.getMaxBeamCount() {
 		return false
 	}
-	for i := uint32(0); i < beamCount; i++ {
-		beam := b.Beam(i)
+	for _, beam := range b.Beams {
 		i0, i1 := beam.NodeIndices[0], beam.NodeIndices[1]
 		if i0 == i1 {
 			return false
@@ -113,23 +68,23 @@ func (b *beamLattice) checkSanity(nodeCount uint32) bool {
 	return true
 }
 
-func (b *beamLattice) merge(other *beamLattice, newNodes []uint32) error {
-	beamCount := other.BeamCount()
-	if beamCount == 0 {
-		return nil
+func (b *beamLattice) merge(other *beamLattice, newNodes []uint32) {
+	if len(other.Beams) == 0 {
+		return
 	}
-	for i := uint32(0); i < beamCount; i++ {
-		beam := other.Beam(i)
+	for _, beam := range other.Beams {
 		n1, n2 := newNodes[beam.NodeIndices[0]], newNodes[beam.NodeIndices[1]]
-		_, err := b.AddBeam(n1, n2, beam.Radius[0], beam.Radius[1], beam.CapMode[0], beam.CapMode[1])
-		if err != nil {
-			return err
-		}
+		b.Beams = append(b.Beams, Beam{
+			Index:       uint32(len(b.Beams)),
+			NodeIndices: [2]uint32{n1, n2},
+			Radius:      [2]float64{beam.Radius[0], beam.Radius[1]},
+			CapMode:     [2]BeamCapMode{beam.CapMode[0], beam.CapMode[1]},
+		})
 	}
-	return nil
+	return
 }
 
-func (b *beamLattice) getMaxBeamCount() uint32 {
+func (b *beamLattice) getMaxBeamCount() int {
 	if b.maxBeamCount == 0 {
 		return maxBeamCount
 	}

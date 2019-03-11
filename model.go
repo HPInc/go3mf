@@ -244,11 +244,11 @@ func (c *MeshResource) IsValid() bool {
 	case ObjectTypeModel:
 		return c.Mesh.IsManifoldAndOriented()
 	case ObjectTypeSupport:
-		return c.Mesh.BeamCount() == 0
+		return len(c.Mesh.Beams) == 0
 	case ObjectTypeSolidSupport:
 		return c.Mesh.IsManifoldAndOriented()
 	case ObjectTypeSurface:
-		return c.Mesh.BeamCount() == 0
+		return len(c.Mesh.Beams) == 0
 	}
 
 	return false

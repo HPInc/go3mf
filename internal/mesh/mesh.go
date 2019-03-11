@@ -85,7 +85,8 @@ func (m *Mesh) Merge(mesh *Mesh, matrix mgl32.Mat4) error {
 		return err
 	}
 
-	return m.beamLattice.merge(&mesh.beamLattice, newNodes)
+	m.beamLattice.merge(&mesh.beamLattice, newNodes)
+	return nil
 }
 
 // CheckSanity checks if the mesh is well formated.
