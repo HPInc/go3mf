@@ -51,6 +51,10 @@ func NewReader(r io.ReaderAt, size int64) (*Reader, error) {
 	}, nil
 }
 
+func (r *Reader) addResource(res go3mf.Identifier) {
+	r.Model.Resources = append(r.Model.Resources, res)
+}
+
 func (r *Reader) namespaceRegistered(ns string) bool {
 	for _, space := range r.namespaces {
 		if ns == space {
@@ -104,7 +108,7 @@ mainLoop:
 		switch tp := t.(type) {
 		case xml.StartElement:
 			if tp.Name.Local == attrModel {
-				md := modelDecoder{x: x, r: r, model: r.Model}
+				md := modelDecoder{x: x, r: r, path: rootFile.Name()}
 				err = md.Decode(tp)
 				break mainLoop
 			}
@@ -135,7 +139,7 @@ func (r *Reader) processOPC() error {
 		return errors.New("go3mf: package does not have root model")
 	}
 
-	r.Model.RootPath = rootFile.Name()
+	r.Model.Path = rootFile.Name()
 	r.extractTexturesAttachments(rootFile)
 	r.extractCustomAttachments(rootFile)
 	r.extractModelAttachments(rootFile)

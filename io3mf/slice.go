@@ -11,7 +11,7 @@ import (
 type sliceStackDecoder struct {
 	x             *xml.Decoder
 	r             *Reader
-	model         *go3mf.Model
+	path          string
 	sliceStack    go3mf.SliceStack
 	id            uint64
 	progressCount uint64
@@ -27,7 +27,7 @@ func (d *sliceStackDecoder) Decode(se xml.StartElement) error {
 	if err := d.parseContent(); err != nil {
 		return err
 	}
-	d.model.Resources = append(d.model.Resources, &go3mf.SliceStackResource{ID: d.id, SliceStack: &d.sliceStack})
+	d.r.addResource(&go3mf.SliceStackResource{ID: d.id, SliceStack: &d.sliceStack})
 	return nil
 }
 
@@ -111,10 +111,10 @@ func (d *sliceStackDecoder) parseSliceRef(se xml.StartElement) error {
 }
 
 func (d *sliceStackDecoder) addSliceRef(sliceStackID uint64, path string) error {
-	if path == d.model.Path {
+	if path == d.path {
 		return errors.New("go3mf: a slicepath is invalid")
 	}
-	resource, ok := d.model.FindResource(sliceStackID, path)
+	resource, ok := d.r.Model.FindResource(sliceStackID, path)
 	if !ok {
 		return errors.New("go3mf: a sliceref points to a unexisting resource")
 	}

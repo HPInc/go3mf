@@ -67,7 +67,7 @@ func (m *texCoordMapping) hasResource(id uint64) bool {
 type resourceDecoder struct {
 	x               *xml.Decoder
 	r               *Reader
-	model           *go3mf.Model
+	path            string
 	colorMapping    colorMapping
 	texCoordMapping texCoordMapping
 	progressCount   int
@@ -118,7 +118,7 @@ func (d *resourceDecoder) processCoreContent(se xml.StartElement) (err error) {
 
 		d.r.progress.popLevel()
 	case attrBaseMaterials:
-		md := baseMaterialsDecoder{x: d.x, r: d.r, model: d.model}
+		md := baseMaterialsDecoder{x: d.x, r: d.r}
 		err = md.Decode(se)
 	}
 	return
@@ -133,7 +133,7 @@ func (d *resourceDecoder) processMaterialContent(se xml.StartElement) error {
 		td := tex2DGroupDecoder{x: d.x, r: d.r, texCoordMapping: &d.texCoordMapping}
 		return td.Decode(se)
 	case attrTexture2D:
-		td := texture2DDecoder{x: d.x, r: d.r, model: d.model}
+		td := texture2DDecoder{x: d.x, r: d.r}
 		return td.Decode(se)
 	case attrComposite:
 		d.r.Warnings = append(d.r.Warnings, &ReadError{InvalidOptionalValue, "go3mf: composite materials extension not supported"})
@@ -150,7 +150,7 @@ func (d *resourceDecoder) processSliceContent(se xml.StartElement) error {
 		return ErrUserAborted
 	}
 	d.r.progress.pushLevel(1.0-2.0/float64(d.progressCount+2), 1.0-2.0/float64(d.progressCount+1+2))
-	sd := sliceStackDecoder{x: d.x, r: d.r, model: d.model}
+	sd := sliceStackDecoder{x: d.x, r: d.r, path: d.path}
 	err := sd.Decode(se)
 	d.r.progress.popLevel()
 	return err
@@ -159,7 +159,6 @@ func (d *resourceDecoder) processSliceContent(se xml.StartElement) error {
 type baseMaterialsDecoder struct {
 	x             *xml.Decoder
 	r             *Reader
-	model         *go3mf.Model
 	baseMaterials *go3mf.BaseMaterialsResource
 }
 
@@ -196,7 +195,7 @@ func (d *baseMaterialsDecoder) Decode(se xml.StartElement) error {
 	if err := d.parseContent(); err != nil {
 		return err
 	}
-	d.model.Resources = append(d.model.Resources, d.baseMaterials)
+	d.r.addResource(d.baseMaterials)
 	return nil
 }
 

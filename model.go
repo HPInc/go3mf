@@ -25,8 +25,7 @@ type Object interface {
 
 // A Model is an in memory representation of the 3MF file.
 type Model struct {
-	Path                  string
-	RootPath              string
+	Path              string
 	Language              string
 	UUID                  string
 	Units                 Units

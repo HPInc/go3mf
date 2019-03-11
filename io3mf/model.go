@@ -11,7 +11,7 @@ import (
 type modelDecoder struct {
 	x                    *xml.Decoder
 	r                    *Reader
-	model                *go3mf.Model
+	path                 string
 	hasResources         bool
 	hasBuild             bool
 	ignoreBuild          bool
@@ -60,7 +60,7 @@ func (d *modelDecoder) parseBuild(se xml.StartElement) error {
 		if !d.r.progress.progress(0.9, StageReadBuild) {
 			return ErrUserAborted
 		}
-		rd := buildDecoder{x: d.x, r: d.r, model: d.model}
+		rd := buildDecoder{x: d.x, r: d.r}
 		if err := rd.Decode(se); err != nil {
 			return err
 		}
@@ -78,7 +78,7 @@ func (d *modelDecoder) parseResources(se xml.StartElement) error {
 	if d.hasResources {
 		return errors.New("go3mf: duplicate resources section in model file")
 	}
-	rd := resourceDecoder{x: d.x, r: d.r, model: d.model}
+	rd := resourceDecoder{x: d.x, r: d.r, path: d.path}
 	if err := rd.Decode(se); err != nil {
 		return err
 	}
@@ -95,7 +95,7 @@ func (d *modelDecoder) parseAttr(attrs []xml.Attr) error {
 			switch a.Name.Local {
 			case attrUnit:
 				var ok bool
-				if d.model.Units, ok = go3mf.NewUnits(a.Value); !ok {
+				if d.r.Model.Units, ok = go3mf.NewUnits(a.Value); !ok {
 					return errors.New("go3mf: invalid model units")
 				}
 			case attrReqExt:
@@ -105,7 +105,7 @@ func (d *modelDecoder) parseAttr(attrs []xml.Attr) error {
 			switch a.Name.Space {
 			case nsXML:
 				if a.Name.Local == attrLang {
-					d.model.Language = a.Value
+					d.r.Model.Language = a.Value
 				}
 			case "xmlns":
 				d.r.namespaces = append(d.r.namespaces, a.Value)

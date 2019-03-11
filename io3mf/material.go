@@ -157,7 +157,6 @@ func (d *tex2DGroupDecoder) addTextureCoord(attrs []xml.Attr) error {
 type texture2DDecoder struct {
 	x       *xml.Decoder
 	r       *Reader
-	model   *go3mf.Model
 	texture go3mf.Texture2DResource
 }
 
@@ -168,7 +167,7 @@ func (d *texture2DDecoder) Decode(se xml.StartElement) error {
 	if d.texture.ID == 0 {
 		return errors.New("go3mf: missing texture2d id attribute")
 	}
-	d.model.Resources = append(d.model.Resources, &d.texture)
+	d.r.addResource(&d.texture)
 	return nil
 }
 

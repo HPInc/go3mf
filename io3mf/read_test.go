@@ -85,6 +85,7 @@ func (m *modelBuilder) build() *mockFile {
 		m.str.WriteString("</model>\n")
 	}
 	f := new(mockFile)
+	f.On("Name").Return("3d/3dmodel.model").Maybe()
 	f.On("Open").Return(ioutil.NopCloser(bytes.NewBufferString(m.str.String())), nil).Maybe()
 	return f
 }
@@ -179,30 +180,30 @@ func TestReader_processOPC(t *testing.T) {
 	}{
 		{"noRoot", &Reader{Model: new(go3mf.Model), r: newMockPackage(nil)}, &go3mf.Model{}, true},
 		{"abort", abortReader, &go3mf.Model{}, true},
-		{"noRels", &Reader{Model: new(go3mf.Model), r: newMockPackage(newMockFile("/a.model", nil, nil, nil, false))}, &go3mf.Model{RootPath: "/a.model"}, false},
+		{"noRels", &Reader{Model: new(go3mf.Model), r: newMockPackage(newMockFile("/a.model", nil, nil, nil, false))}, &go3mf.Model{Path: "/a.model"}, false},
 		{"withThumb", &Reader{Model: new(go3mf.Model),
 			r: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeThumbnail, "/a.png")}, thumbFile, thumbFile, false)),
 		}, &go3mf.Model{
-			RootPath:    "/a.model",
+			Path:    "/a.model",
 			Thumbnail:   &go3mf.Attachment{RelationshipType: relTypeThumbnail, Path: "/Metadata/thumbnail.png", Stream: new(bytes.Buffer)},
 			Attachments: []*go3mf.Attachment{{RelationshipType: relTypeThumbnail, Path: "/a.png", Stream: new(bytes.Buffer)}},
 		}, false},
 		{"withThumbErr", &Reader{Model: new(go3mf.Model),
 			r: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeThumbnail, "/a.png")}, thumbErr, thumbErr, false)),
-		}, &go3mf.Model{RootPath: "/a.model"}, false},
+		}, &go3mf.Model{Path: "/a.model"}, false},
 		{"withOtherRel", &Reader{Model: new(go3mf.Model),
 			r: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship("other", "/a.png")}, nil, nil, false)),
-		}, &go3mf.Model{RootPath: "/a.model"}, false},
+		}, &go3mf.Model{Path: "/a.model"}, false},
 		{"withModelAttachment", &Reader{Model: new(go3mf.Model),
 			r: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeModel3D, "/a.model")}, nil, newMockFile("/a.model", nil, nil, nil, false), false)),
 		}, &go3mf.Model{
-			RootPath:              "/a.model",
+			Path:              "/a.model",
 			ProductionAttachments: []*go3mf.Attachment{{RelationshipType: relTypeModel3D, Path: "/a.model", Stream: new(bytes.Buffer)}},
 		}, false},
 		{"withAttRel", &Reader{Model: new(go3mf.Model), AttachmentRelations: []string{"b"},
 			r: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship("b", "/a.xml")}, nil, newMockFile("/a.xml", nil, nil, nil, false), false)),
 		}, &go3mf.Model{
-			RootPath:    "/a.model",
+			Path:    "/a.model",
 			Attachments: []*go3mf.Attachment{{RelationshipType: "b", Path: "/a.xml", Stream: new(bytes.Buffer)}},
 		}, false},
 	}
