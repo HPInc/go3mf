@@ -1,5 +1,11 @@
 package meshinfo
 
+import (
+	"errors"
+)
+
+var errFaceCountMissmatch = errors.New("mesh information face count does not match with mesh face count")
+
 // FaceData defines a generic information of a face.
 type FaceData interface {
 	// Invalidate sets the data with its default values.

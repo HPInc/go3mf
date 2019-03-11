@@ -76,7 +76,7 @@ func (m *textureCoordsContainer) AddFaceData(newFaceCount uint32) FaceData {
 	m.dataBlocks = append(m.dataBlocks, faceData)
 	m.faceCount++
 	if m.faceCount != newFaceCount {
-		panic(&FaceCountMissmatchError{m.faceCount, newFaceCount})
+		panic(errFaceCountMissmatch)
 	}
 	return faceData
 }

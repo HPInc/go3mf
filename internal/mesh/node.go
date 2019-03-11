@@ -51,8 +51,7 @@ func (t *vectorTree) RemoveVector(vec mgl32.Vec3) {
 	delete(t.entries, newvec3IFromVec3(vec))
 }
 
-// MaxNodeCount is the maximum number of nodes allowed.
-const MaxNodeCount = 2147483646
+const maxNodeCount = 2147483646
 
 // Node defines a node of a mesh.
 type Node struct {
@@ -63,7 +62,7 @@ type Node struct {
 type nodeStructure struct {
 	vectorTree   *vectorTree
 	nodes        []Node
-	maxNodeCount uint32 // If 0 MaxNodeCount will be used.
+	maxNodeCount uint32
 }
 
 func (n *nodeStructure) clear() {
@@ -132,7 +131,7 @@ func (n *nodeStructure) merge(other mergeableNodes, matrix mgl32.Mat4) []uint32 
 
 func (n *nodeStructure) getMaxNodeCount() uint32 {
 	if n.maxNodeCount == 0 {
-		return MaxNodeCount
+		return maxNodeCount
 	}
 	return n.maxNodeCount
 }

@@ -2,8 +2,7 @@ package mesh
 
 import "errors"
 
-// MaxBeamCount is the maximum number of beams allowed.
-const MaxBeamCount = 2147483646
+const maxBeamCount = 2147483646
 
 // BeamSet defines a set of beams.
 type BeamSet struct {
@@ -38,7 +37,7 @@ type beamLattice struct {
 	beamSets                 []BeamSet
 	MinLength, DefaultRadius float64
 	CapMode                  BeamCapMode
-	maxBeamCount             uint32 // If 0 MaxBeamCount will be used.
+	maxBeamCount             uint32
 }
 
 // newbeamLattice creates a new beamLattice with default values.
@@ -132,7 +131,7 @@ func (b *beamLattice) merge(other mergeableBeams, newNodes []uint32) error {
 
 func (b *beamLattice) getMaxBeamCount() uint32 {
 	if b.maxBeamCount == 0 {
-		return MaxBeamCount
+		return maxBeamCount
 	}
 	return b.maxBeamCount
 }

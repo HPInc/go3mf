@@ -5,8 +5,7 @@ import (
 	"github.com/qmuntal/go3mf/internal/meshinfo"
 )
 
-// MaxFaceCount is the maximum number of faces allowed.
-const MaxFaceCount = 2147483646
+const maxFaceCount = 2147483646
 
 // Face defines a triangle of a mesh.
 type Face struct {
@@ -17,7 +16,7 @@ type Face struct {
 type faceStructure struct {
 	faces              []Face
 	informationHandler *meshinfo.Handler
-	maxFaceCount       uint32 // If 0 MaxFaceCount will be used.
+	maxFaceCount       uint32
 }
 
 func (f *faceStructure) clear() {
@@ -94,7 +93,7 @@ func (f *faceStructure) merge(other mergeableFaces, newNodes []uint32) error {
 
 func (f *faceStructure) getMaxFaceCount() uint32 {
 	if f.maxFaceCount == 0 {
-		return MaxFaceCount
+		return maxFaceCount
 	}
 	return f.maxFaceCount
 }
