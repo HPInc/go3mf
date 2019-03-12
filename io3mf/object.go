@@ -60,7 +60,7 @@ func (d *objectDecoder) parseComponents(x *xml.Decoder, se xml.StartElement) err
 	if d.defaultPropID != 0 {
 		d.r.Warnings = append(d.r.Warnings, &ReadError{InvalidOptionalValue, "go3mf: a components object must not have a default PID"})
 	}
-	cd := componentsDecoder{r: d.r, components: go3mf.ComponentResource{ObjectResource: d.obj}}
+	cd := componentsDecoder{r: d.r, components: go3mf.ComponentsResource{ObjectResource: d.obj}}
 	return cd.Decode(x, se)
 }
 
@@ -148,7 +148,7 @@ func (d *objectDecoder) parseSliceAttr(a xml.Attr) (err error) {
 
 type componentsDecoder struct {
 	r          *Reader
-	components go3mf.ComponentResource
+	components go3mf.ComponentsResource
 }
 
 func (d *componentsDecoder) Decode(x *xml.Decoder, se xml.StartElement) error {

@@ -268,20 +268,20 @@ func TestObjectResource_IsValid(t *testing.T) {
 	}
 }
 
-func TestComponentResource_IsValid(t *testing.T) {
+func TestComponentsResource_IsValid(t *testing.T) {
 	tests := []struct {
 		name string
-		c    *ComponentResource
+		c    *ComponentsResource
 		want bool
 	}{
-		{"empty", new(ComponentResource), false},
-		{"oneInvalid", &ComponentResource{Components: []*Component{{Object: NewMockObject(true, true)}, {Object: NewMockObject(false, true)}}}, false},
-		{"valid", &ComponentResource{Components: []*Component{{Object: NewMockObject(true, true)}, {Object: NewMockObject(true, true)}}}, true},
+		{"empty", new(ComponentsResource), false},
+		{"oneInvalid", &ComponentsResource{Components: []*Component{{Object: NewMockObject(true, true)}, {Object: NewMockObject(false, true)}}}, false},
+		{"valid", &ComponentsResource{Components: []*Component{{Object: NewMockObject(true, true)}, {Object: NewMockObject(true, true)}}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.c.IsValid(); got != tt.want {
-				t.Errorf("ComponentResource.IsValid() = %v, want %v", got, tt.want)
+				t.Errorf("ComponentsResource.IsValid() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -308,41 +308,41 @@ func TestObjectResource_IsValidForSlices(t *testing.T) {
 	}
 }
 
-func TestComponentResource_IsValidForSlices(t *testing.T) {
+func TestComponentsResource_IsValidForSlices(t *testing.T) {
 	type args struct {
 		transform mgl32.Mat4
 	}
 	tests := []struct {
 		name string
-		c    *ComponentResource
+		c    *ComponentsResource
 		args args
 		want bool
 	}{
-		{"empty", new(ComponentResource), args{mgl32.Ident4()}, true},
-		{"oneInvalid", &ComponentResource{Components: []*Component{{Object: NewMockObject(true, true)}, {Object: NewMockObject(true, false)}}}, args{mgl32.Ident4()}, false},
-		{"valid", &ComponentResource{Components: []*Component{{Object: NewMockObject(true, true)}, {Object: NewMockObject(true, true)}}}, args{mgl32.Ident4()}, true},
+		{"empty", new(ComponentsResource), args{mgl32.Ident4()}, true},
+		{"oneInvalid", &ComponentsResource{Components: []*Component{{Object: NewMockObject(true, true)}, {Object: NewMockObject(true, false)}}}, args{mgl32.Ident4()}, false},
+		{"valid", &ComponentsResource{Components: []*Component{{Object: NewMockObject(true, true)}, {Object: NewMockObject(true, true)}}}, args{mgl32.Ident4()}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.c.IsValidForSlices(tt.args.transform); got != tt.want {
-				t.Errorf("ComponentResource.IsValidForSlices() = %v, want %v", got, tt.want)
+				t.Errorf("ComponentsResource.IsValidForSlices() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestComponentResource_MergeToMesh(t *testing.T) {
+func TestComponentsResource_MergeToMesh(t *testing.T) {
 	type args struct {
 		m         *mesh.Mesh
 		transform mgl32.Mat4
 	}
 	tests := []struct {
 		name string
-		c    *ComponentResource
+		c    *ComponentsResource
 		args args
 	}{
-		{"empty", new(ComponentResource), args{nil, mgl32.Ident4()}},
-		{"base", &ComponentResource{Components: []*Component{{Object: new(ObjectResource)}}}, args{nil, mgl32.Ident4()}},
+		{"empty", new(ComponentsResource), args{nil, mgl32.Ident4()}},
+		{"base", &ComponentsResource{Components: []*Component{{Object: new(ObjectResource)}}}, args{nil, mgl32.Ident4()}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

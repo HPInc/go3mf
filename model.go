@@ -173,21 +173,21 @@ func (c *Component) MergeToMesh(m *mesh.Mesh, transform mgl32.Mat4) {
 	c.Object.MergeToMesh(m, c.Transform.Mul4(transform))
 }
 
-// A ComponentResource resource is an in memory representation of the 3MF component object.
-type ComponentResource struct {
+// A ComponentsResource resource is an in memory representation of the 3MF component object.
+type ComponentsResource struct {
 	ObjectResource
 	Components []*Component
 }
 
 // MergeToMesh merges the mesh with all the components.
-func (c *ComponentResource) MergeToMesh(m *mesh.Mesh, transform mgl32.Mat4) {
+func (c *ComponentsResource) MergeToMesh(m *mesh.Mesh, transform mgl32.Mat4) {
 	for _, comp := range c.Components {
 		comp.MergeToMesh(m, transform)
 	}
 }
 
 // IsValid checks if the component resource and all its child are valid.
-func (c *ComponentResource) IsValid() bool {
+func (c *ComponentsResource) IsValid() bool {
 	if len(c.Components) == 0 {
 		return false
 	}
@@ -201,7 +201,7 @@ func (c *ComponentResource) IsValid() bool {
 }
 
 // IsValidForSlices checks if the component resource and all its child are valid to be used with slices.
-func (c *ComponentResource) IsValidForSlices(transform mgl32.Mat4) bool {
+func (c *ComponentsResource) IsValidForSlices(transform mgl32.Mat4) bool {
 	if len(c.Components) == 0 {
 		return true
 	}
