@@ -9,14 +9,13 @@ import (
 )
 
 type colorGroupDecoder struct {
-	x            *xml.Decoder
 	r            *Reader
 	colorMapping *colorMapping
 	id           uint64
 	colorIndex   uint64
 }
 
-func (d *colorGroupDecoder) Decode(se xml.StartElement) error {
+func (d *colorGroupDecoder) Decode(x *xml.Decoder, se xml.StartElement) error {
 	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
@@ -24,7 +23,7 @@ func (d *colorGroupDecoder) Decode(se xml.StartElement) error {
 		return errors.New("go3mf: missing color group id attribute")
 	}
 	for {
-		t, err := d.x.Token()
+		t, err := x.Token()
 		if err != nil {
 			return err
 		}
@@ -73,7 +72,6 @@ func (d *colorGroupDecoder) addColor(attrs []xml.Attr) error {
 }
 
 type tex2DGroupDecoder struct {
-	x               *xml.Decoder
 	r               *Reader
 	texCoordMapping *texCoordMapping
 	id              uint64
@@ -81,7 +79,7 @@ type tex2DGroupDecoder struct {
 	texCoordIndex   uint64
 }
 
-func (d *tex2DGroupDecoder) Decode(se xml.StartElement) error {
+func (d *tex2DGroupDecoder) Decode(x *xml.Decoder, se xml.StartElement) error {
 	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
@@ -89,7 +87,7 @@ func (d *tex2DGroupDecoder) Decode(se xml.StartElement) error {
 		return errors.New("go3mf: missing tex2Coord group id attribute")
 	}
 	for {
-		t, err := d.x.Token()
+		t, err := x.Token()
 		if err != nil {
 			return err
 		}
@@ -155,7 +153,6 @@ func (d *tex2DGroupDecoder) addTextureCoord(attrs []xml.Attr) error {
 }
 
 type texture2DDecoder struct {
-	x       *xml.Decoder
 	r       *Reader
 	texture go3mf.Texture2DResource
 }

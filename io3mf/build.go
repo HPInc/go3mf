@@ -11,23 +11,22 @@ import (
 )
 
 type buildDecoder struct {
-	x     *xml.Decoder
 	r     *Reader
 }
 
-func (d *buildDecoder) Decode(se xml.StartElement) error {
+func (d *buildDecoder) Decode(x *xml.Decoder, se xml.StartElement) error {
 	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
 	for {
-		t, err := d.x.Token()
+		t, err := x.Token()
 		if err != nil {
 			return err
 		}
 		switch tp := t.(type) {
 		case xml.StartElement:
 			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrItem {
-				bd := buildItemDecoder{x: d.x, r: d.r}
+				bd := buildItemDecoder{r: d.r}
 				if err := bd.Decode(se); err != nil {
 					return err
 				}
@@ -60,7 +59,6 @@ func (d *buildDecoder) parseAttr(attrs []xml.Attr) error {
 }
 
 type buildItemDecoder struct {
-	x           *xml.Decoder
 	r           *Reader
 	item        go3mf.BuildItem
 	objectID    uint64

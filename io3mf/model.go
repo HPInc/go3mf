@@ -9,7 +9,6 @@ import (
 )
 
 type modelDecoder struct {
-	x                    *xml.Decoder
 	r                    *Reader
 	path                 string
 	hasResources         bool
@@ -19,12 +18,12 @@ type modelDecoder struct {
 	withinIgnoredElement bool
 }
 
-func (d *modelDecoder) Decode(se xml.StartElement) error {
+func (d *modelDecoder) Decode(x *xml.Decoder, se xml.StartElement) error {
 	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
 	for {
-		t, err := d.x.Token()
+		t, err := x.Token()
 		if err != nil {
 			return err
 		}
@@ -32,11 +31,11 @@ func (d *modelDecoder) Decode(se xml.StartElement) error {
 		case xml.StartElement:
 			if tp.Name.Space == nsCoreSpec {
 				if tp.Name.Local == attrResources {
-					if err := d.parseResources(tp); err != nil {
+					if err := d.parseResources(x, tp); err != nil {
 						return err
 					}
 				} else if tp.Name.Local == attrBuild {
-					if err := d.parseBuild(tp); err != nil {
+					if err := d.parseBuild(x, tp); err != nil {
 						return err
 					}
 				}
@@ -49,7 +48,7 @@ func (d *modelDecoder) Decode(se xml.StartElement) error {
 	}
 }
 
-func (d *modelDecoder) parseBuild(se xml.StartElement) error {
+func (d *modelDecoder) parseBuild(x *xml.Decoder, se xml.StartElement) error {
 	if d.hasBuild {
 		return errors.New("go3mf: duplicate build section in model file")
 	}
@@ -60,8 +59,8 @@ func (d *modelDecoder) parseBuild(se xml.StartElement) error {
 		if !d.r.progress.progress(0.9, StageReadBuild) {
 			return ErrUserAborted
 		}
-		rd := buildDecoder{x: d.x, r: d.r}
-		if err := rd.Decode(se); err != nil {
+		rd := buildDecoder{r: d.r}
+		if err := rd.Decode(x, se); err != nil {
 			return err
 		}
 	}
@@ -69,7 +68,7 @@ func (d *modelDecoder) parseBuild(se xml.StartElement) error {
 	return nil
 }
 
-func (d *modelDecoder) parseResources(se xml.StartElement) error {
+func (d *modelDecoder) parseResources(x *xml.Decoder, se xml.StartElement) error {
 	d.withinIgnoredElement = false
 	if !d.r.progress.progress(0.2, StageReadResources) {
 		return ErrUserAborted
@@ -78,8 +77,8 @@ func (d *modelDecoder) parseResources(se xml.StartElement) error {
 	if d.hasResources {
 		return errors.New("go3mf: duplicate resources section in model file")
 	}
-	rd := resourceDecoder{x: d.x, r: d.r, path: d.path}
-	if err := rd.Decode(se); err != nil {
+	rd := resourceDecoder{r: d.r, path: d.path}
+	if err := rd.Decode(x, se); err != nil {
 		return err
 	}
 	d.r.progress.popLevel()

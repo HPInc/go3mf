@@ -9,7 +9,6 @@ import (
 )
 
 type sliceStackDecoder struct {
-	x             *xml.Decoder
 	r             *Reader
 	path          string
 	sliceStack    go3mf.SliceStack
@@ -17,14 +16,14 @@ type sliceStackDecoder struct {
 	progressCount uint64
 }
 
-func (d *sliceStackDecoder) Decode(se xml.StartElement) error {
+func (d *sliceStackDecoder) Decode(x *xml.Decoder, se xml.StartElement) error {
 	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
 	if d.id == 0 {
 		return errors.New("go3mf: missing slice stack id attribute")
 	}
-	if err := d.parseContent(); err != nil {
+	if err := d.parseContent(x); err != nil {
 		return err
 	}
 	d.r.addResource(&go3mf.SliceStackResource{ID: d.id, SliceStack: &d.sliceStack})
@@ -53,10 +52,10 @@ func (d *sliceStackDecoder) parseAttr(attrs []xml.Attr) error {
 	return nil
 }
 
-func (d *sliceStackDecoder) parseContent() error {
+func (d *sliceStackDecoder) parseContent(x *xml.Decoder) error {
 	var hasSliceRef, hasSlice bool
 	for {
-		t, err := d.x.Token()
+		t, err := x.Token()
 		if err != nil {
 			return err
 		}
@@ -70,7 +69,7 @@ func (d *sliceStackDecoder) parseContent() error {
 					err = errors.New("go3mf: slicestack contains slices and slicerefs")
 				} else {
 					hasSlice = true
-					err = d.parseSlice(tp)
+					err = d.parseSlice(x, tp)
 				}
 			} else if tp.Name.Local == attrSliceRef {
 				if hasSlice {
@@ -132,33 +131,32 @@ func (d *sliceStackDecoder) addSliceRef(sliceStackID uint64, path string) error 
 	return nil
 }
 
-func (d *sliceStackDecoder) parseSlice(se xml.StartElement) (err error) {
+func (d *sliceStackDecoder) parseSlice(x *xml.Decoder, se xml.StartElement) (err error) {
 	if len(d.sliceStack.Slices)%readSliceUpdate == readSliceUpdate-1 {
 		d.progressCount++
 		if !d.r.progress.progress(1.0-2.0/float64(d.progressCount+2), StageReadSlices) {
 			return ErrUserAborted
 		}
 	}
-	sd := sliceDecoder{x: d.x, r: d.r, sliceStack: &d.sliceStack}
-	return sd.Decode(se)
+	sd := sliceDecoder{r: d.r, sliceStack: &d.sliceStack}
+	return sd.Decode(x, se)
 }
 
 type sliceDecoder struct {
-	x          *xml.Decoder
 	r          *Reader
 	sliceStack *go3mf.SliceStack
 	slice      go3mf.Slice
 	hasTopZ    bool
 }
 
-func (d *sliceDecoder) Decode(se xml.StartElement) error {
+func (d *sliceDecoder) Decode(x *xml.Decoder, se xml.StartElement) error {
 	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
 	if !d.hasTopZ {
 		return errors.New("go3mf: missing slice topz attribute")
 	}
-	if err := d.parseContent(); err != nil {
+	if err := d.parseContent(x); err != nil {
 		return err
 	}
 	d.sliceStack.Slices = append(d.sliceStack.Slices, &d.slice)
@@ -181,9 +179,9 @@ func (d *sliceDecoder) parseAttr(attrs []xml.Attr) (err error) {
 	return
 }
 
-func (d *sliceDecoder) parseContent() error {
+func (d *sliceDecoder) parseContent(x *xml.Decoder) error {
 	for {
-		t, err := d.x.Token()
+		t, err := x.Token()
 		if err != nil {
 			return err
 		}
@@ -193,9 +191,9 @@ func (d *sliceDecoder) parseContent() error {
 				continue
 			}
 			if tp.Name.Local == attrVertices {
-				err = d.parseVertices(tp)
+				err = d.parseVertices(x, tp)
 			} else if tp.Name.Local == attrPolygon {
-				err = d.parsePolygons(tp)
+				err = d.parsePolygons(x, tp)
 			}
 		case xml.EndElement:
 			if tp.Name.Space == nsSliceSpec && tp.Name.Local == attrSlice {
@@ -208,9 +206,9 @@ func (d *sliceDecoder) parseContent() error {
 	}
 }
 
-func (d *sliceDecoder) parseVertices(se xml.StartElement) error {
+func (d *sliceDecoder) parseVertices(x *xml.Decoder, se xml.StartElement) error {
 	for {
-		t, err := d.x.Token()
+		t, err := x.Token()
 		if err != nil {
 			return err
 		}
@@ -250,13 +248,13 @@ func (d *sliceDecoder) parseVertex(attrs []xml.Attr) error {
 	return nil
 }
 
-func (d *sliceDecoder) parsePolygons(se xml.StartElement) error {
+func (d *sliceDecoder) parsePolygons(x *xml.Decoder, se xml.StartElement) error {
 	polygonIndex := d.slice.BeginPolygon()
 	if err := d.parsePolygonAttr(polygonIndex, se.Attr); err != nil {
 		return err
 	}
 	for {
-		t, err := d.x.Token()
+		t, err := x.Token()
 		if err != nil {
 			return err
 		}

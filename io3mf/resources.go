@@ -65,7 +65,6 @@ func (m *texCoordMapping) hasResource(id uint64) bool {
 }
 
 type resourceDecoder struct {
-	x               *xml.Decoder
 	r               *Reader
 	path            string
 	colorMapping    colorMapping
@@ -80,21 +79,21 @@ func (d *resourceDecoder) init() {
 	d.texCoordMapping.resources = make(map[uint64]struct{})
 }
 
-func (d *resourceDecoder) Decode(se xml.StartElement) error {
+func (d *resourceDecoder) Decode(x *xml.Decoder, se xml.StartElement) error {
 	d.init()
 	for {
-		t, err := d.x.Token()
+		t, err := x.Token()
 		if err != nil {
 			return err
 		}
 		switch tp := t.(type) {
 		case xml.StartElement:
 			if tp.Name.Space == nsCoreSpec {
-				err = d.processCoreContent(tp)
+				err = d.processCoreContent(x, tp)
 			} else if tp.Name.Space == nsMaterialSpec {
-				err = d.processMaterialContent(tp)
+				err = d.processMaterialContent(x, tp)
 			} else if tp.Name.Space == nsSliceSpec {
-				err = d.processSliceContent(tp)
+				err = d.processSliceContent(x, tp)
 			}
 		case xml.EndElement:
 			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrResources {
@@ -107,7 +106,7 @@ func (d *resourceDecoder) Decode(se xml.StartElement) error {
 	}
 }
 
-func (d *resourceDecoder) processCoreContent(se xml.StartElement) (err error) {
+func (d *resourceDecoder) processCoreContent(x *xml.Decoder, se xml.StartElement) (err error) {
 	switch se.Name.Local {
 	case attrObject:
 		d.progressCount++
@@ -118,22 +117,22 @@ func (d *resourceDecoder) processCoreContent(se xml.StartElement) (err error) {
 
 		d.r.progress.popLevel()
 	case attrBaseMaterials:
-		md := baseMaterialsDecoder{x: d.x, r: d.r}
-		err = md.Decode(se)
+		md := baseMaterialsDecoder{r: d.r}
+		err = md.Decode(x, se)
 	}
 	return
 }
 
-func (d *resourceDecoder) processMaterialContent(se xml.StartElement) error {
+func (d *resourceDecoder) processMaterialContent(x *xml.Decoder, se xml.StartElement) error {
 	switch se.Name.Local {
 	case attrColorGroup:
-		cd := colorGroupDecoder{x: d.x, r: d.r, colorMapping: &d.colorMapping}
-		return cd.Decode(se)
+		cd := colorGroupDecoder{r: d.r, colorMapping: &d.colorMapping}
+		return cd.Decode(x, se)
 	case attrTexture2DGroup:
-		td := tex2DGroupDecoder{x: d.x, r: d.r, texCoordMapping: &d.texCoordMapping}
-		return td.Decode(se)
+		td := tex2DGroupDecoder{r: d.r, texCoordMapping: &d.texCoordMapping}
+		return td.Decode(x, se)
 	case attrTexture2D:
-		td := texture2DDecoder{x: d.x, r: d.r}
+		td := texture2DDecoder{r: d.r}
 		return td.Decode(se)
 	case attrComposite:
 		d.r.Warnings = append(d.r.Warnings, &ReadError{InvalidOptionalValue, "go3mf: composite materials extension not supported"})
@@ -141,7 +140,7 @@ func (d *resourceDecoder) processMaterialContent(se xml.StartElement) error {
 	return nil
 }
 
-func (d *resourceDecoder) processSliceContent(se xml.StartElement) error {
+func (d *resourceDecoder) processSliceContent(x *xml.Decoder, se xml.StartElement) error {
 	if se.Name.Local != attrSliceStack {
 		return nil
 	}
@@ -150,14 +149,13 @@ func (d *resourceDecoder) processSliceContent(se xml.StartElement) error {
 		return ErrUserAborted
 	}
 	d.r.progress.pushLevel(1.0-2.0/float64(d.progressCount+2), 1.0-2.0/float64(d.progressCount+1+2))
-	sd := sliceStackDecoder{x: d.x, r: d.r, path: d.path}
-	err := sd.Decode(se)
+	sd := sliceStackDecoder{r: d.r, path: d.path}
+	err := sd.Decode(x, se)
 	d.r.progress.popLevel()
 	return err
 }
 
 type baseMaterialsDecoder struct {
-	x             *xml.Decoder
 	r             *Reader
 	baseMaterials go3mf.BaseMaterialsResource
 }
@@ -185,23 +183,23 @@ func (d *baseMaterialsDecoder) parseAttr(attrs []xml.Attr) (err error) {
 	return
 }
 
-func (d *baseMaterialsDecoder) Decode(se xml.StartElement) error {
+func (d *baseMaterialsDecoder) Decode(x *xml.Decoder, se xml.StartElement) error {
 	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
 	if d.baseMaterials.ID == 0 {
 		return errors.New("go3mf: missing base materials resource id attribute")
 	}
-	if err := d.parseContent(); err != nil {
+	if err := d.parseContent(x); err != nil {
 		return err
 	}
 	d.r.addResource(&d.baseMaterials)
 	return nil
 }
 
-func (d *baseMaterialsDecoder) parseContent() error {
+func (d *baseMaterialsDecoder) parseContent(x *xml.Decoder) error {
 	for {
-		t, err := d.x.Token()
+		t, err := x.Token()
 		if err != nil {
 			return err
 		}

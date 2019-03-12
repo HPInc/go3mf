@@ -108,8 +108,8 @@ mainLoop:
 		switch tp := t.(type) {
 		case xml.StartElement:
 			if tp.Name.Local == attrModel {
-				md := modelDecoder{x: x, r: r, path: rootFile.Name()}
-				err = md.Decode(tp)
+				md := modelDecoder{r: r, path: rootFile.Name()}
+				err = md.Decode(x, tp)
 				break mainLoop
 			}
 		}
