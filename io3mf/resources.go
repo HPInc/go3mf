@@ -114,10 +114,13 @@ func (d *resourceDecoder) processCoreContent(x *xml.Decoder, se xml.StartElement
 			return ErrUserAborted
 		}
 		d.r.progress.pushLevel(1.0-2.0/float64(d.progressCount+2), 1.0-2.0/float64(d.progressCount+1+2))
-
+		od := objectDecoder{r: d.r, texCoordMapping: &d.texCoordMapping, colorMapping: &d.colorMapping}
+		od.obj.ModelPath = d.path
+		err = od.Decode(x, se)
 		d.r.progress.popLevel()
 	case attrBaseMaterials:
 		md := baseMaterialsDecoder{r: d.r}
+		md.baseMaterials.ModelPath = d.path
 		err = md.Decode(x, se)
 	}
 	return
@@ -133,6 +136,7 @@ func (d *resourceDecoder) processMaterialContent(x *xml.Decoder, se xml.StartEle
 		return td.Decode(x, se)
 	case attrTexture2D:
 		td := texture2DDecoder{r: d.r}
+		td.texture.ModelPath = d.path
 		return td.Decode(se)
 	case attrComposite:
 		d.r.Warnings = append(d.r.Warnings, &ReadError{InvalidOptionalValue, "go3mf: composite materials extension not supported"})
@@ -149,7 +153,8 @@ func (d *resourceDecoder) processSliceContent(x *xml.Decoder, se xml.StartElemen
 		return ErrUserAborted
 	}
 	d.r.progress.pushLevel(1.0-2.0/float64(d.progressCount+2), 1.0-2.0/float64(d.progressCount+1+2))
-	sd := sliceStackDecoder{r: d.r, path: d.path}
+	sd := sliceStackDecoder{r: d.r}
+	sd.sliceStack.ModelPath = d.path
 	err := sd.Decode(x, se)
 	d.r.progress.popLevel()
 	return err
@@ -166,12 +171,9 @@ func (d *baseMaterialsDecoder) parseAttr(attrs []xml.Attr) (err error) {
 			continue
 		}
 		if d.baseMaterials.ID == 0 {
-			var id uint64
-			id, err = strconv.ParseUint(a.Value, 10, 64)
+			d.baseMaterials.ID, err = strconv.ParseUint(a.Value, 10, 64)
 			if err != nil {
 				err = errors.New("go3mf: base materials id is not valid")
-			} else {
-				d.baseMaterials.ID = id
 			}
 		} else {
 			err = errors.New("go3mf: duplicated base materials id attribute")
@@ -224,7 +226,7 @@ func (d *baseMaterialsDecoder) addBaseMaterial(attrs []xml.Attr) error {
 	baseColor := color.RGBA{}
 	for _, a := range attrs {
 		switch a.Name.Local {
-		case attrBaseMaterialName:
+		case attrName:
 			name = a.Value
 		case attrBaseMaterialColor:
 			var err error

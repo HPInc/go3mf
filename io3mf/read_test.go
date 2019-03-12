@@ -250,11 +250,11 @@ func TestReader_processRootModel(t *testing.T) {
 	want := new(go3mf.Model)
 	want.Units = go3mf.UnitMillimeter
 	want.Language = "en-US"
-	baseMaterials := &go3mf.BaseMaterialsResource{ID: 5, Materials: []go3mf.BaseMaterial{
+	baseMaterials := &go3mf.BaseMaterialsResource{ID: 5, ModelPath: "3d/3dmodel.model", Materials: []go3mf.BaseMaterial{
 		{Name: "Blue PLA", Color: color.RGBA{0, 0, 85, 255}},
 		{Name: "Red ABS", Color: color.RGBA{85, 0, 0, 255}},
 	}}
-	baseTexture := &go3mf.Texture2DResource{ID: 6, Path: "/3D/Texture/msLogo.png", ContentType: go3mf.PNGTexture, TileStyleU: go3mf.TileWrap, TileStyleV: go3mf.TileMirror, Filter: go3mf.TextureFilterAuto}
+	baseTexture := &go3mf.Texture2DResource{ID: 6, ModelPath: "3d/3dmodel.model", Path: "/3D/Texture/msLogo.png", ContentType: go3mf.PNGTexture, TileStyleU: go3mf.TileWrap, TileStyleV: go3mf.TileMirror, Filter: go3mf.TextureFilterAuto}
 	otherSlices := &go3mf.SliceStack{
 		BottomZ: 2,
 		Slices: []*go3mf.Slice{
@@ -265,7 +265,7 @@ func TestReader_processRootModel(t *testing.T) {
 			},
 		},
 	}
-	sliceStack := &go3mf.SliceStackResource{ID: 3, SliceStack: &go3mf.SliceStack{
+	sliceStack := &go3mf.SliceStackResource{ID: 3, ModelPath: "3d/3dmodel.model", SliceStack: &go3mf.SliceStack{
 		BottomZ: 1,
 		Slices: []*go3mf.Slice{
 			{
@@ -280,7 +280,7 @@ func TestReader_processRootModel(t *testing.T) {
 			},
 		},
 	}}
-	sliceStackRef := &go3mf.SliceStackResource{ID: 7, SliceStack: otherSlices}
+	sliceStackRef := &go3mf.SliceStackResource{ID: 7, ModelPath: "3d/3dmodel.model", SliceStack: otherSlices}
 	sliceStackRef.BottomZ = 1.1
 	sliceStackRef.UsesSliceRef = true
 	sliceStackRef.Slices = append(sliceStackRef.Slices, otherSlices.Slices...)

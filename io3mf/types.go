@@ -23,6 +23,7 @@ const (
 
 const (
 	attrID                = "id"
+	attrName              = "name"
 	attrProdUUID          = "UUID"
 	attrPath              = "path"
 	attrObjectID          = "objectid"
@@ -35,7 +36,6 @@ const (
 	attrObject            = "object"
 	attrBaseMaterials     = "basematerials"
 	attrBase              = "base"
-	attrBaseMaterialName  = "name"
 	attrBaseMaterialColor = "displaycolor"
 	attrPartNumber        = "partnumber"
 	attrItem              = "item"
@@ -68,6 +68,14 @@ const (
 	attrStartV            = "startv"
 	attrSliceRefID        = "slicestackid"
 	attrSlicePath         = "slicepath"
+	attrMeshRes           = "meshresolution"
+	attrType              = "type"
+	attrThumbnail         = "thumbnail"
+	attrPID               = "pid"
+	attrPIndex            = "pindex"
+	attrMesh              = "mesh"
+	attrComponents        = "components"
+	attrComponent         = "component"
 )
 
 const (

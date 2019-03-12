@@ -10,23 +10,22 @@ import (
 
 type sliceStackDecoder struct {
 	r             *Reader
-	path          string
-	sliceStack    go3mf.SliceStack
-	id            uint64
+	sliceStack    go3mf.SliceStackResource
 	progressCount uint64
 }
 
 func (d *sliceStackDecoder) Decode(x *xml.Decoder, se xml.StartElement) error {
+	d.sliceStack.SliceStack = new(go3mf.SliceStack)
 	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
-	if d.id == 0 {
+	if d.sliceStack.ID == 0 {
 		return errors.New("go3mf: missing slice stack id attribute")
 	}
 	if err := d.parseContent(x); err != nil {
 		return err
 	}
-	d.r.addResource(&go3mf.SliceStackResource{ID: d.id, SliceStack: &d.sliceStack})
+	d.r.addResource(&d.sliceStack)
 	return nil
 }
 
@@ -35,15 +34,15 @@ func (d *sliceStackDecoder) parseAttr(attrs []xml.Attr) error {
 		var err error
 		switch a.Name.Local {
 		case attrID:
-			if d.id != 0 {
+			if d.sliceStack.ID != 0 {
 				err = errors.New("go3mf: duplicated slicestack id attribute")
 			} else {
-				d.id, err = strconv.ParseUint(a.Value, 10, 64)
+				d.sliceStack.ID, err = strconv.ParseUint(a.Value, 10, 64)
 			}
 		case attrZBottom:
 			var bottomZ float64
 			bottomZ, err = strconv.ParseFloat(a.Value, 32)
-			d.sliceStack.BottomZ = float32(bottomZ)
+			d.sliceStack.SliceStack.BottomZ = float32(bottomZ)
 		}
 		if err != nil {
 			return errors.New("go3mf: texture2d attribute not valid")
@@ -110,7 +109,7 @@ func (d *sliceStackDecoder) parseSliceRef(se xml.StartElement) error {
 }
 
 func (d *sliceStackDecoder) addSliceRef(sliceStackID uint64, path string) error {
-	if path == d.path {
+	if path == d.sliceStack.ModelPath {
 		return errors.New("go3mf: a slicepath is invalid")
 	}
 	resource, ok := d.r.Model.FindResource(sliceStackID, path)
@@ -138,7 +137,7 @@ func (d *sliceStackDecoder) parseSlice(x *xml.Decoder, se xml.StartElement) (err
 			return ErrUserAborted
 		}
 	}
-	sd := sliceDecoder{r: d.r, sliceStack: &d.sliceStack}
+	sd := sliceDecoder{r: d.r, sliceStack: d.sliceStack.SliceStack}
 	return sd.Decode(x, se)
 }
 

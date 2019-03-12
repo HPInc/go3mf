@@ -3,7 +3,6 @@ package io3mf
 import (
 	"encoding/xml"
 	"errors"
-	"github.com/go-gl/mathgl/mgl32"
 	"strconv"
 
 	"github.com/gofrs/uuid"
@@ -11,7 +10,7 @@ import (
 )
 
 type buildDecoder struct {
-	r     *Reader
+	r *Reader
 }
 
 func (d *buildDecoder) Decode(x *xml.Decoder, se xml.StartElement) error {
@@ -27,7 +26,7 @@ func (d *buildDecoder) Decode(x *xml.Decoder, se xml.StartElement) error {
 		case xml.StartElement:
 			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrItem {
 				bd := buildItemDecoder{r: d.r}
-				if err := bd.Decode(se); err != nil {
+				if err := bd.Decode(tp); err != nil {
 					return err
 				}
 			}
@@ -59,18 +58,17 @@ func (d *buildDecoder) parseAttr(attrs []xml.Attr) error {
 }
 
 type buildItemDecoder struct {
-	r           *Reader
-	item        go3mf.BuildItem
-	objectID    uint64
-	hasObjectID bool
-	transform   mgl32.Mat4
+	r          *Reader
+	item       go3mf.BuildItem
+	objectID   uint64
+	objectPath string
 }
 
 func (d *buildItemDecoder) Decode(se xml.StartElement) error {
 	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
-	if !d.hasObjectID {
+	if d.objectID != 0 {
 		return errors.New("go3mf: build item does not have objectid attribute")
 	}
 
@@ -78,24 +76,20 @@ func (d *buildItemDecoder) Decode(se xml.StartElement) error {
 }
 
 func (d *buildItemDecoder) processItem() error {
-	var path string
-	if d.item.Path != "" {
-		path = d.item.Path
-	} else {
-		path = d.r.Model.Path
+	if d.objectPath == "" {
+		d.objectPath = d.r.Model.Path
 	}
-	resource, ok := d.r.Model.FindResource(d.objectID, path)
+	resource, ok := d.r.Model.FindResource(d.objectID, d.objectPath)
 	if !ok {
 		return errors.New("go3mf: could not find build item object")
 	}
-	obj, ok := resource.(*go3mf.ObjectResource)
+	d.item.Object, ok = resource.(*go3mf.ObjectResource)
 	if !ok {
 		return errors.New("go3mf: could not find build item object")
 	}
-	if obj.Type() == go3mf.ObjectTypeOther {
+	if d.item.Object.Type() == go3mf.ObjectTypeOther {
 		d.r.Warnings = append(d.r.Warnings, &ReadError{InvalidMandatoryValue, "go3mf: build item must not reference object of type OTHER"})
 	}
-	d.item.Object = obj
 	if !d.item.IsValidForSlices() {
 		d.r.Warnings = append(d.r.Warnings, &ReadError{InvalidMandatoryValue, "go3mf: A slicestack posesses a nonplanar transformation"})
 	}
@@ -116,12 +110,12 @@ func (d *buildItemDecoder) parseAttr(attrs []xml.Attr) error {
 				}
 				d.item.UUID = a.Value
 			} else if a.Name.Local == attrPath {
-				if d.item.Path != "" {
+				if d.objectPath != "" {
 					return errors.New("go3mf: duplicated build item path attribute")
 				}
-				d.item.Path = a.Value
+				d.objectPath = a.Value
 			}
-		case "":
+		case nsCoreSpec:
 			if err := d.parseCoreAttr(a); err != nil {
 				return err
 			}
@@ -137,13 +131,12 @@ func (d *buildItemDecoder) parseAttr(attrs []xml.Attr) error {
 func (d *buildItemDecoder) parseCoreAttr(a xml.Attr) (err error) {
 	switch a.Name.Local {
 	case attrObjectID:
-		if d.hasObjectID {
+		if d.objectID != 0 {
 			return errors.New("go3mf: duplicated build item objectid attribute")
 		}
 		if d.objectID, err = strconv.ParseUint(a.Value, 10, 64); err != nil {
 			return errors.New("go3mf: build item id is not valid")
 		}
-		d.hasObjectID = true
 	case attrPartNumber:
 		d.item.PartNumber = a.Value
 	case attrTransform:
