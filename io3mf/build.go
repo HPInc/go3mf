@@ -62,14 +62,13 @@ func (d *buildDecoder) parseAttr(attrs []xml.Attr) error {
 type buildItemDecoder struct {
 	x           *xml.Decoder
 	r           *Reader
-	item        *go3mf.BuildItem
+	item        go3mf.BuildItem
 	objectID    uint64
 	hasObjectID bool
 	transform   mgl32.Mat4
 }
 
 func (d *buildItemDecoder) Decode(se xml.StartElement) error {
-	d.item = new(go3mf.BuildItem)
 	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
@@ -102,7 +101,7 @@ func (d *buildItemDecoder) processItem() error {
 	if !d.item.IsValidForSlices() {
 		d.r.Warnings = append(d.r.Warnings, &ReadError{InvalidMandatoryValue, "go3mf: A slicestack posesses a nonplanar transformation"})
 	}
-	d.r.Model.BuildItems = append(d.r.Model.BuildItems, d.item)
+	d.r.Model.BuildItems = append(d.r.Model.BuildItems, &d.item)
 	return nil
 }
 

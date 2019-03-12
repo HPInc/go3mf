@@ -159,7 +159,7 @@ func (d *resourceDecoder) processSliceContent(se xml.StartElement) error {
 type baseMaterialsDecoder struct {
 	x             *xml.Decoder
 	r             *Reader
-	baseMaterials *go3mf.BaseMaterialsResource
+	baseMaterials go3mf.BaseMaterialsResource
 }
 
 func (d *baseMaterialsDecoder) parseAttr(attrs []xml.Attr) (err error) {
@@ -167,13 +167,13 @@ func (d *baseMaterialsDecoder) parseAttr(attrs []xml.Attr) (err error) {
 		if a.Name.Space != "" || a.Name.Local != attrID {
 			continue
 		}
-		if d.baseMaterials == nil {
+		if d.baseMaterials.ID == 0 {
 			var id uint64
 			id, err = strconv.ParseUint(a.Value, 10, 64)
 			if err != nil {
 				err = errors.New("go3mf: base materials id is not valid")
 			} else {
-				d.baseMaterials = &go3mf.BaseMaterialsResource{ID: id}
+				d.baseMaterials.ID = id
 			}
 		} else {
 			err = errors.New("go3mf: duplicated base materials id attribute")
@@ -189,13 +189,13 @@ func (d *baseMaterialsDecoder) Decode(se xml.StartElement) error {
 	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
-	if d.baseMaterials == nil {
+	if d.baseMaterials.ID == 0 {
 		return errors.New("go3mf: missing base materials resource id attribute")
 	}
 	if err := d.parseContent(); err != nil {
 		return err
 	}
-	d.r.addResource(d.baseMaterials)
+	d.r.addResource(&d.baseMaterials)
 	return nil
 }
 
