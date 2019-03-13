@@ -1,4 +1,4 @@
-package model
+package go3mf
 
 import (
 	"image/color"

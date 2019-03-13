@@ -10,12 +10,11 @@ import (
 )
 
 type objectDecoder struct {
-	r                *Reader
-	obj              go3mf.ObjectResource
-	colorMapping     *colorMapping
-	texCoordMapping  *texCoordMapping
-	defaultPropID    uint64
-	defaultPropIndex uint64
+	r                               *Reader
+	obj                             go3mf.ObjectResource
+	colorMapping                    *colorMapping
+	texCoordMapping                 *texCoordMapping
+	defaultPropID, defaultPropIndex uint64
 }
 
 func (d *objectDecoder) Decode(x *xml.Decoder, se xml.StartElement) error {
@@ -53,6 +52,16 @@ func (d *objectDecoder) parseContent(x *xml.Decoder) error {
 }
 
 func (d *objectDecoder) parseMesh(x *xml.Decoder, se xml.StartElement) error {
+	d.r.progress.pushLevel(1, 0)
+	md := meshDecoder{
+		r: d.r, resource: go3mf.MeshResource{ObjectResource: d.obj},
+		colorMapping: d.colorMapping, texCoordMapping: d.texCoordMapping,
+		defaultPropID: d.defaultPropID, defaultPropIndex: d.defaultPropIndex,
+	}
+	if err := md.Decode(x, se); err != nil {
+		return err
+	}
+	d.r.progress.popLevel()
 	return nil
 }
 
@@ -80,7 +89,7 @@ func (d *objectDecoder) parseAttr(attrs []xml.Attr) (err error) {
 			}
 		case nsSliceSpec:
 			err = d.parseSliceAttr(a)
-		case nsCoreSpec:
+		case "":
 			err = d.parseCoreAttr(a)
 		}
 		if err != nil {
@@ -195,7 +204,7 @@ func (d *componentsDecoder) parseComponent(attrs []xml.Attr) (err error) {
 				}
 				path = a.Value
 			}
-		case nsCoreSpec:
+		case "":
 			if a.Name.Local == attrObjectID {
 				if objectID != 0 {
 					err = errors.New("go3mf: duplicated component objectid attribute")

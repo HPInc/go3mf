@@ -13,7 +13,8 @@ import (
 
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/go-test/deep"
-	go3mf "github.com/qmuntal/go3mf"
+	"github.com/qmuntal/go3mf"
+	"github.com/qmuntal/go3mf/mesh"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -284,8 +285,36 @@ func TestReader_processRootModel(t *testing.T) {
 	sliceStackRef.BottomZ = 1.1
 	sliceStackRef.UsesSliceRef = true
 	sliceStackRef.Slices = append(sliceStackRef.Slices, otherSlices.Slices...)
+	meshRes := &go3mf.MeshResource{
+		ObjectResource: go3mf.ObjectResource{ID: 1, Name: "Box 1", ModelPath: "3d/3dmodel.model", SliceStackID: 3, SliceResoultion: go3mf.ResolutionLow, PartNumber: "11111111-1111-1111-1111-111111111111"},
+		Mesh:           mesh.NewMesh(),
+	}
+	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []mesh.Node{
+		{Index: 0, Position: mgl32.Vec3{0, 0, 0}},
+		{Index: 1, Position: mgl32.Vec3{100, 0, 0}},
+		{Index: 2, Position: mgl32.Vec3{100, 100, 0}},
+		{Index: 3, Position: mgl32.Vec3{0, 100, 0}},
+		{Index: 4, Position: mgl32.Vec3{0, 0, 100}},
+		{Index: 5, Position: mgl32.Vec3{100, 0, 100}},
+		{Index: 6, Position: mgl32.Vec3{100, 100, 100}},
+		{Index: 7, Position: mgl32.Vec3{0, 100, 100}},
+	}...)
+	meshRes.Mesh.Faces = append(meshRes.Mesh.Faces, []mesh.Face{
+		{Index: 0, NodeIndices: [3]uint32{3, 2, 1}},
+		{Index: 1, NodeIndices: [3]uint32{1, 0, 3}},
+		{Index: 2, NodeIndices: [3]uint32{4, 5, 6}},
+		{Index: 3, NodeIndices: [3]uint32{6, 7, 4}},
+		{Index: 4, NodeIndices: [3]uint32{0, 1, 5}},
+		{Index: 5, NodeIndices: [3]uint32{5, 4, 0}},
+		{Index: 6, NodeIndices: [3]uint32{1, 2, 6}},
+		{Index: 7, NodeIndices: [3]uint32{6, 5, 1}},
+		{Index: 8, NodeIndices: [3]uint32{2, 3, 7}},
+		{Index: 9, NodeIndices: [3]uint32{7, 6, 2}},
+		{Index: 10, NodeIndices: [3]uint32{3, 0, 4}},
+		{Index: 11, NodeIndices: [3]uint32{4, 7, 3}},
+	}...)
 	want.Resources = append(want.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices, TimesRefered: 1})
-	want.Resources = append(want.Resources, []go3mf.Identifier{baseMaterials, baseTexture, sliceStack, sliceStackRef}...)
+	want.Resources = append(want.Resources, []go3mf.Identifier{baseMaterials, baseTexture, sliceStack, sliceStackRef, meshRes}...)
 
 	got := new(go3mf.Model)
 	got.Resources = append(got.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices})
@@ -325,6 +354,34 @@ func TestReader_processRootModel(t *testing.T) {
 				<s:slicestack id="7" zbottom="1.1">
 					<s:sliceref slicestackid="10" slicepath="/2D/2Dmodel.model" />
 				</s:slicestack>
+				<object id="1" name="Box 1" s:meshresolution="lowres" s:slicestackid="3" partnumber="11111111-1111-1111-1111-111111111111" type="model">
+				<mesh>
+					<vertices>
+						<vertex x="0" y="0" z="0" />
+						<vertex x="100.00000" y="0" z="0" />
+						<vertex x="100.00000" y="100.00000" z="0" />
+						<vertex x="0" y="100.00000" z="0" />
+						<vertex x="0" y="0" z="100.00000" />
+						<vertex x="100.00000" y="0" z="100.00000" />
+						<vertex x="100.00000" y="100.00000" z="100.00000" />
+						<vertex x="0" y="100.00000" z="100.00000" />
+					</vertices>
+					<triangles>
+						<triangle v1="3" v2="2" v3="1" />
+						<triangle v1="1" v2="0" v3="3" />
+						<triangle v1="4" v2="5" v3="6" />
+						<triangle v1="6" v2="7" v3="4" />
+						<triangle v1="0" v2="1" v3="5" />
+						<triangle v1="5" v2="4" v3="0" />
+						<triangle v1="1" v2="2" v3="6" />
+						<triangle v1="6" v2="5" v3="1" />
+						<triangle v1="2" v2="3" v3="7" />
+						<triangle v1="7" v2="6" v3="2" />
+						<triangle v1="3" v2="0" v3="4" />
+						<triangle v1="4" v2="7" v3="3" />
+					</triangles>
+				</mesh>
+			</object>
 			</resources>`).build()),
 	}
 
@@ -333,6 +390,7 @@ func TestReader_processRootModel(t *testing.T) {
 			t.Errorf("Reader.processRootModel() unexpected error = %v", err)
 			return
 		}
+		deep.CompareUnexportedFields = true
 		if diff := deep.Equal(r.Model, want); diff != nil {
 			t.Errorf("Reader.processRootModel() = %v", diff)
 			return

@@ -115,7 +115,7 @@ func (d *buildItemDecoder) parseAttr(attrs []xml.Attr) error {
 				}
 				d.objectPath = a.Value
 			}
-		case nsCoreSpec:
+		case "":
 			if err := d.parseCoreAttr(a); err != nil {
 				return err
 			}

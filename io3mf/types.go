@@ -63,8 +63,11 @@ const (
 	attrSliceStack        = "slicestack"
 	attrX                 = "x"
 	attrY                 = "y"
+	attrZ                 = "z"
 	attrSegment           = "segment"
+	attrV1                = "v1"
 	attrV2                = "v2"
+	attrV3                = "v3"
 	attrStartV            = "startv"
 	attrSliceRefID        = "slicestackid"
 	attrSlicePath         = "slicepath"
@@ -76,10 +79,11 @@ const (
 	attrMesh              = "mesh"
 	attrComponents        = "components"
 	attrComponent         = "component"
-)
-
-const (
-	readSliceUpdate = 100
+	attrTriangles         = "triangles"
+	attrTriangle          = "triangle"
+	attrP1                = "p1"
+	attrP2                = "p2"
+	attrP3                = "p3"
 )
 
 var defaultColor = color.RGBA{R: 0xff, G: 0xff, B: 0xff, A: 0xff}

@@ -7,6 +7,12 @@ import (
 	"github.com/qmuntal/go3mf/pkg/stack"
 )
 
+const (
+	readSliceUpdate     = 100
+	readVerticesUpdate  = 20000
+	readTrianglesUpdate = 20000
+)
+
 // A Stage is an enumerable for the different progress states
 type Stage int
 
