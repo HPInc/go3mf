@@ -98,9 +98,9 @@ func TestHandler_addInformation(t *testing.T) {
 		h                  *Handler
 		wantPanic          bool
 	}{
-		{"1", h, false, 1},
-		{"2", h, false, 2},
-		{"3", h, false, 3},
+		{"1", h, false},
+		{"2", h, false},
+		{"3", h, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

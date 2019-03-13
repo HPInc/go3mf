@@ -17,8 +17,8 @@ func Test_newFacesData(t *testing.T) {
 		args args
 		want *FacesData
 	}{
-		{"new1", args{mockContainer}, &FacesData{mockContainer, 0}},
-		{"new2", args{mockContainer}, &FacesData{mockContainer, 0}},
+		{"new1", args{mockContainer}, &FacesData{mockContainer}},
+		{"new2", args{mockContainer}, &FacesData{mockContainer}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
