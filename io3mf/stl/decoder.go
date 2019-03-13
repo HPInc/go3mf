@@ -4,9 +4,9 @@ import (
 	"bufio"
 	"io"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/qmuntal/go3mf/mesh"
-	"golang.org/x/exp/utf8string"
 )
 
 const sizeOfHeader = 300 // minimum size of a closed mesh in binary is 384 bytes, corresponding to a triangle.
@@ -53,5 +53,14 @@ func (d *Decoder) isASCII(r *bufio.Reader) (bool, error) {
 			break
 		}
 	}
-	return strings.HasPrefix(header, "solid") && utf8string.NewString(header).IsASCII(), nil
+	return strings.HasPrefix(header, "solid") && isASCII(header), nil
+}
+
+func isASCII(s string) bool {
+	for i := 0; i < len(s); i++ {
+		if s[i] >= utf8.RuneSelf {
+			return false
+		}
+	}
+	return true
 }

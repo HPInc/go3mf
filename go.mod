@@ -6,6 +6,5 @@ require (
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/qmuntal/opc v0.6.3
 	github.com/stretchr/testify v1.3.0
-	golang.org/x/exp v0.0.0-20181112044915-a3060d491354
-	golang.org/x/image v0.0.0-20190220214146-31aff87c08e9 // indirect
+	golang.org/x/image v0.0.0-20190227222117-0694c2d4d067 // indirect
 )
