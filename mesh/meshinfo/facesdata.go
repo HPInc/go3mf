@@ -3,14 +3,12 @@ package meshinfo
 // FacesData is used as a manager of a specific data of a set of faces.
 type FacesData struct {
 	Container
-	internalID uint64
 }
 
 // newFacesData creates a new FacesData.
 func newFacesData(container Container) *FacesData {
 	return &FacesData{
-		Container:  container,
-		internalID: 0,
+		Container: container,
 	}
 }
 
@@ -44,14 +42,4 @@ func (b *FacesData) copyFaceInfosFrom(faceIndex uint32, otherInfo FaceQuerier, o
 // permuteNodeInformation swap the data of the target mesh.
 func (b *FacesData) permuteNodeInformation(faceIndex, nodeIndex1, nodeIndex2, nodeIndex3 uint32) {
 	b.FaceData(faceIndex).Permute(nodeIndex1, nodeIndex2, nodeIndex3)
-}
-
-// setInternalID sets an ID for the whole mesh information.
-func (b *FacesData) setInternalID(internalID uint64) {
-	b.internalID = internalID
-}
-
-// getInternalID gets the internal ID of the mesh information.
-func (b *FacesData) getInternalID() uint64 {
-	return b.internalID
 }

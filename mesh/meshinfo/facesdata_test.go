@@ -80,48 +80,6 @@ func TestFacesData_Clear(t *testing.T) {
 	}
 }
 
-func TestFacesData_setInternalID(t *testing.T) {
-	type args struct {
-		internalID uint64
-	}
-	tests := []struct {
-		name string
-		b    *FacesData
-		args args
-	}{
-		{"zero", newFacesData(nil), args{0}},
-		{"one", newFacesData(nil), args{1}},
-		{"two", newFacesData(nil), args{3}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.b.setInternalID(tt.args.internalID)
-			if got := tt.b.getInternalID(); got != tt.args.internalID {
-				t.Errorf("FacesData.setInternalID() = %v, want %v", got, tt.args.internalID)
-			}
-		})
-	}
-}
-
-func TestFacesData_getInternalID(t *testing.T) {
-	tests := []struct {
-		name string
-		b    *FacesData
-		want uint64
-	}{
-		{"new", newFacesData(nil), 0},
-		{"one", &FacesData{nil, 1}, 1},
-		{"two", &FacesData{nil, 2}, 2},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.b.getInternalID(); got != tt.want {
-				t.Errorf("FacesData.getInternalID() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestFacesData_clone(t *testing.T) {
 	type args struct {
 		currentFaceCount uint32

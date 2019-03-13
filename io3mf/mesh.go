@@ -127,6 +127,7 @@ func (d *meshDecoder) parseTriangles(x *xml.Decoder, se xml.StartElement) error 
 
 func (d *meshDecoder) parseTriangle(attrs []xml.Attr) (err error) {
 	var v1, v2, v3, pid, p1, p2, p3 uint64
+	var hasPID, hasP1, hasP2, hasP3 bool
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrV1:
@@ -137,12 +138,16 @@ func (d *meshDecoder) parseTriangle(attrs []xml.Attr) (err error) {
 			v3, err = strconv.ParseUint(a.Value, 10, 32)
 		case attrPID:
 			pid, err = strconv.ParseUint(a.Value, 10, 32)
+			hasPID = true
 		case attrP1:
 			p1, err = strconv.ParseUint(a.Value, 10, 32)
+			hasP1 = true
 		case attrP2:
 			p2, err = strconv.ParseUint(a.Value, 10, 32)
+			hasP2 = true
 		case attrP3:
 			p3, err = strconv.ParseUint(a.Value, 10, 32)
+			hasP3 = true
 		}
 		if err != nil {
 			break
@@ -152,21 +157,19 @@ func (d *meshDecoder) parseTriangle(attrs []xml.Attr) (err error) {
 		return
 	}
 
-	p2 = applyDefault(p2, p1)
-	p3 = applyDefault(p3, p1)
-	pid = applyDefault(pid, d.defaultPropID)
-	p1 = applyDefault(p1, d.defaultPropIndex)
-	p2 = applyDefault(p2, d.defaultPropIndex)
-	p3 = applyDefault(p3, d.defaultPropIndex)
+	p1 = applyDefault(p1, d.defaultPropIndex, hasP1)
+	p2 = applyDefault(p2, p1, hasP2)
+	p3 = applyDefault(p3, p1, hasP3)
+	pid = applyDefault(pid, d.defaultPropID, hasPID)
 
 	return d.addTriangle(uint32(v1), uint32(v2), uint32(v3), pid, p1, p2, p3)
 }
 
-func applyDefault(val, defVal uint64) uint64 {
-	if val == 0 {
-		return defVal
+func applyDefault(val, defVal uint64, noDef bool) uint64 {
+	if noDef {
+		return val
 	}
-	return val
+	return defVal
 }
 
 func (d *meshDecoder) addTriangle(v1, v2, v3 uint32, pid, p1, p2, p3 uint64) error {
@@ -191,7 +194,7 @@ func (d *meshDecoder) checkBaseMaterial(face *mesh.Face, pid, p1 uint64) bool {
 		if _, ok := ref.(*go3mf.BaseMaterialsResource); ok {
 			handler := d.resource.Mesh.InformationHandler()
 			var info *meshinfo.FacesData
-			if info, ok = handler.BaseMaterialInfo(); ok {
+			if info, ok = handler.BaseMaterialInfo(); !ok {
 				info = handler.AddBaseMaterialInfo(uint32(len(d.resource.Mesh.Faces)))
 			}
 			faceData := info.FaceData(face.Index).(*meshinfo.BaseMaterial)
@@ -203,47 +206,38 @@ func (d *meshDecoder) checkBaseMaterial(face *mesh.Face, pid, p1 uint64) bool {
 	return false
 }
 
-func (d *meshDecoder) checkColor(face *mesh.Face, pid, p1, p2, p3 uint64) bool {
+func (d *meshDecoder) checkColor(face *mesh.Face, pid, p1, p2, p3 uint64) (ok bool) {
 	if d.colorMapping.hasResource(pid) {
 		handler := d.resource.Mesh.InformationHandler()
-		var (
-			info *meshinfo.FacesData
-			ok   bool
-		)
-		if info, ok = handler.NodeColorInfo(); ok {
+		var info *meshinfo.FacesData
+		if info, ok = handler.NodeColorInfo(); !ok {
 			info = handler.AddNodeColorInfo(uint32(len(d.resource.Mesh.Faces)))
 		}
 		faceData := info.FaceData(face.Index).(*meshinfo.NodeColor)
 		faceData.Colors[0], _ = d.colorMapping.find(pid, p1)
 		faceData.Colors[1], _ = d.colorMapping.find(pid, p2)
 		faceData.Colors[2], _ = d.colorMapping.find(pid, p3)
-		return true
+		ok = true
 	}
-	return false
+	return
 }
 
-func (d *meshDecoder) checkTexture(face *mesh.Face, pid, p1, p2, p3 uint64) bool {
-	if !d.texCoordMapping.hasResource(pid) {
-		return false
-	}
-	ref, ok := d.r.Model.FindResource(pid, d.resource.ModelPath)
-	if ok {
-		if _, ok := ref.(*go3mf.Texture2DResource); ok {
-			handler := d.resource.Mesh.InformationHandler()
-			var info *meshinfo.FacesData
-			if info, ok = handler.TextureCoordsInfo(); ok {
-				info = handler.AddTextureCoordsInfo(uint32(len(d.resource.Mesh.Faces)))
-			}
-			faceData := info.FaceData(face.Index).(*meshinfo.TextureCoords)
-			faceData.TextureID = uint32(pid)
-			t0, _ := d.texCoordMapping.find(pid, p1)
-			t1, _ := d.texCoordMapping.find(pid, p2)
-			t2, _ := d.texCoordMapping.find(pid, p3)
-			faceData.Coords[0] = mgl32.Vec2{t0.u, t0.v}
-			faceData.Coords[1] = mgl32.Vec2{t1.u, t1.v}
-			faceData.Coords[2] = mgl32.Vec2{t2.u, t2.v}
+func (d *meshDecoder) checkTexture(face *mesh.Face, pid, p1, p2, p3 uint64) (ok bool) {
+	if d.texCoordMapping.hasResource(pid) {
+		handler := d.resource.Mesh.InformationHandler()
+		var info *meshinfo.FacesData
+		if info, ok = handler.TextureCoordsInfo(); !ok {
+			info = handler.AddTextureCoordsInfo(uint32(len(d.resource.Mesh.Faces)))
 		}
-		return true
+		faceData := info.FaceData(face.Index).(*meshinfo.TextureCoords)
+		t0, _ := d.texCoordMapping.find(pid, p1)
+		t1, _ := d.texCoordMapping.find(pid, p2)
+		t2, _ := d.texCoordMapping.find(pid, p3)
+		faceData.TextureID = uint32(t0.id)
+		faceData.Coords[0] = mgl32.Vec2{t0.u, t0.v}
+		faceData.Coords[1] = mgl32.Vec2{t1.u, t1.v}
+		faceData.Coords[2] = mgl32.Vec2{t2.u, t2.v}
+		ok = true
 	}
-	return false
+	return
 }

@@ -13,7 +13,6 @@ func TestNewHandler(t *testing.T) {
 		want *Handler
 	}{
 		{"base", &Handler{
-			internalIDCounter: 1,
 			lookup:            map[DataType]Handleable{},
 		}},
 	}
@@ -94,18 +93,14 @@ func TestHandler_AddNodeColorInfo(t *testing.T) {
 
 func TestHandler_addInformation(t *testing.T) {
 	h := NewHandler()
-	herr := NewHandler()
-	herr.internalIDCounter = maxInternalID
 	tests := []struct {
 		name               string
 		h                  *Handler
 		wantPanic          bool
-		expectedInternalID uint64
 	}{
 		{"1", h, false, 1},
 		{"2", h, false, 2},
 		{"3", h, false, 3},
-		{"max", herr, true, maxInternalID},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -116,7 +111,6 @@ func TestHandler_addInformation(t *testing.T) {
 			}()
 			mockHandleable := new(MockHandleable)
 			mockHandleable.On("InfoType").Return(NodeColorType)
-			mockHandleable.On("setInternalID", tt.expectedInternalID)
 			tt.h.addInformation(mockHandleable)
 			mockHandleable.AssertExpectations(t)
 		})
@@ -270,7 +264,6 @@ func TestHandler_AddInfoFrom(t *testing.T) {
 			tt.args.otherHandler.On("InformationByType", mock.Anything).Return(otherHandleable, true).Times(3)
 			otherHandleable.On("clone", tt.args.currentFaceCount).Return(ownHandleable)
 			ownHandleable.On("InfoType").Return(NodeColorType)
-			ownHandleable.On("setInternalID", tt.h.internalIDCounter)
 			tt.h.AddInfoFrom(tt.args.otherHandler, tt.args.currentFaceCount)
 			tt.args.otherHandler.AssertExpectations(t)
 			otherHandleable.AssertExpectations(t)

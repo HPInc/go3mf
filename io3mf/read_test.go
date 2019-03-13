@@ -15,6 +15,7 @@ import (
 	"github.com/go-test/deep"
 	"github.com/qmuntal/go3mf"
 	"github.com/qmuntal/go3mf/mesh"
+	"github.com/qmuntal/go3mf/mesh/meshinfo"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -262,7 +263,7 @@ func TestReader_processRootModel(t *testing.T) {
 			{
 				TopZ:     1.2,
 				Vertices: []mgl32.Vec2{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
-				Polygons: [][]int{{1, 2, 3, 0}},
+				Polygons: [][]int{{0, 1, 2, 3, 0}},
 			},
 		},
 	}
@@ -272,12 +273,12 @@ func TestReader_processRootModel(t *testing.T) {
 			{
 				TopZ:     0,
 				Vertices: []mgl32.Vec2{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
-				Polygons: [][]int{{1, 2, 3, 0}},
+				Polygons: [][]int{{0, 1, 2, 3, 0}},
 			},
 			{
 				TopZ:     0.1,
 				Vertices: []mgl32.Vec2{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
-				Polygons: [][]int{{2, 1, 3, 0}},
+				Polygons: [][]int{{0, 2, 1, 3, 0}},
 			},
 		},
 	}}
@@ -313,6 +314,23 @@ func TestReader_processRootModel(t *testing.T) {
 		{Index: 10, NodeIndices: [3]uint32{3, 0, 4}},
 		{Index: 11, NodeIndices: [3]uint32{4, 7, 3}},
 	}...)
+	handler := meshRes.Mesh.InformationHandler()
+	info := handler.AddBaseMaterialInfo(uint32(len(meshRes.Mesh.Faces)))
+	*info.FaceData(0).(*meshinfo.BaseMaterial) = meshinfo.BaseMaterial{GroupID: 5}
+	*info.FaceData(1).(*meshinfo.BaseMaterial) = meshinfo.BaseMaterial{GroupID: 5}
+	*info.FaceData(2).(*meshinfo.BaseMaterial) = meshinfo.BaseMaterial{GroupID: 5, Index: 1}
+	*info.FaceData(3).(*meshinfo.BaseMaterial) = meshinfo.BaseMaterial{GroupID: 5, Index: 1}
+	*info.FaceData(8).(*meshinfo.BaseMaterial) = meshinfo.BaseMaterial{GroupID: 5}
+	*info.FaceData(9).(*meshinfo.BaseMaterial) = meshinfo.BaseMaterial{GroupID: 5}
+	*info.FaceData(10).(*meshinfo.BaseMaterial) = meshinfo.BaseMaterial{GroupID: 5}
+	*info.FaceData(11).(*meshinfo.BaseMaterial) = meshinfo.BaseMaterial{GroupID: 5}	
+	info = handler.AddTextureCoordsInfo(uint32(len(meshRes.Mesh.Faces)))
+	*info.FaceData(4).(*meshinfo.TextureCoords) = meshinfo.TextureCoords{TextureID: 6, Coords: [3]mgl32.Vec2{{0.3,0.5}, {0.3,0.8},{0.5, 0.8}}}
+	*info.FaceData(5).(*meshinfo.TextureCoords) = meshinfo.TextureCoords{TextureID: 6, Coords: [3]mgl32.Vec2{{0.5,0.5}, {0.3,0.5},{0.5, 0.8}}}
+	info = handler.AddNodeColorInfo(uint32(len(meshRes.Mesh.Faces)))
+	*info.FaceData(6).(*meshinfo.NodeColor) = meshinfo.NodeColor{Colors: [3]color.RGBA{{R: 85, G: 85, B: 85, A: 255}, {A: 255}, {R: 16, G: 21, B: 103, A: 255}}}
+	*info.FaceData(7).(*meshinfo.NodeColor) = meshinfo.NodeColor{Colors: [3]color.RGBA{{R: 16, G: 21, B: 103, A: 255}, {A: 255}, {R: 53, G: 4, B: 80, A: 255}}}
+
 	want.Resources = append(want.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices, TimesRefered: 1})
 	want.Resources = append(want.Resources, []go3mf.Identifier{baseMaterials, baseTexture, sliceStack, sliceStackRef, meshRes}...)
 
@@ -354,34 +372,34 @@ func TestReader_processRootModel(t *testing.T) {
 				<s:slicestack id="7" zbottom="1.1">
 					<s:sliceref slicestackid="10" slicepath="/2D/2Dmodel.model" />
 				</s:slicestack>
-				<object id="1" name="Box 1" s:meshresolution="lowres" s:slicestackid="3" partnumber="11111111-1111-1111-1111-111111111111" type="model">
-				<mesh>
-					<vertices>
-						<vertex x="0" y="0" z="0" />
-						<vertex x="100.00000" y="0" z="0" />
-						<vertex x="100.00000" y="100.00000" z="0" />
-						<vertex x="0" y="100.00000" z="0" />
-						<vertex x="0" y="0" z="100.00000" />
-						<vertex x="100.00000" y="0" z="100.00000" />
-						<vertex x="100.00000" y="100.00000" z="100.00000" />
-						<vertex x="0" y="100.00000" z="100.00000" />
-					</vertices>
-					<triangles>
-						<triangle v1="3" v2="2" v3="1" />
-						<triangle v1="1" v2="0" v3="3" />
-						<triangle v1="4" v2="5" v3="6" />
-						<triangle v1="6" v2="7" v3="4" />
-						<triangle v1="0" v2="1" v3="5" />
-						<triangle v1="5" v2="4" v3="0" />
-						<triangle v1="1" v2="2" v3="6" />
-						<triangle v1="6" v2="5" v3="1" />
-						<triangle v1="2" v2="3" v3="7" />
-						<triangle v1="7" v2="6" v3="2" />
-						<triangle v1="3" v2="0" v3="4" />
-						<triangle v1="4" v2="7" v3="3" />
-					</triangles>
-				</mesh>
-			</object>
+				<object id="1" name="Box 1" pid="5" pindex="0" s:meshresolution="lowres" s:slicestackid="3" partnumber="11111111-1111-1111-1111-111111111111" type="model">
+					<mesh>
+						<vertices>
+							<vertex x="0" y="0" z="0" />
+							<vertex x="100.00000" y="0" z="0" />
+							<vertex x="100.00000" y="100.00000" z="0" />
+							<vertex x="0" y="100.00000" z="0" />
+							<vertex x="0" y="0" z="100.00000" />
+							<vertex x="100.00000" y="0" z="100.00000" />
+							<vertex x="100.00000" y="100.00000" z="100.00000" />
+							<vertex x="0" y="100.00000" z="100.00000" />
+						</vertices>
+						<triangles>
+							<triangle v1="3" v2="2" v3="1" />
+							<triangle v1="1" v2="0" v3="3" />
+							<triangle v1="4" v2="5" v3="6" p1="1" />
+							<triangle v1="6" v2="7" v3="4" pid="5" p1="1" />
+							<triangle v1="0" v2="1" v3="5" pid="2" p1="0" p2="1" p3="2"/>
+							<triangle v1="5" v2="4" v3="0" pid="2" p1="3" p2="0" p3="2"/>
+							<triangle v1="1" v2="2" v3="6" pid="1" p1="0" p2="1" p3="2"/>
+							<triangle v1="6" v2="5" v3="1" pid="1" p1="2" p2="1" p3="3"/>
+							<triangle v1="2" v2="3" v3="7" />
+							<triangle v1="7" v2="6" v3="2" />
+							<triangle v1="3" v2="0" v3="4" />
+							<triangle v1="4" v2="7" v3="3" />
+						</triangles>
+					</mesh>
+				</object>
 			</resources>`).build()),
 	}
 
@@ -391,6 +409,7 @@ func TestReader_processRootModel(t *testing.T) {
 			return
 		}
 		deep.CompareUnexportedFields = true
+		deep.MaxDepth = 20
 		if diff := deep.Equal(r.Model, want); diff != nil {
 			t.Errorf("Reader.processRootModel() = %v", diff)
 			return

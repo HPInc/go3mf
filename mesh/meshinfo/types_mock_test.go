@@ -146,8 +146,3 @@ func (m *MockHandleable) permuteNodeInformation(arg0, arg1, arg2, arg3 uint32) {
 func (m *MockHandleable) resetFaceInformation(arg0 uint32) {
 	m.Called(arg0)
 }
-
-// setInternalID mocks base method
-func (m *MockHandleable) setInternalID(arg0 uint64) {
-	m.Called(arg0)
-}

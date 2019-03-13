@@ -66,8 +66,6 @@ type Handleable interface {
 	dataCreator
 	// InfoType returns the type of the stored data.
 	InfoType() DataType
-	// setInternalID sets an ID for the whole mesh information.
-	setInternalID(internalID uint64)
 	// clone creates a deep copy of this instance.
 	clone(currentFaceCount uint32) Handleable
 }

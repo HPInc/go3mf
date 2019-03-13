@@ -1,9 +1,5 @@
 package meshinfo
 
-import "errors"
-
-const maxInternalID = 9223372036854775808
-
 // DataType represents a type of data.
 type DataType int
 
@@ -15,15 +11,13 @@ const (
 
 // Handler allows to include specific types of information in one mesh (like Textures AND colors).
 type Handler struct {
-	lookup            map[DataType]Handleable
-	internalIDCounter uint64
+	lookup map[DataType]Handleable
 }
 
 // NewHandler creates a new handler.
 func NewHandler() *Handler {
 	handler := &Handler{
-		lookup:            make(map[DataType]Handleable, 0),
-		internalIDCounter: 1,
+		lookup: make(map[DataType]Handleable, 0),
 	}
 	return handler
 }
@@ -50,21 +44,30 @@ func (h *Handler) AddNodeColorInfo(currentFaceCount uint32) *FacesData {
 }
 
 // BaseMaterialInfo returns the base material information. If it is not created the second parameters will be false.
-func (h *Handler) BaseMaterialInfo() (*FacesData, bool) {
+func (h *Handler) BaseMaterialInfo() (data *FacesData, ok bool) {
 	info, ok := h.lookup[BaseMaterialType]
-	return info.(*FacesData), ok
+	if ok {
+		data, ok = info.(*FacesData)
+	}
+	return
 }
 
 // TextureCoordsInfo returns the texture coords information. If it is not created the second parameters will be false.
-func (h *Handler) TextureCoordsInfo() (*FacesData, bool) {
+func (h *Handler) TextureCoordsInfo() (data *FacesData, ok bool) {
 	info, ok := h.lookup[TextureCoordsType]
-	return info.(*FacesData), ok
+	if ok {
+		data, ok = info.(*FacesData)
+	}
+	return
 }
 
 // NodeColorInfo returns the node color information. If it is not created the second parameters will be false.
-func (h *Handler) NodeColorInfo() (*FacesData, bool) {
+func (h *Handler) NodeColorInfo() (data *FacesData, ok bool) {
 	info, ok := h.lookup[NodeColorType]
-	return info.(*FacesData), ok
+	if ok {
+		data, ok = info.(*FacesData)
+	}
+	return
 }
 
 // AddFace adds a new face to the handler.
@@ -122,13 +125,7 @@ func (h *Handler) InfoTypes() []DataType {
 
 // addInformation adds a new type of information to the handler.
 func (h *Handler) addInformation(info Handleable) {
-	infoType := info.InfoType()
-	h.lookup[infoType] = info
-	info.setInternalID(h.internalIDCounter)
-	h.internalIDCounter++
-	if h.internalIDCounter > maxInternalID {
-		panic(errors.New("go3mf: handler overflow"))
-	}
+	h.lookup[info.InfoType()] = info
 }
 
 // InformationByType retrieves the information of the desried type.
