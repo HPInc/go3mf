@@ -1,5 +1,3 @@
-
-
 language: go
 sudo: false
 go_import_path: github.com/qmuntal/go3mf
@@ -16,8 +14,8 @@ notifications:
 
 install:
   - go get -u github.com/mattn/goveralls
-	- go get -u golang.org/x/tools/cmd/cover
-	- go get -t -v ./... 
+  - go get -u golang.org/x/tools/cmd/cover
+  - go get -t -v ./... 
 
 script:
   - go test  ./... -coverprofile=coverage.out -race -timeout=5s
