@@ -224,14 +224,14 @@ func (d *componentsDecoder) parseComponent(attrs []xml.Attr) (err error) {
 	if component.UUID == "" && d.r.namespaceRegistered(nsProductionSpec) {
 		d.r.Warnings = append(d.r.Warnings, &ReadError{MissingMandatoryValue, "go3mf: a UUID for a component is missing"})
 	}
-	if path != "" {
+	if path == "" {
 		path = d.r.Model.Path
 	}
 	resource, ok := d.r.Model.FindResource(objectID, path)
 	if !ok {
 		err = errors.New("go3mf: could not find component object")
 	}
-	component.Object, ok = resource.(*go3mf.ObjectResource)
+	component.Object, ok = resource.(go3mf.Object)
 	if !ok {
 		return errors.New("go3mf: could not find component object")
 	}

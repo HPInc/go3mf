@@ -52,6 +52,9 @@ func (m *Model) MergeToMesh(msh *mesh.Mesh) {
 
 // FindResource returns the resource with the target unique ID.
 func (m *Model) FindResource(id uint64, path string) (i Identifier, ok bool) {
+	if path == "" {
+		path = m.Path
+	}
 	for _, value := range m.Resources {
 		cid, cpath := value.Identify()
 		if cid == id && cpath == path {

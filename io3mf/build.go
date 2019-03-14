@@ -68,7 +68,7 @@ func (d *buildItemDecoder) Decode(se xml.StartElement) error {
 	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
-	if d.objectID != 0 {
+	if d.objectID == 0 {
 		return errors.New("go3mf: build item does not have objectid attribute")
 	}
 
@@ -83,7 +83,7 @@ func (d *buildItemDecoder) processItem() error {
 	if !ok {
 		return errors.New("go3mf: could not find build item object")
 	}
-	d.item.Object, ok = resource.(*go3mf.ObjectResource)
+	d.item.Object, ok = resource.(go3mf.Object)
 	if !ok {
 		return errors.New("go3mf: could not find build item object")
 	}

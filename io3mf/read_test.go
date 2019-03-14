@@ -250,6 +250,7 @@ func TestReader_processRootModel_Fail(t *testing.T) {
 
 func TestReader_processRootModel(t *testing.T) {
 	want := new(go3mf.Model)
+	want.Path = "3d/3dmodel.model"
 	want.Units = go3mf.UnitMillimeter
 	want.Language = "en-US"
 	baseMaterials := &go3mf.BaseMaterialsResource{ID: 5, ModelPath: "3d/3dmodel.model", Materials: []go3mf.BaseMaterial{
@@ -323,18 +324,24 @@ func TestReader_processRootModel(t *testing.T) {
 	*info.FaceData(8).(*meshinfo.BaseMaterial) = meshinfo.BaseMaterial{GroupID: 5}
 	*info.FaceData(9).(*meshinfo.BaseMaterial) = meshinfo.BaseMaterial{GroupID: 5}
 	*info.FaceData(10).(*meshinfo.BaseMaterial) = meshinfo.BaseMaterial{GroupID: 5}
-	*info.FaceData(11).(*meshinfo.BaseMaterial) = meshinfo.BaseMaterial{GroupID: 5}	
+	*info.FaceData(11).(*meshinfo.BaseMaterial) = meshinfo.BaseMaterial{GroupID: 5}
 	info = handler.AddTextureCoordsInfo(uint32(len(meshRes.Mesh.Faces)))
-	*info.FaceData(4).(*meshinfo.TextureCoords) = meshinfo.TextureCoords{TextureID: 6, Coords: [3]mgl32.Vec2{{0.3,0.5}, {0.3,0.8},{0.5, 0.8}}}
-	*info.FaceData(5).(*meshinfo.TextureCoords) = meshinfo.TextureCoords{TextureID: 6, Coords: [3]mgl32.Vec2{{0.5,0.5}, {0.3,0.5},{0.5, 0.8}}}
+	*info.FaceData(4).(*meshinfo.TextureCoords) = meshinfo.TextureCoords{TextureID: 6, Coords: [3]mgl32.Vec2{{0.3, 0.5}, {0.3, 0.8}, {0.5, 0.8}}}
+	*info.FaceData(5).(*meshinfo.TextureCoords) = meshinfo.TextureCoords{TextureID: 6, Coords: [3]mgl32.Vec2{{0.5, 0.5}, {0.3, 0.5}, {0.5, 0.8}}}
 	info = handler.AddNodeColorInfo(uint32(len(meshRes.Mesh.Faces)))
 	*info.FaceData(6).(*meshinfo.NodeColor) = meshinfo.NodeColor{Colors: [3]color.RGBA{{R: 85, G: 85, B: 85, A: 255}, {A: 255}, {R: 16, G: 21, B: 103, A: 255}}}
 	*info.FaceData(7).(*meshinfo.NodeColor) = meshinfo.NodeColor{Colors: [3]color.RGBA{{R: 16, G: 21, B: 103, A: 255}, {A: 255}, {R: 53, G: 4, B: 80, A: 255}}}
 
-	want.Resources = append(want.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices, TimesRefered: 1})
-	want.Resources = append(want.Resources, []go3mf.Identifier{baseMaterials, baseTexture, sliceStack, sliceStackRef, meshRes}...)
+	components := &go3mf.ComponentsResource{
+		ObjectResource: go3mf.ObjectResource{ID: 20, UUID: "cb828680-8895-4e08-a1fc-be63e033df15", ModelPath: "3d/3dmodel.model"},
+		Components:     []*go3mf.Component{{UUID: "cb828680-8895-4e08-a1fc-be63e033df16", Object: meshRes}},
+	}
 
+	want.Resources = append(want.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices, TimesRefered: 1})
+	want.Resources = append(want.Resources, []go3mf.Identifier{baseMaterials, baseTexture, sliceStack, sliceStackRef, meshRes, components}...)
+	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: components, PartNumber: "bob", UUID: "e9e25302-6428-402e-8633-cc95528d0ed2"})
 	got := new(go3mf.Model)
+	got.Path = "3d/3dmodel.model"
 	got.Resources = append(got.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices})
 	r := &Reader{
 		Model: got,
@@ -400,7 +407,16 @@ func TestReader_processRootModel(t *testing.T) {
 						</triangles>
 					</mesh>
 				</object>
-			</resources>`).build()),
+				<object id="20" p:UUID="cb828680-8895-4e08-a1fc-be63e033df15">
+					<components>
+                		<component objectid="1" p:UUID="cb828680-8895-4e08-a1fc-be63e033df16"/>
+            		</components>
+				</object>
+			</resources>
+			<build>
+				<item partnumber="bob" objectid="20" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed2" />
+			</build>
+		`).build()),
 	}
 
 	t.Run("base", func(t *testing.T) {

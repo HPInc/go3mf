@@ -13,7 +13,7 @@ func TestNewHandler(t *testing.T) {
 		want *Handler
 	}{
 		{"base", &Handler{
-			lookup:            map[DataType]Handleable{},
+			lookup: map[DataType]Handleable{},
 		}},
 	}
 	for _, tt := range tests {
@@ -94,9 +94,9 @@ func TestHandler_AddNodeColorInfo(t *testing.T) {
 func TestHandler_addInformation(t *testing.T) {
 	h := NewHandler()
 	tests := []struct {
-		name               string
-		h                  *Handler
-		wantPanic          bool
+		name      string
+		h         *Handler
+		wantPanic bool
 	}{
 		{"1", h, false},
 		{"2", h, false},
