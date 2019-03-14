@@ -603,3 +603,91 @@ func TestTexture2DResource_Copy(t *testing.T) {
 		})
 	}
 }
+
+func TestBaseMaterialsResource_Identify(t *testing.T) {
+	tests := []struct {
+		name  string
+		ms    *BaseMaterialsResource
+		want  uint64
+		want1 string
+	}{
+		{"base", &BaseMaterialsResource{ID: 1, ModelPath: "3d/3dmodel.model"}, 1, "3d/3dmodel.model"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := tt.ms.Identify()
+			if got != tt.want {
+				t.Errorf("BaseMaterialsResource.Identify() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("BaseMaterialsResource.Identify() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+
+func TestObjectResource_Identify(t *testing.T) {
+	tests := []struct {
+		name  string
+		o     *ObjectResource
+		want  uint64
+		want1 string
+	}{
+		{"base", &ObjectResource{ID: 1, ModelPath: "3d/3dmodel.model"}, 1, "3d/3dmodel.model"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := tt.o.Identify()
+			if got != tt.want {
+				t.Errorf("ObjectResource.Identify() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("ObjectResource.Identify() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+
+func TestSliceStackResource_Identify(t *testing.T) {
+	tests := []struct {
+		name  string
+		s     *SliceStackResource
+		want  uint64
+		want1 string
+	}{
+		{"base", &SliceStackResource{ID: 1, ModelPath: "3d/3dmodel.model"}, 1, "3d/3dmodel.model"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := tt.s.Identify()
+			if got != tt.want {
+				t.Errorf("SliceStackResource.Identify() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("SliceStackResource.Identify() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+
+func TestTexture2DResource_Identify(t *testing.T) {
+	tests := []struct {
+		name  string
+		t     *Texture2DResource
+		want  uint64
+		want1 string
+	}{
+		{"base", &Texture2DResource{ID: 1, ModelPath: "3d/3dmodel.model"}, 1, "3d/3dmodel.model"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := tt.t.Identify()
+			if got != tt.want {
+				t.Errorf("Texture2DResource.Identify() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("Texture2DResource.Identify() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
