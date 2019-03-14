@@ -4,7 +4,7 @@ import (
 	"math"
 
 	"github.com/qmuntal/go3mf/pkg/semaphore"
-	"github.com/qmuntal/go3mf/pkg/stack"
+	stck "github.com/qmuntal/go3mf/pkg/stack"
 )
 
 const (
@@ -102,7 +102,7 @@ type monitor struct {
 	progressCallback    ProgressCallback
 	userData            interface{}
 	lastCallbackAborted bool
-	levels              stack.ItemStack
+	levels              stck.ItemStack
 	callbackMutex       semaphore.Semaphore
 }
 
