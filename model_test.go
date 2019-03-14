@@ -101,9 +101,9 @@ func TestModel_FindResource(t *testing.T) {
 		wantR  Identifier
 		wantOk bool
 	}{
-		{"exist1", model, args{"", 0}, id1, true},
+		{"emptyPathExist", model, args{"", 1}, id2, true},
+		{"emptyPathNoExist", model, args{"", 0}, nil, false},
 		{"exist2", model, args{"/3D/model.model", 1}, id2, true},
-		{"noexistpath", model, args{"", 1}, nil, false},
 		{"noexist", model, args{"/3D/model.model", 100}, nil, false},
 	}
 	for _, tt := range tests {
