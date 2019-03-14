@@ -6,6 +6,7 @@ import (
 	"errors"
 	"image/color"
 	"io"
+	"os"
 	"strconv"
 	"strings"
 
@@ -30,6 +31,32 @@ type packageReader interface {
 	FindFileFromName(string) (packageFile, bool)
 }
 
+// ReadCloser wrapps a Reader than can be closed.
+type ReadCloser struct {
+	f *os.File
+	*Reader
+}
+
+// OpenReader will open the 3MF file specified by name and return a ReadCloser.
+func OpenReader(name string) (*ReadCloser, error) {
+	f, err := os.Open(name)
+	if err != nil {
+		return nil, err
+	}
+	fi, err := f.Stat()
+	if err != nil {
+		f.Close()
+		return nil, err
+	}
+	r, err := NewReader(f, fi.Size())
+	return &ReadCloser{f: f, Reader: r}, err
+}
+
+// Close closes the 3MF file, rendering it unusable for I/O.
+func (r *ReadCloser) Close() error {
+	return r.f.Close()
+}
+
 // Reader implements a 3mf file reader.
 type Reader struct {
 	Model               *go3mf.Model
@@ -47,7 +74,8 @@ func NewReader(r io.ReaderAt, size int64) (*Reader, error) {
 		return nil, err
 	}
 	return &Reader{
-		r: opcr,
+		r:     opcr,
+		Model: new(go3mf.Model),
 	}, nil
 }
 
@@ -69,8 +97,8 @@ func (r *Reader) SetProgressCallback(callback ProgressCallback, userData interfa
 	r.progress.SetProgressCallback(callback, userData)
 }
 
-// decode reads the 3mf file and unmarshall its content into the model.
-func (r *Reader) decode() error {
+// Decode reads the 3mf file and unmarshall its content into the model.
+func (r *Reader) Decode() error {
 	r.progress.ResetLevels()
 	if err := r.processOPC(); err != nil {
 		return err
