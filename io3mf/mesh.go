@@ -15,11 +15,19 @@ type meshDecoder struct {
 	resource                        go3mf.MeshResource
 	colorMapping                    *colorMapping
 	texCoordMapping                 *texCoordMapping
-	defaultPropID, defaultPropIndex uint64
+	baseMaterialsMap map[uint64]*go3mf.BaseMaterialsResource
 	triangleCounter, vertexCounter  int
 }
 
 func (d *meshDecoder) Decode(x xml.TokenReader) error {
+	d.baseMaterialsMap = make(map[uint64]*go3mf.BaseMaterialsResource)
+	for _, resource := range d.r.Model.Resources {
+		if baseMat, ok := resource.(*go3mf.BaseMaterialsResource); ok {
+			if baseMat.ModelPath == d.resource.ModelPath {
+				d.baseMaterialsMap[baseMat.ID] = baseMat
+			}
+		}
+	}
 	d.resource.Mesh = mesh.NewMesh()
 	d.resource.Mesh.StartCreation(mesh.CreationOptions{CalculateConnectivity: false})
 	defer d.resource.Mesh.EndCreation()
@@ -184,26 +192,26 @@ func (d *meshDecoder) addTriangle(v1, v2, v3 uint32, pid, p1, p2, p3 uint64) err
 	if pid == 0 {
 		return nil
 	}
-	_ = d.checkColor(face, pid, p1, p2, p3) || d.checkBaseMaterial(face, pid, p1) || d.checkTexture(face, pid, p1, p2, p3)
+	_ = d.checkBaseMaterial(face, pid, p1) || d.checkColor(face, pid, p1, p2, p3) || d.checkTexture(face, pid, p1, p2, p3)
 	return nil
 }
 
 func (d *meshDecoder) checkBaseMaterial(face *mesh.Face, pid, p1 uint64) bool {
-	ref, ok := d.r.Model.FindResource(pid, d.resource.ModelPath)
-	if ok {
-		if _, ok := ref.(*go3mf.BaseMaterialsResource); ok {
-			handler := d.resource.Mesh.InformationHandler()
-			var info *meshinfo.FacesData
-			if info, ok = handler.BaseMaterialInfo(); !ok {
-				info = handler.AddBaseMaterialInfo(uint32(len(d.resource.Mesh.Faces)))
-			}
-			faceData := info.FaceData(face.Index).(*meshinfo.BaseMaterial)
-			faceData.GroupID = uint32(pid)
-			faceData.Index = uint32(p1)
-		}
-		return true
+	if _, ok := d.baseMaterialsMap[pid]; !ok {
+		return false
 	}
-	return false
+	handler := d.resource.Mesh.InformationHandler()
+	var (
+		info *meshinfo.FacesData
+		ok bool
+	)
+	if info, ok = handler.BaseMaterialInfo(); !ok {
+		info = handler.AddBaseMaterialInfo(uint32(len(d.resource.Mesh.Faces)))
+	}
+	faceData := info.FaceData(face.Index).(*meshinfo.BaseMaterial)
+	faceData.GroupID = uint32(pid)
+	faceData.Index = uint32(p1)
+	return true
 }
 
 func (d *meshDecoder) checkColor(face *mesh.Face, pid, p1, p2, p3 uint64) (ok bool) {
