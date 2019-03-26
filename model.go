@@ -131,7 +131,8 @@ type ObjectResource struct {
 	SliceStackID    uint64
 	SliceResoultion SliceResolution
 	Thumbnail       string
-	DefaultProperty interface{}
+	DefaultPropertyID uint64
+	DefaultPropertyIndex uint64
 	ObjectType      ObjectType
 }
 

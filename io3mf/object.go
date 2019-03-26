@@ -10,11 +10,10 @@ import (
 )
 
 type objectDecoder struct {
-	r                               *Reader
-	obj                             go3mf.ObjectResource
-	colorMapping                    *colorMapping
-	texCoordMapping                 *texCoordMapping
-	defaultPropID, defaultPropIndex uint64
+	r               *Reader
+	obj             go3mf.ObjectResource
+	colorMapping    *colorMapping
+	texCoordMapping *texCoordMapping
 }
 
 func (d *objectDecoder) Decode(x xml.TokenReader, attrs []xml.Attr) error {
@@ -56,17 +55,17 @@ func (d *objectDecoder) parseMesh(x xml.TokenReader, attrs []xml.Attr) error {
 	md := meshDecoder{
 		r: d.r, resource: go3mf.MeshResource{ObjectResource: d.obj},
 		colorMapping: d.colorMapping, texCoordMapping: d.texCoordMapping,
-		defaultPropID: d.defaultPropID, defaultPropIndex: d.defaultPropIndex,
 	}
 	if err := md.Decode(x); err != nil {
 		return err
 	}
 	d.r.progress.popLevel()
+
 	return nil
 }
 
 func (d *objectDecoder) parseComponents(x xml.TokenReader) error {
-	if d.defaultPropID != 0 {
+	if d.obj.DefaultPropertyID != 0 {
 		d.r.Warnings = append(d.r.Warnings, &ReadError{InvalidOptionalValue, "go3mf: a components object must not have a default PID"})
 	}
 	cd := componentsDecoder{r: d.r, components: go3mf.ComponentsResource{ObjectResource: d.obj}}
@@ -122,12 +121,12 @@ func (d *objectDecoder) parseCoreAttr(a xml.Attr) (err error) {
 	case attrPartNumber:
 		d.obj.PartNumber = a.Value
 	case attrPID:
-		d.defaultPropID, err = strconv.ParseUint(a.Value, 10, 64)
+		d.obj.DefaultPropertyID, err = strconv.ParseUint(a.Value, 10, 64)
 		if err != nil {
 			err = errors.New("go3mf: object resource pid is not valid")
 		}
 	case attrPIndex:
-		d.defaultPropIndex, err = strconv.ParseUint(a.Value, 10, 64)
+		d.obj.DefaultPropertyIndex, err = strconv.ParseUint(a.Value, 10, 64)
 		if err != nil {
 			err = errors.New("go3mf: object resource ºpindex is not valid")
 		}

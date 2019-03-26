@@ -157,10 +157,10 @@ func (d *meshDecoder) parseTriangle(attrs []xml.Attr) (err error) {
 		return
 	}
 
-	p1 = applyDefault(p1, d.defaultPropIndex, hasP1)
+	p1 = applyDefault(p1, d.resource.DefaultPropertyIndex, hasP1)
 	p2 = applyDefault(p2, p1, hasP2)
 	p3 = applyDefault(p3, p1, hasP3)
-	pid = applyDefault(pid, d.defaultPropID, hasPID)
+	pid = applyDefault(pid, d.resource.DefaultPropertyID, hasPID)
 
 	return d.addTriangle(uint32(v1), uint32(v2), uint32(v3), pid, p1, p2, p3)
 }
@@ -184,7 +184,7 @@ func (d *meshDecoder) addTriangle(v1, v2, v3 uint32, pid, p1, p2, p3 uint64) err
 	if pid == 0 {
 		return nil
 	}
-	_ = d.checkBaseMaterial(face, pid, p1) || d.checkColor(face, pid, p1, p2, p3) || d.checkTexture(face, pid, p1, p2, p3)
+	_ = d.checkColor(face, pid, p1, p2, p3) || d.checkBaseMaterial(face, pid, p1) || d.checkTexture(face, pid, p1, p2, p3)
 	return nil
 }
 

@@ -288,7 +288,7 @@ func TestReader_processRootModel(t *testing.T) {
 	sliceStackRef.UsesSliceRef = true
 	sliceStackRef.Slices = append(sliceStackRef.Slices, otherSlices.Slices...)
 	meshRes := &go3mf.MeshResource{
-		ObjectResource: go3mf.ObjectResource{ID: 1, Name: "Box 1", ModelPath: "3d/3dmodel.model", SliceStackID: 3, SliceResoultion: go3mf.ResolutionLow, PartNumber: "11111111-1111-1111-1111-111111111111"},
+		ObjectResource: go3mf.ObjectResource{ID: 1, Name: "Box 1", ModelPath: "3d/3dmodel.model", SliceStackID: 3, DefaultPropertyID: 5, SliceResoultion: go3mf.ResolutionLow, PartNumber: "11111111-1111-1111-1111-111111111111"},
 		Mesh:           mesh.NewMesh(),
 	}
 	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []mesh.Node{
