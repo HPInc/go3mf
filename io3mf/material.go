@@ -15,7 +15,7 @@ type colorGroupDecoder struct {
 	colorIndex   uint64
 }
 
-func (d *colorGroupDecoder) Decode(x *xml.Decoder, se xml.StartElement) error {
+func (d *colorGroupDecoder) Decode(x xml.TokenReader, se xml.StartElement) error {
 	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
@@ -79,7 +79,7 @@ type tex2DGroupDecoder struct {
 	texCoordIndex   uint64
 }
 
-func (d *tex2DGroupDecoder) Decode(x *xml.Decoder, se xml.StartElement) error {
+func (d *tex2DGroupDecoder) Decode(x xml.TokenReader, se xml.StartElement) error {
 	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}

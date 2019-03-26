@@ -79,7 +79,7 @@ func (d *resourceDecoder) init() {
 	d.texCoordMapping.resources = make(map[uint64]struct{})
 }
 
-func (d *resourceDecoder) Decode(x *xml.Decoder, se xml.StartElement) error {
+func (d *resourceDecoder) Decode(x xml.TokenReader, se xml.StartElement) error {
 	d.init()
 	for {
 		t, err := x.Token()
@@ -106,7 +106,7 @@ func (d *resourceDecoder) Decode(x *xml.Decoder, se xml.StartElement) error {
 	}
 }
 
-func (d *resourceDecoder) processCoreContent(x *xml.Decoder, se xml.StartElement) (err error) {
+func (d *resourceDecoder) processCoreContent(x xml.TokenReader, se xml.StartElement) (err error) {
 	switch se.Name.Local {
 	case attrObject:
 		d.progressCount++
@@ -126,7 +126,7 @@ func (d *resourceDecoder) processCoreContent(x *xml.Decoder, se xml.StartElement
 	return
 }
 
-func (d *resourceDecoder) processMaterialContent(x *xml.Decoder, se xml.StartElement) error {
+func (d *resourceDecoder) processMaterialContent(x xml.TokenReader, se xml.StartElement) error {
 	switch se.Name.Local {
 	case attrColorGroup:
 		cd := colorGroupDecoder{r: d.r, colorMapping: &d.colorMapping}
@@ -144,7 +144,7 @@ func (d *resourceDecoder) processMaterialContent(x *xml.Decoder, se xml.StartEle
 	return nil
 }
 
-func (d *resourceDecoder) processSliceContent(x *xml.Decoder, se xml.StartElement) error {
+func (d *resourceDecoder) processSliceContent(x xml.TokenReader, se xml.StartElement) error {
 	if se.Name.Local != attrSliceStack {
 		return nil
 	}
@@ -185,7 +185,7 @@ func (d *baseMaterialsDecoder) parseAttr(attrs []xml.Attr) (err error) {
 	return
 }
 
-func (d *baseMaterialsDecoder) Decode(x *xml.Decoder, se xml.StartElement) error {
+func (d *baseMaterialsDecoder) Decode(x xml.TokenReader, se xml.StartElement) error {
 	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
@@ -199,7 +199,7 @@ func (d *baseMaterialsDecoder) Decode(x *xml.Decoder, se xml.StartElement) error
 	return nil
 }
 
-func (d *baseMaterialsDecoder) parseContent(x *xml.Decoder) error {
+func (d *baseMaterialsDecoder) parseContent(x xml.TokenReader) error {
 	for {
 		t, err := x.Token()
 		if err != nil {

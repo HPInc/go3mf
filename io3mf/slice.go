@@ -14,7 +14,7 @@ type sliceStackDecoder struct {
 	progressCount uint64
 }
 
-func (d *sliceStackDecoder) Decode(x *xml.Decoder, se xml.StartElement) error {
+func (d *sliceStackDecoder) Decode(x xml.TokenReader, se xml.StartElement) error {
 	d.sliceStack.SliceStack = new(go3mf.SliceStack)
 	if err := d.parseAttr(se.Attr); err != nil {
 		return err
@@ -51,7 +51,7 @@ func (d *sliceStackDecoder) parseAttr(attrs []xml.Attr) error {
 	return nil
 }
 
-func (d *sliceStackDecoder) parseContent(x *xml.Decoder) error {
+func (d *sliceStackDecoder) parseContent(x xml.TokenReader) error {
 	var hasSliceRef, hasSlice bool
 	for {
 		t, err := x.Token()
@@ -130,7 +130,7 @@ func (d *sliceStackDecoder) addSliceRef(sliceStackID uint64, path string) error 
 	return nil
 }
 
-func (d *sliceStackDecoder) parseSlice(x *xml.Decoder, se xml.StartElement) (err error) {
+func (d *sliceStackDecoder) parseSlice(x xml.TokenReader, se xml.StartElement) (err error) {
 	if len(d.sliceStack.Slices)%readSliceUpdate == readSliceUpdate-1 {
 		d.progressCount++
 		if !d.r.progress.progress(1.0-2.0/float64(d.progressCount+2), StageReadSlices) {
@@ -148,7 +148,7 @@ type sliceDecoder struct {
 	hasTopZ    bool
 }
 
-func (d *sliceDecoder) Decode(x *xml.Decoder, se xml.StartElement) error {
+func (d *sliceDecoder) Decode(x xml.TokenReader, se xml.StartElement) error {
 	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
@@ -178,7 +178,7 @@ func (d *sliceDecoder) parseAttr(attrs []xml.Attr) (err error) {
 	return
 }
 
-func (d *sliceDecoder) parseContent(x *xml.Decoder) error {
+func (d *sliceDecoder) parseContent(x xml.TokenReader) error {
 	for {
 		t, err := x.Token()
 		if err != nil {
@@ -205,7 +205,7 @@ func (d *sliceDecoder) parseContent(x *xml.Decoder) error {
 	}
 }
 
-func (d *sliceDecoder) parseVertices(x *xml.Decoder, se xml.StartElement) error {
+func (d *sliceDecoder) parseVertices(x xml.TokenReader, se xml.StartElement) error {
 	for {
 		t, err := x.Token()
 		if err != nil {
@@ -247,7 +247,7 @@ func (d *sliceDecoder) parseVertex(attrs []xml.Attr) error {
 	return nil
 }
 
-func (d *sliceDecoder) parsePolygons(x *xml.Decoder, se xml.StartElement) error {
+func (d *sliceDecoder) parsePolygons(x xml.TokenReader, se xml.StartElement) error {
 	polygonIndex := d.slice.BeginPolygon()
 	if err := d.parsePolygonAttr(polygonIndex, se.Attr); err != nil {
 		return err

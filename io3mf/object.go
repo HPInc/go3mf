@@ -17,14 +17,14 @@ type objectDecoder struct {
 	defaultPropID, defaultPropIndex uint64
 }
 
-func (d *objectDecoder) Decode(x *xml.Decoder, se xml.StartElement) error {
+func (d *objectDecoder) Decode(x xml.TokenReader, se xml.StartElement) error {
 	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
 	return d.parseContent(x)
 }
 
-func (d *objectDecoder) parseContent(x *xml.Decoder) error {
+func (d *objectDecoder) parseContent(x xml.TokenReader) error {
 	for {
 		t, err := x.Token()
 		if err != nil {
@@ -51,7 +51,7 @@ func (d *objectDecoder) parseContent(x *xml.Decoder) error {
 	}
 }
 
-func (d *objectDecoder) parseMesh(x *xml.Decoder, se xml.StartElement) error {
+func (d *objectDecoder) parseMesh(x xml.TokenReader, se xml.StartElement) error {
 	d.r.progress.pushLevel(1, 0)
 	md := meshDecoder{
 		r: d.r, resource: go3mf.MeshResource{ObjectResource: d.obj},
@@ -65,7 +65,7 @@ func (d *objectDecoder) parseMesh(x *xml.Decoder, se xml.StartElement) error {
 	return nil
 }
 
-func (d *objectDecoder) parseComponents(x *xml.Decoder, se xml.StartElement) error {
+func (d *objectDecoder) parseComponents(x xml.TokenReader, se xml.StartElement) error {
 	if d.defaultPropID != 0 {
 		d.r.Warnings = append(d.r.Warnings, &ReadError{InvalidOptionalValue, "go3mf: a components object must not have a default PID"})
 	}
@@ -160,7 +160,7 @@ type componentsDecoder struct {
 	components go3mf.ComponentsResource
 }
 
-func (d *componentsDecoder) Decode(x *xml.Decoder, se xml.StartElement) error {
+func (d *componentsDecoder) Decode(x xml.TokenReader, se xml.StartElement) error {
 	for {
 		t, err := x.Token()
 		if err != nil {

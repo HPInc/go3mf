@@ -19,7 +19,7 @@ type meshDecoder struct {
 	triangleCounter, vertexCounter  int
 }
 
-func (d *meshDecoder) Decode(x *xml.Decoder, se xml.StartElement) error {
+func (d *meshDecoder) Decode(x xml.TokenReader, se xml.StartElement) error {
 	d.resource.Mesh = mesh.NewMesh()
 	d.resource.Mesh.StartCreation(mesh.CreationOptions{CalculateConnectivity: false})
 	defer d.resource.Mesh.EndCreation()
@@ -50,7 +50,7 @@ func (d *meshDecoder) Decode(x *xml.Decoder, se xml.StartElement) error {
 	}
 }
 
-func (d *meshDecoder) parseVertices(x *xml.Decoder, se xml.StartElement) error {
+func (d *meshDecoder) parseVertices(x xml.TokenReader, se xml.StartElement) error {
 	if len(d.resource.Mesh.Nodes)%readVerticesUpdate == readVerticesUpdate-1 {
 		d.vertexCounter++
 		if !d.r.progress.progress(0.5-1.0/float64(d.vertexCounter+2), StageReadMesh) {
@@ -98,7 +98,7 @@ func (d *meshDecoder) parseVertex(attrs []xml.Attr) (err error) {
 	return
 }
 
-func (d *meshDecoder) parseTriangles(x *xml.Decoder, se xml.StartElement) error {
+func (d *meshDecoder) parseTriangles(x xml.TokenReader, se xml.StartElement) error {
 	if len(d.resource.Mesh.Faces)%readTrianglesUpdate == readTrianglesUpdate-1 {
 		d.triangleCounter++
 		if !d.r.progress.progress(1.0-1.0/float64(d.triangleCounter+2), StageReadMesh) {

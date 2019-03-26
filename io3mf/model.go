@@ -18,7 +18,7 @@ type modelDecoder struct {
 	withinIgnoredElement bool
 }
 
-func (d *modelDecoder) Decode(x *xml.Decoder, se xml.StartElement) error {
+func (d *modelDecoder) Decode(x xml.TokenReader, se xml.StartElement) error {
 	if err := d.parseAttr(se.Attr); err != nil {
 		return err
 	}
@@ -48,7 +48,7 @@ func (d *modelDecoder) Decode(x *xml.Decoder, se xml.StartElement) error {
 	}
 }
 
-func (d *modelDecoder) parseBuild(x *xml.Decoder, se xml.StartElement) error {
+func (d *modelDecoder) parseBuild(x xml.TokenReader, se xml.StartElement) error {
 	if d.hasBuild {
 		return errors.New("go3mf: duplicate build section in model file")
 	}
@@ -68,7 +68,7 @@ func (d *modelDecoder) parseBuild(x *xml.Decoder, se xml.StartElement) error {
 	return nil
 }
 
-func (d *modelDecoder) parseResources(x *xml.Decoder, se xml.StartElement) error {
+func (d *modelDecoder) parseResources(x xml.TokenReader, se xml.StartElement) error {
 	d.withinIgnoredElement = false
 	if !d.r.progress.progress(0.2, StageReadResources) {
 		return ErrUserAborted
