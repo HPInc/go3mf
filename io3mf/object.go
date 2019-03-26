@@ -17,8 +17,8 @@ type objectDecoder struct {
 	defaultPropID, defaultPropIndex uint64
 }
 
-func (d *objectDecoder) Decode(x xml.TokenReader, se xml.StartElement) error {
-	if err := d.parseAttr(se.Attr); err != nil {
+func (d *objectDecoder) Decode(x xml.TokenReader, attrs []xml.Attr) error {
+	if err := d.parseAttr(attrs); err != nil {
 		return err
 	}
 	return d.parseContent(x)
@@ -35,9 +35,9 @@ func (d *objectDecoder) parseContent(x xml.TokenReader) error {
 			var err error
 			if tp.Name.Space == nsCoreSpec {
 				if tp.Name.Local == attrMesh {
-					err = d.parseMesh(x, tp)
+					err = d.parseMesh(x, tp.Attr)
 				} else if tp.Name.Local == attrComponents {
-					err = d.parseComponents(x, tp)
+					err = d.parseComponents(x)
 				}
 			}
 			if err != nil {
@@ -51,26 +51,26 @@ func (d *objectDecoder) parseContent(x xml.TokenReader) error {
 	}
 }
 
-func (d *objectDecoder) parseMesh(x xml.TokenReader, se xml.StartElement) error {
+func (d *objectDecoder) parseMesh(x xml.TokenReader, attrs []xml.Attr) error {
 	d.r.progress.pushLevel(1, 0)
 	md := meshDecoder{
 		r: d.r, resource: go3mf.MeshResource{ObjectResource: d.obj},
 		colorMapping: d.colorMapping, texCoordMapping: d.texCoordMapping,
 		defaultPropID: d.defaultPropID, defaultPropIndex: d.defaultPropIndex,
 	}
-	if err := md.Decode(x, se); err != nil {
+	if err := md.Decode(x); err != nil {
 		return err
 	}
 	d.r.progress.popLevel()
 	return nil
 }
 
-func (d *objectDecoder) parseComponents(x xml.TokenReader, se xml.StartElement) error {
+func (d *objectDecoder) parseComponents(x xml.TokenReader) error {
 	if d.defaultPropID != 0 {
 		d.r.Warnings = append(d.r.Warnings, &ReadError{InvalidOptionalValue, "go3mf: a components object must not have a default PID"})
 	}
 	cd := componentsDecoder{r: d.r, components: go3mf.ComponentsResource{ObjectResource: d.obj}}
-	return cd.Decode(x, se)
+	return cd.Decode(x)
 }
 
 func (d *objectDecoder) parseAttr(attrs []xml.Attr) (err error) {
@@ -160,7 +160,7 @@ type componentsDecoder struct {
 	components go3mf.ComponentsResource
 }
 
-func (d *componentsDecoder) Decode(x xml.TokenReader, se xml.StartElement) error {
+func (d *componentsDecoder) Decode(x xml.TokenReader) error {
 	for {
 		t, err := x.Token()
 		if err != nil {

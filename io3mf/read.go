@@ -137,7 +137,7 @@ mainLoop:
 		case xml.StartElement:
 			if tp.Name.Local == attrModel {
 				md := modelDecoder{r: r, path: rootFile.Name()}
-				err = md.Decode(x, tp)
+				err = md.Decode(x, tp.Attr)
 				break mainLoop
 			}
 		}

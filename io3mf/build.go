@@ -13,8 +13,8 @@ type buildDecoder struct {
 	r *Reader
 }
 
-func (d *buildDecoder) Decode(x xml.TokenReader, se xml.StartElement) error {
-	if err := d.parseAttr(se.Attr); err != nil {
+func (d *buildDecoder) Decode(x xml.TokenReader, attrs []xml.Attr) error {
+	if err := d.parseAttr(attrs); err != nil {
 		return err
 	}
 	for {
@@ -26,7 +26,7 @@ func (d *buildDecoder) Decode(x xml.TokenReader, se xml.StartElement) error {
 		case xml.StartElement:
 			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrItem {
 				bd := buildItemDecoder{r: d.r}
-				if err := bd.Decode(tp); err != nil {
+				if err := bd.Decode(tp.Attr); err != nil {
 					return err
 				}
 			}
@@ -64,8 +64,8 @@ type buildItemDecoder struct {
 	objectPath string
 }
 
-func (d *buildItemDecoder) Decode(se xml.StartElement) error {
-	if err := d.parseAttr(se.Attr); err != nil {
+func (d *buildItemDecoder) Decode(attrs []xml.Attr) error {
+	if err := d.parseAttr(attrs); err != nil {
 		return err
 	}
 	if d.objectID == 0 {

@@ -79,7 +79,7 @@ func (d *resourceDecoder) init() {
 	d.texCoordMapping.resources = make(map[uint64]struct{})
 }
 
-func (d *resourceDecoder) Decode(x xml.TokenReader, se xml.StartElement) error {
+func (d *resourceDecoder) Decode(x xml.TokenReader) error {
 	d.init()
 	for {
 		t, err := x.Token()
@@ -116,12 +116,12 @@ func (d *resourceDecoder) processCoreContent(x xml.TokenReader, se xml.StartElem
 		d.r.progress.pushLevel(1.0-2.0/float64(d.progressCount+2), 1.0-2.0/float64(d.progressCount+1+2))
 		od := objectDecoder{r: d.r, texCoordMapping: &d.texCoordMapping, colorMapping: &d.colorMapping}
 		od.obj.ModelPath = d.path
-		err = od.Decode(x, se)
+		err = od.Decode(x, se.Attr)
 		d.r.progress.popLevel()
 	case attrBaseMaterials:
 		md := baseMaterialsDecoder{r: d.r}
 		md.baseMaterials.ModelPath = d.path
-		err = md.Decode(x, se)
+		err = md.Decode(x, se.Attr)
 	}
 	return
 }
@@ -130,14 +130,14 @@ func (d *resourceDecoder) processMaterialContent(x xml.TokenReader, se xml.Start
 	switch se.Name.Local {
 	case attrColorGroup:
 		cd := colorGroupDecoder{r: d.r, colorMapping: &d.colorMapping}
-		return cd.Decode(x, se)
+		return cd.Decode(x, se.Attr)
 	case attrTexture2DGroup:
 		td := tex2DGroupDecoder{r: d.r, texCoordMapping: &d.texCoordMapping}
-		return td.Decode(x, se)
+		return td.Decode(x, se.Attr)
 	case attrTexture2D:
 		td := texture2DDecoder{r: d.r}
 		td.texture.ModelPath = d.path
-		return td.Decode(se)
+		return td.Decode(se.Attr)
 	case attrComposite:
 		d.r.Warnings = append(d.r.Warnings, &ReadError{InvalidOptionalValue, "go3mf: composite materials extension not supported"})
 	}
@@ -155,7 +155,7 @@ func (d *resourceDecoder) processSliceContent(x xml.TokenReader, se xml.StartEle
 	d.r.progress.pushLevel(1.0-2.0/float64(d.progressCount+2), 1.0-2.0/float64(d.progressCount+1+2))
 	sd := sliceStackDecoder{r: d.r}
 	sd.sliceStack.ModelPath = d.path
-	err := sd.Decode(x, se)
+	err := sd.Decode(x, se.Attr)
 	d.r.progress.popLevel()
 	return err
 }
@@ -185,8 +185,8 @@ func (d *baseMaterialsDecoder) parseAttr(attrs []xml.Attr) (err error) {
 	return
 }
 
-func (d *baseMaterialsDecoder) Decode(x xml.TokenReader, se xml.StartElement) error {
-	if err := d.parseAttr(se.Attr); err != nil {
+func (d *baseMaterialsDecoder) Decode(x xml.TokenReader, attrs []xml.Attr) error {
+	if err := d.parseAttr(attrs); err != nil {
 		return err
 	}
 	if d.baseMaterials.ID == 0 {

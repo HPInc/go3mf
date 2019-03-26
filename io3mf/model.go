@@ -18,8 +18,8 @@ type modelDecoder struct {
 	withinIgnoredElement bool
 }
 
-func (d *modelDecoder) Decode(x xml.TokenReader, se xml.StartElement) error {
-	if err := d.parseAttr(se.Attr); err != nil {
+func (d *modelDecoder) Decode(x xml.TokenReader, attrs []xml.Attr) error {
+	if err := d.parseAttr(attrs); err != nil {
 		return err
 	}
 	for {
@@ -31,11 +31,11 @@ func (d *modelDecoder) Decode(x xml.TokenReader, se xml.StartElement) error {
 		case xml.StartElement:
 			if tp.Name.Space == nsCoreSpec {
 				if tp.Name.Local == attrResources {
-					if err := d.parseResources(x, tp); err != nil {
+					if err := d.parseResources(x); err != nil {
 						return err
 					}
 				} else if tp.Name.Local == attrBuild {
-					if err := d.parseBuild(x, tp); err != nil {
+					if err := d.parseBuild(x, tp.Attr); err != nil {
 						return err
 					}
 				}
@@ -48,7 +48,7 @@ func (d *modelDecoder) Decode(x xml.TokenReader, se xml.StartElement) error {
 	}
 }
 
-func (d *modelDecoder) parseBuild(x xml.TokenReader, se xml.StartElement) error {
+func (d *modelDecoder) parseBuild(x xml.TokenReader, attrs []xml.Attr) error {
 	if d.hasBuild {
 		return errors.New("go3mf: duplicate build section in model file")
 	}
@@ -60,7 +60,7 @@ func (d *modelDecoder) parseBuild(x xml.TokenReader, se xml.StartElement) error 
 			return ErrUserAborted
 		}
 		rd := buildDecoder{r: d.r}
-		if err := rd.Decode(x, se); err != nil {
+		if err := rd.Decode(x, attrs); err != nil {
 			return err
 		}
 	}
@@ -68,7 +68,7 @@ func (d *modelDecoder) parseBuild(x xml.TokenReader, se xml.StartElement) error 
 	return nil
 }
 
-func (d *modelDecoder) parseResources(x xml.TokenReader, se xml.StartElement) error {
+func (d *modelDecoder) parseResources(x xml.TokenReader) error {
 	d.withinIgnoredElement = false
 	if !d.r.progress.progress(0.2, StageReadResources) {
 		return ErrUserAborted
@@ -78,7 +78,7 @@ func (d *modelDecoder) parseResources(x xml.TokenReader, se xml.StartElement) er
 		return errors.New("go3mf: duplicate resources section in model file")
 	}
 	rd := resourceDecoder{r: d.r, path: d.path}
-	if err := rd.Decode(x, se); err != nil {
+	if err := rd.Decode(x); err != nil {
 		return err
 	}
 	d.r.progress.popLevel()

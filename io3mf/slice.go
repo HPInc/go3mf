@@ -14,9 +14,9 @@ type sliceStackDecoder struct {
 	progressCount uint64
 }
 
-func (d *sliceStackDecoder) Decode(x xml.TokenReader, se xml.StartElement) error {
+func (d *sliceStackDecoder) Decode(x xml.TokenReader, attrs []xml.Attr) error {
 	d.sliceStack.SliceStack = new(go3mf.SliceStack)
-	if err := d.parseAttr(se.Attr); err != nil {
+	if err := d.parseAttr(attrs); err != nil {
 		return err
 	}
 	if d.sliceStack.ID == 0 {
@@ -68,14 +68,14 @@ func (d *sliceStackDecoder) parseContent(x xml.TokenReader) error {
 					err = errors.New("go3mf: slicestack contains slices and slicerefs")
 				} else {
 					hasSlice = true
-					err = d.parseSlice(x, tp)
+					err = d.parseSlice(x, tp.Attr)
 				}
 			} else if tp.Name.Local == attrSliceRef {
 				if hasSlice {
 					err = errors.New("go3mf: slicestack contains slices and slicerefs")
 				} else {
 					hasSliceRef = true
-					err = d.parseSliceRef(tp)
+					err = d.parseSliceRef(tp.Attr)
 				}
 			}
 		case xml.EndElement:
@@ -89,11 +89,11 @@ func (d *sliceStackDecoder) parseContent(x xml.TokenReader) error {
 	}
 }
 
-func (d *sliceStackDecoder) parseSliceRef(se xml.StartElement) error {
+func (d *sliceStackDecoder) parseSliceRef(attrs []xml.Attr) error {
 	var sliceStackID uint64
 	var path string
 	var err error
-	for _, a := range se.Attr {
+	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrSliceRefID:
 			sliceStackID, err = strconv.ParseUint(a.Value, 10, 64)
@@ -130,7 +130,7 @@ func (d *sliceStackDecoder) addSliceRef(sliceStackID uint64, path string) error 
 	return nil
 }
 
-func (d *sliceStackDecoder) parseSlice(x xml.TokenReader, se xml.StartElement) (err error) {
+func (d *sliceStackDecoder) parseSlice(x xml.TokenReader, attrs []xml.Attr) (err error) {
 	if len(d.sliceStack.Slices)%readSliceUpdate == readSliceUpdate-1 {
 		d.progressCount++
 		if !d.r.progress.progress(1.0-2.0/float64(d.progressCount+2), StageReadSlices) {
@@ -138,7 +138,7 @@ func (d *sliceStackDecoder) parseSlice(x xml.TokenReader, se xml.StartElement) (
 		}
 	}
 	sd := sliceDecoder{r: d.r, sliceStack: d.sliceStack.SliceStack}
-	return sd.Decode(x, se)
+	return sd.Decode(x, attrs)
 }
 
 type sliceDecoder struct {
@@ -148,8 +148,8 @@ type sliceDecoder struct {
 	hasTopZ    bool
 }
 
-func (d *sliceDecoder) Decode(x xml.TokenReader, se xml.StartElement) error {
-	if err := d.parseAttr(se.Attr); err != nil {
+func (d *sliceDecoder) Decode(x xml.TokenReader, attrs []xml.Attr) error {
+	if err := d.parseAttr(attrs); err != nil {
 		return err
 	}
 	if !d.hasTopZ {
@@ -190,9 +190,9 @@ func (d *sliceDecoder) parseContent(x xml.TokenReader) error {
 				continue
 			}
 			if tp.Name.Local == attrVertices {
-				err = d.parseVertices(x, tp)
+				err = d.parseVertices(x)
 			} else if tp.Name.Local == attrPolygon {
-				err = d.parsePolygons(x, tp)
+				err = d.parsePolygons(x, tp.Attr)
 			}
 		case xml.EndElement:
 			if tp.Name.Space == nsSliceSpec && tp.Name.Local == attrSlice {
@@ -205,7 +205,7 @@ func (d *sliceDecoder) parseContent(x xml.TokenReader) error {
 	}
 }
 
-func (d *sliceDecoder) parseVertices(x xml.TokenReader, se xml.StartElement) error {
+func (d *sliceDecoder) parseVertices(x xml.TokenReader) error {
 	for {
 		t, err := x.Token()
 		if err != nil {
@@ -247,9 +247,9 @@ func (d *sliceDecoder) parseVertex(attrs []xml.Attr) error {
 	return nil
 }
 
-func (d *sliceDecoder) parsePolygons(x xml.TokenReader, se xml.StartElement) error {
+func (d *sliceDecoder) parsePolygons(x xml.TokenReader, attrs []xml.Attr) error {
 	polygonIndex := d.slice.BeginPolygon()
-	if err := d.parsePolygonAttr(polygonIndex, se.Attr); err != nil {
+	if err := d.parsePolygonAttr(polygonIndex, attrs); err != nil {
 		return err
 	}
 	for {

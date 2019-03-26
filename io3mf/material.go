@@ -15,8 +15,8 @@ type colorGroupDecoder struct {
 	colorIndex   uint64
 }
 
-func (d *colorGroupDecoder) Decode(x xml.TokenReader, se xml.StartElement) error {
-	if err := d.parseAttr(se.Attr); err != nil {
+func (d *colorGroupDecoder) Decode(x xml.TokenReader, attrs []xml.Attr) error {
+	if err := d.parseAttr(attrs); err != nil {
 		return err
 	}
 	if d.id == 0 {
@@ -79,8 +79,8 @@ type tex2DGroupDecoder struct {
 	texCoordIndex   uint64
 }
 
-func (d *tex2DGroupDecoder) Decode(x xml.TokenReader, se xml.StartElement) error {
-	if err := d.parseAttr(se.Attr); err != nil {
+func (d *tex2DGroupDecoder) Decode(x xml.TokenReader, attrs []xml.Attr) error {
+	if err := d.parseAttr(attrs); err != nil {
 		return err
 	}
 	if d.id == 0 {
@@ -157,8 +157,8 @@ type texture2DDecoder struct {
 	texture go3mf.Texture2DResource
 }
 
-func (d *texture2DDecoder) Decode(se xml.StartElement) error {
-	if err := d.parseAttr(se.Attr); err != nil {
+func (d *texture2DDecoder) Decode(attrs []xml.Attr) error {
+	if err := d.parseAttr(attrs); err != nil {
 		return err
 	}
 	if d.texture.ID == 0 {
