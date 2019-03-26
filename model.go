@@ -12,7 +12,7 @@ import (
 
 // Identifier defines an object than can be uniquely identified.
 type Identifier interface {
-	Identify() (uint64, string)
+	Identify() string
 }
 
 // Object defines a composable object.
@@ -55,9 +55,9 @@ func (m *Model) FindResource(id uint64, path string) (i Identifier, ok bool) {
 	if path == "" {
 		path = m.Path
 	}
+	identity := identification(path, id)
 	for _, value := range m.Resources {
-		cid, cpath := value.Identify()
-		if cid == id && cpath == path {
+		if identity == value.Identify() {
 			i = value
 			ok = true
 			break
@@ -86,9 +86,9 @@ type BaseMaterialsResource struct {
 	Materials []BaseMaterial
 }
 
-// Identify returns the resource ID and the ModelPath.
-func (ms *BaseMaterialsResource) Identify() (uint64, string) {
-	return ms.ID, ms.ModelPath
+// Identify returns the unique ID of the resource.
+func (ms *BaseMaterialsResource) Identify() string {
+	return identification(ms.ModelPath, ms.ID)
 }
 
 // Merge appends all the other base materials.
@@ -136,9 +136,9 @@ type ObjectResource struct {
 	ObjectType      ObjectType
 }
 
-// Identify returns the resource ID and the ModelPath.
-func (o *ObjectResource) Identify() (uint64, string) {
-	return o.ID, o.ModelPath
+// Identify returns the unique ID of the resource.
+func (o *ObjectResource) Identify() string {
+	return identification(o.ModelPath, o.ID)
 }
 
 // Type returns the type of the object.
@@ -334,9 +334,9 @@ type SliceStackResource struct {
 	TimesRefered int
 }
 
-// Identify returns the resource ID and the ModelPath.
-func (s *SliceStackResource) Identify() (uint64, string) {
-	return s.ID, s.ModelPath
+// Identify returns the unique ID of the resource.
+func (s *SliceStackResource) Identify() string {
+	return identification(s.ModelPath, s.ID)
 }
 
 // Texture2DResource Resource defines the Model Texture 2D.
@@ -350,9 +350,9 @@ type Texture2DResource struct {
 	Filter      TextureFilter
 }
 
-// Identify returns the resource ID and the ModelPath.
-func (t *Texture2DResource) Identify() (uint64, string) {
-	return t.ID, t.ModelPath
+// Identify returns the unique ID of the resource.
+func (t *Texture2DResource) Identify() string {
+	return identification(t.ModelPath, t.ID)
 }
 
 // Copy copies the properties from another texture.
@@ -361,4 +361,8 @@ func (t *Texture2DResource) Copy(other *Texture2DResource) {
 	t.ContentType = other.ContentType
 	t.TileStyleU = other.TileStyleU
 	t.TileStyleV = other.TileStyleV
+}
+
+func identification(path string, id uint64) string {
+	return fmt.Sprintf("%s/%d", path, id)
 }
