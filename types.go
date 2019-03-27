@@ -254,6 +254,12 @@ type Attachment struct {
 	Path             string
 }
 
+// ProductionAttachment defines the Model Production Attachment.
+type ProductionAttachment struct {
+	RelationshipType string
+	Path             string
+}
+
 // DefaultBaseMaterial defines the default base material property.
 type DefaultBaseMaterial struct {
 	ResourceID    uint64

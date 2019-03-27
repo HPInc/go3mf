@@ -11,12 +11,12 @@ import (
 )
 
 type meshDecoder struct {
-	r                               *Reader
-	resource                        go3mf.MeshResource
-	colorMapping                    *colorMapping
-	texCoordMapping                 *texCoordMapping
-	baseMaterialsMap map[uint64]*go3mf.BaseMaterialsResource
-	triangleCounter, vertexCounter  int
+	r                              *Reader
+	resource                       go3mf.MeshResource
+	colorMapping                   *colorMapping
+	texCoordMapping                *texCoordMapping
+	baseMaterialsMap               map[uint64]*go3mf.BaseMaterialsResource
+	triangleCounter, vertexCounter int
 }
 
 func (d *meshDecoder) Decode(x xml.TokenReader) error {
@@ -203,7 +203,7 @@ func (d *meshDecoder) checkBaseMaterial(face *mesh.Face, pid, p1 uint64) bool {
 	handler := d.resource.Mesh.InformationHandler()
 	var (
 		info *meshinfo.FacesData
-		ok bool
+		ok   bool
 	)
 	if info, ok = handler.BaseMaterialInfo(); !ok {
 		info = handler.AddBaseMaterialInfo(uint32(len(d.resource.Mesh.Faces)))

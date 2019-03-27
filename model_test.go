@@ -606,8 +606,8 @@ func TestTexture2DResource_Copy(t *testing.T) {
 
 func TestBaseMaterialsResource_Identify(t *testing.T) {
 	tests := []struct {
-		name  string
-		ms    *BaseMaterialsResource
+		name string
+		ms   *BaseMaterialsResource
 		want string
 	}{
 		{"base", &BaseMaterialsResource{ID: 1, ModelPath: "3d/3dmodel.model"}, "3d/3dmodel.model/1"},
@@ -624,9 +624,9 @@ func TestBaseMaterialsResource_Identify(t *testing.T) {
 
 func TestObjectResource_Identify(t *testing.T) {
 	tests := []struct {
-		name  string
-		o     *ObjectResource
-		want  string
+		name string
+		o    *ObjectResource
+		want string
 	}{
 		{"base", &ObjectResource{ID: 1, ModelPath: "3d/3dmodel.model"}, "3d/3dmodel.model/1"},
 	}
@@ -642,9 +642,9 @@ func TestObjectResource_Identify(t *testing.T) {
 
 func TestSliceStackResource_Identify(t *testing.T) {
 	tests := []struct {
-		name  string
-		s     *SliceStackResource
-		want  string
+		name string
+		s    *SliceStackResource
+		want string
 	}{
 		{"base", &SliceStackResource{ID: 1, ModelPath: "3d/3dmodel.model"}, "3d/3dmodel.model/1"},
 	}
@@ -660,9 +660,9 @@ func TestSliceStackResource_Identify(t *testing.T) {
 
 func TestTexture2DResource_Identify(t *testing.T) {
 	tests := []struct {
-		name  string
-		t     *Texture2DResource
-		want  string
+		name string
+		t    *Texture2DResource
+		want string
 	}{
 		{"base", &Texture2DResource{ID: 1, ModelPath: "3d/3dmodel.model"}, "3d/3dmodel.model/1"},
 	}

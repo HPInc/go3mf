@@ -34,7 +34,7 @@ type Model struct {
 	Resources             []Identifier
 	BuildItems            []*BuildItem
 	Attachments           []*Attachment
-	ProductionAttachments []*Attachment
+	ProductionAttachments []*ProductionAttachment
 }
 
 // SetThumbnail sets the package thumbnail.
@@ -123,17 +123,17 @@ func (b *BuildItem) MergeToMesh(m *mesh.Mesh) {
 
 // An ObjectResource is an in memory representation of the 3MF model object.
 type ObjectResource struct {
-	ID              uint64
-	ModelPath       string
-	UUID            string
-	Name            string
-	PartNumber      string
-	SliceStackID    uint64
-	SliceResoultion SliceResolution
-	Thumbnail       string
-	DefaultPropertyID uint64
+	ID                   uint64
+	ModelPath            string
+	UUID                 string
+	Name                 string
+	PartNumber           string
+	SliceStackID         uint64
+	SliceResoultion      SliceResolution
+	Thumbnail            string
+	DefaultPropertyID    uint64
 	DefaultPropertyIndex uint64
-	ObjectType      ObjectType
+	ObjectType           ObjectType
 }
 
 // Identify returns the unique ID of the resource.

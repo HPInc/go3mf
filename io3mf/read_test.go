@@ -200,7 +200,7 @@ func TestReader_processOPC(t *testing.T) {
 			r: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeModel3D, "/a.model")}, nil, newMockFile("/a.model", nil, nil, nil, false), false)),
 		}, &go3mf.Model{
 			Path:                  "/a.model",
-			ProductionAttachments: []*go3mf.Attachment{{RelationshipType: relTypeModel3D, Path: "/a.model", Stream: new(bytes.Buffer)}},
+			ProductionAttachments: []*go3mf.ProductionAttachment{{RelationshipType: relTypeModel3D, Path: "/a.model"}},
 		}, false},
 		{"withAttRel", &Reader{Model: new(go3mf.Model), AttachmentRelations: []string{"b"},
 			r: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship("b", "/a.xml")}, nil, newMockFile("/a.xml", nil, nil, nil, false), false)),
@@ -339,7 +339,9 @@ func TestReader_processRootModel(t *testing.T) {
 
 	want.Resources = append(want.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices, TimesRefered: 1})
 	want.Resources = append(want.Resources, []go3mf.Identifier{baseMaterials, baseTexture, sliceStack, sliceStackRef, meshRes, components}...)
-	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: components, PartNumber: "bob", UUID: "e9e25302-6428-402e-8633-cc95528d0ed2"})
+	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: components, PartNumber: "bob", UUID: "e9e25302-6428-402e-8633-cc95528d0ed2",
+		Transform: mgl32.Mat4{1, 0, 0, -66.4, 0, 2, 0, -87.1, 0, 0, 3, 8.8, 0, 0, 0, 1},
+	})
 	got := new(go3mf.Model)
 	got.Path = "3d/3dmodel.model"
 	got.Resources = append(got.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices})
@@ -414,7 +416,7 @@ func TestReader_processRootModel(t *testing.T) {
 				</object>
 			</resources>
 			<build>
-				<item partnumber="bob" objectid="20" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed2" />
+				<item partnumber="bob" objectid="20" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed2" transform="1 0 0 0 2 0 0 0 3 -66.4 -87.1 8.8" />
 			</build>
 		`).build()),
 	}
@@ -501,9 +503,11 @@ func Test_strToSRGB(t *testing.T) {
 		{"nohashrgb", args{"101010"}, color.RGBA{}, true},
 		{"nohashrgba", args{"10101010"}, color.RGBA{}, true},
 		{"invalidChar", args{"#€0101010"}, color.RGBA{}, true},
+		{"invalidChar", args{"#T0101010"}, color.RGBA{}, true},
 		{"rgb", args{"#112233"}, color.RGBA{17, 34, 51, 255}, false},
 		{"rgb", args{"#000233"}, color.RGBA{0, 2, 51, 255}, false},
 		{"rgba", args{"#00023311"}, color.RGBA{0, 2, 51, 17}, false},
+		{"rgbaLetter", args{"#ff0233AB"}, color.RGBA{85, 2, 51, 1}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

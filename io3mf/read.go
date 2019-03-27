@@ -65,6 +65,7 @@ type Reader struct {
 	progress            monitor
 	r                   packageReader
 	namespaces          []string
+	productionModels    map[string]packageFile
 }
 
 // NewReader returns a new Reader reading a 3mf file from r.
@@ -153,7 +154,7 @@ func (r *Reader) processNonRootModels() error {
 		return ErrUserAborted
 	}
 	r.progress.pushLevel(0.1, r.nonRootProgress())
-	// read production attachments
+	r.readProductionAttachmentModels()
 	r.progress.popLevel()
 	return nil
 }
@@ -214,13 +215,18 @@ func (r *Reader) extractCustomAttachments(rootFile packageFile) {
 }
 
 func (r *Reader) extractModelAttachments(rootFile packageFile) {
+	r.productionModels = make(map[string]packageFile)
 	for _, rel := range rootFile.Relationships() {
 		if rel.Type() != relTypeModel3D {
 			continue
 		}
 
 		if file, ok := rootFile.FindFileFromRel(rel.TargetURI()); ok {
-			r.Model.ProductionAttachments = r.addAttachment(r.Model.ProductionAttachments, file, rel.Type())
+			r.Model.ProductionAttachments = append(r.Model.ProductionAttachments, &go3mf.ProductionAttachment{
+				RelationshipType: rel.Type(),
+				Path:             file.Name(),
+			})
+			r.productionModels[file.Name()] = file
 		}
 	}
 }
@@ -235,6 +241,52 @@ func (r *Reader) addAttachment(attachments []*go3mf.Attachment, file packageFile
 		})
 	}
 	return attachments
+}
+
+func (r *Reader) readProductionAttachmentModels() error {
+	prodAttCount := len(r.Model.ProductionAttachments)
+	for i := prodAttCount; i >= 0; i-- {
+		if !r.progress.progress(float64(prodAttCount-i-1)/float64(prodAttCount), StageReadNonRootModels) {
+			return ErrUserAborted
+		}
+		if err := r.readProductionAttachmentModel(i); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (r *Reader) readProductionAttachmentModel(i int) error {
+	prodAttCount := len(r.Model.ProductionAttachments)
+	attachment := r.Model.ProductionAttachments[i]
+	file, err := r.productionModels[attachment.Path].Open()
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	x := xml.NewDecoder(file)
+	var t xml.Token
+mainLoop:
+	for {
+		t, err = x.Token()
+		if err != nil {
+			break
+		}
+		switch tp := t.(type) {
+		case xml.StartElement:
+			if tp.Name.Local == attrModel {
+				r.progress.pushLevel(float64(prodAttCount-i-1)/float64(prodAttCount), float64(prodAttCount-i)/float64(prodAttCount))
+				md := modelDecoder{r: r, path: attachment.Path, ignoreBuild: true, ignoreMetadata: true}
+				err = md.Decode(x, tp.Attr)
+				r.progress.popLevel()
+				break mainLoop
+			}
+		}
+	}
+	if err != io.EOF {
+		return err
+	}
+	return nil
 }
 
 func copyFile(file packageFile) (io.Reader, error) {
