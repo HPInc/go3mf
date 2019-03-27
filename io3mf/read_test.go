@@ -508,7 +508,7 @@ func Test_strToSRGB(t *testing.T) {
 		{"nohashrgb", args{"101010"}, color.RGBA{}, true},
 		{"nohashrgba", args{"10101010"}, color.RGBA{}, true},
 		{"invalidChar", args{"#€0101010"}, color.RGBA{}, true},
-		{"invalidChar", args{"#T0101010"}, color.RGBA{}, true},
+		{"invalidChar", args{"#T0101010"}, color.RGBA{0, 16, 16, 16}, true},
 		{"rgb", args{"#112233"}, color.RGBA{17, 34, 51, 255}, false},
 		{"rgb", args{"#000233"}, color.RGBA{0, 2, 51, 255}, false},
 		{"rgba", args{"#00023311"}, color.RGBA{0, 2, 51, 17}, false},
