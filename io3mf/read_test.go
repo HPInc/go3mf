@@ -337,14 +337,18 @@ func TestReader_processRootModel(t *testing.T) {
 		Components:     []*go3mf.Component{{UUID: "cb828680-8895-4e08-a1fc-be63e033df16", Object: meshRes}},
 	}
 
+	otherMesh := &go3mf.MeshResource{ObjectResource: go3mf.ObjectResource{ID: 1, ModelPath: "3d/other.model"}, Mesh: mesh.NewMesh()}
 	want.Resources = append(want.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices, TimesRefered: 1})
+	want.Resources = append(want.Resources, otherMesh)
 	want.Resources = append(want.Resources, []go3mf.Identifier{baseMaterials, baseTexture, sliceStack, sliceStackRef, meshRes, components}...)
 	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: components, PartNumber: "bob", UUID: "e9e25302-6428-402e-8633-cc95528d0ed2",
 		Transform: mgl32.Mat4{1, 0, 0, -66.4, 0, 2, 0, -87.1, 0, 0, 3, 8.8, 0, 0, 0, 1},
 	})
+	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: otherMesh})
 	got := new(go3mf.Model)
 	got.Path = "3d/3dmodel.model"
 	got.Resources = append(got.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices})
+	got.Resources = append(got.Resources, otherMesh)
 	r := &Reader{
 		Model: got,
 		r: newMockPackage(new(modelBuilder).withDefaultModel().withElement(`
@@ -417,6 +421,7 @@ func TestReader_processRootModel(t *testing.T) {
 			</resources>
 			<build>
 				<item partnumber="bob" objectid="20" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed2" transform="1 0 0 0 2 0 0 0 3 -66.4 -87.1 8.8" />
+				<item objectid="1" p:path="3d/other.model" />
 			</build>
 		`).build()),
 	}
