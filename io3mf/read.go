@@ -245,7 +245,7 @@ func (r *Reader) addAttachment(attachments []*go3mf.Attachment, file packageFile
 
 func (r *Reader) readProductionAttachmentModels() error {
 	prodAttCount := len(r.Model.ProductionAttachments)
-	for i := prodAttCount; i >= 0; i-- {
+	for i := prodAttCount - 1; i >= 0; i-- {
 		if !r.progress.progress(float64(prodAttCount-i-1)/float64(prodAttCount), StageReadNonRootModels) {
 			return ErrUserAborted
 		}

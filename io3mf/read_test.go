@@ -527,3 +527,61 @@ func Test_strToSRGB(t *testing.T) {
 		})
 	}
 }
+
+func TestReader_readProductionAttachmentModels(t *testing.T) {
+	abortReader := &Reader{Model: &go3mf.Model{ProductionAttachments: []*go3mf.ProductionAttachment{{}}}}
+	abortReader.SetProgressCallback(callbackFalse, nil)
+	tests := []struct {
+		name    string
+		r       *Reader
+		wantErr bool
+		want    *go3mf.Model
+	}{
+		{"base", &Reader{Model: &go3mf.Model{ProductionAttachments: []*go3mf.ProductionAttachment{
+			{Path: "3d/new.model"},
+			{Path: "3d/other.model"},
+		}}, productionModels: map[string]packageFile{
+			"3d/new.model": new(modelBuilder).withDefaultModel().withElement(`
+				<resources>
+					<basematerials id="5">
+						<base name="Blue PLA" displaycolor="#0000FF" />
+						<base name="Red ABS" displaycolor="#FF0000" />
+					</basematerials>
+				</resources>
+			`).build(),
+			"3d/other.model": new(modelBuilder).withDefaultModel().withElement(`
+				<resources>
+					<m:texture2d id="6" path="/3D/Texture/msLogo.png" contenttype="image/png" tilestyleu="wrap" tilestylev="mirror" filter="auto" />
+				</resources>
+			`).build(),
+		}}, false, &go3mf.Model{
+			Language: "en-US",
+			ProductionAttachments: []*go3mf.ProductionAttachment{
+				{Path: "3d/new.model"},
+				{Path: "3d/other.model"},
+			}, Resources: []go3mf.Identifier{
+				&go3mf.Texture2DResource{ID: 6, ModelPath: "3d/other.model", Path: "/3D/Texture/msLogo.png", ContentType: go3mf.PNGTexture, TileStyleU: go3mf.TileWrap, TileStyleV: go3mf.TileMirror, Filter: go3mf.TextureFilterAuto},
+				&go3mf.BaseMaterialsResource{ID: 5, ModelPath: "3d/new.model", Materials: []go3mf.BaseMaterial{
+					{Name: "Blue PLA", Color: color.RGBA{0, 0, 85, 255}},
+					{Name: "Red ABS", Color: color.RGBA{85, 0, 0, 255}},
+				}},
+			},
+		}},
+		{"noAtt", &Reader{Model: new(go3mf.Model)}, false, new(go3mf.Model)},
+		{"abort", abortReader, true, abortReader.Model},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.r.readProductionAttachmentModels(); (err != nil) != tt.wantErr {
+				t.Errorf("Reader.readProductionAttachmentModels() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			deep.CompareUnexportedFields = true
+			deep.MaxDepth = 20
+			if diff := deep.Equal(tt.r.Model, tt.want); diff != nil {
+				t.Errorf("Reader.readProductionAttachmentModels() = %v", diff)
+				return
+			}
+		})
+	}
+}
