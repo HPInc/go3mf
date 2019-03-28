@@ -249,10 +249,7 @@ func TestReader_processRootModel_Fail(t *testing.T) {
 }
 
 func TestReader_processRootModel(t *testing.T) {
-	want := new(go3mf.Model)
-	want.Path = "3d/3dmodel.model"
-	want.Units = go3mf.UnitMillimeter
-	want.Language = "en-US"
+	want := &go3mf.Model{Units: go3mf.UnitMillimeter, Language: "en-US", Path: "3d/3dmodel.model", UUID: "e9e25302-6428-402e-8633-cc95528d0ed3"}
 	baseMaterials := &go3mf.BaseMaterialsResource{ID: 5, ModelPath: "3d/3dmodel.model", Materials: []go3mf.BaseMaterial{
 		{Name: "Blue PLA", Color: color.RGBA{0, 0, 85, 255}},
 		{Name: "Red ABS", Color: color.RGBA{85, 0, 0, 255}},
@@ -419,7 +416,7 @@ func TestReader_processRootModel(t *testing.T) {
             		</components>
 				</object>
 			</resources>
-			<build>
+			<build p:UUID="e9e25302-6428-402e-8633-cc95528d0ed3">
 				<item partnumber="bob" objectid="20" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed2" transform="1 0 0 0 2 0 0 0 3 -66.4 -87.1 8.8" />
 				<item objectid="1" p:path="3d/other.model" />
 			</build>
