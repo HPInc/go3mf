@@ -110,7 +110,7 @@ func (d *objectDecoder) parseCoreAttr(a xml.Attr) (err error) {
 		}
 	case attrType:
 		var ok bool
-		d.obj.ObjectType, ok = go3mf.NewObjectType(a.Value)
+		d.obj.ObjectType, ok = newObjectType(a.Value)
 		if !ok {
 			d.r.Warnings = append(d.r.Warnings, &ReadError{InvalidOptionalValue, "go3mf: object resource type is not valid"})
 		}
@@ -146,7 +146,7 @@ func (d *objectDecoder) parseSliceAttr(a xml.Attr) (err error) {
 		}
 	case attrMeshRes:
 		var ok bool
-		d.obj.SliceResoultion, ok = go3mf.NewSliceResolution(a.Value)
+		d.obj.SliceResoultion, ok = newSliceResolution(a.Value)
 		if !ok {
 			err = errors.New("go3mf: object resource sliceresolution is not valid")
 		}

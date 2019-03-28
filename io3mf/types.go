@@ -3,6 +3,8 @@ package io3mf
 import (
 	"errors"
 	"image/color"
+
+	go3mf "github.com/qmuntal/go3mf"
 )
 
 const (
@@ -111,4 +113,71 @@ type ReadError struct {
 
 func (e *ReadError) Error() string {
 	return e.Message
+}
+
+func newTextureFilter(s string) (t go3mf.TextureFilter, ok bool) {
+	t, ok = map[string]go3mf.TextureFilter{
+		"auto":    go3mf.TextureFilterAuto,
+		"linear":  go3mf.TextureFilterLinear,
+		"nearest": go3mf.TextureFilterNearest,
+	}[s]
+	return
+}
+
+func newTileStyle(s string) (t go3mf.TileStyle, ok bool) {
+	t, ok = map[string]go3mf.TileStyle{
+		"wrap":   go3mf.TileWrap,
+		"mirror": go3mf.TileMirror,
+		"clamp":  go3mf.TileClamp,
+		"none":   go3mf.TileNone,
+	}[s]
+	return
+}
+
+func newTexture2DType(s string) (t go3mf.Texture2DType, ok bool) {
+	t, ok = map[string]go3mf.Texture2DType{
+		"image/png":  go3mf.PNGTexture,
+		"image/jpeg": go3mf.JPEGTexture,
+	}[s]
+	return
+}
+
+func newObjectType(s string) (o go3mf.ObjectType, ok bool) {
+	o, ok = map[string]go3mf.ObjectType{
+		"model":        go3mf.ObjectTypeModel,
+		"other":        go3mf.ObjectTypeOther,
+		"support":      go3mf.ObjectTypeSupport,
+		"solidsupport": go3mf.ObjectTypeSolidSupport,
+		"surface":      go3mf.ObjectTypeSurface,
+	}[s]
+	return
+}
+
+func newSliceResolution(s string) (r go3mf.SliceResolution, ok bool) {
+	r, ok = map[string]go3mf.SliceResolution{
+		"fullres": go3mf.ResolutionFull,
+		"lowres":  go3mf.ResolutionLow,
+	}[s]
+	return
+}
+
+func newClipMode(s string) (c go3mf.ClipMode, ok bool) {
+	c, ok = map[string]go3mf.ClipMode{
+		"none":    go3mf.ClipNone,
+		"inside":  go3mf.ClipInside,
+		"outside": go3mf.ClipOutside,
+	}[s]
+	return
+}
+
+func newUnits(s string) (u go3mf.Units, ok bool) {
+	u, ok = map[string]go3mf.Units{
+		"millimeter": go3mf.UnitMillimeter,
+		"micron":     go3mf.UnitMicrometer,
+		"centimeter": go3mf.UnitCentimeter,
+		"inch":       go3mf.UnitInch,
+		"foot":       go3mf.UnitFoot,
+		"meter":      go3mf.UnitMeter,
+	}[s]
+	return
 }

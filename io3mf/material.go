@@ -185,13 +185,13 @@ func (d *texture2DDecoder) parseAttr(attrs []xml.Attr) error {
 		case attrPath:
 			d.texture.Path = a.Value
 		case attrContentType:
-			d.texture.ContentType, ok = go3mf.NewTexture2DType(a.Value)
+			d.texture.ContentType, ok = newTexture2DType(a.Value)
 		case attrTileStyleU:
-			d.texture.TileStyleU, ok = go3mf.NewTileStyle(a.Value)
+			d.texture.TileStyleU, ok = newTileStyle(a.Value)
 		case attrTileStyleV:
-			d.texture.TileStyleV, ok = go3mf.NewTileStyle(a.Value)
+			d.texture.TileStyleV, ok = newTileStyle(a.Value)
 		case attrFilter:
-			d.texture.Filter, ok = go3mf.NewTextureFilter(a.Value)
+			d.texture.Filter, ok = newTextureFilter(a.Value)
 		}
 		if err != nil || !ok {
 			return errors.New("go3mf: texture2d attribute not valid")
