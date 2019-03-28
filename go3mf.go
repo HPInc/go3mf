@@ -23,6 +23,52 @@ type Object interface {
 	Type() ObjectType
 }
 
+// Metadata item is an in memory representation of the 3MF metadata,
+// and can be attached to any 3MF model node.
+type Metadata struct {
+	Name  string
+	Value string
+}
+
+// Attachment defines the Model Attachment.
+type Attachment struct {
+	Stream           io.Reader
+	RelationshipType string
+	Path             string
+}
+
+// ProductionAttachment defines the Model Production Attachment.
+type ProductionAttachment struct {
+	RelationshipType string
+	Path             string
+}
+
+// DefaultBaseMaterial defines the default base material property.
+type DefaultBaseMaterial struct {
+	ResourceID    uint64
+	ResourceIndex uint64
+}
+
+// DefaultColor defines the default color property.
+type DefaultColor struct {
+	Color color.RGBA
+}
+
+// DefaultTexCoord2D defines the default textture coordinates property.
+type DefaultTexCoord2D struct {
+	ResourceID uint64
+	U, V       float32
+}
+
+// BeamLatticeAttributes defines the Model Mesh BeamLattice Attributes class and is part of the BeamLattice extension to 3MF.
+type BeamLatticeAttributes struct {
+	ClipMode                ClipMode
+	HasClippingMeshID       bool
+	HasRepresentationMeshID bool
+	ClippingMeshID          uint64
+	RepresentationMeshID    uint64
+}
+
 // A Model is an in memory representation of the 3MF file.
 type Model struct {
 	Path                  string
