@@ -52,7 +52,7 @@ func (d *buildDecoder) parseAttr(attrs []xml.Attr) error {
 	}
 
 	if d.r.Model.UUID == "" && d.r.namespaceRegistered(nsProductionSpec) {
-		d.r.Warnings = append(d.r.Warnings, &ReadError{MissingMandatoryValue, "go3mf: a UUID for a build is missing"})
+		d.r.addWarning(&ReadError{MissingMandatoryValue, "go3mf: a UUID for a build is missing"})
 	}
 	return nil
 }
@@ -88,10 +88,10 @@ func (d *buildItemDecoder) processItem() error {
 		return errors.New("go3mf: could not find build item object")
 	}
 	if d.item.Object.Type() == go3mf.ObjectTypeOther {
-		d.r.Warnings = append(d.r.Warnings, &ReadError{InvalidMandatoryValue, "go3mf: build item must not reference object of type OTHER"})
+		d.r.addWarning(&ReadError{InvalidMandatoryValue, "go3mf: build item must not reference object of type OTHER"})
 	}
 	if !d.item.IsValidForSlices() {
-		d.r.Warnings = append(d.r.Warnings, &ReadError{InvalidMandatoryValue, "go3mf: A slicestack posesses a nonplanar transformation"})
+		d.r.addWarning(&ReadError{InvalidMandatoryValue, "go3mf: A slicestack posesses a nonplanar transformation"})
 	}
 	d.r.Model.BuildItems = append(d.r.Model.BuildItems, &d.item)
 	return nil
@@ -123,7 +123,7 @@ func (d *buildItemDecoder) parseAttr(attrs []xml.Attr) error {
 	}
 
 	if d.item.UUID == "" && d.r.namespaceRegistered(nsProductionSpec) {
-		d.r.Warnings = append(d.r.Warnings, &ReadError{MissingMandatoryValue, "go3mf: a UUID for a build item is missing"})
+		d.r.addWarning(&ReadError{MissingMandatoryValue, "go3mf: a UUID for a build item is missing"})
 	}
 	return nil
 }

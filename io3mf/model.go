@@ -114,7 +114,7 @@ func (d *modelDecoder) parseAttr(attrs []xml.Attr) error {
 	for _, ext := range strings.Fields(requiredExts) {
 		ext = registeredNs[ext]
 		if ext != nsCoreSpec && ext != nsMaterialSpec && ext != nsProductionSpec && ext != nsBeamLatticeSpec && ext != nsSliceSpec {
-			d.r.Warnings = append(d.r.Warnings, &ReadError{InvalidMandatoryValue, "go3mf: a required extension is not supported"})
+			d.r.addWarning(&ReadError{InvalidMandatoryValue, "go3mf: a required extension is not supported"})
 		}
 	}
 	return nil

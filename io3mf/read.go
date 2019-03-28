@@ -84,6 +84,10 @@ func (r *Reader) addResource(res go3mf.Identifier) {
 	r.Model.Resources = append(r.Model.Resources, res)
 }
 
+func (r *Reader) addWarning(err error) {
+	r.Warnings = append(r.Warnings, err)
+}
+
 func (r *Reader) namespaceRegistered(ns string) bool {
 	for _, space := range r.namespaces {
 		if ns == space {

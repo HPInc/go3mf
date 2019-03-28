@@ -139,7 +139,7 @@ func (d *resourceDecoder) processMaterialContent(x xml.TokenReader, se xml.Start
 		td.texture.ModelPath = d.path
 		return td.Decode(se.Attr)
 	case attrComposite:
-		d.r.Warnings = append(d.r.Warnings, &ReadError{InvalidOptionalValue, "go3mf: composite materials extension not supported"})
+		d.r.addWarning(&ReadError{InvalidOptionalValue, "go3mf: composite materials extension not supported"})
 	}
 	return nil
 }
