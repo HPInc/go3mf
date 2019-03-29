@@ -25,11 +25,11 @@ func Test_nodeStructure_clear(t *testing.T) {
 }
 
 func Test_nodeStructure_AddNode(t *testing.T) {
-	pos := mgl32.Vec3{1.0, 2.0, 3.0}
+	pos := Node{1.0, 2.0, 3.0}
 	existingStruct := &nodeStructure{vectorTree: newVectorTree()}
 	existingStruct.AddNode(pos)
 	type args struct {
-		position mgl32.Vec3
+		position Node
 	}
 	tests := []struct {
 		name string
@@ -38,7 +38,7 @@ func Test_nodeStructure_AddNode(t *testing.T) {
 		want uint32
 	}{
 		{"existing", existingStruct, args{pos}, 0},
-		{"base", &nodeStructure{Nodes: []Node{{}}}, args{mgl32.Vec3{1.0, 2.0, 3.0}}, 1},
+		{"base", &nodeStructure{Nodes: []Node{{}}}, args{Node{1.0, 2.0, 3.0}}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -100,14 +100,14 @@ func Test_nodeStructure_merge(t *testing.T) {
 
 func Test_newvec3IFromVec3(t *testing.T) {
 	type args struct {
-		vec mgl32.Vec3
+		vec Node
 	}
 	tests := []struct {
 		name string
 		args args
 		want vec3I
 	}{
-		{"base", args{mgl32.Vec3{1.2, 2.3, 3.4}}, vec3I{1200000, 2300000, 3400000}},
+		{"base", args{Node{1.2, 2.3, 3.4}}, vec3I{1200000, 2300000, 3400000}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -137,7 +137,7 @@ func Test_newVectorTree(t *testing.T) {
 func Test_vectorTree_AddFindVector(t *testing.T) {
 	p := newVectorTree()
 	type args struct {
-		vec   mgl32.Vec3
+		vec   Node
 		value uint32
 	}
 	tests := []struct {
@@ -145,10 +145,10 @@ func Test_vectorTree_AddFindVector(t *testing.T) {
 		t    *vectorTree
 		args args
 	}{
-		{"new", p, args{mgl32.Vec3{10000.3, 20000.2, 1}, 2}},
-		{"old", p, args{mgl32.Vec3{10000.3, 20000.2, 1}, 4}},
-		{"new2", p, args{mgl32.Vec3{2, 1, 3.4}, 5}},
-		{"old2", p, args{mgl32.Vec3{2, 1, 3.4}, 1}},
+		{"new", p, args{Node{10000.3, 20000.2, 1}, 2}},
+		{"old", p, args{Node{10000.3, 20000.2, 1}, 4}},
+		{"new2", p, args{Node{2, 1, 3.4}, 5}},
+		{"old2", p, args{Node{2, 1, 3.4}, 1}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -167,17 +167,17 @@ func Test_vectorTree_AddFindVector(t *testing.T) {
 
 func Test_vectorTree_RemoveVector(t *testing.T) {
 	p := newVectorTree()
-	p.AddVector(mgl32.Vec3{1, 2, 5.3}, 1)
+	p.AddVector(Node{1, 2, 5.3}, 1)
 	type args struct {
-		vec mgl32.Vec3
+		vec Node
 	}
 	tests := []struct {
 		name string
 		t    *vectorTree
 		args args
 	}{
-		{"nil", p, args{mgl32.Vec3{2, 3, 4}}},
-		{"old", p, args{mgl32.Vec3{1, 2, 5.3}}},
+		{"nil", p, args{Node{2, 3, 4}}},
+		{"old", p, args{Node{1, 2, 5.3}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

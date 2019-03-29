@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-gl/mathgl/mgl32"
 	"github.com/qmuntal/go3mf/mesh"
 )
 
@@ -32,7 +31,7 @@ func (d *asciiDecoder) decode() (*mesh.Mesh, error) {
 			f[0], _ = strconv.ParseFloat(fields[1], 32)
 			f[1], _ = strconv.ParseFloat(fields[2], 32)
 			f[2], _ = strconv.ParseFloat(fields[3], 32)
-			nodes[position] = newMesh.AddNode(mgl32.Vec3{float32(f[0]), float32(f[1]), float32(f[2])})
+			nodes[position] = newMesh.AddNode(mesh.Node{float32(f[0]), float32(f[1]), float32(f[2])})
 			position++
 
 			if position == 3 {
@@ -53,10 +52,9 @@ const pstr = "solid\nfacet normal %f %f %f\nouter loop\nvertex %f %f %f\nvertex 
 
 func (e *asciiEncoder) encode(m *mesh.Mesh) error {
 	for i := range m.Faces {
-		node1, node2, node3 := m.FaceNodes(uint32(i))
+		n1, n2, n3 := m.FaceNodes(uint32(i))
 		n := m.FaceNormal(uint32(i))
-		n1, n2, n3 := node1.Position, node2.Position, node3.Position
-		_, err := io.WriteString(e.w, fmt.Sprintf(pstr, n.X(), n.Y(), n.Z(), n1.X(), n1.Y(), n1.Z(), n2.X(), n2.Y(), n2.Z(), n3.X(), n3.Y(), n3.Z()))
+		_, err := io.WriteString(e.w, fmt.Sprintf(pstr, n[0], n[1], n[2], n1[0], n1[1], n1[2], n2[0], n2[1], n2[2], n3[0], n3[1], n3[2]))
 
 		if err != nil {
 			return err

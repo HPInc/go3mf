@@ -5,7 +5,6 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/go-gl/mathgl/mgl32"
 	"github.com/go-test/deep"
 	"github.com/qmuntal/go3mf/mesh"
 )
@@ -89,12 +88,12 @@ func (w *errorWriter) Write(p []byte) (n int, err error) {
 
 func createMeshTriangle() *mesh.Mesh {
 	m := mesh.NewMesh()
-	n1 := m.AddNode(mgl32.Vec3{-20.0, -20.0, 0.0})
-	n2 := m.AddNode(mgl32.Vec3{20.0, -20.0, 0.0})
-	n3 := m.AddNode(mgl32.Vec3{0.0019989014, 0.0019989014, 39.998})
-	n4 := m.AddNode(mgl32.Vec3{-20.0, 20.0, 0.0})
-	n5 := m.AddNode(mgl32.Vec3{0.0, 0.0019989014, 39.998})
-	n6 := m.AddNode(mgl32.Vec3{20.0, 20.0, 0.0})
+	n1 := m.AddNode(mesh.Node{-20.0, -20.0, 0.0})
+	n2 := m.AddNode(mesh.Node{20.0, -20.0, 0.0})
+	n3 := m.AddNode(mesh.Node{0.0019989014, 0.0019989014, 39.998})
+	n4 := m.AddNode(mesh.Node{-20.0, 20.0, 0.0})
+	n5 := m.AddNode(mesh.Node{0.0, 0.0019989014, 39.998})
+	n6 := m.AddNode(mesh.Node{20.0, 20.0, 0.0})
 	m.AddFace(n1, n2, n3)
 	m.AddFace(n4, n2, n1)
 	m.AddFace(n1, n5, n4)

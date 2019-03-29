@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"io"
 
-	"github.com/go-gl/mathgl/mgl32"
 	"github.com/qmuntal/go3mf/mesh"
 )
 
@@ -51,7 +50,7 @@ func (d *binaryDecoder) decodeFace(facet *binaryFace, newMesh *mesh.Mesh) {
 	var nodes [3]uint32
 	for nVertex := 0; nVertex < 3; nVertex++ {
 		pos := facet.Vertices[nVertex]
-		nodes[nVertex] = newMesh.AddNode(mgl32.Vec3{pos[0], pos[1], pos[2]})
+		nodes[nVertex] = newMesh.AddNode(mesh.Node{pos[0], pos[1], pos[2]})
 	}
 
 	newMesh.AddFace(nodes[0], nodes[1], nodes[2])
@@ -70,11 +69,10 @@ func (e *binaryEncoder) encode(m *mesh.Mesh) error {
 	}
 
 	for i := uint32(0); i < faceCount; i++ {
-		node1, node2, node3 := m.FaceNodes(i)
+		n1, n2, n3 := m.FaceNodes(i)
 		normal := m.FaceNormal(i)
-		n1, n2, n3 := node1.Position, node2.Position, node3.Position
 		facet := binaryFace{
-			Normal:   [3]float32{normal.X(), normal.Y(), normal.Z()},
+			Normal:   [3]float32{normal[0], normal[1], normal[2]},
 			Vertices: [3][3]float32{{n1.X(), n1.Y(), n1.Z()}, {n2.X(), n2.Y(), n2.Z()}, {n3.X(), n3.Y(), n3.Z()}},
 		}
 		err := binary.Write(e.w, binary.LittleEndian, facet)

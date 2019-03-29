@@ -289,14 +289,14 @@ func TestReader_processRootModel(t *testing.T) {
 		Mesh:           mesh.NewMesh(),
 	}
 	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []mesh.Node{
-		{Position: mgl32.Vec3{0, 0, 0}},
-		{Position: mgl32.Vec3{100, 0, 0}},
-		{Position: mgl32.Vec3{100, 100, 0}},
-		{Position: mgl32.Vec3{0, 100, 0}},
-		{Position: mgl32.Vec3{0, 0, 100}},
-		{Position: mgl32.Vec3{100, 0, 100}},
-		{Position: mgl32.Vec3{100, 100, 100}},
-		{Position: mgl32.Vec3{0, 100, 100}},
+		{0, 0, 0},
+		{100, 0, 0},
+		{100, 100, 0},
+		{0, 100, 0},
+		{0, 0, 100},
+		{100, 0, 100},
+		{100, 100, 100},
+		{0, 100, 100},
 	}...)
 	meshRes.Mesh.Faces = append(meshRes.Mesh.Faces, []mesh.Face{
 		{NodeIndices: [3]uint32{3, 2, 1}},

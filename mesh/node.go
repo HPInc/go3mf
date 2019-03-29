@@ -15,7 +15,7 @@ type vec3I struct {
 
 const micronsAccuracy = 1E-6
 
-func newvec3IFromVec3(vec mgl32.Vec3) vec3I {
+func newvec3IFromVec3(vec Node) vec3I {
 	a := vec3I{
 		X: int32(math.Floor(float64(vec.X() / micronsAccuracy))),
 		Y: int32(math.Floor(float64(vec.Y() / micronsAccuracy))),
@@ -36,26 +36,36 @@ func newVectorTree() *vectorTree {
 }
 
 // AddVector adds a vector to the dictionary.
-func (t *vectorTree) AddVector(vec mgl32.Vec3, value uint32) {
+func (t *vectorTree) AddVector(vec Node, value uint32) {
 	t.entries[newvec3IFromVec3(vec)] = value
 }
 
 // FindVector returns the identifier of the vector.
-func (t *vectorTree) FindVector(vec mgl32.Vec3) (val uint32, ok bool) {
+func (t *vectorTree) FindVector(vec Node) (val uint32, ok bool) {
 	val, ok = t.entries[newvec3IFromVec3(vec)]
 	return
 }
 
 // RemoveVector removes the vector from the dictionary.
-func (t *vectorTree) RemoveVector(vec mgl32.Vec3) {
+func (t *vectorTree) RemoveVector(vec Node) {
 	delete(t.entries, newvec3IFromVec3(vec))
 }
 
 const maxNodeCount = 2147483646
 
-// Node defines a node of a mesh.
-type Node struct {
-	Position mgl32.Vec3 // Coordinates of the node.
+// Node defines a node of a mesh as an array of 3 coordinates: x, y and z.
+type Node [3]float32
+
+func (n Node) X() float32 {
+	return n[0]
+}
+
+func (n Node) Y() float32 {
+	return n[1]
+}
+
+func (n Node) Z() float32 {
+	return n[2]
 }
 
 type nodeStructure struct {
@@ -69,18 +79,16 @@ func (n *nodeStructure) clear() {
 }
 
 // AddNode adds a node the the mesh at the target position.
-func (n *nodeStructure) AddNode(position mgl32.Vec3) uint32 {
+func (n *nodeStructure) AddNode(node Node) uint32 {
 	if n.vectorTree != nil {
-		if index, ok := n.vectorTree.FindVector(position); ok {
+		if index, ok := n.vectorTree.FindVector(node); ok {
 			return index
 		}
 	}
-	n.Nodes = append(n.Nodes, Node{
-		Position: position,
-	})
+	n.Nodes = append(n.Nodes, node)
 	index := uint32(len(n.Nodes)) - 1
 	if n.vectorTree != nil {
-		n.vectorTree.AddVector(position, index)
+		n.vectorTree.AddVector(node, index)
 	}
 	return index
 }
@@ -96,8 +104,8 @@ func (n *nodeStructure) merge(other *nodeStructure, matrix mgl32.Mat4) []uint32 
 	}
 
 	for i := range other.Nodes {
-		position := mgl32.TransformCoordinate(other.Nodes[i].Position, matrix)
-		newNodes[i] = n.AddNode(position)
+		position := mgl32.TransformCoordinate(mgl32.Vec3(other.Nodes[i]), matrix)
+		newNodes[i] = n.AddNode(Node(position))
 	}
 	return newNodes
 }

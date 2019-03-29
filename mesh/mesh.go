@@ -101,9 +101,9 @@ func (m *Mesh) FaceNodes(i uint32) (*Node, *Node, *Node) {
 }
 
 // FaceNormal returns the normal of a face.
-func (m *Mesh) FaceNormal(i uint32) mgl32.Vec3 {
+func (m *Mesh) FaceNormal(i uint32) [3]float32 {
 	node1, node2, node3 := m.FaceNodes(i)
-	return faceNormal(node1.Position, node2.Position, node3.Position)
+	return faceNormal(mgl32.Vec3(*node1), mgl32.Vec3(*node2), mgl32.Vec3(*node3))
 }
 
 func faceNormal(n1, n2, n3 mgl32.Vec3) mgl32.Vec3 {

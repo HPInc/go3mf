@@ -17,7 +17,7 @@ type Decoder struct {
 	r io.Reader
 	// placeholder
 	m                 *mesh.Mesh
-	vertices          []mgl32.Vec3
+	vertices          []mesh.Node
 	verticesCoord     []mgl32.Vec2
 	verticesColor     map[int]color.RGBA
 	addedNodes        map[int]bool
@@ -36,7 +36,7 @@ func (d *Decoder) Decode() (*mesh.Mesh, error) {
 	d.m = mesh.NewMesh()
 	d.m.StartCreation(mesh.CreationOptions{CalculateConnectivity: true})
 	defer d.m.EndCreation()
-	d.vertices = make([]mgl32.Vec3, 1, 1024)      // 1-based indexing
+	d.vertices = make([]mesh.Node, 1, 1024)       // 1-based indexing
 	d.verticesCoord = make([]mgl32.Vec2, 1, 1024) // 1-based indexing
 	d.verticesColor = make(map[int]color.RGBA, 0)
 	d.addedNodes = make(map[int]bool, 0)
@@ -86,12 +86,12 @@ func (d *Decoder) parseVertex(args []string) {
 	f := parseFloats(args)
 	switch len(f) {
 	case 3:
-		d.vertices = append(d.vertices, mgl32.Vec3{f[0], f[1], f[2]})
+		d.vertices = append(d.vertices, mesh.Node{f[0], f[1], f[2]})
 	case 4:
 		w := f[3]
-		d.vertices = append(d.vertices, mgl32.Vec3{f[0] / w, f[1] / w, f[2] / w})
+		d.vertices = append(d.vertices, mesh.Node{f[0] / w, f[1] / w, f[2] / w})
 	case 6:
-		d.vertices = append(d.vertices, mgl32.Vec3{f[0], f[1], f[2]})
+		d.vertices = append(d.vertices, mesh.Node{f[0], f[1], f[2]})
 		d.verticesColor[len(d.vertices)] = color.RGBA{uint8(f[3]), uint8(f[4]), uint8(f[5]), 255}
 	}
 }

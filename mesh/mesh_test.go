@@ -165,9 +165,9 @@ func TestMesh_EndCreation(t *testing.T) {
 
 func TestMesh_FaceNodes(t *testing.T) {
 	m := NewMesh()
-	n1 := m.AddNode(mgl32.Vec3{0.0, 0.0, 0.0})
-	n2 := m.AddNode(mgl32.Vec3{20.0, -20.0, 0.0})
-	n3 := m.AddNode(mgl32.Vec3{0.0019989014, 0.0019989014, 0.0})
+	n1 := m.AddNode(Node{0.0, 0.0, 0.0})
+	n2 := m.AddNode(Node{20.0, -20.0, 0.0})
+	n3 := m.AddNode(Node{0.0019989014, 0.0019989014, 0.0})
 	m.AddFace(n1, n2, n3)
 	type args struct {
 		i uint32
@@ -267,9 +267,9 @@ func Test_faceNormal(t *testing.T) {
 
 func TestMesh_FaceNormal(t *testing.T) {
 	m := NewMesh()
-	n1 := m.AddNode(mgl32.Vec3{0.0, 0.0, 0.0})
-	n2 := m.AddNode(mgl32.Vec3{20.0, -20.0, 0.0})
-	n3 := m.AddNode(mgl32.Vec3{0.0019989014, 0.0019989014, 0.0})
+	n1 := m.AddNode(Node{0.0, 0.0, 0.0})
+	n2 := m.AddNode(Node{20.0, -20.0, 0.0})
+	n3 := m.AddNode(Node{0.0019989014, 0.0019989014, 0.0})
 	m.AddFace(n1, n2, n3)
 	type args struct {
 		i uint32
@@ -278,9 +278,9 @@ func TestMesh_FaceNormal(t *testing.T) {
 		name string
 		m    *Mesh
 		args args
-		want mgl32.Vec3
+		want [3]float32
 	}{
-		{"base", m, args{0}, mgl32.Vec3{0, 0, 1}},
+		{"base", m, args{0}, [3]float32{0, 0, 1}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
