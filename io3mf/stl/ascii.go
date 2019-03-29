@@ -22,7 +22,7 @@ func (d *asciiDecoder) decode() (*mesh.Mesh, error) {
 	newMesh.StartCreation(mesh.CreationOptions{CalculateConnectivity: true})
 	defer newMesh.EndCreation()
 	position := 0
-	var nodes [3]*mesh.Node
+	var nodes [3]uint32
 	scanner := bufio.NewScanner(d.r)
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -32,13 +32,12 @@ func (d *asciiDecoder) decode() (*mesh.Mesh, error) {
 			f[0], _ = strconv.ParseFloat(fields[1], 32)
 			f[1], _ = strconv.ParseFloat(fields[2], 32)
 			f[2], _ = strconv.ParseFloat(fields[3], 32)
-
 			nodes[position] = newMesh.AddNode(mgl32.Vec3{float32(f[0]), float32(f[1]), float32(f[2])})
 			position++
 
 			if position == 3 {
 				position = 0
-				newMesh.AddFace(nodes[0].Index, nodes[1].Index, nodes[2].Index)
+				newMesh.AddFace(nodes[0], nodes[1], nodes[2])
 			}
 		}
 	}

@@ -168,7 +168,7 @@ func TestMesh_FaceNodes(t *testing.T) {
 	n1 := m.AddNode(mgl32.Vec3{0.0, 0.0, 0.0})
 	n2 := m.AddNode(mgl32.Vec3{20.0, -20.0, 0.0})
 	n3 := m.AddNode(mgl32.Vec3{0.0019989014, 0.0019989014, 0.0})
-	m.AddFace(n1.Index, n2.Index, n3.Index)
+	m.AddFace(n1, n2, n3)
 	type args struct {
 		i uint32
 	}
@@ -180,7 +180,7 @@ func TestMesh_FaceNodes(t *testing.T) {
 		want1 *Node
 		want2 *Node
 	}{
-		{"base", m, args{0}, n1, n2, n3},
+		{"base", m, args{0}, &m.Nodes[n1], &m.Nodes[n2], &m.Nodes[n3]},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -205,7 +205,7 @@ func TestMesh_IsManifoldAndOriented(t *testing.T) {
 		want bool
 	}{
 		{"valid", &Mesh{
-			nodeStructure: nodeStructure{Nodes: []Node{{Index: 0}, {Index: 1}, {Index: 2}, {Index: 3}}},
+			nodeStructure: nodeStructure{Nodes: []Node{{}, {}, {}, {}}},
 			faceStructure: faceStructure{Faces: []Face{
 				{NodeIndices: [3]uint32{0, 1, 2}},
 				{NodeIndices: [3]uint32{0, 3, 1}},
@@ -214,7 +214,7 @@ func TestMesh_IsManifoldAndOriented(t *testing.T) {
 			}},
 		}, true},
 		{"nonmanifold", &Mesh{
-			nodeStructure: nodeStructure{Nodes: []Node{{Index: 0}, {Index: 1}, {Index: 2}, {Index: 3}}},
+			nodeStructure: nodeStructure{Nodes: []Node{{}, {}, {}, {}}},
 			faceStructure: faceStructure{Faces: []Face{
 				{NodeIndices: [3]uint32{0, 1, 2}},
 				{NodeIndices: [3]uint32{0, 1, 3}},
@@ -270,7 +270,7 @@ func TestMesh_FaceNormal(t *testing.T) {
 	n1 := m.AddNode(mgl32.Vec3{0.0, 0.0, 0.0})
 	n2 := m.AddNode(mgl32.Vec3{20.0, -20.0, 0.0})
 	n3 := m.AddNode(mgl32.Vec3{0.0019989014, 0.0019989014, 0.0})
-	m.AddFace(n1.Index, n2.Index, n3.Index)
+	m.AddFace(n1, n2, n3)
 	type args struct {
 		i uint32
 	}

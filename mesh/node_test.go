@@ -35,13 +35,10 @@ func Test_nodeStructure_AddNode(t *testing.T) {
 		name string
 		n    *nodeStructure
 		args args
-		want *Node
+		want uint32
 	}{
-		{"existing", existingStruct, args{pos}, &Node{Index: 0, Position: pos}},
-		{"base", &nodeStructure{Nodes: []Node{{}}}, args{mgl32.Vec3{1.0, 2.0, 3.0}}, &Node{
-			Index:    1,
-			Position: mgl32.Vec3{1.0, 2.0, 3.0},
-		}},
+		{"existing", existingStruct, args{pos}, 0},
+		{"base", &nodeStructure{Nodes: []Node{{}}}, args{mgl32.Vec3{1.0, 2.0, 3.0}}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -60,8 +57,7 @@ func Test_nodeStructure_checkSanity(t *testing.T) {
 		want bool
 	}{
 		{"max", &nodeStructure{maxNodeCount: 1, Nodes: []Node{{}, {}}}, false},
-		{"badindex", &nodeStructure{Nodes: []Node{{}, {Index: 2}}}, false},
-		{"good", &nodeStructure{Nodes: []Node{{}, {Index: 1}}}, true},
+		{"good", &nodeStructure{Nodes: []Node{{}, {}}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

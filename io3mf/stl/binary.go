@@ -51,7 +51,7 @@ func (d *binaryDecoder) decodeFace(facet *binaryFace, newMesh *mesh.Mesh) {
 	var nodes [3]uint32
 	for nVertex := 0; nVertex < 3; nVertex++ {
 		pos := facet.Vertices[nVertex]
-		nodes[nVertex] = newMesh.AddNode(mgl32.Vec3{pos[0], pos[1], pos[2]}).Index
+		nodes[nVertex] = newMesh.AddNode(mgl32.Vec3{pos[0], pos[1], pos[2]})
 	}
 
 	newMesh.AddFace(nodes[0], nodes[1], nodes[2])

@@ -1,8 +1,9 @@
 package mesh
 
 import (
-	"github.com/go-gl/mathgl/mgl32"
 	"math"
+
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 // vec3I represents a 3D vector typed as int32
@@ -54,7 +55,6 @@ const maxNodeCount = 2147483646
 
 // Node defines a node of a mesh.
 type Node struct {
-	Index    uint32     // Index of the node inside the mesh.
 	Position mgl32.Vec3 // Coordinates of the node.
 }
 
@@ -69,33 +69,24 @@ func (n *nodeStructure) clear() {
 }
 
 // AddNode adds a node the the mesh at the target position.
-func (n *nodeStructure) AddNode(position mgl32.Vec3) *Node {
+func (n *nodeStructure) AddNode(position mgl32.Vec3) uint32 {
 	if n.vectorTree != nil {
 		if index, ok := n.vectorTree.FindVector(position); ok {
-			return &n.Nodes[index]
+			return index
 		}
 	}
-	nodeCount := uint32(len(n.Nodes))
 	n.Nodes = append(n.Nodes, Node{
-		Index:    nodeCount,
 		Position: position,
 	})
+	index := uint32(len(n.Nodes)) - 1
 	if n.vectorTree != nil {
-		n.vectorTree.AddVector(position, nodeCount)
+		n.vectorTree.AddVector(position, index)
 	}
-	return &n.Nodes[len(n.Nodes)-1]
+	return index
 }
 
 func (n *nodeStructure) checkSanity() bool {
-	if len(n.Nodes) > n.getMaxNodeCount() {
-		return false
-	}
-	for i := range n.Nodes {
-		if n.Nodes[i].Index != uint32(i) {
-			return false
-		}
-	}
-	return true
+	return len(n.Nodes) <= n.getMaxNodeCount()
 }
 
 func (n *nodeStructure) merge(other *nodeStructure, matrix mgl32.Mat4) []uint32 {
@@ -106,7 +97,7 @@ func (n *nodeStructure) merge(other *nodeStructure, matrix mgl32.Mat4) []uint32 
 
 	for i := range other.Nodes {
 		position := mgl32.TransformCoordinate(other.Nodes[i].Position, matrix)
-		newNodes[i] = n.AddNode(position).Index
+		newNodes[i] = n.AddNode(position)
 	}
 	return newNodes
 }
