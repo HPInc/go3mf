@@ -8,7 +8,6 @@ const maxFaceCount = 2147483646
 
 // Face defines a triangle of a mesh.
 type Face struct {
-	Index       uint32    // Index of the face inside the mesh.
 	NodeIndices [3]uint32 // Coordinates of the three nodes that defines the mesh.
 }
 
@@ -25,7 +24,6 @@ func (f *faceStructure) clear() {
 // AddFace adds a face to the mesh that has the target nodes.
 func (f *faceStructure) AddFace(node1, node2, node3 uint32) *Face {
 	f.Faces = append(f.Faces, Face{
-		Index:       uint32(len(f.Faces)),
 		NodeIndices: [3]uint32{node1, node2, node3},
 	})
 	if f.informationHandler != nil {
@@ -57,10 +55,10 @@ func (f *faceStructure) merge(other *faceStructure, newNodes []uint32) {
 		return
 	}
 	otherHandler := other.informationHandler
-	for _, face := range other.Faces {
-		newFace := f.AddFace(newNodes[face.NodeIndices[0]], newNodes[face.NodeIndices[1]], newNodes[face.NodeIndices[2]])
+	for i, face := range other.Faces {
+		f.AddFace(newNodes[face.NodeIndices[0]], newNodes[face.NodeIndices[1]], newNodes[face.NodeIndices[2]])
 		if otherHandler != nil {
-			f.informationHandler.CopyFaceInfosFrom(newFace.Index, otherHandler, face.Index)
+			f.informationHandler.CopyFaceInfosFrom(uint32(len(f.Faces)-1), otherHandler, uint32(i))
 		}
 	}
 	return

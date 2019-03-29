@@ -299,18 +299,18 @@ func TestReader_processRootModel(t *testing.T) {
 		{Index: 7, Position: mgl32.Vec3{0, 100, 100}},
 	}...)
 	meshRes.Mesh.Faces = append(meshRes.Mesh.Faces, []mesh.Face{
-		{Index: 0, NodeIndices: [3]uint32{3, 2, 1}},
-		{Index: 1, NodeIndices: [3]uint32{1, 0, 3}},
-		{Index: 2, NodeIndices: [3]uint32{4, 5, 6}},
-		{Index: 3, NodeIndices: [3]uint32{6, 7, 4}},
-		{Index: 4, NodeIndices: [3]uint32{0, 1, 5}},
-		{Index: 5, NodeIndices: [3]uint32{5, 4, 0}},
-		{Index: 6, NodeIndices: [3]uint32{1, 2, 6}},
-		{Index: 7, NodeIndices: [3]uint32{6, 5, 1}},
-		{Index: 8, NodeIndices: [3]uint32{2, 3, 7}},
-		{Index: 9, NodeIndices: [3]uint32{7, 6, 2}},
-		{Index: 10, NodeIndices: [3]uint32{3, 0, 4}},
-		{Index: 11, NodeIndices: [3]uint32{4, 7, 3}},
+		{NodeIndices: [3]uint32{3, 2, 1}},
+		{NodeIndices: [3]uint32{1, 0, 3}},
+		{NodeIndices: [3]uint32{4, 5, 6}},
+		{NodeIndices: [3]uint32{6, 7, 4}},
+		{NodeIndices: [3]uint32{0, 1, 5}},
+		{NodeIndices: [3]uint32{5, 4, 0}},
+		{NodeIndices: [3]uint32{1, 2, 6}},
+		{NodeIndices: [3]uint32{6, 5, 1}},
+		{NodeIndices: [3]uint32{2, 3, 7}},
+		{NodeIndices: [3]uint32{7, 6, 2}},
+		{NodeIndices: [3]uint32{3, 0, 4}},
+		{NodeIndices: [3]uint32{4, 7, 3}},
 	}...)
 	handler := meshRes.Mesh.InformationHandler()
 	info := handler.AddBaseMaterialInfo(uint32(len(meshRes.Mesh.Faces)))
