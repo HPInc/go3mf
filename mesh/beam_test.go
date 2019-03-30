@@ -82,7 +82,7 @@ func Test_beamLattice_merge(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			beam := Beam{NodeIndices: [2]uint32{0, 1}, Radius: [2]float64{1.0, 2.0}, CapMode: [2]BeamCapMode{CapModeButt, CapModeHemisphere}}
+			beam := Beam{NodeIndices: [2]uint32{0, 1}, Radius: [2]float64{1.0, 2.0}, CapMode: [2]CapMode{CapModeButt, CapModeHemisphere}}
 			mockMesh := NewMesh()
 			for i := 0; i < tt.times; i++ {
 				mockMesh.Beams = append(mockMesh.Beams, beam)
@@ -102,10 +102,10 @@ func Test_beamLattice_merge(t *testing.T) {
 	}
 }
 
-func TestBeamCapMode_String(t *testing.T) {
+func TestCapMode_String(t *testing.T) {
 	tests := []struct {
 		name string
-		b    BeamCapMode
+		b    CapMode
 	}{
 		{"sphere", CapModeSphere},
 		{"hemisphere", CapModeHemisphere},
@@ -114,7 +114,7 @@ func TestBeamCapMode_String(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.b.String(); got != tt.name {
-				t.Errorf("BeamCapMode.String() = %v, want %v", got, tt.name)
+				t.Errorf("CapMode.String() = %v, want %v", got, tt.name)
 			}
 		})
 	}

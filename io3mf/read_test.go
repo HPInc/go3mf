@@ -347,18 +347,18 @@ func TestReader_processRootModel(t *testing.T) {
 		{55, 45, 45},
 	}...)
 	meshLattice.Mesh.Beams = append(meshLattice.Mesh.Beams, []mesh.Beam{
-		{NodeIndices: [2]uint32{0, 1}, Radius: [2]float64{1.5, 1.6}, CapMode: [2]mesh.BeamCapMode{mesh.CapModeSphere, mesh.CapModeButt}},
-		{NodeIndices: [2]uint32{2, 0}, Radius: [2]float64{3, 1.5}, CapMode: [2]mesh.BeamCapMode{mesh.CapModeSphere, mesh.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{1, 3}, Radius: [2]float64{1.6, 3}, CapMode: [2]mesh.BeamCapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{3, 2}, Radius: [2]float64{1, 1}, CapMode: [2]mesh.BeamCapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{2, 4}, Radius: [2]float64{3, 2}, CapMode: [2]mesh.BeamCapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{4, 5}, Radius: [2]float64{2, 2}, CapMode: [2]mesh.BeamCapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{5, 6}, Radius: [2]float64{2, 2}, CapMode: [2]mesh.BeamCapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{7, 6}, Radius: [2]float64{2, 2}, CapMode: [2]mesh.BeamCapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{1, 6}, Radius: [2]float64{1.6, 2}, CapMode: [2]mesh.BeamCapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{7, 4}, Radius: [2]float64{2, 2}, CapMode: [2]mesh.BeamCapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{7, 3}, Radius: [2]float64{2, 3}, CapMode: [2]mesh.BeamCapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{0, 5}, Radius: [2]float64{1.5, 2}, CapMode: [2]mesh.BeamCapMode{mesh.CapModeHemisphere, mesh.CapModeButt}},
+		{NodeIndices: [2]uint32{0, 1}, Radius: [2]float64{1.5, 1.6}, CapMode: [2]mesh.CapMode{mesh.CapModeSphere, mesh.CapModeButt}},
+		{NodeIndices: [2]uint32{2, 0}, Radius: [2]float64{3, 1.5}, CapMode: [2]mesh.CapMode{mesh.CapModeSphere, mesh.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{1, 3}, Radius: [2]float64{1.6, 3}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{3, 2}, Radius: [2]float64{1, 1}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{2, 4}, Radius: [2]float64{3, 2}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{4, 5}, Radius: [2]float64{2, 2}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{5, 6}, Radius: [2]float64{2, 2}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{7, 6}, Radius: [2]float64{2, 2}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{1, 6}, Radius: [2]float64{1.6, 2}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{7, 4}, Radius: [2]float64{2, 2}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{7, 3}, Radius: [2]float64{2, 3}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{0, 5}, Radius: [2]float64{1.5, 2}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeButt}},
 	}...)
 
 	components := &go3mf.ComponentsResource{

@@ -188,7 +188,7 @@ func Test_newUnits(t *testing.T) {
 func Test_newCapMode(t *testing.T) {
 	tests := []struct {
 		name   string
-		wantT  mesh.BeamCapMode
+		wantT  mesh.CapMode
 		wantOk bool
 	}{
 		{"sphere", mesh.CapModeSphere, true},

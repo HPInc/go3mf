@@ -9,20 +9,20 @@ type BeamSet struct {
 	Identifier string   // Identifier of the set.
 }
 
-// A BeamCapMode is an enumerable for the different capping modes.
-type BeamCapMode int
+// A CapMode is an enumerable for the different capping modes.
+type CapMode int
 
 const (
 	// CapModeSphere when the capping is an sphere.
-	CapModeSphere BeamCapMode = iota
+	CapModeSphere CapMode = iota
 	// CapModeHemisphere when the capping is an hemisphere.
 	CapModeHemisphere
 	// CapModeButt when the capping is an butt.
 	CapModeButt
 )
 
-func (b BeamCapMode) String() string {
-	return map[BeamCapMode]string{
+func (b CapMode) String() string {
+	return map[CapMode]string{
 		CapModeSphere:     "sphere",
 		CapModeHemisphere: "hemisphere",
 		CapModeButt:       "butt",
@@ -33,7 +33,7 @@ func (b BeamCapMode) String() string {
 type Beam struct {
 	NodeIndices [2]uint32      // Indices of the two nodes that defines the beam.
 	Radius      [2]float64     // Radius of both ends of the beam.
-	CapMode     [2]BeamCapMode // Capping mode.
+	CapMode     [2]CapMode // Capping mode.
 }
 
 // beamLattice defines a beam lattice structure.
@@ -41,7 +41,7 @@ type beamLattice struct {
 	Beams                    []Beam
 	BeamSets                 []BeamSet
 	MinLength, DefaultRadius float64
-	CapMode                  BeamCapMode
+	CapMode                  CapMode
 	maxBeamCount             int
 }
 
@@ -84,7 +84,7 @@ func (b *beamLattice) merge(other *beamLattice, newNodes []uint32) {
 		b.Beams = append(b.Beams, Beam{
 			NodeIndices: [2]uint32{n1, n2},
 			Radius:      [2]float64{beam.Radius[0], beam.Radius[1]},
-			CapMode:     [2]BeamCapMode{beam.CapMode[0], beam.CapMode[1]},
+			CapMode:     [2]CapMode{beam.CapMode[0], beam.CapMode[1]},
 		})
 	}
 	return

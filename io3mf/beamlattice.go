@@ -103,7 +103,7 @@ func (d *beamsDecoder) parseBeam(attrs []xml.Attr) (err error) {
 	var (
 		v1, v2           uint64
 		r1, r2           float64
-		cap1, cap2       mesh.BeamCapMode
+		cap1, cap2       mesh.CapMode
 		hasCap1, hasCap2 bool
 	)
 	for _, a := range attrs {
@@ -149,7 +149,7 @@ func (d *beamsDecoder) parseBeam(attrs []xml.Attr) (err error) {
 	d.mesh.Beams = append(d.mesh.Beams, mesh.Beam{
 		NodeIndices: [2]uint32{uint32(v1), uint32(v2)},
 		Radius:      [2]float64{r1, r2},
-		CapMode:     [2]mesh.BeamCapMode{cap1, cap2},
+		CapMode:     [2]mesh.CapMode{cap1, cap2},
 	})
 	return
 }

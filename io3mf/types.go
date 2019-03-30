@@ -135,8 +135,8 @@ func (e *ReadError) Error() string {
 	return e.Message
 }
 
-func newCapMode(s string) (t mesh.BeamCapMode, ok bool) {
-	t, ok = map[string]mesh.BeamCapMode{
+func newCapMode(s string) (t mesh.CapMode, ok bool) {
+	t, ok = map[string]mesh.CapMode{
 		"sphere":     mesh.CapModeSphere,
 		"hemisphere": mesh.CapModeHemisphere,
 		"butt":       mesh.CapModeButt,
