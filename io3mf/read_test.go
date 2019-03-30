@@ -347,10 +347,10 @@ func TestReader_processRootModel(t *testing.T) {
 		{55, 45, 45},
 	}...)
 	meshLattice.Mesh.Beams = append(meshLattice.Mesh.Beams, []mesh.Beam{
-		{NodeIndices: [2]uint32{0, 1}, Radius: [2]float64{1.5, 1.6}, CapMode: [2]mesh.BeamCapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{2, 0}, Radius: [2]float64{3, 1.5}, CapMode: [2]mesh.BeamCapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{0, 1}, Radius: [2]float64{1.5, 1.6}, CapMode: [2]mesh.BeamCapMode{mesh.CapModeSphere, mesh.CapModeButt}},
+		{NodeIndices: [2]uint32{2, 0}, Radius: [2]float64{3, 1.5}, CapMode: [2]mesh.BeamCapMode{mesh.CapModeSphere, mesh.CapModeHemisphere}},
 		{NodeIndices: [2]uint32{1, 3}, Radius: [2]float64{1.6, 3}, CapMode: [2]mesh.BeamCapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{3, 2}, Radius: [2]float64{3, 3}, CapMode: [2]mesh.BeamCapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{3, 2}, Radius: [2]float64{1, 1}, CapMode: [2]mesh.BeamCapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
 		{NodeIndices: [2]uint32{2, 4}, Radius: [2]float64{3, 2}, CapMode: [2]mesh.BeamCapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
 		{NodeIndices: [2]uint32{4, 5}, Radius: [2]float64{2, 2}, CapMode: [2]mesh.BeamCapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
 		{NodeIndices: [2]uint32{5, 6}, Radius: [2]float64{2, 2}, CapMode: [2]mesh.BeamCapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
@@ -358,7 +358,7 @@ func TestReader_processRootModel(t *testing.T) {
 		{NodeIndices: [2]uint32{1, 6}, Radius: [2]float64{1.6, 2}, CapMode: [2]mesh.BeamCapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
 		{NodeIndices: [2]uint32{7, 4}, Radius: [2]float64{2, 2}, CapMode: [2]mesh.BeamCapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
 		{NodeIndices: [2]uint32{7, 3}, Radius: [2]float64{2, 3}, CapMode: [2]mesh.BeamCapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{0, 5}, Radius: [2]float64{1.5, 2}, CapMode: [2]mesh.BeamCapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{0, 5}, Radius: [2]float64{1.5, 2}, CapMode: [2]mesh.BeamCapMode{mesh.CapModeHemisphere, mesh.CapModeButt}},
 	}...)
 
 	components := &go3mf.ComponentsResource{
@@ -456,10 +456,10 @@ func TestReader_processRootModel(t *testing.T) {
 						</vertices>
 						<b:beamlattice radius="1" minlength="0.0001" cap="hemisphere">
 							<b:beams>
-								<b:beam v1="0" v2="1" r1="1.50000" r2="1.60000"/>
-								<b:beam v1="2" v2="0" r1="3.00000" r2="1.50000"/>
+								<b:beam v1="0" v2="1" r1="1.50000" r2="1.60000" cap1="sphere" cap2="butt"/>
+								<b:beam v1="2" v2="0" r1="3.00000" r2="1.50000" cap1="sphere"/>
 								<b:beam v1="1" v2="3" r1="1.60000" r2="3.00000"/>
-								<b:beam v1="3" v2="2" r1="3.00000"/>
+								<b:beam v1="3" v2="2" />
 								<b:beam v1="2" v2="4" r1="3.00000" r2="2.00000"/>
 								<b:beam v1="4" v2="5" r1="2.00000"/>
 								<b:beam v1="5" v2="6" r1="2.00000"/>
@@ -467,7 +467,7 @@ func TestReader_processRootModel(t *testing.T) {
 								<b:beam v1="1" v2="6" r1="1.60000" r2="2.00000"/>
 								<b:beam v1="7" v2="4" r1="2.00000"/>
 								<b:beam v1="7" v2="3" r1="2.00000" r2="3.00000"/>
-								<b:beam v1="0" v2="5" r1="1.50000" r2="2.00000"/>
+								<b:beam v1="0" v2="5" r1="1.50000" r2="2.00000" cap2="butt"/>
 							</b:beams>
 						</b:beamlattice>
 					</mesh>
