@@ -21,9 +21,16 @@ const (
 	CapModeButt
 )
 
+func (b BeamCapMode) String() string {
+	return map[BeamCapMode]string{
+		CapModeSphere:     "sphere",
+		CapModeHemisphere: "hemisphere",
+		CapModeButt:       "butt",
+	}[b]
+}
+
 // Beam defines a single beam.
 type Beam struct {
-	Index       uint32         // Index of the beam.
 	NodeIndices [2]uint32      // Indices of the two nodes that defines the beam.
 	Radius      [2]float64     // Radius of both ends of the beam.
 	CapMode     [2]BeamCapMode // Capping mode.
@@ -75,7 +82,6 @@ func (b *beamLattice) merge(other *beamLattice, newNodes []uint32) {
 	for _, beam := range other.Beams {
 		n1, n2 := newNodes[beam.NodeIndices[0]], newNodes[beam.NodeIndices[1]]
 		b.Beams = append(b.Beams, Beam{
-			Index:       uint32(len(b.Beams)),
 			NodeIndices: [2]uint32{n1, n2},
 			Radius:      [2]float64{beam.Radius[0], beam.Radius[1]},
 			CapMode:     [2]BeamCapMode{beam.CapMode[0], beam.CapMode[1]},

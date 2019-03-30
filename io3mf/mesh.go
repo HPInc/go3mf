@@ -46,6 +46,8 @@ func (d *meshDecoder) Decode(x xml.TokenReader) error {
 				} else if tp.Name.Local == attrTriangles {
 					err = d.parseTriangles(x)
 				}
+			} else if tp.Name.Space == nsBeamLatticeSpec && tp.Name.Local == attrBeamLattice {
+				err = d.parseBeamLattice(x, tp.Attr)
 			}
 			if err != nil {
 				return err
@@ -250,4 +252,9 @@ func (d *meshDecoder) checkTexture(faceIndex uint32, pid, p1, p2, p3 uint64) (ok
 		ok = true
 	}
 	return
+}
+
+func (d *meshDecoder) parseBeamLattice(x xml.TokenReader, attrs []xml.Attr) error {
+	bd := beamLatticeDecoder{r: d.r, resource: &d.resource}
+	return bd.Decode(x, attrs)
 }

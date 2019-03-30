@@ -92,12 +92,29 @@ func Test_beamLattice_merge(t *testing.T) {
 			if len(tt.b.Beams) > 0 && tt.b.Beams[0] != emptyBeam {
 				for i := 0; i < len(tt.b.Beams); i++ {
 					want := beam
-					want.Index = uint32(i)
 					if got := tt.b.Beams[i]; got != want {
 						t.Errorf("beamLattice.merge() = %v, want %v", got, want)
 						return
 					}
 				}
+			}
+		})
+	}
+}
+
+func TestBeamCapMode_String(t *testing.T) {
+	tests := []struct {
+		name string
+		b    BeamCapMode
+	}{
+		{"sphere", CapModeSphere},
+		{"hemisphere", CapModeHemisphere},
+		{"butt", CapModeButt},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.b.String(); got != tt.name {
+				t.Errorf("BeamCapMode.String() = %v, want %v", got, tt.name)
 			}
 		})
 	}

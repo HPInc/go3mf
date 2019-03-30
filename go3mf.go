@@ -62,11 +62,9 @@ type DefaultTexCoord2D struct {
 
 // BeamLatticeAttributes defines the Model Mesh BeamLattice Attributes class and is part of the BeamLattice extension to 3MF.
 type BeamLatticeAttributes struct {
-	ClipMode                ClipMode
-	HasClippingMeshID       bool
-	HasRepresentationMeshID bool
-	ClippingMeshID          uint64
-	RepresentationMeshID    uint64
+	ClipMode             ClipMode
+	ClippingMeshID       uint32
+	RepresentationMeshID uint32
 }
 
 // A Model is an in memory representation of the 3MF file.
