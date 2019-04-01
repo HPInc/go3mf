@@ -174,7 +174,7 @@ func (d *componentsDecoder) Decode(x xml.TokenReader) error {
 			}
 		case xml.EndElement:
 			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrComponents {
-				d.r.addResource(&d.components)
+				d.r.addObject(&d.components)
 				return nil
 			}
 		}
@@ -226,7 +226,7 @@ func (d *componentsDecoder) parseComponent(attrs []xml.Attr) (err error) {
 	if path == "" {
 		path = d.r.Model.Path
 	}
-	resource, ok := d.r.Model.FindResource(objectID, path)
+	resource, ok := d.r.Model.FindObject(objectID, path)
 	if !ok {
 		err = errors.New("go3mf: could not find component object")
 	}

@@ -54,7 +54,7 @@ func (d *meshDecoder) Decode(x xml.TokenReader) error {
 			}
 		case xml.EndElement:
 			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrMesh {
-				d.r.addResource(&d.resource)
+				d.r.addObject(&d.resource)
 				return nil
 			}
 		}
