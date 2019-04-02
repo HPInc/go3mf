@@ -312,6 +312,38 @@ func TestReader_processRootModel(t *testing.T) {
 		{NodeIndices: [3]uint32{4, 7, 3}, Resource: 5},
 	}...)
 
+	meshLattice := &go3mf.MeshResource{
+		ObjectResource: go3mf.ObjectResource{ID: 15, Name: "Box", ModelPath: "3d/3dmodel.model", PartNumber: "e1ef01d4-cbd4-4a62-86b6-9634e2ca198b"},
+		Mesh:           mesh.NewMesh(),
+	}
+	meshLattice.Mesh.MinLength = 0.0001
+	meshLattice.Mesh.CapMode = mesh.CapModeHemisphere
+	meshLattice.Mesh.DefaultRadius = 1
+	meshLattice.Mesh.Nodes = append(meshLattice.Mesh.Nodes, []mesh.Node{
+		{45, 55, 55},
+		{45, 45, 55},
+		{45, 55, 45},
+		{45, 45, 45},
+		{55, 55, 45},
+		{55, 55, 55},
+		{55, 45, 55},
+		{55, 45, 45},
+	}...)
+	meshLattice.Mesh.Beams = append(meshLattice.Mesh.Beams, []mesh.Beam{
+		{NodeIndices: [2]uint32{0, 1}, Radius: [2]float64{1.5, 1.6}, CapMode: [2]mesh.CapMode{mesh.CapModeSphere, mesh.CapModeButt}},
+		{NodeIndices: [2]uint32{2, 0}, Radius: [2]float64{3, 1.5}, CapMode: [2]mesh.CapMode{mesh.CapModeSphere, mesh.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{1, 3}, Radius: [2]float64{1.6, 3}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{3, 2}, Radius: [2]float64{1, 1}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{2, 4}, Radius: [2]float64{3, 2}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{4, 5}, Radius: [2]float64{2, 2}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{5, 6}, Radius: [2]float64{2, 2}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{7, 6}, Radius: [2]float64{2, 2}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{1, 6}, Radius: [2]float64{1.6, 2}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{7, 4}, Radius: [2]float64{2, 2}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{7, 3}, Radius: [2]float64{2, 3}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{0, 5}, Radius: [2]float64{1.5, 2}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeButt}},
+	}...)
+
 	components := &go3mf.ComponentsResource{
 		ObjectResource: go3mf.ObjectResource{ID: 20, UUID: "cb828680-8895-4e08-a1fc-be63e033df15", ModelPath: "3d/3dmodel.model"},
 		Components:     []*go3mf.Component{{UUID: "cb828680-8895-4e08-a1fc-be63e033df16", Object: meshRes}},
@@ -319,8 +351,8 @@ func TestReader_processRootModel(t *testing.T) {
 
 	otherMesh := &go3mf.MeshResource{ObjectResource: go3mf.ObjectResource{ID: 1, ModelPath: "3d/other.model"}, Mesh: mesh.NewMesh()}
 	want.Resources = append(want.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices, TimesRefered: 1})
-	want.Resources = append(want.Resources, otherMesh)
-	want.Resources = append(want.Resources, []go3mf.Identifier{baseMaterials, baseTexture, sliceStack, sliceStackRef, meshRes, components}...)
+	want.Objects = append(want.Objects, otherMesh, meshRes, meshLattice, components)
+	want.Resources = append(want.Resources, []go3mf.Identifier{baseMaterials, baseTexture, sliceStack, sliceStackRef}...)
 	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: components, PartNumber: "bob", UUID: "e9e25302-6428-402e-8633-cc95528d0ed2",
 		Transform: mgl32.Mat4{1, 0, 0, -66.4, 0, 2, 0, -87.1, 0, 0, 3, 8.8, 0, 0, 0, 1},
 	})
@@ -328,7 +360,7 @@ func TestReader_processRootModel(t *testing.T) {
 	got := new(go3mf.Model)
 	got.Path = "3d/3dmodel.model"
 	got.Resources = append(got.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices})
-	got.Resources = append(got.Resources, otherMesh)
+	got.Objects = append(got.Objects, otherMesh)
 	r := &Reader{
 		Model: got,
 		r: newMockPackage(new(modelBuilder).withDefaultModel().withElement(`
@@ -391,6 +423,36 @@ func TestReader_processRootModel(t *testing.T) {
 							<triangle v1="3" v2="0" v3="4" />
 							<triangle v1="4" v2="7" v3="3" />
 						</triangles>
+					</mesh>
+				</object>
+				<object id="15" name="Box" partnumber="e1ef01d4-cbd4-4a62-86b6-9634e2ca198b" type="model">
+					<mesh>
+						<vertices>
+							<vertex x="45.00000" y="55.00000" z="55.00000"/>
+							<vertex x="45.00000" y="45.00000" z="55.00000"/>
+							<vertex x="45.00000" y="55.00000" z="45.00000"/>
+							<vertex x="45.00000" y="45.00000" z="45.00000"/>
+							<vertex x="55.00000" y="55.00000" z="45.00000"/>
+							<vertex x="55.00000" y="55.00000" z="55.00000"/>
+							<vertex x="55.00000" y="45.00000" z="55.00000"/>
+							<vertex x="55.00000" y="45.00000" z="45.00000"/>
+						</vertices>
+						<b:beamlattice radius="1" minlength="0.0001" cap="hemisphere">
+							<b:beams>
+								<b:beam v1="0" v2="1" r1="1.50000" r2="1.60000" cap1="sphere" cap2="butt"/>
+								<b:beam v1="2" v2="0" r1="3.00000" r2="1.50000" cap1="sphere"/>
+								<b:beam v1="1" v2="3" r1="1.60000" r2="3.00000"/>
+								<b:beam v1="3" v2="2" />
+								<b:beam v1="2" v2="4" r1="3.00000" r2="2.00000"/>
+								<b:beam v1="4" v2="5" r1="2.00000"/>
+								<b:beam v1="5" v2="6" r1="2.00000"/>
+								<b:beam v1="7" v2="6" r1="2.00000"/>
+								<b:beam v1="1" v2="6" r1="1.60000" r2="2.00000"/>
+								<b:beam v1="7" v2="4" r1="2.00000"/>
+								<b:beam v1="7" v2="3" r1="2.00000" r2="3.00000"/>
+								<b:beam v1="0" v2="5" r1="1.50000" r2="2.00000" cap2="butt"/>
+							</b:beams>
+						</b:beamlattice>
 					</mesh>
 				</object>
 				<object id="20" p:UUID="cb828680-8895-4e08-a1fc-be63e033df15">

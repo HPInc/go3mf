@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	go3mf "github.com/qmuntal/go3mf"
+	mesh "github.com/qmuntal/go3mf/mesh"
 )
 
 func Test_newTextureFilter(t *testing.T) {
@@ -179,6 +180,30 @@ func Test_newUnits(t *testing.T) {
 			}
 			if got1 != tt.want1 {
 				t.Errorf("newUnits() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+
+func Test_newCapMode(t *testing.T) {
+	tests := []struct {
+		name   string
+		wantT  mesh.CapMode
+		wantOk bool
+	}{
+		{"sphere", mesh.CapModeSphere, true},
+		{"hemisphere", mesh.CapModeHemisphere, true},
+		{"butt", mesh.CapModeButt, true},
+		{"empty", mesh.CapModeSphere, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotT, gotOk := newCapMode(tt.name)
+			if !reflect.DeepEqual(gotT, tt.wantT) {
+				t.Errorf("newCapMode() gotT = %v, want %v", gotT, tt.wantT)
+			}
+			if gotOk != tt.wantOk {
+				t.Errorf("newCapMode() gotOk = %v, want %v", gotOk, tt.wantOk)
 			}
 		})
 	}

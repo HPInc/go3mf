@@ -18,6 +18,7 @@ type Identifier interface {
 
 // Object defines a composable object.
 type Object interface {
+	Identify() string
 	MergeToMesh(*mesh.Mesh, mgl32.Mat4)
 	IsValid() bool
 	IsValidForSlices(mgl32.Mat4) bool
@@ -63,11 +64,9 @@ type DefaultTexCoord2D struct {
 
 // BeamLatticeAttributes defines the Model Mesh BeamLattice Attributes class and is part of the BeamLattice extension to 3MF.
 type BeamLatticeAttributes struct {
-	ClipMode                ClipMode
-	HasClippingMeshID       bool
-	HasRepresentationMeshID bool
-	ClippingMeshID          uint64
-	RepresentationMeshID    uint64
+	ClipMode             ClipMode
+	ClippingMeshID       uint32
+	RepresentationMeshID uint32
 }
 
 // A Model is an in memory representation of the 3MF file.
@@ -79,6 +78,7 @@ type Model struct {
 	Thumbnail             *Attachment
 	Metadata              []Metadata
 	Resources             []Identifier
+	Objects 			  []Object
 	BuildItems            []*BuildItem
 	Attachments           []*Attachment
 	ProductionAttachments []*ProductionAttachment
@@ -119,6 +119,22 @@ func (m *Model) MergeToMesh(msh *mesh.Mesh) {
 	for _, b := range m.BuildItems {
 		b.MergeToMesh(msh)
 	}
+}
+
+// FindObject returns the object with the target unique ID.
+func (m *Model) FindObject(id uint64, path string) (o Object, ok bool) {
+	if path == "" {
+		path = m.Path
+	}
+	identity := identification(path, id)
+	for _, value := range m.Objects {
+		if identity == value.Identify() {
+			o = value
+			ok = true
+			break
+		}
+	}
+	return
 }
 
 // FindResource returns the resource with the target unique ID.
@@ -214,20 +230,6 @@ func (o *ObjectResource) Identify() (string, uint64) {
 // Type returns the type of the object.
 func (o *ObjectResource) Type() ObjectType {
 	return o.ObjectType
-}
-
-// MergeToMesh left on purpose empty to be redefined in embedding class.
-func (o *ObjectResource) MergeToMesh(m *mesh.Mesh, transform mgl32.Mat4) {
-}
-
-// IsValid should be redefined in embedding class.
-func (o *ObjectResource) IsValid() bool {
-	return false
-}
-
-// IsValidForSlices should be redefined in embedding class.
-func (o *ObjectResource) IsValidForSlices(transform mgl32.Mat4) bool {
-	return false
 }
 
 // A Component is an in memory representation of the 3MF component.

@@ -44,13 +44,15 @@ func (d *meshDecoder) Decode(x xml.TokenReader) error {
 				} else if tp.Name.Local == attrTriangles {
 					err = d.parseTriangles(x)
 				}
+			} else if tp.Name.Space == nsBeamLatticeSpec && tp.Name.Local == attrBeamLattice {
+				err = d.parseBeamLattice(x, tp.Attr)
 			}
 			if err != nil {
 				return err
 			}
 		case xml.EndElement:
 			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrMesh {
-				d.r.addResource(&d.resource)
+				d.r.addObject(&d.resource)
 				return nil
 			}
 		}
