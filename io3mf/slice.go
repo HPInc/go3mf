@@ -10,22 +10,22 @@ import (
 
 type sliceStackDecoder struct {
 	r             *Reader
-	sliceStack    go3mf.SliceStackResource
+	resource      go3mf.SliceStackResource
 	progressCount uint64
 }
 
 func (d *sliceStackDecoder) Decode(x xml.TokenReader, attrs []xml.Attr) error {
-	d.sliceStack.SliceStack = new(go3mf.SliceStack)
+	d.resource.SliceStack = new(go3mf.SliceStack)
 	if err := d.parseAttr(attrs); err != nil {
 		return err
 	}
-	if d.sliceStack.ID == 0 {
+	if d.resource.ID == 0 {
 		return errors.New("go3mf: missing slice stack id attribute")
 	}
 	if err := d.parseContent(x); err != nil {
 		return err
 	}
-	d.r.addResource(&d.sliceStack)
+	d.r.addResource(&d.resource)
 	return nil
 }
 
@@ -34,15 +34,15 @@ func (d *sliceStackDecoder) parseAttr(attrs []xml.Attr) error {
 		var err error
 		switch a.Name.Local {
 		case attrID:
-			if d.sliceStack.ID != 0 {
+			if d.resource.ID != 0 {
 				err = errors.New("go3mf: duplicated slicestack id attribute")
 			} else {
-				d.sliceStack.ID, err = strconv.ParseUint(a.Value, 10, 64)
+				d.resource.ID, err = strconv.ParseUint(a.Value, 10, 64)
 			}
 		case attrZBottom:
 			var bottomZ float64
 			bottomZ, err = strconv.ParseFloat(a.Value, 32)
-			d.sliceStack.SliceStack.BottomZ = float32(bottomZ)
+			d.resource.SliceStack.BottomZ = float32(bottomZ)
 		}
 		if err != nil {
 			return errors.New("go3mf: texture2d attribute not valid")
@@ -109,7 +109,7 @@ func (d *sliceStackDecoder) parseSliceRef(attrs []xml.Attr) error {
 }
 
 func (d *sliceStackDecoder) addSliceRef(sliceStackID uint64, path string) error {
-	if path == d.sliceStack.ModelPath {
+	if path == d.resource.ModelPath {
 		return errors.New("go3mf: a slicepath is invalid")
 	}
 	resource, ok := d.r.Model.FindResource(path, sliceStackID)
@@ -122,22 +122,22 @@ func (d *sliceStackDecoder) addSliceRef(sliceStackID uint64, path string) error 
 	}
 	sliceStackResource.TimesRefered++
 	for _, s := range sliceStackResource.Slices {
-		if _, err := d.sliceStack.AddSlice(s); err != nil {
+		if _, err := d.resource.AddSlice(s); err != nil {
 			return err
 		}
 	}
-	d.sliceStack.UsesSliceRef = true
+	d.resource.UsesSliceRef = true
 	return nil
 }
 
 func (d *sliceStackDecoder) parseSlice(x xml.TokenReader, attrs []xml.Attr) (err error) {
-	if len(d.sliceStack.Slices)%readSliceUpdate == readSliceUpdate-1 {
+	if len(d.resource.Slices)%readSliceUpdate == readSliceUpdate-1 {
 		d.progressCount++
 		if !d.r.progress.progress(1.0-2.0/float64(d.progressCount+2), StageReadSlices) {
 			return ErrUserAborted
 		}
 	}
-	sd := sliceDecoder{r: d.r, sliceStack: d.sliceStack.SliceStack}
+	sd := sliceDecoder{r: d.r, sliceStack: d.resource.SliceStack}
 	return sd.Decode(x, attrs)
 }
 

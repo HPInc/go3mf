@@ -12,8 +12,6 @@ import (
 type meshDecoder struct {
 	r                              *Reader
 	resource                       go3mf.MeshResource
-	colorMapping                   *colorMapping
-	texCoordMapping                *texCoordMapping
 	triangleCounter, vertexCounter int
 }
 

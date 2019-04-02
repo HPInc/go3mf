@@ -9,17 +9,15 @@ import (
 )
 
 type colorGroupDecoder struct {
-	r            *Reader
-	colorMapping *colorMapping
-	id           uint64
-	colorIndex   uint64
+	r        *Reader
+	resource go3mf.ColorGroupResource
 }
 
 func (d *colorGroupDecoder) Decode(x xml.TokenReader, attrs []xml.Attr) error {
 	if err := d.parseAttr(attrs); err != nil {
 		return err
 	}
-	if d.id == 0 {
+	if d.resource.ID == 0 {
 		return errors.New("go3mf: missing color group id attribute")
 	}
 	for {
@@ -36,6 +34,7 @@ func (d *colorGroupDecoder) Decode(x xml.TokenReader, attrs []xml.Attr) error {
 			}
 		case xml.EndElement:
 			if tp.Name.Space == nsMaterialSpec && tp.Name.Local == attrColorGroup {
+				d.r.addResource(&d.resource)
 				return nil
 			}
 		}
@@ -45,11 +44,11 @@ func (d *colorGroupDecoder) Decode(x xml.TokenReader, attrs []xml.Attr) error {
 func (d *colorGroupDecoder) parseAttr(attrs []xml.Attr) error {
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrID {
-			if d.id != 0 {
+			if d.resource.ID != 0 {
 				return errors.New("go3mf: duplicated color group id attribute")
 			}
 			var err error
-			if d.id, err = strconv.ParseUint(a.Value, 10, 64); err != nil {
+			if d.resource.ID, err = strconv.ParseUint(a.Value, 10, 64); err != nil {
 				return errors.New("go3mf: color group id is not valid")
 			}
 		}
@@ -64,26 +63,22 @@ func (d *colorGroupDecoder) addColor(attrs []xml.Attr) error {
 			if err != nil {
 				return err
 			}
-			d.colorMapping.register(d.id, d.colorIndex, c)
-			d.colorIndex++
+			d.resource.Colors = append(d.resource.Colors, c)
 		}
 	}
 	return nil
 }
 
 type tex2DGroupDecoder struct {
-	r               *Reader
-	texCoordMapping *texCoordMapping
-	id              uint64
-	textureID       uint64
-	texCoordIndex   uint64
+	r        *Reader
+	resource go3mf.Texture2DGroupResource
 }
 
 func (d *tex2DGroupDecoder) Decode(x xml.TokenReader, attrs []xml.Attr) error {
 	if err := d.parseAttr(attrs); err != nil {
 		return err
 	}
-	if d.id == 0 {
+	if d.resource.ID == 0 {
 		return errors.New("go3mf: missing tex2Coord group id attribute")
 	}
 	for {
@@ -100,6 +95,7 @@ func (d *tex2DGroupDecoder) Decode(x xml.TokenReader, attrs []xml.Attr) error {
 			}
 		case xml.EndElement:
 			if tp.Name.Space == nsMaterialSpec && tp.Name.Local == attrTexture2DGroup {
+				d.r.addResource(&d.resource)
 				return nil
 			}
 		}
@@ -113,19 +109,19 @@ func (d *tex2DGroupDecoder) parseAttr(attrs []xml.Attr) error {
 		}
 		switch a.Name.Local {
 		case attrID:
-			if d.id != 0 {
+			if d.resource.ID != 0 {
 				return errors.New("go3mf: duplicated tex2Coord group id attribute")
 			}
 			var err error
-			if d.id, err = strconv.ParseUint(a.Value, 10, 64); err != nil {
+			if d.resource.ID, err = strconv.ParseUint(a.Value, 10, 64); err != nil {
 				return errors.New("go3mf: tex2Coord group id is not valid")
 			}
 		case attrTexID:
-			if d.textureID != 0 {
+			if d.resource.TextureID != 0 {
 				return errors.New("go3mf: duplicated tex2Coord group texid attribute")
 			}
 			var err error
-			if d.textureID, err = strconv.ParseUint(a.Value, 10, 64); err != nil {
+			if d.resource.TextureID, err = strconv.ParseUint(a.Value, 10, 64); err != nil {
 				return errors.New("go3mf: tex2Coord group texid is not valid")
 			}
 		}
@@ -147,24 +143,23 @@ func (d *tex2DGroupDecoder) addTextureCoord(attrs []xml.Attr) error {
 			return err
 		}
 	}
-	d.texCoordMapping.register(d.id, d.texCoordIndex, d.textureID, float32(u), float32(v))
-	d.texCoordIndex++
+	d.resource.Coords = append(d.resource.Coords, go3mf.TextureCoord{float32(u), float32(v)})
 	return nil
 }
 
 type texture2DDecoder struct {
-	r       *Reader
-	texture go3mf.Texture2DResource
+	r        *Reader
+	resource go3mf.Texture2DResource
 }
 
 func (d *texture2DDecoder) Decode(attrs []xml.Attr) error {
 	if err := d.parseAttr(attrs); err != nil {
 		return err
 	}
-	if d.texture.ID == 0 {
+	if d.resource.ID == 0 {
 		return errors.New("go3mf: missing texture2d id attribute")
 	}
-	d.r.addResource(&d.texture)
+	d.r.addResource(&d.resource)
 	return nil
 }
 
@@ -177,21 +172,21 @@ func (d *texture2DDecoder) parseAttr(attrs []xml.Attr) error {
 		ok := true
 		switch a.Name.Local {
 		case attrID:
-			if d.texture.ID != 0 {
+			if d.resource.ID != 0 {
 				err = errors.New("go3mf: duplicated texture2d id attribute")
 			} else {
-				d.texture.ID, err = strconv.ParseUint(a.Value, 10, 64)
+				d.resource.ID, err = strconv.ParseUint(a.Value, 10, 64)
 			}
 		case attrPath:
-			d.texture.Path = a.Value
+			d.resource.Path = a.Value
 		case attrContentType:
-			d.texture.ContentType, ok = newTexture2DType(a.Value)
+			d.resource.ContentType, ok = newTexture2DType(a.Value)
 		case attrTileStyleU:
-			d.texture.TileStyleU, ok = newTileStyle(a.Value)
+			d.resource.TileStyleU, ok = newTileStyle(a.Value)
 		case attrTileStyleV:
-			d.texture.TileStyleV, ok = newTileStyle(a.Value)
+			d.resource.TileStyleV, ok = newTileStyle(a.Value)
 		case attrFilter:
-			d.texture.Filter, ok = newTextureFilter(a.Value)
+			d.resource.Filter, ok = newTextureFilter(a.Value)
 		}
 		if err != nil || !ok {
 			return errors.New("go3mf: texture2d attribute not valid")

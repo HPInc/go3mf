@@ -9,78 +9,13 @@ import (
 	go3mf "github.com/qmuntal/go3mf"
 )
 
-var emptyEntry struct{}
-
-type resourceEntry struct {
-	ID, Index uint64
-}
-
-type colorMapping struct {
-	entries   map[resourceEntry]color.RGBA
-	resources map[uint64]struct{}
-}
-
-func (m *colorMapping) register(id, index uint64, c color.RGBA) {
-	m.entries[resourceEntry{id, index}] = c
-	m.resources[id] = emptyEntry
-}
-
-func (m *colorMapping) find(id, index uint64) (color.RGBA, bool) {
-	if c, ok := m.entries[resourceEntry{id, index}]; ok {
-		return c, true
-	}
-	return defaultColor, false
-}
-
-func (m *colorMapping) hasResource(id uint64) bool {
-	_, ok := m.resources[id]
-	return ok
-}
-
-type texCoord struct {
-	id   uint64
-	u, v float32
-}
-
-type texCoordMapping struct {
-	entries   map[resourceEntry]texCoord
-	resources map[uint64]struct{}
-}
-
-func (m *texCoordMapping) register(id, index, textureID uint64, u, v float32) {
-	m.entries[resourceEntry{id, index}] = texCoord{textureID, u, v}
-	m.resources[id] = emptyEntry
-}
-
-func (m *texCoordMapping) find(id, index uint64) (texCoord, bool) {
-	if c, ok := m.entries[resourceEntry{id, index}]; ok {
-		return c, true
-	}
-	return texCoord{}, false
-}
-
-func (m *texCoordMapping) hasResource(id uint64) bool {
-	_, ok := m.resources[id]
-	return ok
-}
-
 type resourceDecoder struct {
-	r               *Reader
-	path            string
-	colorMapping    colorMapping
-	texCoordMapping texCoordMapping
-	progressCount   int
-}
-
-func (d *resourceDecoder) init() {
-	d.colorMapping.entries = make(map[resourceEntry]color.RGBA)
-	d.colorMapping.resources = make(map[uint64]struct{})
-	d.texCoordMapping.entries = make(map[resourceEntry]texCoord)
-	d.texCoordMapping.resources = make(map[uint64]struct{})
+	r             *Reader
+	path          string
+	progressCount int
 }
 
 func (d *resourceDecoder) Decode(x xml.TokenReader) error {
-	d.init()
 	for {
 		t, err := x.Token()
 		if err != nil {
@@ -114,13 +49,11 @@ func (d *resourceDecoder) processCoreContent(x xml.TokenReader, se xml.StartElem
 			return ErrUserAborted
 		}
 		d.r.progress.pushLevel(1.0-2.0/float64(d.progressCount+2), 1.0-2.0/float64(d.progressCount+1+2))
-		od := objectDecoder{r: d.r, texCoordMapping: &d.texCoordMapping, colorMapping: &d.colorMapping}
-		od.obj.ModelPath = d.path
+		od := objectDecoder{r: d.r, resource: go3mf.ObjectResource{ModelPath: d.path}}
 		err = od.Decode(x, se.Attr)
 		d.r.progress.popLevel()
 	case attrBaseMaterials:
-		md := baseMaterialsDecoder{r: d.r}
-		md.baseMaterials.ModelPath = d.path
+		md := baseMaterialsDecoder{r: d.r, resource: go3mf.BaseMaterialsResource{ModelPath: d.path}}
 		err = md.Decode(x, se.Attr)
 	}
 	return
@@ -129,14 +62,13 @@ func (d *resourceDecoder) processCoreContent(x xml.TokenReader, se xml.StartElem
 func (d *resourceDecoder) processMaterialContent(x xml.TokenReader, se xml.StartElement) error {
 	switch se.Name.Local {
 	case attrColorGroup:
-		cd := colorGroupDecoder{r: d.r, colorMapping: &d.colorMapping}
+		cd := colorGroupDecoder{r: d.r, resource: go3mf.ColorGroupResource{ModelPath: d.path}}
 		return cd.Decode(x, se.Attr)
 	case attrTexture2DGroup:
-		td := tex2DGroupDecoder{r: d.r, texCoordMapping: &d.texCoordMapping}
+		td := tex2DGroupDecoder{r: d.r, resource: go3mf.Texture2DGroupResource{ModelPath: d.path}}
 		return td.Decode(x, se.Attr)
 	case attrTexture2D:
-		td := texture2DDecoder{r: d.r}
-		td.texture.ModelPath = d.path
+		td := texture2DDecoder{r: d.r, resource: go3mf.Texture2DResource{ModelPath: d.path}}
 		return td.Decode(se.Attr)
 	case attrComposite:
 		d.r.addWarning(&ReadError{InvalidOptionalValue, "go3mf: composite materials extension not supported"})
@@ -153,16 +85,15 @@ func (d *resourceDecoder) processSliceContent(x xml.TokenReader, se xml.StartEle
 		return ErrUserAborted
 	}
 	d.r.progress.pushLevel(1.0-2.0/float64(d.progressCount+2), 1.0-2.0/float64(d.progressCount+1+2))
-	sd := sliceStackDecoder{r: d.r}
-	sd.sliceStack.ModelPath = d.path
+	sd := sliceStackDecoder{r: d.r, resource: go3mf.SliceStackResource{ModelPath: d.path}}
 	err := sd.Decode(x, se.Attr)
 	d.r.progress.popLevel()
 	return err
 }
 
 type baseMaterialsDecoder struct {
-	r             *Reader
-	baseMaterials go3mf.BaseMaterialsResource
+	r        *Reader
+	resource go3mf.BaseMaterialsResource
 }
 
 func (d *baseMaterialsDecoder) parseAttr(attrs []xml.Attr) (err error) {
@@ -170,8 +101,8 @@ func (d *baseMaterialsDecoder) parseAttr(attrs []xml.Attr) (err error) {
 		if a.Name.Space != "" || a.Name.Local != attrID {
 			continue
 		}
-		if d.baseMaterials.ID == 0 {
-			d.baseMaterials.ID, err = strconv.ParseUint(a.Value, 10, 64)
+		if d.resource.ID == 0 {
+			d.resource.ID, err = strconv.ParseUint(a.Value, 10, 64)
 			if err != nil {
 				err = errors.New("go3mf: base materials id is not valid")
 			}
@@ -189,13 +120,13 @@ func (d *baseMaterialsDecoder) Decode(x xml.TokenReader, attrs []xml.Attr) error
 	if err := d.parseAttr(attrs); err != nil {
 		return err
 	}
-	if d.baseMaterials.ID == 0 {
+	if d.resource.ID == 0 {
 		return errors.New("go3mf: missing base materials resource id attribute")
 	}
 	if err := d.parseContent(x); err != nil {
 		return err
 	}
-	d.r.addResource(&d.baseMaterials)
+	d.r.addResource(&d.resource)
 	return nil
 }
 
@@ -240,6 +171,6 @@ func (d *baseMaterialsDecoder) addBaseMaterial(attrs []xml.Attr) error {
 	if name == "" || !withColor {
 		return errors.New("go3mf: missing base material attributes")
 	}
-	d.baseMaterials.Materials = append(d.baseMaterials.Materials, go3mf.BaseMaterial{Name: name, Color: baseColor})
+	d.resource.Materials = append(d.resource.Materials, go3mf.BaseMaterial{Name: name, Color: baseColor})
 	return nil
 }

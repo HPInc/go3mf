@@ -86,7 +86,7 @@ func (m *modelBuilder) build() *mockFile {
 		m.str.WriteString("</model>\n")
 	}
 	f := new(mockFile)
-	f.On("Name").Return("3d/3dmodel.model").Maybe()
+	f.On("Name").Return("/3d/3dmodel.model").Maybe()
 	f.On("Open").Return(ioutil.NopCloser(bytes.NewBufferString(m.str.String())), nil).Maybe()
 	return f
 }
@@ -248,12 +248,12 @@ func TestReader_processRootModel_Fail(t *testing.T) {
 }
 
 func TestReader_processRootModel(t *testing.T) {
-	want := &go3mf.Model{Units: go3mf.UnitMillimeter, Language: "en-US", Path: "3d/3dmodel.model", UUID: "e9e25302-6428-402e-8633-cc95528d0ed3"}
-	baseMaterials := &go3mf.BaseMaterialsResource{ID: 5, ModelPath: "3d/3dmodel.model", Materials: []go3mf.BaseMaterial{
+	want := &go3mf.Model{Units: go3mf.UnitMillimeter, Language: "en-US", Path: "/3d/3dmodel.model", UUID: "e9e25302-6428-402e-8633-cc95528d0ed3"}
+	baseMaterials := &go3mf.BaseMaterialsResource{ID: 5, ModelPath: "/3d/3dmodel.model", Materials: []go3mf.BaseMaterial{
 		{Name: "Blue PLA", Color: color.RGBA{0, 0, 85, 255}},
 		{Name: "Red ABS", Color: color.RGBA{85, 0, 0, 255}},
 	}}
-	baseTexture := &go3mf.Texture2DResource{ID: 6, ModelPath: "3d/3dmodel.model", Path: "/3D/Texture/msLogo.png", ContentType: go3mf.PNGTexture, TileStyleU: go3mf.TileWrap, TileStyleV: go3mf.TileMirror, Filter: go3mf.TextureFilterAuto}
+	baseTexture := &go3mf.Texture2DResource{ID: 6, ModelPath: "/3d/3dmodel.model", Path: "/3D/Texture/msLogo.png", ContentType: go3mf.PNGTexture, TileStyleU: go3mf.TileWrap, TileStyleV: go3mf.TileMirror, Filter: go3mf.TextureFilterAuto}
 	otherSlices := &go3mf.SliceStack{
 		BottomZ: 2,
 		Slices: []*go3mf.Slice{
@@ -264,7 +264,7 @@ func TestReader_processRootModel(t *testing.T) {
 			},
 		},
 	}
-	sliceStack := &go3mf.SliceStackResource{ID: 3, ModelPath: "3d/3dmodel.model", SliceStack: &go3mf.SliceStack{
+	sliceStack := &go3mf.SliceStackResource{ID: 3, ModelPath: "/3d/3dmodel.model", SliceStack: &go3mf.SliceStack{
 		BottomZ: 1,
 		Slices: []*go3mf.Slice{
 			{
@@ -279,12 +279,12 @@ func TestReader_processRootModel(t *testing.T) {
 			},
 		},
 	}}
-	sliceStackRef := &go3mf.SliceStackResource{ID: 7, ModelPath: "3d/3dmodel.model", SliceStack: otherSlices}
+	sliceStackRef := &go3mf.SliceStackResource{ID: 7, ModelPath: "/3d/3dmodel.model", SliceStack: otherSlices}
 	sliceStackRef.BottomZ = 1.1
 	sliceStackRef.UsesSliceRef = true
 	sliceStackRef.Slices = append(sliceStackRef.Slices, otherSlices.Slices...)
 	meshRes := &go3mf.MeshResource{
-		ObjectResource: go3mf.ObjectResource{ID: 1, Name: "Box 1", ModelPath: "3d/3dmodel.model", SliceStackID: 3, DefaultPropertyID: 5, SliceResoultion: go3mf.ResolutionLow, PartNumber: "11111111-1111-1111-1111-111111111111"},
+		ObjectResource: go3mf.ObjectResource{ID: 8, Name: "Box 1", ModelPath: "/3d/3dmodel.model", SliceStackID: 3, DefaultPropertyID: 5, SliceResoultion: go3mf.ResolutionLow, PartNumber: "11111111-1111-1111-1111-111111111111"},
 		Mesh:           mesh.NewMesh(),
 	}
 	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []mesh.Node{
@@ -313,7 +313,7 @@ func TestReader_processRootModel(t *testing.T) {
 	}...)
 
 	meshLattice := &go3mf.MeshResource{
-		ObjectResource: go3mf.ObjectResource{ID: 15, Name: "Box", ModelPath: "3d/3dmodel.model", PartNumber: "e1ef01d4-cbd4-4a62-86b6-9634e2ca198b"},
+		ObjectResource: go3mf.ObjectResource{ID: 15, Name: "Box", ModelPath: "/3d/3dmodel.model", PartNumber: "e1ef01d4-cbd4-4a62-86b6-9634e2ca198b"},
 		Mesh:           mesh.NewMesh(),
 	}
 	meshLattice.Mesh.MinLength = 0.0001
@@ -345,19 +345,21 @@ func TestReader_processRootModel(t *testing.T) {
 	}...)
 
 	components := &go3mf.ComponentsResource{
-		ObjectResource: go3mf.ObjectResource{ID: 20, UUID: "cb828680-8895-4e08-a1fc-be63e033df15", ModelPath: "3d/3dmodel.model"},
+		ObjectResource: go3mf.ObjectResource{ID: 20, UUID: "cb828680-8895-4e08-a1fc-be63e033df15", ModelPath: "/3d/3dmodel.model"},
 		Components:     []*go3mf.Component{{UUID: "cb828680-8895-4e08-a1fc-be63e033df16", Object: meshRes}},
 	}
 
-	otherMesh := &go3mf.MeshResource{ObjectResource: go3mf.ObjectResource{ID: 1, ModelPath: "3d/other.model"}, Mesh: mesh.NewMesh()}
+	otherMesh := &go3mf.MeshResource{ObjectResource: go3mf.ObjectResource{ID: 8, ModelPath: "/3d/other.model"}, Mesh: mesh.NewMesh()}
 	want.Resources = append(want.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices, TimesRefered: 1})
-	want.Resources = append(want.Resources, []go3mf.Identifier{otherMesh, baseMaterials, baseTexture, sliceStack, sliceStackRef, meshRes, meshLattice, components}...)
+	colorGroup := &go3mf.ColorGroupResource{ID: 1, ModelPath: "/3d/3dmodel.model", Colors: []color.RGBA{{R: 85, G: 85, B: 85, A: 255}, {R: 0, G: 0, B: 0, A: 255}, {R: 16, G: 21, B: 103, A: 255}, {R: 53, G: 4, B: 80, A: 255}}}
+	exGroup := &go3mf.Texture2DGroupResource{ID: 2, ModelPath: "/3d/3dmodel.model", TextureID: 6, Coords: []go3mf.TextureCoord{{0.3, 0.5}, {0.3, 0.8}, {0.5, 0.8}, {0.5, 0.5}}}
+	want.Resources = append(want.Resources, []go3mf.Identifier{otherMesh, baseMaterials, baseTexture, colorGroup, exGroup, sliceStack, sliceStackRef, meshRes, meshLattice, components}...)
 	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: components, PartNumber: "bob", UUID: "e9e25302-6428-402e-8633-cc95528d0ed2",
 		Transform: mgl32.Mat4{1, 0, 0, -66.4, 0, 2, 0, -87.1, 0, 0, 3, 8.8, 0, 0, 0, 1},
 	})
 	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: otherMesh})
 	got := new(go3mf.Model)
-	got.Path = "3d/3dmodel.model"
+	got.Path = "/3d/3dmodel.model"
 	got.Resources = append(got.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices}, otherMesh)
 	r := &Reader{
 		Model: got,
@@ -395,7 +397,7 @@ func TestReader_processRootModel(t *testing.T) {
 				<s:slicestack id="7" zbottom="1.1">
 					<s:sliceref slicestackid="10" slicepath="/2D/2Dmodel.model" />
 				</s:slicestack>
-				<object id="1" name="Box 1" pid="5" pindex="0" s:meshresolution="lowres" s:slicestackid="3" partnumber="11111111-1111-1111-1111-111111111111" type="model">
+				<object id="8" name="Box 1" pid="5" pindex="0" s:meshresolution="lowres" s:slicestackid="3" partnumber="11111111-1111-1111-1111-111111111111" type="model">
 					<mesh>
 						<vertices>
 							<vertex x="0" y="0" z="0" />
@@ -455,13 +457,13 @@ func TestReader_processRootModel(t *testing.T) {
 				</object>
 				<object id="20" p:UUID="cb828680-8895-4e08-a1fc-be63e033df15">
 					<components>
-                		<component objectid="1" p:UUID="cb828680-8895-4e08-a1fc-be63e033df16"/>
+                		<component objectid="8" p:UUID="cb828680-8895-4e08-a1fc-be63e033df16"/>
             		</components>
 				</object>
 			</resources>
 			<build p:UUID="e9e25302-6428-402e-8633-cc95528d0ed3">
 				<item partnumber="bob" objectid="20" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed2" transform="1 0 0 0 2 0 0 0 3 -66.4 -87.1 8.8" />
-				<item objectid="1" p:path="3d/other.model" />
+				<item objectid="8" p:path="/3d/other.model" />
 			</build>
 		`).build()),
 	}
