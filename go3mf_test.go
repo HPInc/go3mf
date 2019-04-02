@@ -108,7 +108,7 @@ func TestModel_FindResource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotR, gotOk := tt.m.FindResource(tt.args.id, tt.args.path)
+			gotR, gotOk := tt.m.FindResource(tt.args.path, tt.args.id)
 			if !reflect.DeepEqual(gotR, tt.wantR) {
 				t.Errorf("Model.FindResource() gotR = %v, want %v", gotR, tt.wantR)
 			}
@@ -606,17 +606,21 @@ func TestTexture2DResource_Copy(t *testing.T) {
 
 func TestBaseMaterialsResource_Identify(t *testing.T) {
 	tests := []struct {
-		name string
-		ms   *BaseMaterialsResource
-		want string
+		name  string
+		ms    *BaseMaterialsResource
+		want  string
+		want1 uint64
 	}{
-		{"base", &BaseMaterialsResource{ID: 1, ModelPath: "3d/3dmodel.model"}, "3d/3dmodel.model/1"},
+		{"base", &BaseMaterialsResource{ID: 1, ModelPath: "3d/3dmodel.model"}, "3d/3dmodel.model", 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.ms.Identify()
+			got, got1 := tt.ms.Identify()
 			if got != tt.want {
 				t.Errorf("BaseMaterialsResource.Identify() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("BaseMaterialsResource.Identify() got = %v, want %v", got1, tt.want1)
 			}
 		})
 	}
@@ -624,17 +628,21 @@ func TestBaseMaterialsResource_Identify(t *testing.T) {
 
 func TestObjectResource_Identify(t *testing.T) {
 	tests := []struct {
-		name string
-		o    *ObjectResource
-		want string
+		name  string
+		o     *ObjectResource
+		want  string
+		want1 uint64
 	}{
-		{"base", &ObjectResource{ID: 1, ModelPath: "3d/3dmodel.model"}, "3d/3dmodel.model/1"},
+		{"base", &ObjectResource{ID: 1, ModelPath: "3d/3dmodel.model"}, "3d/3dmodel.model", 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.o.Identify()
+			got, got1 := tt.o.Identify()
 			if got != tt.want {
 				t.Errorf("ObjectResource.Identify() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("ObjectResource.Identify() got = %v, want %v", got1, tt.want1)
 			}
 		})
 	}
@@ -642,17 +650,21 @@ func TestObjectResource_Identify(t *testing.T) {
 
 func TestSliceStackResource_Identify(t *testing.T) {
 	tests := []struct {
-		name string
-		s    *SliceStackResource
-		want string
+		name  string
+		s     *SliceStackResource
+		want  string
+		want1 uint64
 	}{
-		{"base", &SliceStackResource{ID: 1, ModelPath: "3d/3dmodel.model"}, "3d/3dmodel.model/1"},
+		{"base", &SliceStackResource{ID: 1, ModelPath: "3d/3dmodel.model"}, "3d/3dmodel.model", 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.s.Identify()
+			got, got1 := tt.s.Identify()
 			if got != tt.want {
 				t.Errorf("SliceStackResource.Identify() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("SliceStackResource.Identify() got = %v, want %v", got1, tt.want1)
 			}
 		})
 	}
@@ -660,17 +672,120 @@ func TestSliceStackResource_Identify(t *testing.T) {
 
 func TestTexture2DResource_Identify(t *testing.T) {
 	tests := []struct {
-		name string
-		t    *Texture2DResource
-		want string
+		name  string
+		t     *Texture2DResource
+		want  string
+		want1 uint64
 	}{
-		{"base", &Texture2DResource{ID: 1, ModelPath: "3d/3dmodel.model"}, "3d/3dmodel.model/1"},
+		{"base", &Texture2DResource{ID: 1, ModelPath: "3d/3dmodel.model"}, "3d/3dmodel.model", 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.t.Identify()
+			got, got1 := tt.t.Identify()
 			if got != tt.want {
 				t.Errorf("Texture2DResource.Identify() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("Texture2DResource.Identify() got = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+
+func TestModel_UnusedID(t *testing.T) {
+	tests := []struct {
+		name string
+		m    *Model
+		want uint64
+	}{
+		{"empty", new(Model), 1},
+		{"one", &Model{Resources: []Identifier{&ColorGroupResource{ID: 2}}}, 1},
+		{"two", &Model{Resources: []Identifier{&ColorGroupResource{ID: 1}}}, 2},
+		{"sequence", &Model{Resources: []Identifier{&ColorGroupResource{ID: 1}, &ColorGroupResource{ID: 2}}}, 3},
+		{"sparce", &Model{Resources: []Identifier{&ColorGroupResource{ID: 1}, &ColorGroupResource{ID: 3}}}, 2},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.UnusedID(); got != tt.want {
+				t.Errorf("Model.UnusedID() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestTextureCoord_U(t *testing.T) {
+	tests := []struct {
+		name string
+		t    TextureCoord
+		want float32
+	}{
+		{"base", TextureCoord{1, 2}, 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.t.U(); got != tt.want {
+				t.Errorf("TextureCoord.U() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestTextureCoord_V(t *testing.T) {
+	tests := []struct {
+		name string
+		t    TextureCoord
+		want float32
+	}{
+		{"base", TextureCoord{1, 2}, 2},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.t.V(); got != tt.want {
+				t.Errorf("TextureCoord.V() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestTexture2DGroupResource_Identify(t *testing.T) {
+	tests := []struct {
+		name  string
+		t     *Texture2DGroupResource
+		want  string
+		want1 uint64
+	}{
+		{"base", &Texture2DGroupResource{ID: 1, ModelPath: "3d/3dmodel"}, "3d/3dmodel", 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := tt.t.Identify()
+			if got != tt.want {
+				t.Errorf("Texture2DGroupResource.Identify() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("Texture2DGroupResource.Identify() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+
+func TestColorGroupResource_Identify(t *testing.T) {
+	tests := []struct {
+		name  string
+		c     *ColorGroupResource
+		want  string
+		want1 uint64
+	}{
+		{"base", &ColorGroupResource{ID: 1, ModelPath: "3d/3dmodel"}, "3d/3dmodel", 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := tt.c.Identify()
+			if got != tt.want {
+				t.Errorf("ColorGroupResource.Identify() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("ColorGroupResource.Identify() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}

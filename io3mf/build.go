@@ -76,10 +76,7 @@ func (d *buildItemDecoder) Decode(attrs []xml.Attr) error {
 }
 
 func (d *buildItemDecoder) processItem() error {
-	if d.objectPath == "" {
-		d.objectPath = d.r.Model.Path
-	}
-	resource, ok := d.r.Model.FindResource(d.objectID, d.objectPath)
+	resource, ok := d.r.Model.FindResource(d.objectPath, d.objectID)
 	if !ok {
 		return errors.New("go3mf: could not find build item object")
 	}

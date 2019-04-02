@@ -2,7 +2,6 @@ package mesh
 
 import (
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/qmuntal/go3mf/mesh/meshinfo"
 )
 
 // CreationOptions defines a set of options for helping in the mesh creation process
@@ -22,16 +21,13 @@ type Mesh struct {
 	nodeStructure
 	faceStructure
 	beamLattice
-	informationHandler meshinfo.Handler
 }
 
 // NewMesh creates a new default Mesh.
 func NewMesh() *Mesh {
 	m := &Mesh{
-		beamLattice:        *newbeamLattice(),
-		informationHandler: *meshinfo.NewHandler(),
+		beamLattice: *newbeamLattice(),
 	}
-	m.faceStructure.informationHandler = &m.informationHandler
 	return m
 }
 
@@ -44,7 +40,6 @@ func (m *Mesh) Clone() *Mesh {
 
 // Clear resets all the mesh nodes, faces, beams and informations.
 func (m *Mesh) Clear() {
-	m.InformationHandler().RemoveAllInformations()
 	m.nodeStructure.clear()
 	m.faceStructure.clear()
 	m.clearBeamLattice()
@@ -64,16 +59,10 @@ func (m *Mesh) EndCreation() {
 	m.nodeStructure.vectorTree = nil
 }
 
-// InformationHandler returns the information handler of the mesh.
-func (m *Mesh) InformationHandler() *meshinfo.Handler {
-	return &m.informationHandler
-}
-
 // Merge merges the mesh with another mesh. This includes the nodes, faces, beams and all the informations.
 func (m *Mesh) Merge(mesh *Mesh, matrix mgl32.Mat4) {
 	m.StartCreation(CreationOptions{CalculateConnectivity: true})
 	defer m.EndCreation()
-	m.informationHandler.AddInfoFrom(mesh.InformationHandler(), uint32(len(m.Faces)))
 
 	newNodes := m.nodeStructure.merge(&mesh.nodeStructure, matrix)
 	if len(newNodes) == 0 {

@@ -56,14 +56,17 @@ const maxNodeCount = 2147483646
 // Node defines a node of a mesh as an array of 3 coordinates: x, y and z.
 type Node [3]float32
 
+// X returns the x coordinate.
 func (n Node) X() float32 {
 	return n[0]
 }
 
+// Y returns the y coordinate.
 func (n Node) Y() float32 {
 	return n[1]
 }
 
+// Z returns the z coordinate.
 func (n Node) Z() float32 {
 	return n[2]
 }

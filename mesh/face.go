@@ -1,20 +1,17 @@
 package mesh
 
-import (
-	"github.com/qmuntal/go3mf/mesh/meshinfo"
-)
-
 const maxFaceCount = 2147483646
 
 // Face defines a triangle of a mesh.
 type Face struct {
-	NodeIndices [3]uint32 // Coordinates of the three nodes that defines the mesh.
+	NodeIndices     [3]uint32 // Coordinates of the three nodes that defines the face.
+	Resource        uint32
+	ResourceIndices [3]uint32 // Resource subindex of the three nodes that defines the face.
 }
 
 type faceStructure struct {
-	Faces              []Face
-	informationHandler *meshinfo.Handler
-	maxFaceCount       int
+	Faces        []Face
+	maxFaceCount int
 }
 
 func (f *faceStructure) clear() {
@@ -26,9 +23,6 @@ func (f *faceStructure) AddFace(node1, node2, node3 uint32) *Face {
 	f.Faces = append(f.Faces, Face{
 		NodeIndices: [3]uint32{node1, node2, node3},
 	})
-	if f.informationHandler != nil {
-		f.informationHandler.AddFace(uint32(len(f.Faces)))
-	}
 	return &f.Faces[len(f.Faces)-1]
 }
 
@@ -54,12 +48,12 @@ func (f *faceStructure) merge(other *faceStructure, newNodes []uint32) {
 	if faceCount == 0 {
 		return
 	}
-	otherHandler := other.informationHandler
-	for i, face := range other.Faces {
-		f.AddFace(newNodes[face.NodeIndices[0]], newNodes[face.NodeIndices[1]], newNodes[face.NodeIndices[2]])
-		if otherHandler != nil {
-			f.informationHandler.CopyFaceInfosFrom(uint32(len(f.Faces)-1), otherHandler, uint32(i))
-		}
+	for _, face := range other.Faces {
+		f.Faces = append(f.Faces, Face{
+			NodeIndices:     [3]uint32{face.NodeIndices[0], newNodes[face.NodeIndices[1]], newNodes[face.NodeIndices[2]]},
+			Resource:        face.Resource,
+			ResourceIndices: [3]uint32{face.ResourceIndices[0], newNodes[face.ResourceIndices[1]], newNodes[face.ResourceIndices[2]]},
+		})
 	}
 	return
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"image/color"
 	"io"
+	"sort"
 
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/qmuntal/go3mf/mesh"
@@ -12,7 +13,7 @@ import (
 
 // Identifier defines an object than can be uniquely identified.
 type Identifier interface {
-	Identify() string
+	Identify() (string, uint64)
 }
 
 // Object defines a composable object.
@@ -83,6 +84,30 @@ type Model struct {
 	ProductionAttachments []*ProductionAttachment
 }
 
+// UnusedID returns the lowest unused ID.
+func (m *Model) UnusedID() uint64 {
+	if len(m.Resources) == 0 {
+		return 1
+	}
+	ids := make([]int, len(m.Resources)+1)
+	ids[0] = 0
+	for i, r := range m.Resources {
+		_, id := r.Identify()
+		ids[i+1] = int(id)
+	}
+	sort.Ints(ids)
+	lowest := 0
+	for i, id := range ids {
+		if id != i {
+			lowest = i
+		}
+	}
+	if lowest == 0 {
+		lowest = ids[len(ids)-1] + 1
+	}
+	return uint64(lowest)
+}
+
 // SetThumbnail sets the package thumbnail.
 func (m *Model) SetThumbnail(r io.Reader) *Attachment {
 	m.Thumbnail = &Attachment{Stream: r, Path: thumbnailPath, RelationshipType: "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail"}
@@ -97,13 +122,12 @@ func (m *Model) MergeToMesh(msh *mesh.Mesh) {
 }
 
 // FindResource returns the resource with the target unique ID.
-func (m *Model) FindResource(id uint64, path string) (i Identifier, ok bool) {
+func (m *Model) FindResource(path string, id uint64) (i Identifier, ok bool) {
 	if path == "" {
 		path = m.Path
 	}
-	identity := identification(path, id)
 	for _, value := range m.Resources {
-		if identity == value.Identify() {
+		if rPath, rID := value.Identify(); rID == id && rPath == path {
 			i = value
 			ok = true
 			break
@@ -133,8 +157,8 @@ type BaseMaterialsResource struct {
 }
 
 // Identify returns the unique ID of the resource.
-func (ms *BaseMaterialsResource) Identify() string {
-	return identification(ms.ModelPath, ms.ID)
+func (ms *BaseMaterialsResource) Identify() (string, uint64) {
+	return ms.ModelPath, ms.ID
 }
 
 // Merge appends all the other base materials.
@@ -183,8 +207,8 @@ type ObjectResource struct {
 }
 
 // Identify returns the unique ID of the resource.
-func (o *ObjectResource) Identify() string {
-	return identification(o.ModelPath, o.ID)
+func (o *ObjectResource) Identify() (string, uint64) {
+	return o.ModelPath, o.ID
 }
 
 // Type returns the type of the object.
@@ -381,11 +405,11 @@ type SliceStackResource struct {
 }
 
 // Identify returns the unique ID of the resource.
-func (s *SliceStackResource) Identify() string {
-	return identification(s.ModelPath, s.ID)
+func (s *SliceStackResource) Identify() (string, uint64) {
+	return s.ModelPath, s.ID
 }
 
-// Texture2DResource Resource defines the Model Texture 2D.
+// Texture2DResource defines the Model Texture 2D.
 type Texture2DResource struct {
 	ID          uint64
 	ModelPath   string
@@ -397,8 +421,8 @@ type Texture2DResource struct {
 }
 
 // Identify returns the unique ID of the resource.
-func (t *Texture2DResource) Identify() string {
-	return identification(t.ModelPath, t.ID)
+func (t *Texture2DResource) Identify() (string, uint64) {
+	return t.ModelPath, t.ID
 }
 
 // Copy copies the properties from another texture.
@@ -409,6 +433,42 @@ func (t *Texture2DResource) Copy(other *Texture2DResource) {
 	t.TileStyleV = other.TileStyleV
 }
 
-func identification(path string, id uint64) string {
-	return fmt.Sprintf("%s/%d", path, id)
+// TextureCoord map a vertex of a triangle to a position in image space (U, V coordinates)
+type TextureCoord [2]float32
+
+// U returns the first coordinate.
+func (t TextureCoord) U() float32 {
+	return t[0]
+}
+
+// V returns the second coordinate.
+func (t TextureCoord) V() float32 {
+	return t[1]
+}
+
+// Texture2DGroupResource acts as a container for texture coordinate properties.
+type Texture2DGroupResource struct {
+	ID                uint64
+	ModelPath         string
+	TextureID         uint64
+	DisplayPropertyID uint64
+	Coords            []TextureCoord
+}
+
+// Identify returns the unique ID of the resource.
+func (t *Texture2DGroupResource) Identify() (string, uint64) {
+	return t.ModelPath, t.ID
+}
+
+// ColorGroupResource acts as a container for color properties.
+type ColorGroupResource struct {
+	ID                uint64
+	ModelPath         string
+	DisplayPropertyID uint64
+	Colors            []color.RGBA
+}
+
+// Identify returns the unique ID of the resource.
+func (c *ColorGroupResource) Identify() (string, uint64) {
+	return c.ModelPath, c.ID
 }

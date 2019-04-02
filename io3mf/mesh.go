@@ -5,10 +5,8 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/go-gl/mathgl/mgl32"
 	"github.com/qmuntal/go3mf"
 	"github.com/qmuntal/go3mf/mesh"
-	"github.com/qmuntal/go3mf/mesh/meshinfo"
 )
 
 type meshDecoder struct {
@@ -171,7 +169,7 @@ func (d *meshDecoder) parseTriangle(attrs []xml.Attr) (err error) {
 	p3 = applyDefault(p3, p1, hasP3)
 	pid = applyDefault(pid, d.resource.DefaultPropertyID, hasPID)
 
-	return d.addTriangle(uint32(v1), uint32(v2), uint32(v3), pid, p1, p2, p3)
+	return d.addTriangle(uint32(v1), uint32(v2), uint32(v3), uint32(pid), uint32(p1), uint32(p2), uint32(p3))
 }
 
 func applyDefault(val, defVal uint64, noDef bool) uint64 {
@@ -181,7 +179,7 @@ func applyDefault(val, defVal uint64, noDef bool) uint64 {
 	return defVal
 }
 
-func (d *meshDecoder) addTriangle(v1, v2, v3 uint32, pid, p1, p2, p3 uint64) error {
+func (d *meshDecoder) addTriangle(v1, v2, v3, pid, p1, p2, p3 uint32) error {
 	if v1 == v2 || v1 == v3 || v2 == v3 {
 		return errors.New("go3mf: invalid triangle indices")
 	}
@@ -189,65 +187,11 @@ func (d *meshDecoder) addTriangle(v1, v2, v3 uint32, pid, p1, p2, p3 uint64) err
 	if v1 >= nodeCount || v2 >= nodeCount || v3 >= nodeCount {
 		return errors.New("go3mf: triangle index is out of range")
 	}
-	d.resource.Mesh.AddFace(v1, v2, v3)
+	face := d.resource.Mesh.AddFace(v1, v2, v3)
 	if pid == 0 {
 		return nil
 	}
-	faceIndex := uint32(len(d.resource.Mesh.Faces) - 1)
-	_ = d.checkBaseMaterial(faceIndex, pid, p1) || d.checkColor(faceIndex, pid, p1, p2, p3) || d.checkTexture(faceIndex, pid, p1, p2, p3)
+	face.Resource = pid
+	face.ResourceIndices = [3]uint32{p1, p2, p3}
 	return nil
-}
-
-func (d *meshDecoder) checkBaseMaterial(faceIndex uint32, pid, p1 uint64) bool {
-	if _, ok := d.baseMaterialsMap[pid]; !ok {
-		return false
-	}
-	handler := d.resource.Mesh.InformationHandler()
-	var (
-		info *meshinfo.FacesData
-		ok   bool
-	)
-	if info, ok = handler.BaseMaterialInfo(); !ok {
-		info = handler.AddBaseMaterialInfo(uint32(len(d.resource.Mesh.Faces)))
-	}
-	faceData := info.FaceData(faceIndex).(*meshinfo.BaseMaterial)
-	faceData.GroupID = uint32(pid)
-	faceData.Index = uint32(p1)
-	return true
-}
-
-func (d *meshDecoder) checkColor(faceIndex uint32, pid, p1, p2, p3 uint64) (ok bool) {
-	if d.colorMapping.hasResource(pid) {
-		handler := d.resource.Mesh.InformationHandler()
-		var info *meshinfo.FacesData
-		if info, ok = handler.NodeColorInfo(); !ok {
-			info = handler.AddNodeColorInfo(uint32(len(d.resource.Mesh.Faces)))
-		}
-		faceData := info.FaceData(faceIndex).(*meshinfo.NodeColor)
-		faceData.Colors[0], _ = d.colorMapping.find(pid, p1)
-		faceData.Colors[1], _ = d.colorMapping.find(pid, p2)
-		faceData.Colors[2], _ = d.colorMapping.find(pid, p3)
-		ok = true
-	}
-	return
-}
-
-func (d *meshDecoder) checkTexture(faceIndex uint32, pid, p1, p2, p3 uint64) (ok bool) {
-	if d.texCoordMapping.hasResource(pid) {
-		handler := d.resource.Mesh.InformationHandler()
-		var info *meshinfo.FacesData
-		if info, ok = handler.TextureCoordsInfo(); !ok {
-			info = handler.AddTextureCoordsInfo(uint32(len(d.resource.Mesh.Faces)))
-		}
-		faceData := info.FaceData(faceIndex).(*meshinfo.TextureCoords)
-		t0, _ := d.texCoordMapping.find(pid, p1)
-		t1, _ := d.texCoordMapping.find(pid, p2)
-		t2, _ := d.texCoordMapping.find(pid, p3)
-		faceData.TextureID = uint32(t0.id)
-		faceData.Coords[0] = mgl32.Vec2{t0.u, t0.v}
-		faceData.Coords[1] = mgl32.Vec2{t1.u, t1.v}
-		faceData.Coords[2] = mgl32.Vec2{t2.u, t2.v}
-		ok = true
-	}
-	return
 }

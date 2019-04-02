@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/qmuntal/go3mf/mesh/meshinfo"
 )
 
 func TestNewMesh(t *testing.T) {
@@ -14,13 +13,11 @@ func TestNewMesh(t *testing.T) {
 		want *Mesh
 	}{
 		{"base", &Mesh{
-			beamLattice:        *newbeamLattice(),
-			informationHandler: *meshinfo.NewHandler(),
+			beamLattice: *newbeamLattice(),
 		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.want.faceStructure.informationHandler = &tt.want.informationHandler
 			if got := NewMesh(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewMesh() = %v, want %v", got, tt.want)
 			}
@@ -56,23 +53,6 @@ func TestMesh_Clear(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.m.Clear()
-		})
-	}
-}
-
-func TestMesh_InformationHandler(t *testing.T) {
-	tests := []struct {
-		name string
-		m    *Mesh
-		want meshinfo.Handler
-	}{
-		{"created", &Mesh{informationHandler: *meshinfo.NewHandler()}, *meshinfo.NewHandler()},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := *tt.m.InformationHandler(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Mesh.InformationHandler() = %v, want %v", got, tt.want)
-			}
 		})
 	}
 }

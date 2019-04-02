@@ -15,7 +15,6 @@ import (
 	"github.com/go-test/deep"
 	"github.com/qmuntal/go3mf"
 	"github.com/qmuntal/go3mf/mesh"
-	"github.com/qmuntal/go3mf/mesh/meshinfo"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -299,35 +298,19 @@ func TestReader_processRootModel(t *testing.T) {
 		{0, 100, 100},
 	}...)
 	meshRes.Mesh.Faces = append(meshRes.Mesh.Faces, []mesh.Face{
-		{NodeIndices: [3]uint32{3, 2, 1}},
-		{NodeIndices: [3]uint32{1, 0, 3}},
-		{NodeIndices: [3]uint32{4, 5, 6}},
-		{NodeIndices: [3]uint32{6, 7, 4}},
-		{NodeIndices: [3]uint32{0, 1, 5}},
-		{NodeIndices: [3]uint32{5, 4, 0}},
-		{NodeIndices: [3]uint32{1, 2, 6}},
-		{NodeIndices: [3]uint32{6, 5, 1}},
-		{NodeIndices: [3]uint32{2, 3, 7}},
-		{NodeIndices: [3]uint32{7, 6, 2}},
-		{NodeIndices: [3]uint32{3, 0, 4}},
-		{NodeIndices: [3]uint32{4, 7, 3}},
+		{NodeIndices: [3]uint32{3, 2, 1}, Resource: 5},
+		{NodeIndices: [3]uint32{1, 0, 3}, Resource: 5},
+		{NodeIndices: [3]uint32{4, 5, 6}, Resource: 5, ResourceIndices: [3]uint32{1, 1, 1}},
+		{NodeIndices: [3]uint32{6, 7, 4}, Resource: 5, ResourceIndices: [3]uint32{1, 1, 1}},
+		{NodeIndices: [3]uint32{0, 1, 5}, Resource: 2, ResourceIndices: [3]uint32{0, 1, 2}},
+		{NodeIndices: [3]uint32{5, 4, 0}, Resource: 2, ResourceIndices: [3]uint32{3, 0, 2}},
+		{NodeIndices: [3]uint32{1, 2, 6}, Resource: 1, ResourceIndices: [3]uint32{0, 1, 2}},
+		{NodeIndices: [3]uint32{6, 5, 1}, Resource: 1, ResourceIndices: [3]uint32{2, 1, 3}},
+		{NodeIndices: [3]uint32{2, 3, 7}, Resource: 5},
+		{NodeIndices: [3]uint32{7, 6, 2}, Resource: 5},
+		{NodeIndices: [3]uint32{3, 0, 4}, Resource: 5},
+		{NodeIndices: [3]uint32{4, 7, 3}, Resource: 5},
 	}...)
-	handler := meshRes.Mesh.InformationHandler()
-	info := handler.AddBaseMaterialInfo(uint32(len(meshRes.Mesh.Faces)))
-	*info.FaceData(0).(*meshinfo.BaseMaterial) = meshinfo.BaseMaterial{GroupID: 5}
-	*info.FaceData(1).(*meshinfo.BaseMaterial) = meshinfo.BaseMaterial{GroupID: 5}
-	*info.FaceData(2).(*meshinfo.BaseMaterial) = meshinfo.BaseMaterial{GroupID: 5, Index: 1}
-	*info.FaceData(3).(*meshinfo.BaseMaterial) = meshinfo.BaseMaterial{GroupID: 5, Index: 1}
-	*info.FaceData(8).(*meshinfo.BaseMaterial) = meshinfo.BaseMaterial{GroupID: 5}
-	*info.FaceData(9).(*meshinfo.BaseMaterial) = meshinfo.BaseMaterial{GroupID: 5}
-	*info.FaceData(10).(*meshinfo.BaseMaterial) = meshinfo.BaseMaterial{GroupID: 5}
-	*info.FaceData(11).(*meshinfo.BaseMaterial) = meshinfo.BaseMaterial{GroupID: 5}
-	info = handler.AddTextureCoordsInfo(uint32(len(meshRes.Mesh.Faces)))
-	*info.FaceData(4).(*meshinfo.TextureCoords) = meshinfo.TextureCoords{TextureID: 6, Coords: [3]mgl32.Vec2{{0.3, 0.5}, {0.3, 0.8}, {0.5, 0.8}}}
-	*info.FaceData(5).(*meshinfo.TextureCoords) = meshinfo.TextureCoords{TextureID: 6, Coords: [3]mgl32.Vec2{{0.5, 0.5}, {0.3, 0.5}, {0.5, 0.8}}}
-	info = handler.AddNodeColorInfo(uint32(len(meshRes.Mesh.Faces)))
-	*info.FaceData(6).(*meshinfo.NodeColor) = meshinfo.NodeColor{Colors: [3]color.RGBA{{R: 85, G: 85, B: 85, A: 255}, {A: 255}, {R: 16, G: 21, B: 103, A: 255}}}
-	*info.FaceData(7).(*meshinfo.NodeColor) = meshinfo.NodeColor{Colors: [3]color.RGBA{{R: 16, G: 21, B: 103, A: 255}, {A: 255}, {R: 53, G: 4, B: 80, A: 255}}}
 
 	components := &go3mf.ComponentsResource{
 		ObjectResource: go3mf.ObjectResource{ID: 20, UUID: "cb828680-8895-4e08-a1fc-be63e033df15", ModelPath: "3d/3dmodel.model"},

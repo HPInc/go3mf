@@ -3,8 +3,6 @@ package mesh
 import (
 	"reflect"
 	"testing"
-
-	"github.com/qmuntal/go3mf/mesh/meshinfo"
 )
 
 func Test_faceStructure_clear(t *testing.T) {
@@ -36,7 +34,7 @@ func Test_faceStructure_AddFace(t *testing.T) {
 		args args
 		want *Face
 	}{
-		{"base", &faceStructure{informationHandler: meshinfo.NewHandler(), Faces: []Face{{}}}, args{0, 1, 2}, &Face{NodeIndices: [3]uint32{0, 1, 2}}},
+		{"base", &faceStructure{Faces: []Face{{}}}, args{0, 1, 2}, &Face{NodeIndices: [3]uint32{0, 1, 2}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

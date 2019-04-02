@@ -116,3 +116,20 @@ func TestObjectType_String(t *testing.T) {
 		})
 	}
 }
+
+func TestTexture2DType_String(t *testing.T) {
+	tests := []struct {
+		name string
+		t    Texture2DType
+	}{
+		{"image/png", PNGTexture},
+		{"image/jpeg", JPEGTexture},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.t.String(); got != tt.name {
+				t.Errorf("Texture2DType.String() = %v, want %v", got, tt.name)
+			}
+		})
+	}
+}

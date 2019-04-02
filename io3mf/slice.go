@@ -112,7 +112,7 @@ func (d *sliceStackDecoder) addSliceRef(sliceStackID uint64, path string) error 
 	if path == d.sliceStack.ModelPath {
 		return errors.New("go3mf: a slicepath is invalid")
 	}
-	resource, ok := d.r.Model.FindResource(sliceStackID, path)
+	resource, ok := d.r.Model.FindResource(path, sliceStackID)
 	if !ok {
 		return errors.New("go3mf: a sliceref points to a unexisting resource")
 	}
