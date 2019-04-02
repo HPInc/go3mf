@@ -256,7 +256,7 @@ func TestReader_processRootModel(t *testing.T) {
 	baseTexture := &go3mf.Texture2DResource{ID: 6, ModelPath: "/3d/3dmodel.model", Path: "/3D/Texture/msLogo.png", ContentType: go3mf.PNGTexture, TileStyleU: go3mf.TileWrap, TileStyleV: go3mf.TileMirror, Filter: go3mf.TextureFilterAuto}
 	otherSlices := &go3mf.SliceStack{
 		BottomZ: 2,
-		Slices: []*go3mf.Slice{
+		Slices: []*mesh.Slice{
 			{
 				TopZ:     1.2,
 				Vertices: []mgl32.Vec2{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
@@ -266,7 +266,7 @@ func TestReader_processRootModel(t *testing.T) {
 	}
 	sliceStack := &go3mf.SliceStackResource{ID: 3, ModelPath: "/3d/3dmodel.model", SliceStack: &go3mf.SliceStack{
 		BottomZ: 1,
-		Slices: []*go3mf.Slice{
+		Slices: []*mesh.Slice{
 			{
 				TopZ:     0,
 				Vertices: []mgl32.Vec2{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},

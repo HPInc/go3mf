@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	go3mf "github.com/qmuntal/go3mf"
+	"github.com/qmuntal/go3mf/mesh"
 )
 
 type sliceStackDecoder struct {
@@ -121,7 +122,7 @@ func (d *sliceStackDecoder) addSliceRef(sliceStackID uint64, path string) error 
 		return errors.New("go3mf: a sliceref points to a resource that is not an slicestack")
 	}
 	sliceStackResource.TimesRefered++
-	for _, s := range sliceStackResource.Slices {
+	for _, s := range sliceStackResource.SliceStack.Slices {
 		if _, err := d.resource.AddSlice(s); err != nil {
 			return err
 		}
@@ -144,7 +145,7 @@ func (d *sliceStackDecoder) parseSlice(x xml.TokenReader, attrs []xml.Attr) (err
 type sliceDecoder struct {
 	r          *Reader
 	sliceStack *go3mf.SliceStack
-	slice      go3mf.Slice
+	slice      mesh.Slice
 	hasTopZ    bool
 }
 
