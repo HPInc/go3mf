@@ -15,6 +15,19 @@ type resourceDecoder struct {
 	progressCount int
 }
 
+func (d *resourceDecoder) Open() error {
+	if !d.r.progress.progress(0.2, StageReadResources) {
+		return ErrUserAborted
+	}
+	d.r.progress.pushLevel(0.2, 0.9)
+	return nil
+}
+
+func (d *resourceDecoder) Close() error {
+	d.r.progress.popLevel()
+	return nil
+}
+
 func (d *resourceDecoder) Decode(x xml.TokenReader) error {
 	for {
 		t, err := x.Token()

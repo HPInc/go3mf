@@ -57,6 +57,94 @@ func (r *ReadCloser) Close() error {
 	return r.f.Close()
 }
 
+type nodeDecoder interface {
+	Open() error
+	Attributes([]xml.Attr) error
+	Child(xml.Name) (nodeDecoder, bool, error)
+	Close() error
+}
+
+type fileDecoder struct {
+	r            *Reader
+	path         string
+	isAttachment bool
+}
+
+func (d *fileDecoder) Open() error {
+	return nil
+}
+
+func (d *fileDecoder) Attributes(attrs []xml.Attr) error {
+	return nil
+}
+
+func (d *fileDecoder) Child(name xml.Name) (child nodeDecoder, ok bool, err error) {
+	modelName := xml.Name{Space: nsCoreSpec, Local: attrModel}
+	if name == modelName {
+		modelDecoder := &modelDecoder{r: d.r, path: d.path}
+		if d.isAttachment {
+			modelDecoder.ignoreBuild = true
+			modelDecoder.ignoreMetadata = true
+		}
+		child = modelDecoder
+		ok = true
+	}
+	return
+}
+
+func (d *fileDecoder) Close() error {
+	return nil
+}
+
+func (d *fileDecoder) Decode(x *xml.Decoder) (err error) {
+	state := make([]nodeDecoder, 0, 10)
+	names := make([]xml.Name, 0, 10)
+	var (
+		currentDecoder nodeDecoder
+		tmpDecoder     nodeDecoder
+		currentName    xml.Name
+		t              xml.Token
+		ok             bool
+	)
+	currentDecoder = d
+mainLoop:
+	for {
+		t, err = x.Token()
+		if err != nil {
+			break
+		}
+		switch tp := t.(type) {
+		case xml.StartElement:
+			tmpDecoder, ok, err = currentDecoder.Child(tp.Name)
+			if err != nil {
+				break mainLoop
+			}
+			if ok {
+				state = append(state, currentDecoder)
+				names = append(names, currentName)
+				currentName = tp.Name
+				currentDecoder = tmpDecoder
+				err = currentDecoder.Attributes(tp.Attr)
+				if err != nil {
+					break mainLoop
+				}
+			} else {
+				x.Skip()
+			}
+		case xml.EndElement:
+			if currentName == tp.Name {
+				err = currentDecoder.Close()
+				if err != nil {
+					break mainLoop
+				}
+				currentDecoder, state = state[len(state)-1], state[:len(state)-1]
+				currentName, names = names[len(names)-1], names[:len(names)-1]
+			}
+		}
+	}
+	return
+}
+
 // Reader implements a 3mf file reader.
 type Reader struct {
 	Model               *go3mf.Model
@@ -130,23 +218,8 @@ func (r *Reader) processRootModel() error {
 		return err
 	}
 	defer f.Close()
-	x := xml.NewDecoder(f)
-	var t xml.Token
-mainLoop:
-	for {
-		t, err = x.Token()
-		if err != nil {
-			break
-		}
-		switch tp := t.(type) {
-		case xml.StartElement:
-			if tp.Name.Local == attrModel {
-				md := modelDecoder{r: r, path: rootFile.Name()}
-				err = md.Decode(x, tp.Attr)
-				break mainLoop
-			}
-		}
-	}
+	d := fileDecoder{r: r, path: rootFile.Name()}
+	err = d.Decode(xml.NewDecoder(f))
 	if err != io.EOF {
 		return err
 	}
@@ -268,25 +341,10 @@ func (r *Reader) readProductionAttachmentModel(i int) error {
 		return err
 	}
 	defer file.Close()
-	x := xml.NewDecoder(file)
-	var t xml.Token
-mainLoop:
-	for {
-		t, err = x.Token()
-		if err != nil {
-			break
-		}
-		switch tp := t.(type) {
-		case xml.StartElement:
-			if tp.Name.Local == attrModel {
-				r.progress.pushLevel(float64(prodAttCount-i-1)/float64(prodAttCount), float64(prodAttCount-i)/float64(prodAttCount))
-				md := modelDecoder{r: r, path: attachment.Path, ignoreBuild: true, ignoreMetadata: true}
-				err = md.Decode(x, tp.Attr)
-				r.progress.popLevel()
-				break mainLoop
-			}
-		}
-	}
+	r.progress.pushLevel(float64(prodAttCount-i-1)/float64(prodAttCount), float64(prodAttCount-i)/float64(prodAttCount))
+	d := fileDecoder{r: r, path: attachment.Path, isAttachment: true}
+	err = d.Decode(xml.NewDecoder(file))
+	r.progress.popLevel()
 	if err != io.EOF {
 		return err
 	}

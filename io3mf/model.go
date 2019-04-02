@@ -16,75 +16,49 @@ type modelDecoder struct {
 	withinIgnoredElement bool
 }
 
-func (d *modelDecoder) Decode(x xml.TokenReader, attrs []xml.Attr) error {
-	if err := d.parseAttr(attrs); err != nil {
-		return err
-	}
-	for {
-		t, err := x.Token()
-		if err != nil {
-			return err
-		}
-		switch tp := t.(type) {
-		case xml.StartElement:
-			if tp.Name.Space == nsCoreSpec {
-				if tp.Name.Local == attrResources {
-					if err := d.parseResources(x); err != nil {
-						return err
-					}
-				} else if tp.Name.Local == attrBuild {
-					if err := d.parseBuild(x, tp.Attr); err != nil {
-						return err
-					}
-				}
-			}
-		case xml.EndElement:
-			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrModel {
-				return nil
-			}
-		}
-	}
+func (d *modelDecoder) Open() error {
+	return nil
 }
 
-func (d *modelDecoder) parseBuild(x xml.TokenReader, attrs []xml.Attr) error {
-	if d.hasBuild {
-		return errors.New("go3mf: duplicate build section in model file")
+func (d *modelDecoder) Child(name xml.Name) (child nodeDecoder, ok bool, err error) {
+	if name.Space == nsCoreSpec {
+		if name.Local == attrResources {
+			child, err = d.parseResources()
+			ok = false
+		} else if name.Local == attrBuild {
+			child, ok, err = d.parseBuild()
+		}
 	}
-	if d.ignoreBuild {
-		d.withinIgnoredElement = true
-	} else {
-		d.withinIgnoredElement = false
-		if !d.r.progress.progress(0.9, StageReadBuild) {
-			return ErrUserAborted
-		}
-		rd := buildDecoder{r: d.r}
-		if err := rd.Decode(x, attrs); err != nil {
-			return err
-		}
+	return
+}
+
+func (d *modelDecoder) Close() error {
+	return nil
+}
+
+func (d *modelDecoder) parseBuild() (nodeDecoder, bool, error) {
+	if d.hasBuild {
+		return nil, false, errors.New("go3mf: duplicate build section in model file")
 	}
 	d.hasBuild = true
-	return nil
-}
-
-func (d *modelDecoder) parseResources(x xml.TokenReader) error {
+	if d.ignoreBuild {
+		d.withinIgnoredElement = true
+		return nil, false, nil
+	}
 	d.withinIgnoredElement = false
-	if !d.r.progress.progress(0.2, StageReadResources) {
-		return ErrUserAborted
-	}
-	d.r.progress.pushLevel(0.2, 0.9)
-	if d.hasResources {
-		return errors.New("go3mf: duplicate resources section in model file")
-	}
-	rd := resourceDecoder{r: d.r, path: d.path}
-	if err := rd.Decode(x); err != nil {
-		return err
-	}
-	d.r.progress.popLevel()
-	d.hasResources = true
-	return nil
+	return &buildDecoder{r: d.r}, true, nil
 }
 
-func (d *modelDecoder) parseAttr(attrs []xml.Attr) error {
+func (d *modelDecoder) parseResources() (nodeDecoder, error) {
+	if d.hasResources {
+		return nil, errors.New("go3mf: duplicate resources section in model file")
+	}
+	d.hasResources = true
+	d.withinIgnoredElement = false
+	return nil, nil //&resourceDecoder{r: d.r, path: d.path}, nil
+}
+
+func (d *modelDecoder) Attributes(attrs []xml.Attr) error {
 	registeredNs := map[string]string{}
 	var requiredExts string
 	for _, a := range attrs {

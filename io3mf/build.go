@@ -13,32 +13,25 @@ type buildDecoder struct {
 	r *Reader
 }
 
-func (d *buildDecoder) Decode(x xml.TokenReader, attrs []xml.Attr) error {
-	if err := d.parseAttr(attrs); err != nil {
-		return err
+func (d *buildDecoder) Open() error {
+	if !d.r.progress.progress(0.9, StageReadBuild) {
+		return ErrUserAborted
 	}
-	for {
-		t, err := x.Token()
-		if err != nil {
-			return err
-		}
-		switch tp := t.(type) {
-		case xml.StartElement:
-			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrItem {
-				bd := buildItemDecoder{r: d.r}
-				if err := bd.Decode(tp.Attr); err != nil {
-					return err
-				}
-			}
-		case xml.EndElement:
-			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrBuild {
-				return nil
-			}
-		}
-	}
+	return nil
 }
 
-func (d *buildDecoder) parseAttr(attrs []xml.Attr) error {
+func (d *buildDecoder) Close() error {
+	return nil
+}
+
+func (d *buildDecoder) Child(name xml.Name) (child nodeDecoder, ok bool, err error) {
+	child, ok = map[xml.Name]nodeDecoder{
+		{Space: nsCoreSpec, Local: attrItem}: &buildItemDecoder{r: d.r},
+	}[name]
+	return
+}
+
+func (d *buildDecoder) Attributes(attrs []xml.Attr) error {
 	for _, a := range attrs {
 		if a.Name.Space == nsProductionSpec && a.Name.Local == attrProdUUID {
 			if d.r.Model.UUID != "" {
@@ -64,10 +57,15 @@ type buildItemDecoder struct {
 	objectPath string
 }
 
-func (d *buildItemDecoder) Decode(attrs []xml.Attr) error {
-	if err := d.parseAttr(attrs); err != nil {
-		return err
-	}
+func (d *buildItemDecoder) Open() error {
+	return nil
+}
+
+func (d *buildItemDecoder) Child(name xml.Name) (child nodeDecoder, ok bool, err error) {
+	return
+}
+
+func (d *buildItemDecoder) Close() error {
 	if d.objectID == 0 {
 		return errors.New("go3mf: build item does not have objectid attribute")
 	}
@@ -94,7 +92,7 @@ func (d *buildItemDecoder) processItem() error {
 	return nil
 }
 
-func (d *buildItemDecoder) parseAttr(attrs []xml.Attr) error {
+func (d *buildItemDecoder) Attributes(attrs []xml.Attr) error {
 	for _, a := range attrs {
 		switch a.Name.Space {
 		case nsProductionSpec:

@@ -248,7 +248,6 @@ func TestReader_processRootModel_Fail(t *testing.T) {
 }
 
 func TestReader_processRootModel(t *testing.T) {
-	want := &go3mf.Model{Units: go3mf.UnitMillimeter, Language: "en-US", Path: "/3d/3dmodel.model", UUID: "e9e25302-6428-402e-8633-cc95528d0ed3"}
 	baseMaterials := &go3mf.BaseMaterialsResource{ID: 5, ModelPath: "/3d/3dmodel.model", Materials: []go3mf.BaseMaterial{
 		{Name: "Blue PLA", Color: color.RGBA{0, 0, 85, 255}},
 		{Name: "Red ABS", Color: color.RGBA{85, 0, 0, 255}},
@@ -313,9 +312,9 @@ func TestReader_processRootModel(t *testing.T) {
 	}...)
 
 	meshLattice := &go3mf.MeshResource{
-		ObjectResource: go3mf.ObjectResource{ID: 15, Name: "Box", ModelPath: "/3d/3dmodel.model", PartNumber: "e1ef01d4-cbd4-4a62-86b6-9634e2ca198b"},
+		ObjectResource:        go3mf.ObjectResource{ID: 15, Name: "Box", ModelPath: "/3d/3dmodel.model", PartNumber: "e1ef01d4-cbd4-4a62-86b6-9634e2ca198b"},
 		BeamLatticeAttributes: go3mf.BeamLatticeAttributes{ClipMode: go3mf.ClipInside, ClippingMeshID: 8, RepresentationMeshID: 8},
-		Mesh:           new(mesh.Mesh),
+		Mesh:                  new(mesh.Mesh),
 	}
 	meshLattice.Mesh.MinLength = 0.0001
 	meshLattice.Mesh.CapMode = mesh.CapModeHemisphere
@@ -351,11 +350,12 @@ func TestReader_processRootModel(t *testing.T) {
 		Components:     []*go3mf.Component{{UUID: "cb828680-8895-4e08-a1fc-be63e033df16", Object: meshRes}},
 	}
 
+	want := &go3mf.Model{Units: go3mf.UnitMillimeter, Language: "en-US", Path: "/3d/3dmodel.model", UUID: "e9e25302-6428-402e-8633-cc95528d0ed3"}
 	otherMesh := &go3mf.MeshResource{ObjectResource: go3mf.ObjectResource{ID: 8, ModelPath: "/3d/other.model"}, Mesh: new(mesh.Mesh)}
-	want.Resources = append(want.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices, TimesRefered: 1})
 	colorGroup := &go3mf.ColorGroupResource{ID: 1, ModelPath: "/3d/3dmodel.model", Colors: []color.RGBA{{R: 85, G: 85, B: 85, A: 255}, {R: 0, G: 0, B: 0, A: 255}, {R: 16, G: 21, B: 103, A: 255}, {R: 53, G: 4, B: 80, A: 255}}}
-	exGroup := &go3mf.Texture2DGroupResource{ID: 2, ModelPath: "/3d/3dmodel.model", TextureID: 6, Coords: []go3mf.TextureCoord{{0.3, 0.5}, {0.3, 0.8}, {0.5, 0.8}, {0.5, 0.5}}}
-	want.Resources = append(want.Resources, []go3mf.Identifier{otherMesh, baseMaterials, baseTexture, colorGroup, exGroup, sliceStack, sliceStackRef, meshRes, meshLattice, components}...)
+	texGroup := &go3mf.Texture2DGroupResource{ID: 2, ModelPath: "/3d/3dmodel.model", TextureID: 6, Coords: []go3mf.TextureCoord{{0.3, 0.5}, {0.3, 0.8}, {0.5, 0.8}, {0.5, 0.5}}}
+	want.Resources = append(want.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices, TimesRefered: 1})
+	want.Resources = append(want.Resources, []go3mf.Identifier{otherMesh, baseMaterials, baseTexture, colorGroup, texGroup, sliceStack, sliceStackRef, meshRes, meshLattice, components}...)
 	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: components, PartNumber: "bob", UUID: "e9e25302-6428-402e-8633-cc95528d0ed2",
 		Transform: mgl32.Mat4{1, 0, 0, -66.4, 0, 2, 0, -87.1, 0, 0, 3, 8.8, 0, 0, 0, 1},
 	})
@@ -367,16 +367,16 @@ func TestReader_processRootModel(t *testing.T) {
 		Model: got,
 		r: newMockPackage(new(modelBuilder).withDefaultModel().withElement(`
 			<resources>
-				<basematerials id="5">
-					<base name="Blue PLA" displaycolor="#0000FF" />
-					<base name="Red ABS" displaycolor="#FF0000" />
-				</basematerials>
-				<m:texture2d id="6" path="/3D/Texture/msLogo.png" contenttype="image/png" tilestyleu="wrap" tilestylev="mirror" filter="auto" />
-				<m:colorgroup id="1">
-					<m:color color="#FFFFFF" /> <m:color color="#000000" /> <m:color color="#1AB567" /> <m:color color="#DF045A" />
-				</m:colorgroup>
-				<m:texture2dgroup id="2" texid="6">
-					<m:tex2coord u="0.3" v="0.5" /> <m:tex2coord u="0.3" v="0.8" />	<m:tex2coord u="0.5" v="0.8" />	<m:tex2coord u="0.5" v="0.5" />
+			<basematerials id="5">
+			<base name="Blue PLA" displaycolor="#0000FF" />
+			<base name="Red ABS" displaycolor="#FF0000" />
+			</basematerials>
+			<m:texture2d id="6" path="/3D/Texture/msLogo.png" contenttype="image/png" tilestyleu="wrap" tilestylev="mirror" filter="auto" />
+			<m:colorgroup id="1">
+			<m:color color="#FFFFFF" /> <m:color color="#000000" /> <m:color color="#1AB567" /> <m:color color="#DF045A" />
+			</m:colorgroup>
+			<m:texture2dgroup id="2" texid="6">
+			<m:tex2coord u="0.3" v="0.5" /> <m:tex2coord u="0.3" v="0.8" />	<m:tex2coord u="0.5" v="0.8" />	<m:tex2coord u="0.5" v="0.5" />
 				</m:texture2dgroup>
 				<s:slicestack id="3" zbottom="1">
 					<s:slice ztop="0">
