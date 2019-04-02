@@ -285,7 +285,7 @@ func TestReader_processRootModel(t *testing.T) {
 	sliceStackRef.Slices = append(sliceStackRef.Slices, otherSlices.Slices...)
 	meshRes := &go3mf.MeshResource{
 		ObjectResource: go3mf.ObjectResource{ID: 8, Name: "Box 1", ModelPath: "/3d/3dmodel.model", SliceStackID: 3, DefaultPropertyID: 5, SliceResoultion: go3mf.ResolutionLow, PartNumber: "11111111-1111-1111-1111-111111111111"},
-		Mesh:           mesh.NewMesh(),
+		Mesh:           new(mesh.Mesh),
 	}
 	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []mesh.Node{
 		{0, 0, 0},
@@ -314,7 +314,7 @@ func TestReader_processRootModel(t *testing.T) {
 
 	meshLattice := &go3mf.MeshResource{
 		ObjectResource: go3mf.ObjectResource{ID: 15, Name: "Box", ModelPath: "/3d/3dmodel.model", PartNumber: "e1ef01d4-cbd4-4a62-86b6-9634e2ca198b"},
-		Mesh:           mesh.NewMesh(),
+		Mesh:           new(mesh.Mesh),
 	}
 	meshLattice.Mesh.MinLength = 0.0001
 	meshLattice.Mesh.CapMode = mesh.CapModeHemisphere
@@ -349,7 +349,7 @@ func TestReader_processRootModel(t *testing.T) {
 		Components:     []*go3mf.Component{{UUID: "cb828680-8895-4e08-a1fc-be63e033df16", Object: meshRes}},
 	}
 
-	otherMesh := &go3mf.MeshResource{ObjectResource: go3mf.ObjectResource{ID: 8, ModelPath: "/3d/other.model"}, Mesh: mesh.NewMesh()}
+	otherMesh := &go3mf.MeshResource{ObjectResource: go3mf.ObjectResource{ID: 8, ModelPath: "/3d/other.model"}, Mesh: new(mesh.Mesh)}
 	want.Resources = append(want.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices, TimesRefered: 1})
 	colorGroup := &go3mf.ColorGroupResource{ID: 1, ModelPath: "/3d/3dmodel.model", Colors: []color.RGBA{{R: 85, G: 85, B: 85, A: 255}, {R: 0, G: 0, B: 0, A: 255}, {R: 16, G: 21, B: 103, A: 255}, {R: 53, G: 4, B: 80, A: 255}}}
 	exGroup := &go3mf.Texture2DGroupResource{ID: 2, ModelPath: "/3d/3dmodel.model", TextureID: 6, Coords: []go3mf.TextureCoord{{0.3, 0.5}, {0.3, 0.8}, {0.5, 0.8}, {0.5, 0.5}}}

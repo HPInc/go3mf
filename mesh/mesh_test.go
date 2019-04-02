@@ -7,31 +7,13 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
-func TestNewMesh(t *testing.T) {
-	tests := []struct {
-		name string
-		want *Mesh
-	}{
-		{"base", &Mesh{
-			beamLattice: *newbeamLattice(),
-		}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewMesh(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewMesh() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestMesh_Clone(t *testing.T) {
 	tests := []struct {
 		name string
 		m    *Mesh
 		want *Mesh
 	}{
-		{"base", NewMesh(), NewMesh()},
+		{"base", new(Mesh), new(Mesh)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -84,7 +66,7 @@ func TestMesh_CheckSanity(t *testing.T) {
 		m    *Mesh
 		want bool
 	}{
-		{"new", NewMesh(), true},
+		{"new", new(Mesh), true},
 		{"nodefail", &Mesh{nodeStructure: nodeStructure{maxNodeCount: 1, Nodes: make([]Node, 2)}}, false},
 		{"facefail", &Mesh{faceStructure: faceStructure{maxFaceCount: 1, Faces: make([]Face, 2)}}, false},
 		{"beamfail", &Mesh{beamLattice: beamLattice{maxBeamCount: 1, Beams: make([]Beam, 2)}}, false},
@@ -107,8 +89,8 @@ func TestMesh_StartCreation(t *testing.T) {
 		m    *Mesh
 		args args
 	}{
-		{"default", NewMesh(), args{CreationOptions{CalculateConnectivity: false}}},
-		{"connectivity", NewMesh(), args{CreationOptions{CalculateConnectivity: true}}},
+		{"default", new(Mesh), args{CreationOptions{CalculateConnectivity: false}}},
+		{"connectivity", new(Mesh), args{CreationOptions{CalculateConnectivity: true}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -130,7 +112,7 @@ func TestMesh_EndCreation(t *testing.T) {
 		name string
 		m    *Mesh
 	}{
-		{"base", NewMesh()},
+		{"base", new(Mesh)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -144,7 +126,7 @@ func TestMesh_EndCreation(t *testing.T) {
 }
 
 func TestMesh_FaceNodes(t *testing.T) {
-	m := NewMesh()
+	m :=new(Mesh)
 	n1 := m.AddNode(Node{0.0, 0.0, 0.0})
 	n2 := m.AddNode(Node{20.0, -20.0, 0.0})
 	n3 := m.AddNode(Node{0.0019989014, 0.0019989014, 0.0})
@@ -202,7 +184,7 @@ func TestMesh_IsManifoldAndOriented(t *testing.T) {
 				{NodeIndices: [3]uint32{1, 2, 3}},
 			}},
 		}, false},
-		{"empty", NewMesh(), false},
+		{"empty", new(Mesh), false},
 		{"2nodes", &Mesh{
 			nodeStructure: nodeStructure{Nodes: make([]Node, 2)},
 			faceStructure: faceStructure{Faces: make([]Face, 3)},
@@ -246,7 +228,7 @@ func Test_faceNormal(t *testing.T) {
 }
 
 func TestMesh_FaceNormal(t *testing.T) {
-	m := NewMesh()
+	m := new(Mesh)
 	n1 := m.AddNode(Node{0.0, 0.0, 0.0})
 	n2 := m.AddNode(Node{20.0, -20.0, 0.0})
 	n3 := m.AddNode(Node{0.0019989014, 0.0019989014, 0.0})

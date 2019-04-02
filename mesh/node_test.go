@@ -85,7 +85,7 @@ func Test_nodeStructure_merge(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			node := Node{}
-			mockMesh := NewMesh()
+			mockMesh := new(Mesh)
 			for i := 0; i < tt.times; i++ {
 				mockMesh.Nodes = append(mockMesh.Nodes, node)
 			}

@@ -87,7 +87,7 @@ func (w *errorWriter) Write(p []byte) (n int, err error) {
 }
 
 func createMeshTriangle() *mesh.Mesh {
-	m := mesh.NewMesh()
+	m := new(mesh.Mesh)
 	n1 := m.AddNode(mesh.Node{-20.0, -20.0, 0.0})
 	n2 := m.AddNode(mesh.Node{20.0, -20.0, 0.0})
 	n3 := m.AddNode(mesh.Node{0.0019989014, 0.0019989014, 39.998})

@@ -90,7 +90,7 @@ func Test_faceStructure_merge(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			face := Face{NodeIndices: [3]uint32{0, 1, 2}}
-			mockMesh := NewMesh()
+			mockMesh := new(Mesh)
 			for i := 0; i < tt.times; i++ {
 				mockMesh.Faces = append(mockMesh.Faces, face)
 			}

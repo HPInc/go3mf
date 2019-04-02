@@ -17,7 +17,7 @@ type asciiDecoder struct {
 }
 
 func (d *asciiDecoder) decode() (*mesh.Mesh, error) {
-	newMesh := mesh.NewMesh()
+	newMesh := new(mesh.Mesh)
 	newMesh.StartCreation(mesh.CreationOptions{CalculateConnectivity: true})
 	defer newMesh.EndCreation()
 	position := 0

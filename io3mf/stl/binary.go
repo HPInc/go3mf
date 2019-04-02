@@ -25,7 +25,7 @@ type binaryDecoder struct {
 
 // decode loads a binary stl from a io.Reader.
 func (d *binaryDecoder) decode() (*mesh.Mesh, error) {
-	newMesh := mesh.NewMesh()
+	newMesh := new(mesh.Mesh)
 	newMesh.StartCreation(mesh.CreationOptions{CalculateConnectivity: true})
 	defer newMesh.EndCreation()
 	var header binaryHeader

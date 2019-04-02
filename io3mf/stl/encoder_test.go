@@ -65,8 +65,8 @@ func TestEncoder_Encode(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"ascii", NewEncoderType(new(bytes.Buffer), ASCII), args{mesh.NewMesh()}, false},
-		{"binary", NewEncoderType(new(bytes.Buffer), Binary), args{mesh.NewMesh()}, false},
+		{"ascii", NewEncoderType(new(bytes.Buffer), ASCII), args{new(mesh.Mesh)}, false},
+		{"binary", NewEncoderType(new(bytes.Buffer), Binary), args{new(mesh.Mesh)}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -16,7 +16,7 @@ func Test_asciiDecoder_decode(t *testing.T) {
 		want    *mesh.Mesh
 		wantErr bool
 	}{
-		{"eof", &asciiDecoder{r: bytes.NewReader(make([]byte, 0))}, mesh.NewMesh(), false},
+		{"eof", &asciiDecoder{r: bytes.NewReader(make([]byte, 0))}, new(mesh.Mesh), false},
 		{"base", &asciiDecoder{r: bytes.NewBufferString(triangle)}, createMeshTriangle(), false},
 	}
 	for _, tt := range tests {

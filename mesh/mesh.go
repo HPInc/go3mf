@@ -23,17 +23,9 @@ type Mesh struct {
 	beamLattice
 }
 
-// NewMesh creates a new default Mesh.
-func NewMesh() *Mesh {
-	m := &Mesh{
-		beamLattice: *newbeamLattice(),
-	}
-	return m
-}
-
 // Clone creates a deep clone of the mesh.
 func (m *Mesh) Clone() *Mesh {
-	new := NewMesh()
+	new := new(Mesh)
 	new.Merge(m, mgl32.Ident4())
 	return new
 }

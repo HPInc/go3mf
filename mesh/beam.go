@@ -45,15 +45,6 @@ type beamLattice struct {
 	maxBeamCount             int
 }
 
-// newbeamLattice creates a new beamLattice with default values.
-func newbeamLattice() *beamLattice {
-	return &beamLattice{
-		CapMode:       CapModeSphere,
-		DefaultRadius: 1.0,
-		MinLength:     0.0001,
-	}
-}
-
 func (b *beamLattice) clearBeamLattice() {
 	b.Beams = make([]Beam, 0)
 	b.BeamSets = make([]BeamSet, 0)

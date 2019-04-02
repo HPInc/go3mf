@@ -1,25 +1,8 @@
 package mesh
 
 import (
-	"reflect"
 	"testing"
 )
-
-func Test_newbeamLattice(t *testing.T) {
-	tests := []struct {
-		name string
-		want *beamLattice
-	}{
-		{"new", &beamLattice{CapMode: CapModeSphere, DefaultRadius: 1.0, MinLength: 0.0001}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := newbeamLattice(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("newbeamLattice() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
 
 func Test_beamLattice_clearBeamLattice(t *testing.T) {
 	b := new(beamLattice)
@@ -83,7 +66,7 @@ func Test_beamLattice_merge(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			beam := Beam{NodeIndices: [2]uint32{0, 1}, Radius: [2]float64{1.0, 2.0}, CapMode: [2]CapMode{CapModeButt, CapModeHemisphere}}
-			mockMesh := NewMesh()
+			mockMesh := new(Mesh)
 			for i := 0; i < tt.times; i++ {
 				mockMesh.Beams = append(mockMesh.Beams, beam)
 			}

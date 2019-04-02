@@ -16,7 +16,7 @@ type meshDecoder struct {
 }
 
 func (d *meshDecoder) Decode(x xml.TokenReader) error {
-	d.resource.Mesh = mesh.NewMesh()
+	d.resource.Mesh = new(mesh.Mesh)
 	d.resource.Mesh.StartCreation(mesh.CreationOptions{CalculateConnectivity: false})
 	defer d.resource.Mesh.EndCreation()
 	for {
