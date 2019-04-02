@@ -14,19 +14,10 @@ type meshDecoder struct {
 	resource                       go3mf.MeshResource
 	colorMapping                   *colorMapping
 	texCoordMapping                *texCoordMapping
-	baseMaterialsMap               map[uint64]*go3mf.BaseMaterialsResource
 	triangleCounter, vertexCounter int
 }
 
 func (d *meshDecoder) Decode(x xml.TokenReader) error {
-	d.baseMaterialsMap = make(map[uint64]*go3mf.BaseMaterialsResource)
-	for _, resource := range d.r.Model.Resources {
-		if baseMat, ok := resource.(*go3mf.BaseMaterialsResource); ok {
-			if baseMat.ModelPath == d.resource.ModelPath {
-				d.baseMaterialsMap[baseMat.ID] = baseMat
-			}
-		}
-	}
 	d.resource.Mesh = mesh.NewMesh()
 	d.resource.Mesh.StartCreation(mesh.CreationOptions{CalculateConnectivity: false})
 	defer d.resource.Mesh.EndCreation()
