@@ -174,7 +174,7 @@ func (d *componentsDecoder) Decode(x xml.TokenReader) error {
 			}
 		case xml.EndElement:
 			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrComponents {
-				d.r.addObject(&d.components)
+				d.r.addResource(&d.components)
 				return nil
 			}
 		}

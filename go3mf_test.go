@@ -23,9 +23,9 @@ func NewMockObject(isValid, isValidForSlices bool) *MockObject {
 	return o
 }
 
-func (o *MockObject) Identify() string {
+func (o *MockObject) Identify() (string, uint64) {
 	args := o.Called()
-	return args.String(0)
+	return args.String(0), uint64(args.Int(1))
 }
 
 func (o *MockObject) Type() ObjectType {

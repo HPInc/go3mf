@@ -84,10 +84,6 @@ func (r *Reader) addResource(res go3mf.Identifier) {
 	r.Model.Resources = append(r.Model.Resources, res)
 }
 
-func (r *Reader) addObject(obj go3mf.Object) {
-	r.Model.Objects = append(r.Model.Objects, obj)
-}
-
 func (r *Reader) addWarning(err error) {
 	r.Warnings = append(r.Warnings, err)
 }

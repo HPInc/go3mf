@@ -52,7 +52,7 @@ func (d *meshDecoder) Decode(x xml.TokenReader) error {
 			}
 		case xml.EndElement:
 			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrMesh {
-				d.r.addObject(&d.resource)
+				d.r.addResource(&d.resource)
 				return nil
 			}
 		}
@@ -196,4 +196,9 @@ func (d *meshDecoder) addTriangle(v1, v2, v3, pid, p1, p2, p3 uint32) error {
 	face.Resource = pid
 	face.ResourceIndices = [3]uint32{p1, p2, p3}
 	return nil
+}
+
+func (d *meshDecoder) parseBeamLattice(x xml.TokenReader, attrs []xml.Attr) error {
+	bd := beamLatticeDecoder{r: d.r, resource: &d.resource}
+	return bd.Decode(x, attrs)
 }

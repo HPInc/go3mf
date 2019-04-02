@@ -18,7 +18,7 @@ type Identifier interface {
 
 // Object defines a composable object.
 type Object interface {
-	Identify() string
+	Identify() (string, uint64)
 	MergeToMesh(*mesh.Mesh, mgl32.Mat4)
 	IsValid() bool
 	IsValidForSlices(mgl32.Mat4) bool
@@ -78,7 +78,6 @@ type Model struct {
 	Thumbnail             *Attachment
 	Metadata              []Metadata
 	Resources             []Identifier
-	Objects 			  []Object
 	BuildItems            []*BuildItem
 	Attachments           []*Attachment
 	ProductionAttachments []*ProductionAttachment
@@ -119,22 +118,6 @@ func (m *Model) MergeToMesh(msh *mesh.Mesh) {
 	for _, b := range m.BuildItems {
 		b.MergeToMesh(msh)
 	}
-}
-
-// FindObject returns the object with the target unique ID.
-func (m *Model) FindObject(id uint64, path string) (o Object, ok bool) {
-	if path == "" {
-		path = m.Path
-	}
-	identity := identification(path, id)
-	for _, value := range m.Objects {
-		if identity == value.Identify() {
-			o = value
-			ok = true
-			break
-		}
-	}
-	return
 }
 
 // FindResource returns the resource with the target unique ID.
