@@ -314,6 +314,7 @@ func TestReader_processRootModel(t *testing.T) {
 
 	meshLattice := &go3mf.MeshResource{
 		ObjectResource: go3mf.ObjectResource{ID: 15, Name: "Box", ModelPath: "/3d/3dmodel.model", PartNumber: "e1ef01d4-cbd4-4a62-86b6-9634e2ca198b"},
+		BeamLatticeAttributes: go3mf.BeamLatticeAttributes{ClipMode: go3mf.ClipInside, ClippingMeshID: 8, RepresentationMeshID: 8},
 		Mesh:           new(mesh.Mesh),
 	}
 	meshLattice.Mesh.MinLength = 0.0001
@@ -329,6 +330,7 @@ func TestReader_processRootModel(t *testing.T) {
 		{55, 45, 55},
 		{55, 45, 45},
 	}...)
+	meshLattice.Mesh.BeamSets = append(meshLattice.Mesh.BeamSets, mesh.BeamSet{Name: "test", Identifier: "set_id", Refs: []uint32{1}})
 	meshLattice.Mesh.Beams = append(meshLattice.Mesh.Beams, []mesh.Beam{
 		{NodeIndices: [2]uint32{0, 1}, Radius: [2]float64{1.5, 1.6}, CapMode: [2]mesh.CapMode{mesh.CapModeSphere, mesh.CapModeButt}},
 		{NodeIndices: [2]uint32{2, 0}, Radius: [2]float64{3, 1.5}, CapMode: [2]mesh.CapMode{mesh.CapModeSphere, mesh.CapModeHemisphere}},
@@ -437,7 +439,7 @@ func TestReader_processRootModel(t *testing.T) {
 							<vertex x="55.00000" y="45.00000" z="55.00000"/>
 							<vertex x="55.00000" y="45.00000" z="45.00000"/>
 						</vertices>
-						<b:beamlattice radius="1" minlength="0.0001" cap="hemisphere">
+						<b:beamlattice radius="1" minlength="0.0001" cap="hemisphere" clippingmode="inside" clippingmesh="8" representationmesh="8">
 							<b:beams>
 								<b:beam v1="0" v2="1" r1="1.50000" r2="1.60000" cap1="sphere" cap2="butt"/>
 								<b:beam v1="2" v2="0" r1="3.00000" r2="1.50000" cap1="sphere"/>
@@ -452,6 +454,11 @@ func TestReader_processRootModel(t *testing.T) {
 								<b:beam v1="7" v2="3" r1="2.00000" r2="3.00000"/>
 								<b:beam v1="0" v2="5" r1="1.50000" r2="2.00000" cap2="butt"/>
 							</b:beams>
+							<b:beamsets>
+								<b:beamset name="test" identifier="set_id">
+									<b:ref index="1"/>
+								</b:beamset>
+							</b:beamsets>
 						</b:beamlattice>
 					</mesh>
 				</object>

@@ -29,8 +29,8 @@ func (d *beamLatticeDecoder) Decode(x xml.TokenReader, attrs []xml.Attr) error {
 					db := beamsDecoder{r: d.r, mesh: d.resource.Mesh}
 					db.Decode(x)
 				} else if tp.Name.Local == attrBeamSets {
-					db := beamSetDecoder{r: d.r, mesh: d.resource.Mesh}
-					db.Decode(x, tp.Attr)
+					db := beamSetsDecoder{r: d.r, mesh: d.resource.Mesh}
+					db.Decode(x)
 				}
 			}
 		case xml.EndElement:
@@ -154,12 +154,31 @@ func (d *beamsDecoder) parseBeam(attrs []xml.Attr) (err error) {
 	return
 }
 
-type beamSetDecoder struct {
+type beamSetsDecoder struct {
 	r    *Reader
 	mesh *mesh.Mesh
 }
 
-func (d *beamSetDecoder) Decode(x xml.TokenReader, attrs []xml.Attr) error {
+func (d *beamSetsDecoder) Decode(x xml.TokenReader) error {
+	for {
+		t, err := x.Token()
+		if err != nil {
+			return err
+		}
+		switch tp := t.(type) {
+		case xml.StartElement:
+			if tp.Name.Space == nsBeamLatticeSpec && tp.Name.Local == attrBeamSet {
+				err = d.parseBeamset(x, tp.Attr)
+			}
+		case xml.EndElement:
+			if tp.Name.Space == nsBeamLatticeSpec && tp.Name.Local == attrBeamSets {
+				return nil
+			}
+		}
+	}
+}
+
+func (d *beamSetsDecoder) parseBeamset(x xml.TokenReader, attrs []xml.Attr) (err error) {
 	beamset := mesh.BeamSet{}
 	for _, a := range attrs {
 		if a.Name.Space != "" {
@@ -183,17 +202,18 @@ func (d *beamSetDecoder) Decode(x xml.TokenReader, attrs []xml.Attr) error {
 				err = d.parseRef(&beamset, tp.Attr)
 			}
 		case xml.EndElement:
-			if tp.Name.Space == nsBeamLatticeSpec && tp.Name.Local == attrBeamSets {
+			if tp.Name.Space == nsBeamLatticeSpec && tp.Name.Local == attrBeamSet {
+				d.mesh.BeamSets = append(d.mesh.BeamSets, beamset)
 				return nil
 			}
 		}
 	}
 }
 
-func (d *beamSetDecoder) parseRef(beamset *mesh.BeamSet, attrs []xml.Attr) (err error) {
+func (d *beamSetsDecoder) parseRef(beamset *mesh.BeamSet, attrs []xml.Attr) (err error) {
 	var index uint64
 	for _, a := range attrs {
-		if a.Name.Space == nsBeamLatticeSpec && a.Name.Local == attrIndex {
+		if a.Name.Space == "" && a.Name.Local == attrIndex {
 			index, err = strconv.ParseUint(a.Value, 10, 32)
 			break
 		}

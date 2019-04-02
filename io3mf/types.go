@@ -99,6 +99,7 @@ const (
 	attrBeams              = "beams"
 	attrBeam               = "beam"
 	attrBeamSets           = "beamsets"
+	attrBeamSet            = "beamset"
 	attrR1                 = "r1"
 	attrR2                 = "r2"
 	attrCap1               = "cap1"
