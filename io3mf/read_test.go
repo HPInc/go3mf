@@ -347,7 +347,8 @@ func TestReader_processRootModel(t *testing.T) {
 
 	components := &go3mf.ComponentsResource{
 		ObjectResource: go3mf.ObjectResource{ID: 20, UUID: "cb828680-8895-4e08-a1fc-be63e033df15", ModelPath: "/3d/3dmodel.model"},
-		Components:     []*go3mf.Component{{UUID: "cb828680-8895-4e08-a1fc-be63e033df16", Object: meshRes}},
+		Components: []*go3mf.Component{{UUID: "cb828680-8895-4e08-a1fc-be63e033df16", Object: meshRes,
+			Transform: mgl32.Mat4{3, 0, 0, -66.4, 0, 1, 0, -87.1, 0, 0, 2, 8.8, 0, 0, 0, 1}}},
 	}
 
 	want := &go3mf.Model{Units: go3mf.UnitMillimeter, Language: "en-US", Path: "/3d/3dmodel.model", UUID: "e9e25302-6428-402e-8633-cc95528d0ed3"}
@@ -464,7 +465,7 @@ func TestReader_processRootModel(t *testing.T) {
 				</object>
 				<object id="20" p:UUID="cb828680-8895-4e08-a1fc-be63e033df15">
 					<components>
-                		<component objectid="8" p:UUID="cb828680-8895-4e08-a1fc-be63e033df16"/>
+                		<component objectid="8" p:UUID="cb828680-8895-4e08-a1fc-be63e033df16" transform="3 0 0 0 1 0 0 0 2 -66.4 -87.1 8.8"/>
             		</components>
 				</object>
 			</resources>
@@ -578,7 +579,7 @@ func Test_strToSRGB(t *testing.T) {
 	}
 }
 
-func TestReader_readProductionAttachmentModels(t *testing.T) {
+func TestReader_processNonRootModels(t *testing.T) {
 	abortReader := &Reader{Model: &go3mf.Model{ProductionAttachments: []*go3mf.ProductionAttachment{{}}}}
 	abortReader.SetProgressCallback(callbackFalse, nil)
 	tests := []struct {
@@ -622,15 +623,34 @@ func TestReader_readProductionAttachmentModels(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.r.readProductionAttachmentModels(); (err != nil) != tt.wantErr {
-				t.Errorf("Reader.readProductionAttachmentModels() error = %v, wantErr %v", err, tt.wantErr)
+			if err := tt.r.processNonRootModels(); (err != nil) != tt.wantErr {
+				t.Errorf("Reader.processNonRootModels() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			deep.CompareUnexportedFields = true
 			deep.MaxDepth = 20
 			if diff := deep.Equal(tt.r.Model, tt.want); diff != nil {
-				t.Errorf("Reader.readProductionAttachmentModels() = %v", diff)
+				t.Errorf("Reader.processNonRootModels() = %v", diff)
 				return
+			}
+		})
+	}
+}
+
+func TestReader_Decode(t *testing.T) {
+	tests := []struct {
+		name    string
+		r       *Reader
+		wantErr bool
+	}{
+		{"base", &Reader{Model: new(go3mf.Model), AttachmentRelations: []string{"b"},
+			r: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship("b", "/a.xml")}, nil, newMockFile("/a.xml", nil, nil, nil, false), false)),
+		}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.r.Decode(); (err != nil) != tt.wantErr {
+				t.Errorf("Reader.Decode() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

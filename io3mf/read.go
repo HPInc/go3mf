@@ -70,13 +70,9 @@ type fileDecoder struct {
 	isAttachment bool
 }
 
-func (d *fileDecoder) Open() error {
-	return nil
-}
-
-func (d *fileDecoder) Attributes(attrs []xml.Attr) error {
-	return nil
-}
+func (d *fileDecoder) Open() error                       { return nil }
+func (d *fileDecoder) Attributes(attrs []xml.Attr) error { return nil }
+func (d *fileDecoder) Close() error                      { return nil }
 
 func (d *fileDecoder) Child(name xml.Name) (child nodeDecoder) {
 	modelName := xml.Name{Space: nsCoreSpec, Local: attrModel}
@@ -89,10 +85,6 @@ func (d *fileDecoder) Child(name xml.Name) (child nodeDecoder) {
 		child = modelDecoder
 	}
 	return
-}
-
-func (d *fileDecoder) Close() error {
-	return nil
 }
 
 func (d *fileDecoder) Decode(x *xml.Decoder) (err error) {
@@ -230,7 +222,15 @@ func (r *Reader) processNonRootModels() error {
 		return ErrUserAborted
 	}
 	r.progress.pushLevel(0.1, r.nonRootProgress())
-	r.readProductionAttachmentModels()
+	prodAttCount := len(r.Model.ProductionAttachments)
+	for i := prodAttCount - 1; i >= 0; i-- {
+		if !r.progress.progress(float64(prodAttCount-i-1)/float64(prodAttCount), StageReadNonRootModels) {
+			return ErrUserAborted
+		}
+		if err := r.readProductionAttachmentModel(i); err != nil {
+			return err
+		}
+	}
 	r.progress.popLevel()
 	return nil
 }
@@ -317,19 +317,6 @@ func (r *Reader) addAttachment(attachments []*go3mf.Attachment, file packageFile
 		})
 	}
 	return attachments
-}
-
-func (r *Reader) readProductionAttachmentModels() error {
-	prodAttCount := len(r.Model.ProductionAttachments)
-	for i := prodAttCount - 1; i >= 0; i-- {
-		if !r.progress.progress(float64(prodAttCount-i-1)/float64(prodAttCount), StageReadNonRootModels) {
-			return ErrUserAborted
-		}
-		if err := r.readProductionAttachmentModel(i); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func (r *Reader) readProductionAttachmentModel(i int) error {
