@@ -8,7 +8,7 @@ import (
 
 // Slice defines the resource object for slices.
 type Slice struct {
-	Vertices []mgl32.Vec2
+	Vertices [][2]float32
 	Polygons [][]int
 	TopZ     float32
 }

@@ -258,7 +258,7 @@ func TestReader_processRootModel(t *testing.T) {
 		Slices: []*mesh.Slice{
 			{
 				TopZ:     1.2,
-				Vertices: []mgl32.Vec2{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
+				Vertices: [][2]float32{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
 				Polygons: [][]int{{0, 1, 2, 3, 0}},
 			},
 		},
@@ -268,12 +268,12 @@ func TestReader_processRootModel(t *testing.T) {
 		Slices: []*mesh.Slice{
 			{
 				TopZ:     0,
-				Vertices: []mgl32.Vec2{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
+				Vertices: [][2]float32{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
 				Polygons: [][]int{{0, 1, 2, 3, 0}},
 			},
 			{
 				TopZ:     0.1,
-				Vertices: []mgl32.Vec2{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
+				Vertices: [][2]float32{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
 				Polygons: [][]int{{0, 2, 1, 3, 0}},
 			},
 		},

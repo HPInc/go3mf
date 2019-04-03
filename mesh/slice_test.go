@@ -3,8 +3,6 @@ package mesh
 import (
 	"reflect"
 	"testing"
-
-	"github.com/go-gl/mathgl/mgl32"
 )
 
 func TestSlice_BeginPolygon(t *testing.T) {
@@ -49,7 +47,7 @@ func TestSlice_AddVertex(t *testing.T) {
 				t.Errorf("Slice.AddVertex() = %v, want %v", got, tt.want)
 				return
 			}
-			want := mgl32.Vec2{tt.args.x, tt.args.y}
+			want := [2]float32{tt.args.x, tt.args.y}
 			if !reflect.DeepEqual(tt.s.Vertices[tt.want], want) {
 				t.Errorf("Slice.AddVertex() = %v, want %v", tt.s.Vertices[tt.want], want)
 			}
@@ -70,8 +68,8 @@ func TestSlice_AddPolygonIndex(t *testing.T) {
 	}{
 		{"emptyPolygon", new(Slice), args{0, 0}, true},
 		{"emptyVertices", &Slice{Polygons: [][]int{{}}}, args{0, 0}, true},
-		{"duplicated", &Slice{Polygons: [][]int{{0}}, Vertices: []mgl32.Vec2{{}}}, args{0, 0}, true},
-		{"base", &Slice{Polygons: [][]int{{}}, Vertices: []mgl32.Vec2{{}}}, args{0, 0}, false},
+		{"duplicated", &Slice{Polygons: [][]int{{0}}, Vertices: [][2]float32{{}}}, args{0, 0}, true},
+		{"base", &Slice{Polygons: [][]int{{}}, Vertices: [][2]float32{{}}}, args{0, 0}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
