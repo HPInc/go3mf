@@ -13,35 +13,10 @@ type beamLatticeDecoder struct {
 	resource *go3mf.MeshResource
 }
 
-func (d *beamLatticeDecoder) Decode(x xml.TokenReader, attrs []xml.Attr) error {
-	if err := d.parseAttr(attrs); err != nil {
-		return err
-	}
-	for {
-		t, err := x.Token()
-		if err != nil {
-			return err
-		}
-		switch tp := t.(type) {
-		case xml.StartElement:
-			if tp.Name.Space == nsBeamLatticeSpec {
-				if tp.Name.Local == attrBeams {
-					db := beamsDecoder{r: d.r, mesh: d.resource.Mesh}
-					db.Decode(x)
-				} else if tp.Name.Local == attrBeamSets {
-					db := beamSetsDecoder{r: d.r, mesh: d.resource.Mesh}
-					db.Decode(x)
-				}
-			}
-		case xml.EndElement:
-			if tp.Name.Space == nsBeamLatticeSpec && tp.Name.Local == attrBeamLattice {
-				return nil
-			}
-		}
-	}
-}
+func (d *beamLatticeDecoder) Open() error  { return nil }
+func (d *beamLatticeDecoder) Close() error { return nil }
 
-func (d *beamLatticeDecoder) parseAttr(attrs []xml.Attr) (err error) {
+func (d *beamLatticeDecoder) Attributes(attrs []xml.Attr) (err error) {
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
@@ -49,13 +24,9 @@ func (d *beamLatticeDecoder) parseAttr(attrs []xml.Attr) (err error) {
 		switch a.Name.Local {
 		case attrRadius:
 			d.resource.Mesh.DefaultRadius, err = strconv.ParseFloat(a.Value, 64)
-		case attrPrecision: // lib3mf legacy
-			fallthrough
-		case attrMinLength:
+		case attrMinLength, attrPrecision: // lib3mf legacy
 			d.resource.Mesh.MinLength, err = strconv.ParseFloat(a.Value, 64)
-		case attrClipping: // lib3mf legacy
-			fallthrough
-		case attrClippingMode:
+		case attrClippingMode, attrClipping: // lib3mf legacy
 			d.resource.BeamLatticeAttributes.ClipMode, _ = newClipMode(a.Value)
 		case attrClippingMesh:
 			var val uint64
@@ -75,31 +46,48 @@ func (d *beamLatticeDecoder) parseAttr(attrs []xml.Attr) (err error) {
 	return
 }
 
+func (d *beamLatticeDecoder) Child(name xml.Name) (child nodeDecoder) {
+	if name.Space == nsBeamLatticeSpec {
+		if name.Local == attrBeams {
+			child = &beamsDecoder{r: d.r, mesh: d.resource.Mesh}
+		} else if name.Local == attrBeamSets {
+			child = &beamSetsDecoder{r: d.r, mesh: d.resource.Mesh}
+		}
+	}
+	return
+}
+
 type beamsDecoder struct {
+	r           *Reader
+	mesh        *mesh.Mesh
+	beamDecoder beamDecoder
+}
+
+func (d *beamsDecoder) Open() error {
+	d.beamDecoder.r = d.r
+	d.beamDecoder.mesh = d.mesh
+	return nil
+}
+func (d *beamsDecoder) Close() error                            { return nil }
+func (d *beamsDecoder) Attributes(attrs []xml.Attr) (err error) { return }
+
+func (d *beamsDecoder) Child(name xml.Name) (child nodeDecoder) {
+	if name.Space == nsBeamLatticeSpec && name.Local == attrBeam {
+		child = &d.beamDecoder
+	}
+	return
+}
+
+type beamDecoder struct {
 	r    *Reader
 	mesh *mesh.Mesh
 }
 
-func (d *beamsDecoder) Decode(x xml.TokenReader) error {
-	for {
-		t, err := x.Token()
-		if err != nil {
-			return err
-		}
-		switch tp := t.(type) {
-		case xml.StartElement:
-			if tp.Name.Space == nsBeamLatticeSpec && tp.Name.Local == attrBeam {
-				err = d.parseBeam(tp.Attr)
-			}
-		case xml.EndElement:
-			if tp.Name.Space == nsBeamLatticeSpec && tp.Name.Local == attrBeams {
-				return nil
-			}
-		}
-	}
-}
+func (d *beamDecoder) Open() error                                        { return nil }
+func (d *beamDecoder) Close() error                                       { return nil }
+func (d *beamDecoder) Child(name xml.Name) (child nodeDecoder) { return }
 
-func (d *beamsDecoder) parseBeam(attrs []xml.Attr) (err error) {
+func (d *beamDecoder) Attributes(attrs []xml.Attr) (err error) {
 	var (
 		v1, v2           uint64
 		r1, r2           float64
@@ -110,7 +98,6 @@ func (d *beamsDecoder) parseBeam(attrs []xml.Attr) (err error) {
 		if a.Name.Space != "" {
 			continue
 		}
-
 		switch a.Name.Local {
 		case attrV1:
 			v1, err = strconv.ParseUint(a.Value, 10, 32)
@@ -159,58 +146,67 @@ type beamSetsDecoder struct {
 	mesh *mesh.Mesh
 }
 
-func (d *beamSetsDecoder) Decode(x xml.TokenReader) error {
-	for {
-		t, err := x.Token()
-		if err != nil {
-			return err
-		}
-		switch tp := t.(type) {
-		case xml.StartElement:
-			if tp.Name.Space == nsBeamLatticeSpec && tp.Name.Local == attrBeamSet {
-				err = d.parseBeamset(x, tp.Attr)
-			}
-		case xml.EndElement:
-			if tp.Name.Space == nsBeamLatticeSpec && tp.Name.Local == attrBeamSets {
-				return nil
-			}
-		}
+func (d *beamSetsDecoder) Open() error                             { return nil }
+func (d *beamSetsDecoder) Close() error                            { return nil }
+func (d *beamSetsDecoder) Attributes(attrs []xml.Attr) (err error) { return }
+
+func (d *beamSetsDecoder) Child(name xml.Name) (child nodeDecoder) {
+	if name.Space == nsBeamLatticeSpec && name.Local == attrBeamSet {
+		child = &beamSetDecoder{r: d.r, mesh: d.mesh}
 	}
+	return
 }
 
-func (d *beamSetsDecoder) parseBeamset(x xml.TokenReader, attrs []xml.Attr) (err error) {
-	beamset := mesh.BeamSet{}
+type beamSetDecoder struct {
+	r              *Reader
+	mesh           *mesh.Mesh
+	beamSet        mesh.BeamSet
+	beamRefDecoder beamRefDecoder
+}
+
+func (d *beamSetDecoder) Open() error {
+	d.beamRefDecoder.r = d.r
+	d.beamRefDecoder.beamSet = &d.beamSet
+	return nil
+}
+
+func (d *beamSetDecoder) Close() error {
+	d.mesh.BeamSets = append(d.mesh.BeamSets, d.beamSet)
+	return nil
+}
+
+func (d *beamSetDecoder) Attributes(attrs []xml.Attr) (err error) {
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
 		}
 		switch a.Name.Local {
 		case attrName:
-			beamset.Name = a.Value
+			d.beamSet.Name = a.Value
 		case attrIdentifier:
-			beamset.Identifier = a.Value
+			d.beamSet.Identifier = a.Value
 		}
 	}
-	for {
-		t, err := x.Token()
-		if err != nil {
-			return err
-		}
-		switch tp := t.(type) {
-		case xml.StartElement:
-			if tp.Name.Space == nsBeamLatticeSpec && tp.Name.Local == attrRef {
-				err = d.parseRef(&beamset, tp.Attr)
-			}
-		case xml.EndElement:
-			if tp.Name.Space == nsBeamLatticeSpec && tp.Name.Local == attrBeamSet {
-				d.mesh.BeamSets = append(d.mesh.BeamSets, beamset)
-				return nil
-			}
-		}
-	}
+	return
 }
 
-func (d *beamSetsDecoder) parseRef(beamset *mesh.BeamSet, attrs []xml.Attr) (err error) {
+func (d *beamSetDecoder) Child(name xml.Name) (child nodeDecoder) {
+	if name.Space == nsBeamLatticeSpec && name.Local == attrRef {
+		child = &d.beamRefDecoder
+	}
+	return
+}
+
+type beamRefDecoder struct {
+	r       *Reader
+	beamSet *mesh.BeamSet
+}
+
+func (d *beamRefDecoder) Open() error                                        { return nil }
+func (d *beamRefDecoder) Close() error                                       { return nil }
+func (d *beamRefDecoder) Child(name xml.Name) (child nodeDecoder) { return }
+
+func (d *beamRefDecoder) Attributes(attrs []xml.Attr) (err error) {
 	var index uint64
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrIndex {
@@ -219,7 +215,7 @@ func (d *beamSetsDecoder) parseRef(beamset *mesh.BeamSet, attrs []xml.Attr) (err
 		}
 	}
 	if err == nil {
-		beamset.Refs = append(beamset.Refs, uint32(index))
+		d.beamSet.Refs = append(d.beamSet.Refs, uint32(index))
 	}
 	return
 }

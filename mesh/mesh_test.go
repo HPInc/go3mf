@@ -126,7 +126,7 @@ func TestMesh_EndCreation(t *testing.T) {
 }
 
 func TestMesh_FaceNodes(t *testing.T) {
-	m :=new(Mesh)
+	m := new(Mesh)
 	n1 := m.AddNode(Node{0.0, 0.0, 0.0})
 	n2 := m.AddNode(Node{20.0, -20.0, 0.0})
 	n3 := m.AddNode(Node{0.0019989014, 0.0019989014, 0.0})
