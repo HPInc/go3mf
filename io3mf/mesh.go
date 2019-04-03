@@ -80,7 +80,7 @@ func (d *vertexDecoder) Open() error {
 	return nil
 }
 
-func (d *vertexDecoder) Close() error                                       { return nil }
+func (d *vertexDecoder) Close() error                            { return nil }
 func (d *vertexDecoder) Child(name xml.Name) (child nodeDecoder) { return }
 
 func (d *vertexDecoder) Attributes(attrs []xml.Attr) (err error) {
@@ -113,6 +113,10 @@ type trianglesDecoder struct {
 func (d *trianglesDecoder) Open() error {
 	d.triangleDecoder.r = d.r
 	d.triangleDecoder.resource = d.resource
+
+	if len(d.resource.Mesh.Faces) == 0 && len(d.resource.Mesh.Nodes) > 0 {
+		d.resource.Mesh.Faces = make([]mesh.Face, 0, len(d.resource.Mesh.Nodes)-1)
+	}
 	return nil
 }
 func (d *trianglesDecoder) Close() error                            { return nil }
@@ -139,7 +143,7 @@ func (d *triangleDecoder) Open() error {
 	return nil
 }
 
-func (d *triangleDecoder) Close() error                                       { return nil }
+func (d *triangleDecoder) Close() error                            { return nil }
 func (d *triangleDecoder) Child(name xml.Name) (child nodeDecoder) { return }
 
 func (d *triangleDecoder) Attributes(attrs []xml.Attr) (err error) {
