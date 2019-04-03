@@ -24,10 +24,10 @@ func (d *buildDecoder) Close() error {
 	return nil
 }
 
-func (d *buildDecoder) Child(name xml.Name) (child nodeDecoder, ok bool, err error) {
-	child, ok = map[xml.Name]nodeDecoder{
-		{Space: nsCoreSpec, Local: attrItem}: &buildItemDecoder{r: d.r},
-	}[name]
+func (d *buildDecoder) Child(name xml.Name) (child nodeDecoder) {
+	if name.Space == nsCoreSpec && name.Local == attrItem {
+		child = &buildItemDecoder{r: d.r}
+	}
 	return
 }
 
@@ -61,7 +61,7 @@ func (d *buildItemDecoder) Open() error {
 	return nil
 }
 
-func (d *buildItemDecoder) Child(name xml.Name) (child nodeDecoder, ok bool, err error) {
+func (d *buildItemDecoder) Child(name xml.Name) (child nodeDecoder) {
 	return
 }
 

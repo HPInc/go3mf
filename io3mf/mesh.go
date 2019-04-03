@@ -10,72 +10,80 @@ import (
 )
 
 type meshDecoder struct {
-	r                              *Reader
-	resource                       go3mf.MeshResource
-	triangleCounter, vertexCounter int
+	r        *Reader
+	resource go3mf.MeshResource
 }
 
-func (d *meshDecoder) Decode(x xml.TokenReader) error {
+func (d *meshDecoder) Open() error {
+	d.r.progress.pushLevel(1, 0)
 	d.resource.Mesh = new(mesh.Mesh)
 	d.resource.Mesh.StartCreation(mesh.CreationOptions{CalculateConnectivity: false})
-	defer d.resource.Mesh.EndCreation()
-	for {
-		t, err := x.Token()
-		if err != nil {
-			return err
-		}
-		switch tp := t.(type) {
-		case xml.StartElement:
-			var err error
-			if tp.Name.Space == nsCoreSpec {
-				if tp.Name.Local == attrVertices {
-					err = d.parseVertices(x)
-				} else if tp.Name.Local == attrTriangles {
-					err = d.parseTriangles(x)
-				}
-			} else if tp.Name.Space == nsBeamLatticeSpec && tp.Name.Local == attrBeamLattice {
-				err = d.parseBeamLattice(x, tp.Attr)
-			}
-			if err != nil {
-				return err
-			}
-		case xml.EndElement:
-			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrMesh {
-				d.r.addResource(&d.resource)
-				return nil
-			}
-		}
-	}
+	return nil
 }
 
-func (d *meshDecoder) parseVertices(x xml.TokenReader) error {
+func (d *meshDecoder) Close() error {
+	d.resource.Mesh.EndCreation()
+	d.r.addResource(&d.resource)
+	d.r.progress.popLevel()
+	return nil
+}
+
+func (d *meshDecoder) Attributes(attrs []xml.Attr) (err error) {
+	return
+}
+
+func (d *meshDecoder) Child(name xml.Name) (child nodeDecoder) {
+	if name.Space == nsCoreSpec {
+		if name.Local == attrVertices {
+			child = &verticesDecoder{r: d.r, resource: &d.resource}
+		} else if name.Local == attrTriangles {
+			child = &trianglesDecoder{r: d.r, resource: &d.resource}
+		}
+	} else if name.Space == nsBeamLatticeSpec && name.Local == attrBeamLattice {
+		child = &beamLatticeDecoder{r: d.r, resource: &d.resource}
+	}
+	return
+}
+
+type verticesDecoder struct {
+	r             *Reader
+	resource      *go3mf.MeshResource
+	vertexDecoder vertexDecoder
+}
+
+func (d *verticesDecoder) Open() error {
+	d.vertexDecoder.r = d.r
+	d.vertexDecoder.resource = d.resource
+	return nil
+}
+func (d *verticesDecoder) Close() error                            { return nil }
+func (d *verticesDecoder) Attributes(attrs []xml.Attr) (err error) { return }
+
+func (d *verticesDecoder) Child(name xml.Name) (child nodeDecoder) {
+	if name.Space == nsCoreSpec && name.Local == attrVertex {
+		child = &d.vertexDecoder
+	}
+	return
+}
+
+type vertexDecoder struct {
+	r        *Reader
+	resource *go3mf.MeshResource
+}
+
+func (d *vertexDecoder) Open() error {
 	if len(d.resource.Mesh.Nodes)%readVerticesUpdate == readVerticesUpdate-1 {
-		d.vertexCounter++
-		if !d.r.progress.progress(0.5-1.0/float64(d.vertexCounter+2), StageReadMesh) {
+		if !d.r.progress.progress(0.5-1.0/float64(len(d.resource.Mesh.Nodes)+2), StageReadMesh) {
 			return ErrUserAborted
 		}
 	}
-	for {
-		t, err := x.Token()
-		if err != nil {
-			return err
-		}
-		switch tp := t.(type) {
-		case xml.StartElement:
-			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrVertex {
-				if err := d.parseVertex(tp.Attr); err != nil {
-					return err
-				}
-			}
-		case xml.EndElement:
-			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrVertices {
-				return nil
-			}
-		}
-	}
+	return nil
 }
 
-func (d *meshDecoder) parseVertex(attrs []xml.Attr) (err error) {
+func (d *vertexDecoder) Close() error                                       { return nil }
+func (d *vertexDecoder) Child(name xml.Name) (child nodeDecoder) { return }
+
+func (d *vertexDecoder) Attributes(attrs []xml.Attr) (err error) {
 	var x, y, z float64
 	for _, a := range attrs {
 		switch a.Name.Local {
@@ -96,34 +104,45 @@ func (d *meshDecoder) parseVertex(attrs []xml.Attr) (err error) {
 	return
 }
 
-func (d *meshDecoder) parseTriangles(x xml.TokenReader) error {
+type trianglesDecoder struct {
+	r               *Reader
+	resource        *go3mf.MeshResource
+	triangleDecoder triangleDecoder
+}
+
+func (d *trianglesDecoder) Open() error {
+	d.triangleDecoder.r = d.r
+	d.triangleDecoder.resource = d.resource
+	return nil
+}
+func (d *trianglesDecoder) Close() error                            { return nil }
+func (d *trianglesDecoder) Attributes(attrs []xml.Attr) (err error) { return }
+
+func (d *trianglesDecoder) Child(name xml.Name) (child nodeDecoder) {
+	if name.Space == nsCoreSpec && name.Local == attrTriangle {
+		child = &d.triangleDecoder
+	}
+	return
+}
+
+type triangleDecoder struct {
+	r        *Reader
+	resource *go3mf.MeshResource
+}
+
+func (d *triangleDecoder) Open() error {
 	if len(d.resource.Mesh.Faces)%readTrianglesUpdate == readTrianglesUpdate-1 {
-		d.triangleCounter++
-		if !d.r.progress.progress(1.0-1.0/float64(d.triangleCounter+2), StageReadMesh) {
+		if !d.r.progress.progress(1.0-1.0/float64(len(d.resource.Mesh.Faces)+2), StageReadMesh) {
 			return ErrUserAborted
 		}
 	}
-	for {
-		t, err := x.Token()
-		if err != nil {
-			return err
-		}
-		switch tp := t.(type) {
-		case xml.StartElement:
-			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrTriangle {
-				if err := d.parseTriangle(tp.Attr); err != nil {
-					return err
-				}
-			}
-		case xml.EndElement:
-			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrTriangles {
-				return nil
-			}
-		}
-	}
+	return nil
 }
 
-func (d *meshDecoder) parseTriangle(attrs []xml.Attr) (err error) {
+func (d *triangleDecoder) Close() error                                       { return nil }
+func (d *triangleDecoder) Child(name xml.Name) (child nodeDecoder) { return }
+
+func (d *triangleDecoder) Attributes(attrs []xml.Attr) (err error) {
 	var v1, v2, v3, pid, p1, p2, p3 uint64
 	var hasPID, hasP1, hasP2, hasP3 bool
 	for _, a := range attrs {
@@ -163,14 +182,7 @@ func (d *meshDecoder) parseTriangle(attrs []xml.Attr) (err error) {
 	return d.addTriangle(uint32(v1), uint32(v2), uint32(v3), uint32(pid), uint32(p1), uint32(p2), uint32(p3))
 }
 
-func applyDefault(val, defVal uint64, noDef bool) uint64 {
-	if noDef {
-		return val
-	}
-	return defVal
-}
-
-func (d *meshDecoder) addTriangle(v1, v2, v3, pid, p1, p2, p3 uint32) error {
+func (d *triangleDecoder) addTriangle(v1, v2, v3, pid, p1, p2, p3 uint32) error {
 	if v1 == v2 || v1 == v3 || v2 == v3 {
 		return errors.New("go3mf: invalid triangle indices")
 	}
@@ -187,7 +199,9 @@ func (d *meshDecoder) addTriangle(v1, v2, v3, pid, p1, p2, p3 uint32) error {
 	return nil
 }
 
-func (d *meshDecoder) parseBeamLattice(x xml.TokenReader, attrs []xml.Attr) error {
-	bd := beamLatticeDecoder{r: d.r, resource: &d.resource}
-	return bd.Decode(x, attrs)
+func applyDefault(val, defVal uint64, noDef bool) uint64 {
+	if noDef {
+		return val
+	}
+	return defVal
 }

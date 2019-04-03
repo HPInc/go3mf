@@ -472,6 +472,7 @@ func TestReader_processRootModel(t *testing.T) {
 				<item partnumber="bob" objectid="20" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed2" transform="1 0 0 0 2 0 0 0 3 -66.4 -87.1 8.8" />
 				<item objectid="8" p:path="/3d/other.model" />
 			</build>
+			<other />
 		`).build()),
 	}
 

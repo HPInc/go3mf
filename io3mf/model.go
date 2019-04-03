@@ -9,53 +9,29 @@ import (
 type modelDecoder struct {
 	r                    *Reader
 	path                 string
-	hasResources         bool
-	hasBuild             bool
 	ignoreBuild          bool
 	ignoreMetadata       bool
 	withinIgnoredElement bool
 }
 
-func (d *modelDecoder) Open() error {
-	return nil
-}
+func (d *modelDecoder) Open() error  { return nil }
+func (d *modelDecoder) Close() error { return nil }
 
-func (d *modelDecoder) Child(name xml.Name) (child nodeDecoder, ok bool, err error) {
+func (d *modelDecoder) Child(name xml.Name) (child nodeDecoder) {
 	if name.Space == nsCoreSpec {
 		if name.Local == attrResources {
-			child, err = d.parseResources()
-			ok = false
+			d.withinIgnoredElement = false
+			child = &resourceDecoder{r: d.r, path: d.path}
 		} else if name.Local == attrBuild {
-			child, ok, err = d.parseBuild()
+			if d.ignoreBuild {
+				d.withinIgnoredElement = true
+			} else {
+				d.withinIgnoredElement = false
+				child = &buildDecoder{r: d.r}
+			}
 		}
 	}
 	return
-}
-
-func (d *modelDecoder) Close() error {
-	return nil
-}
-
-func (d *modelDecoder) parseBuild() (nodeDecoder, bool, error) {
-	if d.hasBuild {
-		return nil, false, errors.New("go3mf: duplicate build section in model file")
-	}
-	d.hasBuild = true
-	if d.ignoreBuild {
-		d.withinIgnoredElement = true
-		return nil, false, nil
-	}
-	d.withinIgnoredElement = false
-	return &buildDecoder{r: d.r}, true, nil
-}
-
-func (d *modelDecoder) parseResources() (nodeDecoder, error) {
-	if d.hasResources {
-		return nil, errors.New("go3mf: duplicate resources section in model file")
-	}
-	d.hasResources = true
-	d.withinIgnoredElement = false
-	return nil, nil //&resourceDecoder{r: d.r, path: d.path}, nil
 }
 
 func (d *modelDecoder) Attributes(attrs []xml.Attr) error {

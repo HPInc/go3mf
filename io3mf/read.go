@@ -60,7 +60,7 @@ func (r *ReadCloser) Close() error {
 type nodeDecoder interface {
 	Open() error
 	Attributes([]xml.Attr) error
-	Child(xml.Name) (nodeDecoder, bool, error)
+	Child(xml.Name) nodeDecoder
 	Close() error
 }
 
@@ -78,7 +78,7 @@ func (d *fileDecoder) Attributes(attrs []xml.Attr) error {
 	return nil
 }
 
-func (d *fileDecoder) Child(name xml.Name) (child nodeDecoder, ok bool, err error) {
+func (d *fileDecoder) Child(name xml.Name) (child nodeDecoder) {
 	modelName := xml.Name{Space: nsCoreSpec, Local: attrModel}
 	if name == modelName {
 		modelDecoder := &modelDecoder{r: d.r, path: d.path}
@@ -87,7 +87,6 @@ func (d *fileDecoder) Child(name xml.Name) (child nodeDecoder, ok bool, err erro
 			modelDecoder.ignoreMetadata = true
 		}
 		child = modelDecoder
-		ok = true
 	}
 	return
 }
@@ -104,7 +103,6 @@ func (d *fileDecoder) Decode(x *xml.Decoder) (err error) {
 		tmpDecoder     nodeDecoder
 		currentName    xml.Name
 		t              xml.Token
-		ok             bool
 	)
 	currentDecoder = d
 mainLoop:
@@ -115,15 +113,16 @@ mainLoop:
 		}
 		switch tp := t.(type) {
 		case xml.StartElement:
-			tmpDecoder, ok, err = currentDecoder.Child(tp.Name)
-			if err != nil {
-				break mainLoop
-			}
-			if ok {
+			tmpDecoder = currentDecoder.Child(tp.Name)
+			if tmpDecoder != nil {
 				state = append(state, currentDecoder)
 				names = append(names, currentName)
 				currentName = tp.Name
 				currentDecoder = tmpDecoder
+				err = currentDecoder.Open()
+				if err != nil {
+					break mainLoop
+				}
 				err = currentDecoder.Attributes(tp.Attr)
 				if err != nil {
 					break mainLoop

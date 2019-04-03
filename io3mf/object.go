@@ -10,64 +10,25 @@ import (
 )
 
 type objectDecoder struct {
-	r        *Reader
-	resource go3mf.ObjectResource
+	r             *Reader
+	progressCount int
+	resource      go3mf.ObjectResource
 }
 
-func (d *objectDecoder) Decode(x xml.TokenReader, attrs []xml.Attr) error {
-	if err := d.parseAttr(attrs); err != nil {
-		return err
+func (d *objectDecoder) Open() error {
+	if !d.r.progress.progress(1.0-2.0/float64(d.progressCount+2), StageReadResources) {
+		return ErrUserAborted
 	}
-	return d.parseContent(x)
-}
-
-func (d *objectDecoder) parseContent(x xml.TokenReader) error {
-	for {
-		t, err := x.Token()
-		if err != nil {
-			return err
-		}
-		switch tp := t.(type) {
-		case xml.StartElement:
-			var err error
-			if tp.Name.Space == nsCoreSpec {
-				if tp.Name.Local == attrMesh {
-					err = d.parseMesh(x, tp.Attr)
-				} else if tp.Name.Local == attrComponents {
-					err = d.parseComponents(x)
-				}
-			}
-			if err != nil {
-				return err
-			}
-		case xml.EndElement:
-			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrObject {
-				return nil
-			}
-		}
-	}
-}
-
-func (d *objectDecoder) parseMesh(x xml.TokenReader, attrs []xml.Attr) error {
-	d.r.progress.pushLevel(1, 0)
-	md := meshDecoder{r: d.r, resource: go3mf.MeshResource{ObjectResource: d.resource}}
-	if err := md.Decode(x); err != nil {
-		return err
-	}
-	d.r.progress.popLevel()
-
+	d.r.progress.pushLevel(1.0-2.0/float64(d.progressCount+2), 1.0-2.0/float64(d.progressCount+1+2))
 	return nil
 }
 
-func (d *objectDecoder) parseComponents(x xml.TokenReader) error {
-	if d.resource.DefaultPropertyID != 0 {
-		d.r.addWarning(&ReadError{InvalidOptionalValue, "go3mf: a components object must not have a default PID"})
-	}
-	cd := componentsDecoder{r: d.r, components: go3mf.ComponentsResource{ObjectResource: d.resource}}
-	return cd.Decode(x)
+func (d *objectDecoder) Close() error {
+	d.r.progress.popLevel()
+	return nil
 }
 
-func (d *objectDecoder) parseAttr(attrs []xml.Attr) (err error) {
+func (d *objectDecoder) Attributes(attrs []xml.Attr) (err error) {
 	for _, a := range attrs {
 		switch a.Name.Space {
 		case nsProductionSpec:
@@ -92,6 +53,21 @@ func (d *objectDecoder) parseAttr(attrs []xml.Attr) (err error) {
 	}
 	return
 }
+
+func (d *objectDecoder) Child(name xml.Name) (child nodeDecoder) {
+	if name.Space == nsCoreSpec {
+		if name.Local == attrMesh {
+			child = &meshDecoder{r: d.r, resource: go3mf.MeshResource{ObjectResource: d.resource}}
+		} else if name.Local == attrComponents {
+			if d.resource.DefaultPropertyID != 0 {
+				d.r.addWarning(&ReadError{InvalidOptionalValue, "go3mf: a components object must not have a default PID"})
+			}
+			child = &componentsDecoder{r: d.r, resource: go3mf.ComponentsResource{ObjectResource: d.resource}}
+		}
+	}
+	return
+}
+
 func (d *objectDecoder) parseCoreAttr(a xml.Attr) (err error) {
 	switch a.Name.Local {
 	case attrID:
@@ -150,33 +126,38 @@ func (d *objectDecoder) parseSliceAttr(a xml.Attr) (err error) {
 }
 
 type componentsDecoder struct {
-	r          *Reader
-	components go3mf.ComponentsResource
+	r                *Reader
+	resource         go3mf.ComponentsResource
+	componentDecoder componentDecoder
 }
 
-func (d *componentsDecoder) Decode(x xml.TokenReader) error {
-	for {
-		t, err := x.Token()
-		if err != nil {
-			return err
-		}
-		switch tp := t.(type) {
-		case xml.StartElement:
-			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrComponent {
-				if err := d.parseComponent(tp.Attr); err != nil {
-					return err
-				}
-			}
-		case xml.EndElement:
-			if tp.Name.Space == nsCoreSpec && tp.Name.Local == attrComponents {
-				d.r.addResource(&d.components)
-				return nil
-			}
-		}
+func (d *componentsDecoder) Open() error {
+	d.componentDecoder.r = d.r
+	d.componentDecoder.resource = &d.resource
+	return nil
+}
+func (d *componentsDecoder) Close() error {
+	d.r.addResource(&d.resource)
+	return nil
+}
+func (d *componentsDecoder) Attributes(attrs []xml.Attr) (err error) { return }
+
+func (d *componentsDecoder) Child(name xml.Name) (child nodeDecoder) {
+	if name.Space == nsCoreSpec && name.Local == attrComponent {
+		child = &d.componentDecoder
 	}
+	return
 }
 
-func (d *componentsDecoder) parseComponent(attrs []xml.Attr) (err error) {
+type componentDecoder struct {
+	r        *Reader
+	resource *go3mf.ComponentsResource
+}
+
+func (d *componentDecoder) Open() error                                        { return nil }
+func (d *componentDecoder) Close() error                                       { return nil }
+func (d *componentDecoder) Child(name xml.Name) (child nodeDecoder) { return }
+func (d *componentDecoder) Attributes(attrs []xml.Attr) (err error) {
 	var component go3mf.Component
 	var path string
 	var objectID uint64
@@ -226,6 +207,6 @@ func (d *componentsDecoder) parseComponent(attrs []xml.Attr) (err error) {
 	if !ok {
 		return errors.New("go3mf: could not find component object")
 	}
-	d.components.Components = append(d.components.Components, &component)
+	d.resource.Components = append(d.resource.Components, &component)
 	return
 }
