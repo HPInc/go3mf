@@ -7,15 +7,13 @@ import (
 )
 
 type modelDecoder struct {
+	emptyDecoder
 	r                    *Reader
 	path                 string
 	ignoreBuild          bool
 	ignoreMetadata       bool
 	withinIgnoredElement bool
 }
-
-func (d *modelDecoder) Open() error  { return nil }
-func (d *modelDecoder) Close() error { return nil }
 
 func (d *modelDecoder) Child(name xml.Name) (child nodeDecoder) {
 	if name.Space == nsCoreSpec {

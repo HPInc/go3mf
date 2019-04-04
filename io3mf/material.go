@@ -9,6 +9,7 @@ import (
 )
 
 type colorGroupDecoder struct {
+	emptyDecoder
 	r            *Reader
 	resource     go3mf.ColorGroupResource
 	colorDecoder colorDecoder
@@ -50,13 +51,10 @@ func (d *colorGroupDecoder) Attributes(attrs []xml.Attr) (err error) {
 }
 
 type colorDecoder struct {
+	emptyDecoder
 	r        *Reader
 	resource *go3mf.ColorGroupResource
 }
-
-func (d *colorDecoder) Open() error                                        { return nil }
-func (d *colorDecoder) Close() error                                       { return nil }
-func (d *colorDecoder) Child(name xml.Name) (child nodeDecoder) { return }
 
 func (d *colorDecoder) Attributes(attrs []xml.Attr) error {
 	for _, a := range attrs {
@@ -72,13 +70,10 @@ func (d *colorDecoder) Attributes(attrs []xml.Attr) error {
 }
 
 type tex2DCoordDecoder struct {
+	emptyDecoder
 	r        *Reader
 	resource *go3mf.Texture2DGroupResource
 }
-
-func (d *tex2DCoordDecoder) Open() error                                        { return nil }
-func (d *tex2DCoordDecoder) Close() error                                       { return nil }
-func (d *tex2DCoordDecoder) Child(name xml.Name) (child nodeDecoder) { return }
 
 func (d *tex2DCoordDecoder) Attributes(attrs []xml.Attr) error {
 	var u, v float64
@@ -99,6 +94,7 @@ func (d *tex2DCoordDecoder) Attributes(attrs []xml.Attr) error {
 }
 
 type tex2DGroupDecoder struct {
+	emptyDecoder
 	r                 *Reader
 	resource          go3mf.Texture2DGroupResource
 	tex2DCoordDecoder tex2DCoordDecoder
@@ -151,11 +147,11 @@ func (d *tex2DGroupDecoder) Attributes(attrs []xml.Attr) (err error) {
 }
 
 type texture2DDecoder struct {
+	emptyDecoder
 	r        *Reader
 	resource go3mf.Texture2DResource
 }
 
-func (d *texture2DDecoder) Open() error { return nil }
 func (d *texture2DDecoder) Close() error {
 	if d.resource.ID == 0 {
 		return errors.New("go3mf: missing texture2d id attribute")
@@ -163,7 +159,6 @@ func (d *texture2DDecoder) Close() error {
 	d.r.addResource(&d.resource)
 	return nil
 }
-func (d *texture2DDecoder) Child(name xml.Name) (child nodeDecoder) { return }
 
 func (d *texture2DDecoder) Attributes(attrs []xml.Attr) error {
 	for _, a := range attrs {

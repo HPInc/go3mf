@@ -10,6 +10,7 @@ import (
 )
 
 type objectDecoder struct {
+	emptyDecoder
 	r             *Reader
 	progressCount int
 	resource      go3mf.ObjectResource
@@ -126,6 +127,7 @@ func (d *objectDecoder) parseSliceAttr(a xml.Attr) (err error) {
 }
 
 type componentsDecoder struct {
+	emptyDecoder
 	r                *Reader
 	resource         go3mf.ComponentsResource
 	componentDecoder componentDecoder
@@ -140,7 +142,6 @@ func (d *componentsDecoder) Close() error {
 	d.r.addResource(&d.resource)
 	return nil
 }
-func (d *componentsDecoder) Attributes(attrs []xml.Attr) (err error) { return }
 
 func (d *componentsDecoder) Child(name xml.Name) (child nodeDecoder) {
 	if name.Space == nsCoreSpec && name.Local == attrComponent {
@@ -150,13 +151,11 @@ func (d *componentsDecoder) Child(name xml.Name) (child nodeDecoder) {
 }
 
 type componentDecoder struct {
+	emptyDecoder
 	r        *Reader
 	resource *go3mf.ComponentsResource
 }
 
-func (d *componentDecoder) Open() error                                        { return nil }
-func (d *componentDecoder) Close() error                                       { return nil }
-func (d *componentDecoder) Child(name xml.Name) (child nodeDecoder) { return }
 func (d *componentDecoder) Attributes(attrs []xml.Attr) (err error) {
 	var component go3mf.Component
 	var path string

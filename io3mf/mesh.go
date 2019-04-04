@@ -10,6 +10,7 @@ import (
 )
 
 type meshDecoder struct {
+	emptyDecoder
 	r        *Reader
 	resource go3mf.MeshResource
 }
@@ -28,10 +29,6 @@ func (d *meshDecoder) Close() error {
 	return nil
 }
 
-func (d *meshDecoder) Attributes(attrs []xml.Attr) (err error) {
-	return
-}
-
 func (d *meshDecoder) Child(name xml.Name) (child nodeDecoder) {
 	if name.Space == nsCoreSpec {
 		if name.Local == attrVertices {
@@ -46,6 +43,7 @@ func (d *meshDecoder) Child(name xml.Name) (child nodeDecoder) {
 }
 
 type verticesDecoder struct {
+	emptyDecoder
 	r             *Reader
 	resource      *go3mf.MeshResource
 	vertexDecoder vertexDecoder
@@ -56,8 +54,6 @@ func (d *verticesDecoder) Open() error {
 	d.vertexDecoder.resource = d.resource
 	return nil
 }
-func (d *verticesDecoder) Close() error                            { return nil }
-func (d *verticesDecoder) Attributes(attrs []xml.Attr) (err error) { return }
 
 func (d *verticesDecoder) Child(name xml.Name) (child nodeDecoder) {
 	if name.Space == nsCoreSpec && name.Local == attrVertex {
@@ -67,6 +63,7 @@ func (d *verticesDecoder) Child(name xml.Name) (child nodeDecoder) {
 }
 
 type vertexDecoder struct {
+	emptyDecoder
 	r        *Reader
 	resource *go3mf.MeshResource
 }
@@ -79,9 +76,6 @@ func (d *vertexDecoder) Open() error {
 	}
 	return nil
 }
-
-func (d *vertexDecoder) Close() error                            { return nil }
-func (d *vertexDecoder) Child(name xml.Name) (child nodeDecoder) { return }
 
 func (d *vertexDecoder) Attributes(attrs []xml.Attr) (err error) {
 	var x, y, z float64
@@ -105,6 +99,7 @@ func (d *vertexDecoder) Attributes(attrs []xml.Attr) (err error) {
 }
 
 type trianglesDecoder struct {
+	emptyDecoder
 	r               *Reader
 	resource        *go3mf.MeshResource
 	triangleDecoder triangleDecoder
@@ -119,8 +114,6 @@ func (d *trianglesDecoder) Open() error {
 	}
 	return nil
 }
-func (d *trianglesDecoder) Close() error                            { return nil }
-func (d *trianglesDecoder) Attributes(attrs []xml.Attr) (err error) { return }
 
 func (d *trianglesDecoder) Child(name xml.Name) (child nodeDecoder) {
 	if name.Space == nsCoreSpec && name.Local == attrTriangle {
@@ -130,6 +123,7 @@ func (d *trianglesDecoder) Child(name xml.Name) (child nodeDecoder) {
 }
 
 type triangleDecoder struct {
+	emptyDecoder
 	r        *Reader
 	resource *go3mf.MeshResource
 }
@@ -142,9 +136,6 @@ func (d *triangleDecoder) Open() error {
 	}
 	return nil
 }
-
-func (d *triangleDecoder) Close() error                            { return nil }
-func (d *triangleDecoder) Child(name xml.Name) (child nodeDecoder) { return }
 
 func (d *triangleDecoder) Attributes(attrs []xml.Attr) (err error) {
 	var v1, v2, v3, pid, p1, p2, p3 uint64

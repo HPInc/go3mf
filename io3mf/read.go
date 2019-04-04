@@ -64,15 +64,19 @@ type nodeDecoder interface {
 	Close() error
 }
 
+type emptyDecoder struct{}
+
+func (d *emptyDecoder) Open() error                 { return nil }
+func (d *emptyDecoder) Attributes([]xml.Attr) error { return nil }
+func (d *emptyDecoder) Child(xml.Name) nodeDecoder  { return nil }
+func (d *emptyDecoder) Close() error                { return nil }
+
 type fileDecoder struct {
+	emptyDecoder
 	r            *Reader
 	path         string
 	isAttachment bool
 }
-
-func (d *fileDecoder) Open() error                       { return nil }
-func (d *fileDecoder) Attributes(attrs []xml.Attr) error { return nil }
-func (d *fileDecoder) Close() error                      { return nil }
 
 func (d *fileDecoder) Child(name xml.Name) (child nodeDecoder) {
 	modelName := xml.Name{Space: nsCoreSpec, Local: attrModel}

@@ -10,6 +10,7 @@ import (
 )
 
 type buildDecoder struct {
+	emptyDecoder
 	r *Reader
 }
 
@@ -17,10 +18,6 @@ func (d *buildDecoder) Open() error {
 	if !d.r.progress.progress(0.9, StageReadBuild) {
 		return ErrUserAborted
 	}
-	return nil
-}
-
-func (d *buildDecoder) Close() error {
 	return nil
 }
 
@@ -51,18 +48,11 @@ func (d *buildDecoder) Attributes(attrs []xml.Attr) error {
 }
 
 type buildItemDecoder struct {
+	emptyDecoder
 	r          *Reader
 	item       go3mf.BuildItem
 	objectID   uint64
 	objectPath string
-}
-
-func (d *buildItemDecoder) Open() error {
-	return nil
-}
-
-func (d *buildItemDecoder) Child(name xml.Name) (child nodeDecoder) {
-	return
 }
 
 func (d *buildItemDecoder) Close() error {

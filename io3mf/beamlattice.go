@@ -9,12 +9,10 @@ import (
 )
 
 type beamLatticeDecoder struct {
+	emptyDecoder
 	r        *Reader
 	resource *go3mf.MeshResource
 }
-
-func (d *beamLatticeDecoder) Open() error  { return nil }
-func (d *beamLatticeDecoder) Close() error { return nil }
 
 func (d *beamLatticeDecoder) Attributes(attrs []xml.Attr) (err error) {
 	for _, a := range attrs {
@@ -58,6 +56,7 @@ func (d *beamLatticeDecoder) Child(name xml.Name) (child nodeDecoder) {
 }
 
 type beamsDecoder struct {
+	emptyDecoder
 	r           *Reader
 	mesh        *mesh.Mesh
 	beamDecoder beamDecoder
@@ -68,8 +67,6 @@ func (d *beamsDecoder) Open() error {
 	d.beamDecoder.mesh = d.mesh
 	return nil
 }
-func (d *beamsDecoder) Close() error                            { return nil }
-func (d *beamsDecoder) Attributes(attrs []xml.Attr) (err error) { return }
 
 func (d *beamsDecoder) Child(name xml.Name) (child nodeDecoder) {
 	if name.Space == nsBeamLatticeSpec && name.Local == attrBeam {
@@ -79,13 +76,10 @@ func (d *beamsDecoder) Child(name xml.Name) (child nodeDecoder) {
 }
 
 type beamDecoder struct {
+	emptyDecoder
 	r    *Reader
 	mesh *mesh.Mesh
 }
-
-func (d *beamDecoder) Open() error                                        { return nil }
-func (d *beamDecoder) Close() error                                       { return nil }
-func (d *beamDecoder) Child(name xml.Name) (child nodeDecoder) { return }
 
 func (d *beamDecoder) Attributes(attrs []xml.Attr) (err error) {
 	var (
@@ -142,13 +136,10 @@ func (d *beamDecoder) Attributes(attrs []xml.Attr) (err error) {
 }
 
 type beamSetsDecoder struct {
+	emptyDecoder
 	r    *Reader
 	mesh *mesh.Mesh
 }
-
-func (d *beamSetsDecoder) Open() error                             { return nil }
-func (d *beamSetsDecoder) Close() error                            { return nil }
-func (d *beamSetsDecoder) Attributes(attrs []xml.Attr) (err error) { return }
 
 func (d *beamSetsDecoder) Child(name xml.Name) (child nodeDecoder) {
 	if name.Space == nsBeamLatticeSpec && name.Local == attrBeamSet {
@@ -158,6 +149,7 @@ func (d *beamSetsDecoder) Child(name xml.Name) (child nodeDecoder) {
 }
 
 type beamSetDecoder struct {
+	emptyDecoder
 	r              *Reader
 	mesh           *mesh.Mesh
 	beamSet        mesh.BeamSet
@@ -198,13 +190,10 @@ func (d *beamSetDecoder) Child(name xml.Name) (child nodeDecoder) {
 }
 
 type beamRefDecoder struct {
+	emptyDecoder
 	r       *Reader
 	beamSet *mesh.BeamSet
 }
-
-func (d *beamRefDecoder) Open() error                                        { return nil }
-func (d *beamRefDecoder) Close() error                                       { return nil }
-func (d *beamRefDecoder) Child(name xml.Name) (child nodeDecoder) { return }
 
 func (d *beamRefDecoder) Attributes(attrs []xml.Attr) (err error) {
 	var index uint64

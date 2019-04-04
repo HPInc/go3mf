@@ -10,6 +10,7 @@ import (
 )
 
 type sliceStackDecoder struct {
+	emptyDecoder
 	r             *Reader
 	progressCount int
 	resource      go3mf.SliceStackResource
@@ -70,13 +71,10 @@ func (d *sliceStackDecoder) Attributes(attrs []xml.Attr) (err error) {
 }
 
 type sliceRefDecoder struct {
+	emptyDecoder
 	r        *Reader
 	resource *go3mf.SliceStackResource
 }
-
-func (d *sliceRefDecoder) Open() error                             { return nil }
-func (d *sliceRefDecoder) Close() error                            { return nil }
-func (d *sliceRefDecoder) Child(name xml.Name) (child nodeDecoder) { return }
 
 func (d *sliceRefDecoder) Attributes(attrs []xml.Attr) (err error) {
 	var sliceStackID uint64
@@ -119,6 +117,7 @@ func (d *sliceRefDecoder) addSliceRef(sliceStackID uint64, path string) error {
 }
 
 type sliceDecoder struct {
+	emptyDecoder
 	r                      *Reader
 	resource               *go3mf.SliceStackResource
 	slice                  mesh.Slice
@@ -174,6 +173,7 @@ func (d *sliceDecoder) Attributes(attrs []xml.Attr) (err error) {
 }
 
 type polygonVerticesDecoder struct {
+	emptyDecoder
 	r                    *Reader
 	slice                *mesh.Slice
 	polygonVertexDecoder polygonVertexDecoder
@@ -184,8 +184,6 @@ func (d *polygonVerticesDecoder) Open() error {
 	d.polygonVertexDecoder.slice = d.slice
 	return nil
 }
-func (d *polygonVerticesDecoder) Close() error                            { return nil }
-func (d *polygonVerticesDecoder) Attributes(attrs []xml.Attr) (err error) { return }
 
 func (d *polygonVerticesDecoder) Child(name xml.Name) (child nodeDecoder) {
 	if name.Space == nsSliceSpec && name.Local == attrVertex {
@@ -195,13 +193,10 @@ func (d *polygonVerticesDecoder) Child(name xml.Name) (child nodeDecoder) {
 }
 
 type polygonVertexDecoder struct {
+	emptyDecoder
 	r     *Reader
 	slice *mesh.Slice
 }
-
-func (d *polygonVertexDecoder) Open() error                             { return nil }
-func (d *polygonVertexDecoder) Close() error                            { return nil }
-func (d *polygonVertexDecoder) Child(name xml.Name) (child nodeDecoder) { return }
 
 func (d *polygonVertexDecoder) Attributes(attrs []xml.Attr) (err error) {
 	var x, y float64
@@ -221,6 +216,7 @@ func (d *polygonVertexDecoder) Attributes(attrs []xml.Attr) (err error) {
 }
 
 type polygonDecoder struct {
+	emptyDecoder
 	r                     *Reader
 	slice                 *mesh.Slice
 	polygonIndex          int
@@ -262,14 +258,11 @@ func (d *polygonDecoder) Attributes(attrs []xml.Attr) (err error) {
 }
 
 type polygonSegmentDecoder struct {
+	emptyDecoder
 	r            *Reader
 	slice        *mesh.Slice
 	polygonIndex int
 }
-
-func (d *polygonSegmentDecoder) Open() error                             { return nil }
-func (d *polygonSegmentDecoder) Close() error                            { return nil }
-func (d *polygonSegmentDecoder) Child(name xml.Name) (child nodeDecoder) { return }
 
 func (d *polygonSegmentDecoder) Attributes(attrs []xml.Attr) (err error) {
 	for _, a := range attrs {

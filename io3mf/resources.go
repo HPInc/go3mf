@@ -10,6 +10,7 @@ import (
 )
 
 type resourceDecoder struct {
+	emptyDecoder
 	r             *Reader
 	path          string
 	progressCount int
@@ -27,11 +28,6 @@ func (d *resourceDecoder) Close() error {
 	d.r.progress.popLevel()
 	return nil
 }
-
-func (d *resourceDecoder) Attributes(attrs []xml.Attr) error {
-	return nil
-}
-
 func (d *resourceDecoder) Child(name xml.Name) (child nodeDecoder) {
 	if name.Space == nsCoreSpec {
 		switch name.Local {
@@ -60,6 +56,7 @@ func (d *resourceDecoder) Child(name xml.Name) (child nodeDecoder) {
 }
 
 type baseMaterialsDecoder struct {
+	emptyDecoder
 	r                   *Reader
 	resource            go3mf.BaseMaterialsResource
 	baseMaterialDecoder baseMaterialDecoder
@@ -107,13 +104,10 @@ func (d *baseMaterialsDecoder) Attributes(attrs []xml.Attr) (err error) {
 }
 
 type baseMaterialDecoder struct {
+	emptyDecoder
 	r        *Reader
 	resource *go3mf.BaseMaterialsResource
 }
-
-func (d *baseMaterialDecoder) Open() error                                        { return nil }
-func (d *baseMaterialDecoder) Close() error                                       { return nil }
-func (d *baseMaterialDecoder) Child(name xml.Name) (child nodeDecoder) { return }
 
 func (d *baseMaterialDecoder) Attributes(attrs []xml.Attr) (err error) {
 	var name string
