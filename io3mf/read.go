@@ -101,8 +101,8 @@ type modelFile struct {
 	path         string
 	isRoot       bool
 	warnings     []error
-	resourcesMap map[uint64]go3mf.Identifier
-	resources    []go3mf.Identifier
+	resourcesMap map[uint64]go3mf.Resource
+	resources    []go3mf.Resource
 	namespaces   map[string]string
 }
 
@@ -110,13 +110,13 @@ func (d *modelFile) AddWarning(err error) {
 	d.warnings = append(d.warnings, err)
 }
 
-func (d *modelFile) AddResource(r go3mf.Identifier) {
+func (d *modelFile) AddResource(r go3mf.Resource) {
 	_, id := r.Identify()
 	d.resourcesMap[id] = r
 	d.resources = append(d.resources, r)
 }
 
-func (d *modelFile) FindResource(path string, id uint64) (r go3mf.Identifier, ok bool) {
+func (d *modelFile) FindResource(path string, id uint64) (r go3mf.Resource, ok bool) {
 	if path == "" {
 		path = d.r.Model.Path
 	}
@@ -147,7 +147,7 @@ func (d *modelFile) IsRoot() bool {
 
 func (d *modelFile) Decode(x *xml.Decoder) (err error) {
 	d.namespaces = make(map[string]string)
-	d.resourcesMap = make(map[uint64]go3mf.Identifier)
+	d.resourcesMap = make(map[uint64]go3mf.Resource)
 
 	state := make([]nodeDecoder, 0, 10)
 	names := make([]xml.Name, 0, 10)
@@ -219,7 +219,7 @@ func NewReader(r io.ReaderAt, size int64) (*Reader, error) {
 	}, nil
 }
 
-func (r *Reader) addResource(res go3mf.Identifier) {
+func (r *Reader) addResource(res go3mf.Resource) {
 	r.Model.Resources = append(r.Model.Resources, res)
 }
 

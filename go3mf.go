@@ -11,8 +11,8 @@ import (
 	"github.com/qmuntal/go3mf/mesh"
 )
 
-// Identifier defines an object than can be uniquely identified.
-type Identifier interface {
+// Resource defines build resource.
+type Resource interface {
 	Identify() (string, uint64)
 }
 
@@ -62,7 +62,7 @@ type Model struct {
 	Units                 Units
 	Thumbnail             *Attachment
 	Metadata              []Metadata
-	Resources             []Identifier
+	Resources             []Resource
 	BuildItems            []*BuildItem
 	Attachments           []*Attachment
 	ProductionAttachments []*ProductionAttachment
@@ -106,13 +106,13 @@ func (m *Model) MergeToMesh(msh *mesh.Mesh) {
 }
 
 // FindResource returns the resource with the target unique ID.
-func (m *Model) FindResource(path string, id uint64) (i Identifier, ok bool) {
+func (m *Model) FindResource(path string, id uint64) (r Resource, ok bool) {
 	if path == "" {
 		path = m.Path
 	}
 	for _, value := range m.Resources {
 		if rPath, rID := value.Identify(); rID == id && rPath == path {
-			i = value
+			r = value
 			ok = true
 			break
 		}

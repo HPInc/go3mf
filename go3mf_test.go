@@ -67,11 +67,6 @@ func TestModel_SetThumbnail(t *testing.T) {
 		})
 	}
 }
-
-func mustIdentifier(a Identifier, err error) Identifier {
-	return a
-}
-
 func TestModel_MergeToMesh(t *testing.T) {
 	type args struct {
 		msh *mesh.Mesh
@@ -103,7 +98,7 @@ func TestModel_FindResource(t *testing.T) {
 		name   string
 		m      *Model
 		args   args
-		wantR  Identifier
+		wantR  Resource
 		wantOk bool
 	}{
 		{"emptyPathExist", model, args{"", 1}, id2, true},
@@ -529,10 +524,10 @@ func TestModel_UnusedID(t *testing.T) {
 		want uint64
 	}{
 		{"empty", new(Model), 1},
-		{"one", &Model{Resources: []Identifier{&ColorGroupResource{ID: 2}}}, 1},
-		{"two", &Model{Resources: []Identifier{&ColorGroupResource{ID: 1}}}, 2},
-		{"sequence", &Model{Resources: []Identifier{&ColorGroupResource{ID: 1}, &ColorGroupResource{ID: 2}}}, 3},
-		{"sparce", &Model{Resources: []Identifier{&ColorGroupResource{ID: 1}, &ColorGroupResource{ID: 3}}}, 2},
+		{"one", &Model{Resources: []Resource{&ColorGroupResource{ID: 2}}}, 1},
+		{"two", &Model{Resources: []Resource{&ColorGroupResource{ID: 1}}}, 2},
+		{"sequence", &Model{Resources: []Resource{&ColorGroupResource{ID: 1}, &ColorGroupResource{ID: 2}}}, 3},
+		{"sparce", &Model{Resources: []Resource{&ColorGroupResource{ID: 1}, &ColorGroupResource{ID: 3}}}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

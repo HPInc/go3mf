@@ -4,9 +4,9 @@ const maxBeamCount = 2147483646
 
 // BeamSet defines a set of beams.
 type BeamSet struct {
-	Refs       []uint32 // References to all the beams in the set.
-	Name       string   // Name of the set.
-	Identifier string   // Identifier of the set.
+	Refs       []uint32
+	Name       string
+	Identifier string
 }
 
 // A CapMode is an enumerable for the different capping modes.

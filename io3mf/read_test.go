@@ -350,7 +350,7 @@ func TestReader_processRootModel(t *testing.T) {
 	colorGroup := &go3mf.ColorGroupResource{ID: 1, ModelPath: "/3d/3dmodel.model", Colors: []color.RGBA{{R: 85, G: 85, B: 85, A: 255}, {R: 0, G: 0, B: 0, A: 255}, {R: 16, G: 21, B: 103, A: 255}, {R: 53, G: 4, B: 80, A: 255}}}
 	texGroup := &go3mf.Texture2DGroupResource{ID: 2, ModelPath: "/3d/3dmodel.model", TextureID: 6, Coords: []go3mf.TextureCoord{{0.3, 0.5}, {0.3, 0.8}, {0.5, 0.8}, {0.5, 0.5}}}
 	want.Resources = append(want.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices, TimesRefered: 1})
-	want.Resources = append(want.Resources, []go3mf.Identifier{otherMesh, baseMaterials, baseTexture, colorGroup, texGroup, sliceStack, sliceStackRef, meshRes, meshLattice, components}...)
+	want.Resources = append(want.Resources, []go3mf.Resource{otherMesh, baseMaterials, baseTexture, colorGroup, texGroup, sliceStack, sliceStackRef, meshRes, meshLattice, components}...)
 	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: components, PartNumber: "bob", UUID: "e9e25302-6428-402e-8633-cc95528d0ed2",
 		Transform: mgl32.Mat4{1, 0, 0, -66.4, 0, 2, 0, -87.1, 0, 0, 3, 8.8, 0, 0, 0, 1},
 	})
@@ -607,7 +607,7 @@ func TestReader_processNonRootModels(t *testing.T) {
 			ProductionAttachments: []*go3mf.ProductionAttachment{
 				{Path: "3d/new.model"},
 				{Path: "3d/other.model"},
-			}, Resources: []go3mf.Identifier{
+			}, Resources: []go3mf.Resource{
 				&go3mf.BaseMaterialsResource{ID: 5, ModelPath: "3d/new.model", Materials: []go3mf.BaseMaterial{
 					{Name: "Blue PLA", Color: color.RGBA{0, 0, 85, 255}},
 					{Name: "Red ABS", Color: color.RGBA{85, 0, 0, 255}},
