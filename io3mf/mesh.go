@@ -158,12 +158,11 @@ func (d *triangleDecoder) addTriangle(v1, v2, v3, pid, p1, p2, p3 uint32) error 
 	if v1 >= nodeCount || v2 >= nodeCount || v3 >= nodeCount {
 		return errors.New("go3mf: triangle index is out of range")
 	}
-	face := d.resource.Mesh.AddFace(v1, v2, v3)
-	if pid == 0 {
-		return nil
-	}
-	face.Resource = pid
-	face.ResourceIndices = [3]uint32{p1, p2, p3}
+	d.resource.Mesh.Faces = append(d.resource.Mesh.Faces, mesh.Face{
+		NodeIndices: [3]uint32{v1, v2, v3},
+		Resource: pid,
+		ResourceIndices: [3]uint32{p1, p2, p3},
+	})
 	return nil
 }
 
