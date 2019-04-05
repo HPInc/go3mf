@@ -13,12 +13,12 @@ import (
 
 // Resource defines build resource.
 type Resource interface {
-	Identify() (string, uint64)
+	Identify() (string, uint32)
 }
 
 // Object defines a composable object.
 type Object interface {
-	Identify() (string, uint64)
+	Identify() (string, uint32)
 	MergeToMesh(*mesh.Mesh, mgl32.Mat4)
 	IsValid() bool
 	IsValidForSlices(mgl32.Mat4) bool
@@ -69,7 +69,7 @@ type Model struct {
 }
 
 // UnusedID returns the lowest unused ID.
-func (m *Model) UnusedID() uint64 {
+func (m *Model) UnusedID() uint32 {
 	if len(m.Resources) == 0 {
 		return 1
 	}
@@ -89,7 +89,7 @@ func (m *Model) UnusedID() uint64 {
 	if lowest == 0 {
 		lowest = ids[len(ids)-1] + 1
 	}
-	return uint64(lowest)
+	return uint32(lowest)
 }
 
 // SetThumbnail sets the package thumbnail.
@@ -106,7 +106,7 @@ func (m *Model) MergeToMesh(msh *mesh.Mesh) {
 }
 
 // FindResource returns the resource with the target unique ID.
-func (m *Model) FindResource(path string, id uint64) (r Resource, ok bool) {
+func (m *Model) FindResource(path string, id uint32) (r Resource, ok bool) {
 	if path == "" {
 		path = m.Path
 	}
@@ -135,13 +135,13 @@ func (m *BaseMaterial) ColorString() string {
 
 // BaseMaterialsResource defines a slice of BaseMaterial.
 type BaseMaterialsResource struct {
-	ID        uint64
+	ID        uint32
 	ModelPath string
 	Materials []BaseMaterial
 }
 
 // Identify returns the unique ID of the resource.
-func (ms *BaseMaterialsResource) Identify() (string, uint64) {
+func (ms *BaseMaterialsResource) Identify() (string, uint32) {
 	return ms.ModelPath, ms.ID
 }
 
@@ -177,21 +177,21 @@ func (b *BuildItem) MergeToMesh(m *mesh.Mesh) {
 
 // An ObjectResource is an in memory representation of the 3MF model object.
 type ObjectResource struct {
-	ID                   uint64
+	ID                   uint32
 	ModelPath            string
 	UUID                 string
 	Name                 string
 	PartNumber           string
-	SliceStackID         uint64
+	SliceStackID         uint32
 	SliceResoultion      SliceResolution
 	Thumbnail            string
-	DefaultPropertyID    uint64
-	DefaultPropertyIndex uint64
+	DefaultPropertyID    uint32
+	DefaultPropertyIndex uint32
 	ObjectType           ObjectType
 }
 
 // Identify returns the unique ID of the resource.
-func (o *ObjectResource) Identify() (string, uint64) {
+func (o *ObjectResource) Identify() (string, uint32) {
 	return o.ModelPath, o.ID
 }
 
@@ -313,19 +313,19 @@ func (s *SliceStack) AddSlice(slice *mesh.Slice) (int, error) {
 // SliceStackResource defines a slice stack resource.
 type SliceStackResource struct {
 	*SliceStack
-	ID           uint64
+	ID           uint32
 	ModelPath    string
 	TimesRefered int
 }
 
 // Identify returns the unique ID of the resource.
-func (s *SliceStackResource) Identify() (string, uint64) {
+func (s *SliceStackResource) Identify() (string, uint32) {
 	return s.ModelPath, s.ID
 }
 
 // Texture2DResource defines the Model Texture 2D.
 type Texture2DResource struct {
-	ID          uint64
+	ID          uint32
 	ModelPath   string
 	Path        string
 	ContentType Texture2DType
@@ -335,7 +335,7 @@ type Texture2DResource struct {
 }
 
 // Identify returns the unique ID of the resource.
-func (t *Texture2DResource) Identify() (string, uint64) {
+func (t *Texture2DResource) Identify() (string, uint32) {
 	return t.ModelPath, t.ID
 }
 
@@ -362,27 +362,27 @@ func (t TextureCoord) V() float32 {
 
 // Texture2DGroupResource acts as a container for texture coordinate properties.
 type Texture2DGroupResource struct {
-	ID                uint64
+	ID                uint32
 	ModelPath         string
-	TextureID         uint64
-	DisplayPropertyID uint64
+	TextureID         uint32
+	DisplayPropertyID uint32
 	Coords            []TextureCoord
 }
 
 // Identify returns the unique ID of the resource.
-func (t *Texture2DGroupResource) Identify() (string, uint64) {
+func (t *Texture2DGroupResource) Identify() (string, uint32) {
 	return t.ModelPath, t.ID
 }
 
 // ColorGroupResource acts as a container for color properties.
 type ColorGroupResource struct {
-	ID                uint64
+	ID                uint32
 	ModelPath         string
-	DisplayPropertyID uint64
+	DisplayPropertyID uint32
 	Colors            []color.RGBA
 }
 
 // Identify returns the unique ID of the resource.
-func (c *ColorGroupResource) Identify() (string, uint64) {
+func (c *ColorGroupResource) Identify() (string, uint32) {
 	return c.ModelPath, c.ID
 }

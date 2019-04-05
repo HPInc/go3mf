@@ -55,7 +55,7 @@ func (d *buildItemDecoder) Close() error {
 }
 
 func (d *buildItemDecoder) processItem() error {
-	resource, ok := d.ModelFile().FindResource(d.objectPath, d.objectID)
+	resource, ok := d.ModelFile().FindResource(d.objectPath, uint32(d.objectID))
 	if !ok {
 		return errors.New("go3mf: could not find build item object")
 	}
@@ -110,7 +110,7 @@ func (d *buildItemDecoder) parseCoreAttr(a xml.Attr) (err error) {
 		if d.objectID != 0 {
 			return errors.New("go3mf: duplicated build item objectid attribute")
 		}
-		if d.objectID, err = strconv.ParseUint(a.Value, 10, 64); err != nil {
+		if d.objectID, err = strconv.ParseUint(a.Value, 10, 32); err != nil {
 			return errors.New("go3mf: build item id is not valid")
 		}
 	case attrPartNumber:

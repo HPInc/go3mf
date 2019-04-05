@@ -50,7 +50,9 @@ func (d *sliceStackDecoder) Attributes(attrs []xml.Attr) (err error) {
 			if d.resource.ID != 0 {
 				err = errors.New("go3mf: duplicated slicestack id attribute")
 			} else {
-				d.resource.ID, err = strconv.ParseUint(a.Value, 10, 64)
+				var id uint64
+				id, err = strconv.ParseUint(a.Value, 10, 32)
+				d.resource.ID = uint32(id)
 			}
 		case attrZBottom:
 			var bottomZ float64
@@ -75,7 +77,7 @@ func (d *sliceRefDecoder) Attributes(attrs []xml.Attr) (err error) {
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrSliceRefID:
-			sliceStackID, err = strconv.ParseUint(a.Value, 10, 64)
+			sliceStackID, err = strconv.ParseUint(a.Value, 10, 32)
 		case attrSlicePath:
 			path = a.Value
 		}
@@ -84,10 +86,10 @@ func (d *sliceRefDecoder) Attributes(attrs []xml.Attr) (err error) {
 		return errors.New("go3mf: a sliceref has an invalid slicestackid attribute")
 	}
 
-	return d.addSliceRef(sliceStackID, path)
+	return d.addSliceRef(uint32(sliceStackID), path)
 }
 
-func (d *sliceRefDecoder) addSliceRef(sliceStackID uint64, path string) error {
+func (d *sliceRefDecoder) addSliceRef(sliceStackID uint32, path string) error {
 	if path == d.resource.ModelPath {
 		return errors.New("go3mf: a slicepath is invalid")
 	}
@@ -224,15 +226,15 @@ func (d *polygonDecoder) Child(name xml.Name) (child nodeDecoder) {
 }
 
 func (d *polygonDecoder) Attributes(attrs []xml.Attr) (err error) {
-	var start64 uint64
+	var start uint64
 	for _, a := range attrs {
 		if a.Name.Local == attrStartV {
-			start64, err = strconv.ParseUint(a.Value, 10, 32)
+			start, err = strconv.ParseUint(a.Value, 10, 32)
 			break
 		}
 	}
 	if err == nil {
-		err = d.slice.AddPolygonIndex(d.polygonIndex, int(start64))
+		err = d.slice.AddPolygonIndex(d.polygonIndex, int(start))
 	}
 	return
 }

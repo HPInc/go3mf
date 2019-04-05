@@ -142,10 +142,10 @@ func (d *triangleDecoder) Attributes(attrs []xml.Attr) (err error) {
 		return
 	}
 
-	p1 = applyDefault(p1, d.resource.DefaultPropertyIndex, hasP1)
+	p1 = applyDefault(p1, uint64(d.resource.DefaultPropertyIndex), hasP1)
 	p2 = applyDefault(p2, p1, hasP2)
 	p3 = applyDefault(p3, p1, hasP3)
-	pid = applyDefault(pid, d.resource.DefaultPropertyID, hasPID)
+	pid = applyDefault(pid, uint64(d.resource.DefaultPropertyID), hasPID)
 
 	return d.addTriangle(uint32(v1), uint32(v2), uint32(v3), uint32(pid), uint32(p1), uint32(p2), uint32(p3))
 }

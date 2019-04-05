@@ -23,9 +23,9 @@ func NewMockObject(isValid, isValidForSlices bool) *MockObject {
 	return o
 }
 
-func (o *MockObject) Identify() (string, uint64) {
+func (o *MockObject) Identify() (string, uint32) {
 	args := o.Called()
-	return args.String(0), uint64(args.Int(1))
+	return args.String(0), uint32(args.Int(1))
 }
 
 func (o *MockObject) Type() ObjectType {
@@ -92,7 +92,7 @@ func TestModel_FindResource(t *testing.T) {
 	model.Resources = append(model.Resources, id1, id2)
 	type args struct {
 		path string
-		id   uint64
+		id   uint32
 	}
 	tests := []struct {
 		name   string
@@ -434,7 +434,7 @@ func TestBaseMaterialsResource_Identify(t *testing.T) {
 		name  string
 		ms    *BaseMaterialsResource
 		want  string
-		want1 uint64
+		want1 uint32
 	}{
 		{"base", &BaseMaterialsResource{ID: 1, ModelPath: "3d/3dmodel.model"}, "3d/3dmodel.model", 1},
 	}
@@ -456,7 +456,7 @@ func TestObjectResource_Identify(t *testing.T) {
 		name  string
 		o     *ObjectResource
 		want  string
-		want1 uint64
+		want1 uint32
 	}{
 		{"base", &ObjectResource{ID: 1, ModelPath: "3d/3dmodel.model"}, "3d/3dmodel.model", 1},
 	}
@@ -478,7 +478,7 @@ func TestSliceStackResource_Identify(t *testing.T) {
 		name  string
 		s     *SliceStackResource
 		want  string
-		want1 uint64
+		want1 uint32
 	}{
 		{"base", &SliceStackResource{ID: 1, ModelPath: "3d/3dmodel.model"}, "3d/3dmodel.model", 1},
 	}
@@ -500,7 +500,7 @@ func TestTexture2DResource_Identify(t *testing.T) {
 		name  string
 		t     *Texture2DResource
 		want  string
-		want1 uint64
+		want1 uint32
 	}{
 		{"base", &Texture2DResource{ID: 1, ModelPath: "3d/3dmodel.model"}, "3d/3dmodel.model", 1},
 	}
@@ -521,7 +521,7 @@ func TestModel_UnusedID(t *testing.T) {
 	tests := []struct {
 		name string
 		m    *Model
-		want uint64
+		want uint32
 	}{
 		{"empty", new(Model), 1},
 		{"one", &Model{Resources: []Resource{&ColorGroupResource{ID: 2}}}, 1},
@@ -577,7 +577,7 @@ func TestTexture2DGroupResource_Identify(t *testing.T) {
 		name  string
 		t     *Texture2DGroupResource
 		want  string
-		want1 uint64
+		want1 uint32
 	}{
 		{"base", &Texture2DGroupResource{ID: 1, ModelPath: "3d/3dmodel"}, "3d/3dmodel", 1},
 	}
@@ -599,7 +599,7 @@ func TestColorGroupResource_Identify(t *testing.T) {
 		name  string
 		c     *ColorGroupResource
 		want  string
-		want1 uint64
+		want1 uint32
 	}{
 		{"base", &ColorGroupResource{ID: 1, ModelPath: "3d/3dmodel"}, "3d/3dmodel", 1},
 	}

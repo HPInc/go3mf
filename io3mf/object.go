@@ -66,10 +66,12 @@ func (d *objectDecoder) parseCoreAttr(a xml.Attr) (err error) {
 		if d.resource.ID != 0 {
 			err = errors.New("go3mf: duplicated object resource id attribute")
 		} else {
-			d.resource.ID, err = strconv.ParseUint(a.Value, 10, 64)
+			var id uint64
+			id, err = strconv.ParseUint(a.Value, 10, 32)
 			if err != nil {
 				err = errors.New("go3mf: object resource id is not valid")
 			}
+			d.resource.ID = uint32(id)
 		}
 	case attrType:
 		var ok bool
@@ -84,15 +86,19 @@ func (d *objectDecoder) parseCoreAttr(a xml.Attr) (err error) {
 	case attrPartNumber:
 		d.resource.PartNumber = a.Value
 	case attrPID:
-		d.resource.DefaultPropertyID, err = strconv.ParseUint(a.Value, 10, 64)
+		var id uint64
+		id, err = strconv.ParseUint(a.Value, 10, 32)
 		if err != nil {
 			err = errors.New("go3mf: object resource pid is not valid")
 		}
+		d.resource.DefaultPropertyID = uint32(id)
 	case attrPIndex:
-		d.resource.DefaultPropertyIndex, err = strconv.ParseUint(a.Value, 10, 64)
+		var id uint64
+		id, err = strconv.ParseUint(a.Value, 10, 32)
 		if err != nil {
 			err = errors.New("go3mf: object resource pindex is not valid")
 		}
+		d.resource.DefaultPropertyIndex = uint32(id)
 	}
 	return
 }
@@ -103,10 +109,12 @@ func (d *objectDecoder) parseSliceAttr(a xml.Attr) (err error) {
 		if d.resource.SliceStackID != 0 {
 			d.ModelFile().AddWarning(&ReadError{InvalidOptionalValue, "go3mf: duplicated object resource slicestackid attribute"})
 		}
-		d.resource.SliceStackID, err = strconv.ParseUint(a.Value, 10, 64)
+		var id uint64
+		id, err = strconv.ParseUint(a.Value, 10, 32)
 		if err != nil {
 			err = errors.New("go3mf: object resource slicestackid is not valid")
 		}
+		d.resource.SliceStackID = uint32(id)
 	case attrMeshRes:
 		var ok bool
 		d.resource.SliceResoultion, ok = newSliceResolution(a.Value)
@@ -171,7 +179,7 @@ func (d *componentDecoder) Attributes(attrs []xml.Attr) (err error) {
 				if objectID != 0 {
 					err = errors.New("go3mf: duplicated component objectid attribute")
 				}
-				objectID, err = strconv.ParseUint(a.Value, 10, 64)
+				objectID, err = strconv.ParseUint(a.Value, 10, 32)
 				if err != nil {
 					err = errors.New("go3mf: component id is not valid")
 				}
@@ -191,7 +199,7 @@ func (d *componentDecoder) Attributes(attrs []xml.Attr) (err error) {
 		return errors.New("go3mf: a component in a non-root model has a path attribute")
 	}
 
-	resource, ok := d.ModelFile().FindResource(path, objectID)
+	resource, ok := d.ModelFile().FindResource(path, uint32(objectID))
 	if !ok {
 		err = errors.New("go3mf: could not find component object")
 	}

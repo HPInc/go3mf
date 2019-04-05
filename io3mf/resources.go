@@ -74,10 +74,12 @@ func (d *baseMaterialsDecoder) Attributes(attrs []xml.Attr) (err error) {
 			continue
 		}
 		if d.resource.ID == 0 {
-			d.resource.ID, err = strconv.ParseUint(a.Value, 10, 64)
+			var id uint64
+			id, err = strconv.ParseUint(a.Value, 10, 32)
 			if err != nil {
 				err = errors.New("go3mf: base materials id is not valid")
 			}
+			d.resource.ID = uint32(id)
 		} else {
 			err = errors.New("go3mf: duplicated base materials id attribute")
 		}

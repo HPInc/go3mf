@@ -101,7 +101,7 @@ type modelFile struct {
 	path         string
 	isRoot       bool
 	warnings     []error
-	resourcesMap map[uint64]go3mf.Resource
+	resourcesMap map[uint32]go3mf.Resource
 	resources    []go3mf.Resource
 	namespaces   map[string]string
 }
@@ -116,7 +116,7 @@ func (d *modelFile) AddResource(r go3mf.Resource) {
 	d.resources = append(d.resources, r)
 }
 
-func (d *modelFile) FindResource(path string, id uint64) (r go3mf.Resource, ok bool) {
+func (d *modelFile) FindResource(path string, id uint32) (r go3mf.Resource, ok bool) {
 	if path == "" {
 		path = d.r.Model.Path
 	}
@@ -147,7 +147,7 @@ func (d *modelFile) IsRoot() bool {
 
 func (d *modelFile) Decode(x *xml.Decoder) (err error) {
 	d.namespaces = make(map[string]string)
-	d.resourcesMap = make(map[uint64]go3mf.Resource)
+	d.resourcesMap = make(map[uint32]go3mf.Resource)
 
 	state := make([]nodeDecoder, 0, 10)
 	names := make([]xml.Name, 0, 10)
