@@ -608,11 +608,11 @@ func TestReader_processNonRootModels(t *testing.T) {
 				{Path: "3d/new.model"},
 				{Path: "3d/other.model"},
 			}, Resources: []go3mf.Identifier{
-				&go3mf.Texture2DResource{ID: 6, ModelPath: "3d/other.model", Path: "/3D/Texture/msLogo.png", ContentType: go3mf.PNGTexture, TileStyleU: go3mf.TileWrap, TileStyleV: go3mf.TileMirror, Filter: go3mf.TextureFilterAuto},
 				&go3mf.BaseMaterialsResource{ID: 5, ModelPath: "3d/new.model", Materials: []go3mf.BaseMaterial{
 					{Name: "Blue PLA", Color: color.RGBA{0, 0, 85, 255}},
 					{Name: "Red ABS", Color: color.RGBA{85, 0, 0, 255}},
 				}},
+				&go3mf.Texture2DResource{ID: 6, ModelPath: "3d/other.model", Path: "/3D/Texture/msLogo.png", ContentType: go3mf.PNGTexture, TileStyleU: go3mf.TileWrap, TileStyleV: go3mf.TileMirror, Filter: go3mf.TextureFilterAuto},
 			},
 		}},
 		{"noAtt", &Reader{Model: new(go3mf.Model)}, false, new(go3mf.Model)},

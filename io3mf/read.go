@@ -2,11 +2,13 @@ package io3mf
 
 import (
 	"bytes"
+	"context"
 	"encoding/xml"
 	"errors"
 	"image/color"
 	"io"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -202,6 +204,7 @@ type Reader struct {
 	AttachmentRelations []string
 	r                   packageReader
 	productionModels    map[string]packageFile
+	ctx                 context.Context
 }
 
 // NewReader returns a new Reader reading a 3mf file from r.
@@ -263,16 +266,41 @@ func (r *Reader) addModelFile(f *modelFile) {
 }
 
 func (r *Reader) processNonRootModels() error {
-	var mu sync.Mutex
+	var wg sync.WaitGroup
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	var files sync.Map
 	prodAttCount := len(r.Model.ProductionAttachments)
-	for i := prodAttCount - 1; i >= 0; i-- {
-		f, err := r.readProductionAttachmentModel(i)
-		if err != nil {
-			return err
-		}
-		mu.Lock()
-		r.addModelFile(f)
-		mu.Unlock()
+	wg.Add(prodAttCount)
+	for i := 0; i < prodAttCount; i++ {
+		go func(i int) {
+			defer wg.Done()
+			f, err := r.readProductionAttachmentModel(i)
+			select {
+			case <-ctx.Done():
+				return // Error somewhere, terminate
+			default: // Default is must to avoid blocking
+			}
+			if err != nil {
+				cancel()
+			}
+			files.Store(i, f)
+		}(i)
+	}
+	wg.Wait()
+	err := ctx.Err()
+	if err != nil {
+		return err
+	}
+	indices := make([]int, 0, prodAttCount)
+	files.Range(func(key, value interface{}) bool {
+		indices = append(indices, key.(int))
+		return true
+	})
+	sort.Ints(indices)
+	for _, index := range indices {
+		f, _ := files.Load(index)
+		r.addModelFile(f.(*modelFile))
 	}
 	return nil
 }
