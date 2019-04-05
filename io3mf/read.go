@@ -60,6 +60,7 @@ func (r *ReadCloser) Close() error {
 type nodeDecoder interface {
 	Open() error
 	Attributes([]xml.Attr) error
+	Text([]byte) error
 	Child(xml.Name) nodeDecoder
 	Close() error
 }
@@ -68,6 +69,7 @@ type emptyDecoder struct{}
 
 func (d *emptyDecoder) Open() error                 { return nil }
 func (d *emptyDecoder) Attributes([]xml.Attr) error { return nil }
+func (d *emptyDecoder) Text([]byte) error           { return nil }
 func (d *emptyDecoder) Child(xml.Name) nodeDecoder  { return nil }
 func (d *emptyDecoder) Close() error                { return nil }
 
@@ -92,6 +94,9 @@ func (d *fileDecoder) Child(name xml.Name) (child nodeDecoder) {
 }
 
 func (d *fileDecoder) Decode(x *xml.Decoder) (err error) {
+	if d.r.namespaces == nil {
+		d.r.namespaces = make(map[string]string)
+	}
 	state := make([]nodeDecoder, 0, 10)
 	names := make([]xml.Name, 0, 10)
 	var (
@@ -101,7 +106,6 @@ func (d *fileDecoder) Decode(x *xml.Decoder) (err error) {
 		t              xml.Token
 	)
 	currentDecoder = d
-mainLoop:
 	for {
 		t, err = x.Token()
 		if err != nil {
@@ -116,25 +120,25 @@ mainLoop:
 				currentName = tp.Name
 				currentDecoder = tmpDecoder
 				err = currentDecoder.Open()
-				if err != nil {
-					break mainLoop
-				}
-				err = currentDecoder.Attributes(tp.Attr)
-				if err != nil {
-					break mainLoop
+				if err == nil {
+					err = currentDecoder.Attributes(tp.Attr)
 				}
 			} else {
-				x.Skip()
+				err = x.Skip()
 			}
+		case xml.CharData:
+			err = currentDecoder.Text(tp)
 		case xml.EndElement:
 			if currentName == tp.Name {
 				err = currentDecoder.Close()
-				if err != nil {
-					break mainLoop
+				if err == nil {
+					currentDecoder, state = state[len(state)-1], state[:len(state)-1]
+					currentName, names = names[len(names)-1], names[:len(names)-1]
 				}
-				currentDecoder, state = state[len(state)-1], state[:len(state)-1]
-				currentName, names = names[len(names)-1], names[:len(names)-1]
 			}
+		}
+		if err != nil {
+			break
 		}
 	}
 	return
@@ -147,7 +151,7 @@ type Reader struct {
 	AttachmentRelations []string
 	progress            monitor
 	r                   packageReader
-	namespaces          []string
+	namespaces          map[string]string
 	productionModels    map[string]packageFile
 }
 
@@ -158,8 +162,9 @@ func NewReader(r io.ReaderAt, size int64) (*Reader, error) {
 		return nil, err
 	}
 	return &Reader{
-		r:     opcr,
-		Model: new(go3mf.Model),
+		r:          opcr,
+		Model:      new(go3mf.Model),
+		namespaces: make(map[string]string),
 	}, nil
 }
 

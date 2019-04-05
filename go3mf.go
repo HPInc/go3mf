@@ -30,6 +30,8 @@ type Object interface {
 type Metadata struct {
 	Name  string
 	Value string
+	Type string
+	Preserve bool
 }
 
 // Attachment defines the Model Attachment.

@@ -107,6 +107,8 @@ const (
 	attrIdentifier         = "identifier"
 	attrRef                = "ref"
 	attrIndex              = "index"
+	attrPreserve           = "preserve"
+	attrMetadata           = "metadata"
 )
 
 var defaultColor = color.RGBA{R: 0xff, G: 0xff, B: 0xff, A: 0xff}

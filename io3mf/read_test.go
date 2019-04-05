@@ -361,6 +361,10 @@ func TestReader_processRootModel(t *testing.T) {
 		Transform: mgl32.Mat4{1, 0, 0, -66.4, 0, 2, 0, -87.1, 0, 0, 3, 8.8, 0, 0, 0, 1},
 	})
 	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: otherMesh})
+	want.Metadata = append(want.Metadata, []go3mf.Metadata{
+		{Name: "Application", Value: "go3mf app"},
+		{Name: nsProductionSpec + ":CustomMetadata1", Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},
+	}...)
 	got := new(go3mf.Model)
 	got.Path = "/3d/3dmodel.model"
 	got.Resources = append(got.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices}, otherMesh)
@@ -473,6 +477,8 @@ func TestReader_processRootModel(t *testing.T) {
 				<item partnumber="bob" objectid="20" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed2" transform="1 0 0 0 2 0 0 0 3 -66.4 -87.1 8.8" />
 				<item objectid="8" p:path="/3d/other.model" />
 			</build>
+			<metadata name="Application">go3mf app</metadata>
+			<metadata name="p:CustomMetadata1" type="xs:string" preserve="1">CE8A91FB-C44E-4F00-B634-BAA411465F6A</metadata>
 			<other />
 		`).build()),
 	}
@@ -501,9 +507,9 @@ func TestReader_namespaceRegistered(t *testing.T) {
 		args args
 		want bool
 	}{
-		{"empty", &Reader{namespaces: []string{"http://xml.com"}}, args{""}, false},
-		{"exist", &Reader{namespaces: []string{"http://xml.com"}}, args{"http://xml.com"}, true},
-		{"noexist", &Reader{namespaces: []string{"http://xml.com"}}, args{"xmls"}, false},
+		{"empty", &Reader{namespaces: map[string]string{"p": "http://xml.com"}}, args{""}, false},
+		{"exist", &Reader{namespaces: map[string]string{"p": "http://xml.com"}}, args{"http://xml.com"}, true},
+		{"noexist", &Reader{namespaces: map[string]string{"p": "http://xml.com"}}, args{"xmls"}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
