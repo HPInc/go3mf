@@ -169,8 +169,6 @@ func TestReadError_Error(t *testing.T) {
 }
 
 func TestReader_processOPC(t *testing.T) {
-	abortReader := &Reader{Model: new(go3mf.Model), r: newMockPackage(newMockFile("/a.model", nil, nil, nil, false))}
-	abortReader.SetProgressCallback(callbackFalse, nil)
 	thumbFile := newMockFile("/a.png", nil, nil, nil, false)
 	thumbErr := newMockFile("/a.png", nil, nil, nil, true)
 	tests := []struct {
@@ -180,7 +178,6 @@ func TestReader_processOPC(t *testing.T) {
 		wantErr bool
 	}{
 		{"noRoot", &Reader{Model: new(go3mf.Model), r: newMockPackage(nil)}, &go3mf.Model{}, true},
-		{"abort", abortReader, &go3mf.Model{}, true},
 		{"noRels", &Reader{Model: new(go3mf.Model), r: newMockPackage(newMockFile("/a.model", nil, nil, nil, false))}, &go3mf.Model{Path: "/a.model"}, false},
 		{"withThumb", &Reader{Model: new(go3mf.Model),
 			r: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeThumbnail, "/a.png")}, thumbFile, thumbFile, false)),
@@ -224,15 +221,12 @@ func TestReader_processOPC(t *testing.T) {
 }
 
 func TestReader_processRootModel_Fail(t *testing.T) {
-	abortReader := &Reader{Model: new(go3mf.Model), r: newMockPackage(newMockFile("/a.model", nil, nil, nil, false))}
-	abortReader.SetProgressCallback(callbackFalse, nil)
 	tests := []struct {
 		name    string
 		r       *Reader
 		wantErr bool
 	}{
 		{"noRoot", &Reader{Model: new(go3mf.Model), r: newMockPackage(nil)}, true},
-		{"abort", abortReader, true},
 		{"errOpen", &Reader{Model: new(go3mf.Model), r: newMockPackage(newMockFile("/a.model", nil, nil, nil, true))}, true},
 		{"errEncode", &Reader{Model: new(go3mf.Model), r: newMockPackage(new(modelBuilder).withEncoding("utf16").build())}, true},
 		{"invalidUnits", &Reader{Model: new(go3mf.Model), r: newMockPackage(new(modelBuilder).withModel("other", "en-US").build())}, true},
@@ -586,8 +580,6 @@ func Test_strToSRGB(t *testing.T) {
 }
 
 func TestReader_processNonRootModels(t *testing.T) {
-	abortReader := &Reader{Model: &go3mf.Model{ProductionAttachments: []*go3mf.ProductionAttachment{{}}}}
-	abortReader.SetProgressCallback(callbackFalse, nil)
 	tests := []struct {
 		name    string
 		r       *Reader
@@ -624,7 +616,6 @@ func TestReader_processNonRootModels(t *testing.T) {
 			},
 		}},
 		{"noAtt", &Reader{Model: new(go3mf.Model)}, false, new(go3mf.Model)},
-		{"abort", abortReader, true, abortReader.Model},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

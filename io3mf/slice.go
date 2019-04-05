@@ -17,10 +17,6 @@ type sliceStackDecoder struct {
 }
 
 func (d *sliceStackDecoder) Open() error {
-	if !d.ModelFile().monitor().progress(1.0-2.0/float64(d.progressCount+2), StageReadResources) {
-		return ErrUserAborted
-	}
-	d.ModelFile().monitor().pushLevel(1.0-2.0/float64(d.progressCount+2), 1.0-2.0/float64(d.progressCount+1+2))
 	d.resource.ModelPath = d.ModelFile().Path()
 	d.resource.SliceStack = new(go3mf.SliceStack)
 	return nil
@@ -33,7 +29,6 @@ func (d *sliceStackDecoder) Close() error {
 		return errors.New("go3mf: slicestack contains slices and slicerefs")
 	}
 	d.ModelFile().AddResource(&d.resource)
-	d.ModelFile().monitor().popLevel()
 	return nil
 }
 func (d *sliceStackDecoder) Child(name xml.Name) (child nodeDecoder) {
@@ -124,11 +119,6 @@ type sliceDecoder struct {
 }
 
 func (d *sliceDecoder) Open() error {
-	if len(d.resource.Slices)%readSliceUpdate == readSliceUpdate-1 {
-		if !d.ModelFile().monitor().progress(1.0-2.0/float64(len(d.resource.Slices)+2), StageReadSlices) {
-			return ErrUserAborted
-		}
-	}
 	d.polygonDecoder.slice = &d.slice
 	d.polygonVerticesDecoder.slice = &d.slice
 	return nil

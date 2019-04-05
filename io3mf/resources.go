@@ -14,19 +14,6 @@ type resourceDecoder struct {
 	progressCount int
 }
 
-func (d *resourceDecoder) Open() error {
-	if !d.ModelFile().monitor().progress(0.2, StageReadResources) {
-		return ErrUserAborted
-	}
-	d.ModelFile().monitor().pushLevel(0.2, 0.9)
-	return nil
-}
-
-func (d *resourceDecoder) Close() error {
-	d.ModelFile().monitor().popLevel()
-	return nil
-}
-
 func (d *resourceDecoder) Child(name xml.Name) (child nodeDecoder) {
 	if name.Space == nsCoreSpec {
 		switch name.Local {

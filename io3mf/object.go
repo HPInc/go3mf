@@ -16,16 +16,7 @@ type objectDecoder struct {
 }
 
 func (d *objectDecoder) Open() error {
-	if !d.ModelFile().monitor().progress(1.0-2.0/float64(d.progressCount+2), StageReadResources) {
-		return ErrUserAborted
-	}
-	d.ModelFile().monitor().pushLevel(1.0-2.0/float64(d.progressCount+2), 1.0-2.0/float64(d.progressCount+1+2))
 	d.resource.ModelPath = d.ModelFile().Path()
-	return nil
-}
-
-func (d *objectDecoder) Close() error {
-	d.ModelFile().monitor().popLevel()
 	return nil
 }
 

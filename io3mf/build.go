@@ -13,13 +13,6 @@ type buildDecoder struct {
 	emptyDecoder
 }
 
-func (d *buildDecoder) Open() error {
-	if !d.ModelFile().monitor().progress(0.9, StageReadBuild) {
-		return ErrUserAborted
-	}
-	return nil
-}
-
 func (d *buildDecoder) Child(name xml.Name) (child nodeDecoder) {
 	if name.Space == nsCoreSpec && name.Local == attrItem {
 		child = &buildItemDecoder{}

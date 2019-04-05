@@ -104,10 +104,6 @@ type modelFile struct {
 	namespaces   map[string]string
 }
 
-func (d *modelFile) monitor() *monitor {
-	return &d.r.progress
-}
-
 func (d *modelFile) AddWarning(err error) {
 	d.warnings = append(d.warnings, err)
 }
@@ -204,7 +200,6 @@ type Reader struct {
 	Model               *go3mf.Model
 	Warnings            []error
 	AttachmentRelations []string
-	progress            monitor
 	r                   packageReader
 	productionModels    map[string]packageFile
 }
@@ -225,14 +220,8 @@ func (r *Reader) addResource(res go3mf.Identifier) {
 	r.Model.Resources = append(r.Model.Resources, res)
 }
 
-// SetProgressCallback specifies the callback to be executed on every step of the progress.
-func (r *Reader) SetProgressCallback(callback ProgressCallback, userData interface{}) {
-	r.progress.SetProgressCallback(callback, userData)
-}
-
 // Decode reads the 3mf file and unmarshall its content into the model.
 func (r *Reader) Decode() error {
-	r.progress.ResetLevels()
 	if err := r.processOPC(); err != nil {
 		return err
 	}
@@ -246,9 +235,6 @@ func (r *Reader) Decode() error {
 }
 
 func (r *Reader) processRootModel() error {
-	if !r.progress.progress(r.nonRootProgress(), StageReadRootModel) {
-		return ErrUserAborted
-	}
 	rootFile, ok := r.r.FindFileFromRel(relTypeModel3D)
 	if !ok {
 		return errors.New("go3mf: package does not have root model")
@@ -277,16 +263,9 @@ func (r *Reader) addModelFile(f *modelFile) {
 }
 
 func (r *Reader) processNonRootModels() error {
-	if !r.progress.progress(0.1, StageReadNonRootModels) {
-		return ErrUserAborted
-	}
-	r.progress.pushLevel(0.1, r.nonRootProgress())
 	var mu sync.Mutex
 	prodAttCount := len(r.Model.ProductionAttachments)
 	for i := prodAttCount - 1; i >= 0; i-- {
-		if !r.progress.progress(float64(prodAttCount-i-1)/float64(prodAttCount), StageReadNonRootModels) {
-			return ErrUserAborted
-		}
 		f, err := r.readProductionAttachmentModel(i)
 		if err != nil {
 			return err
@@ -295,14 +274,10 @@ func (r *Reader) processNonRootModels() error {
 		r.addModelFile(f)
 		mu.Unlock()
 	}
-	r.progress.popLevel()
 	return nil
 }
 
 func (r *Reader) processOPC() error {
-	if !r.progress.progress(0.05, StageExtractOPCPackage) {
-		return ErrUserAborted
-	}
 	rootFile, ok := r.r.FindFileFromRel(relTypeModel3D)
 	if !ok {
 		return errors.New("go3mf: package does not have root model")
@@ -384,17 +359,14 @@ func (r *Reader) addAttachment(attachments []*go3mf.Attachment, file packageFile
 }
 
 func (r *Reader) readProductionAttachmentModel(i int) (*modelFile, error) {
-	prodAttCount := len(r.Model.ProductionAttachments)
 	attachment := r.Model.ProductionAttachments[i]
 	file, err := r.productionModels[attachment.Path].Open()
 	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
-	r.progress.pushLevel(float64(prodAttCount-i-1)/float64(prodAttCount), float64(prodAttCount-i)/float64(prodAttCount))
 	d := modelFile{r: r, path: attachment.Path, isRoot: false}
 	err = d.Decode(xml.NewDecoder(file))
-	r.progress.popLevel()
 	if err != io.EOF {
 		return nil, err
 	}

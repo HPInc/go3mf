@@ -15,7 +15,6 @@ type meshDecoder struct {
 }
 
 func (d *meshDecoder) Open() error {
-	d.ModelFile().monitor().pushLevel(1, 0)
 	d.resource.Mesh = new(mesh.Mesh)
 	d.resource.Mesh.StartCreation(mesh.CreationOptions{CalculateConnectivity: false})
 	return nil
@@ -24,7 +23,6 @@ func (d *meshDecoder) Open() error {
 func (d *meshDecoder) Close() error {
 	d.resource.Mesh.EndCreation()
 	d.ModelFile().AddResource(&d.resource)
-	d.ModelFile().monitor().popLevel()
 	return nil
 }
 
@@ -62,15 +60,6 @@ func (d *verticesDecoder) Child(name xml.Name) (child nodeDecoder) {
 type vertexDecoder struct {
 	emptyDecoder
 	resource *go3mf.MeshResource
-}
-
-func (d *vertexDecoder) Open() error {
-	if len(d.resource.Mesh.Nodes)%readVerticesUpdate == readVerticesUpdate-1 {
-		if !d.ModelFile().monitor().progress(0.5-1.0/float64(len(d.resource.Mesh.Nodes)+2), StageReadMesh) {
-			return ErrUserAborted
-		}
-	}
-	return nil
 }
 
 func (d *vertexDecoder) Attributes(attrs []xml.Attr) (err error) {
@@ -119,15 +108,6 @@ func (d *trianglesDecoder) Child(name xml.Name) (child nodeDecoder) {
 type triangleDecoder struct {
 	emptyDecoder
 	resource *go3mf.MeshResource
-}
-
-func (d *triangleDecoder) Open() error {
-	if len(d.resource.Mesh.Faces)%readTrianglesUpdate == readTrianglesUpdate-1 {
-		if !d.ModelFile().monitor().progress(1.0-1.0/float64(len(d.resource.Mesh.Faces)+2), StageReadMesh) {
-			return ErrUserAborted
-		}
-	}
-	return nil
 }
 
 func (d *triangleDecoder) Attributes(attrs []xml.Attr) (err error) {
