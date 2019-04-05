@@ -11,11 +11,10 @@ import (
 
 type buildDecoder struct {
 	emptyDecoder
-	r *Reader
 }
 
 func (d *buildDecoder) Open() error {
-	if !d.r.progress.progress(0.9, StageReadBuild) {
+	if !d.ModelFile().monitor().progress(0.9, StageReadBuild) {
 		return ErrUserAborted
 	}
 	return nil
@@ -23,7 +22,7 @@ func (d *buildDecoder) Open() error {
 
 func (d *buildDecoder) Child(name xml.Name) (child nodeDecoder) {
 	if name.Space == nsCoreSpec && name.Local == attrItem {
-		child = &buildItemDecoder{r: d.r}
+		child = &buildItemDecoder{}
 	}
 	return
 }
@@ -31,25 +30,24 @@ func (d *buildDecoder) Child(name xml.Name) (child nodeDecoder) {
 func (d *buildDecoder) Attributes(attrs []xml.Attr) error {
 	for _, a := range attrs {
 		if a.Name.Space == nsProductionSpec && a.Name.Local == attrProdUUID {
-			if d.r.Model.UUID != "" {
+			if d.ModelFile().r.Model.UUID != "" {
 				return errors.New("go3mf: duplicated build uuid attribute")
 			}
 			if _, err := uuid.FromString(a.Value); err != nil {
 				return errors.New("go3mf: build uuid is not valid")
 			}
-			d.r.Model.UUID = a.Value
+			d.ModelFile().r.Model.UUID = a.Value
 		}
 	}
 
-	if d.r.Model.UUID == "" && d.r.namespaceRegistered(nsProductionSpec) {
-		d.r.addWarning(&ReadError{MissingMandatoryValue, "go3mf: a UUID for a build is missing"})
+	if d.ModelFile().r.Model.UUID == "" && d.ModelFile().NamespaceRegistered(nsProductionSpec) {
+		d.ModelFile().AddWarning(&ReadError{MissingMandatoryValue, "go3mf: a UUID for a build is missing"})
 	}
 	return nil
 }
 
 type buildItemDecoder struct {
 	emptyDecoder
-	r          *Reader
 	item       go3mf.BuildItem
 	objectID   uint64
 	objectPath string
@@ -64,7 +62,7 @@ func (d *buildItemDecoder) Close() error {
 }
 
 func (d *buildItemDecoder) processItem() error {
-	resource, ok := d.r.Model.FindResource(d.objectPath, d.objectID)
+	resource, ok := d.ModelFile().FindResource(d.objectPath, d.objectID)
 	if !ok {
 		return errors.New("go3mf: could not find build item object")
 	}
@@ -73,12 +71,12 @@ func (d *buildItemDecoder) processItem() error {
 		return errors.New("go3mf: could not find build item object")
 	}
 	if d.item.Object.Type() == go3mf.ObjectTypeOther {
-		d.r.addWarning(&ReadError{InvalidMandatoryValue, "go3mf: build item must not reference object of type OTHER"})
+		d.ModelFile().AddWarning(&ReadError{InvalidMandatoryValue, "go3mf: build item must not reference object of type OTHER"})
 	}
 	if !d.item.IsValidForSlices() {
-		d.r.addWarning(&ReadError{InvalidMandatoryValue, "go3mf: A slicestack posesses a nonplanar transformation"})
+		d.ModelFile().AddWarning(&ReadError{InvalidMandatoryValue, "go3mf: A slicestack posesses a nonplanar transformation"})
 	}
-	d.r.Model.BuildItems = append(d.r.Model.BuildItems, &d.item)
+	d.ModelFile().r.Model.BuildItems = append(d.ModelFile().r.Model.BuildItems, &d.item)
 	return nil
 }
 
@@ -107,8 +105,8 @@ func (d *buildItemDecoder) Attributes(attrs []xml.Attr) error {
 		}
 	}
 
-	if d.item.UUID == "" && d.r.namespaceRegistered(nsProductionSpec) {
-		d.r.addWarning(&ReadError{MissingMandatoryValue, "go3mf: a UUID for a build item is missing"})
+	if d.item.UUID == "" && d.ModelFile().NamespaceRegistered(nsProductionSpec) {
+		d.ModelFile().AddWarning(&ReadError{MissingMandatoryValue, "go3mf: a UUID for a build item is missing"})
 	}
 	return nil
 }

@@ -11,18 +11,17 @@ import (
 
 type sliceStackDecoder struct {
 	emptyDecoder
-	r             *Reader
 	progressCount int
 	resource      go3mf.SliceStackResource
 	hasSlice      bool
 }
 
 func (d *sliceStackDecoder) Open() error {
-	if !d.r.progress.progress(1.0-2.0/float64(d.progressCount+2), StageReadResources) {
+	if !d.ModelFile().monitor().progress(1.0-2.0/float64(d.progressCount+2), StageReadResources) {
 		return ErrUserAborted
 	}
-	d.r.progress.pushLevel(1.0-2.0/float64(d.progressCount+2), 1.0-2.0/float64(d.progressCount+1+2))
-
+	d.ModelFile().monitor().pushLevel(1.0-2.0/float64(d.progressCount+2), 1.0-2.0/float64(d.progressCount+1+2))
+	d.resource.ModelPath = d.ModelFile().Path()
 	d.resource.SliceStack = new(go3mf.SliceStack)
 	return nil
 }
@@ -33,17 +32,17 @@ func (d *sliceStackDecoder) Close() error {
 	if d.resource.UsesSliceRef && d.hasSlice {
 		return errors.New("go3mf: slicestack contains slices and slicerefs")
 	}
-	d.r.addResource(&d.resource)
-	d.r.progress.popLevel()
+	d.ModelFile().AddResource(&d.resource)
+	d.ModelFile().monitor().popLevel()
 	return nil
 }
 func (d *sliceStackDecoder) Child(name xml.Name) (child nodeDecoder) {
 	if name.Space == nsSliceSpec {
 		if name.Local == attrSlice {
 			d.hasSlice = true
-			child = &sliceDecoder{r: d.r, resource: &d.resource}
+			child = &sliceDecoder{resource: &d.resource}
 		} else if name.Local == attrSliceRef {
-			child = &sliceRefDecoder{r: d.r, resource: &d.resource}
+			child = &sliceRefDecoder{resource: &d.resource}
 		}
 	}
 	return
@@ -72,7 +71,6 @@ func (d *sliceStackDecoder) Attributes(attrs []xml.Attr) (err error) {
 
 type sliceRefDecoder struct {
 	emptyDecoder
-	r        *Reader
 	resource *go3mf.SliceStackResource
 }
 
@@ -98,7 +96,7 @@ func (d *sliceRefDecoder) addSliceRef(sliceStackID uint64, path string) error {
 	if path == d.resource.ModelPath {
 		return errors.New("go3mf: a slicepath is invalid")
 	}
-	resource, ok := d.r.Model.FindResource(path, sliceStackID)
+	resource, ok := d.ModelFile().FindResource(path, sliceStackID)
 	if !ok {
 		return errors.New("go3mf: a sliceref points to a unexisting resource")
 	}
@@ -118,7 +116,6 @@ func (d *sliceRefDecoder) addSliceRef(sliceStackID uint64, path string) error {
 
 type sliceDecoder struct {
 	emptyDecoder
-	r                      *Reader
 	resource               *go3mf.SliceStackResource
 	slice                  mesh.Slice
 	hasTopZ                bool
@@ -128,13 +125,11 @@ type sliceDecoder struct {
 
 func (d *sliceDecoder) Open() error {
 	if len(d.resource.Slices)%readSliceUpdate == readSliceUpdate-1 {
-		if !d.r.progress.progress(1.0-2.0/float64(len(d.resource.Slices)+2), StageReadSlices) {
+		if !d.ModelFile().monitor().progress(1.0-2.0/float64(len(d.resource.Slices)+2), StageReadSlices) {
 			return ErrUserAborted
 		}
 	}
-	d.polygonDecoder.r = d.r
 	d.polygonDecoder.slice = &d.slice
-	d.polygonVerticesDecoder.r = d.r
 	d.polygonVerticesDecoder.slice = &d.slice
 	return nil
 }
@@ -174,13 +169,11 @@ func (d *sliceDecoder) Attributes(attrs []xml.Attr) (err error) {
 
 type polygonVerticesDecoder struct {
 	emptyDecoder
-	r                    *Reader
 	slice                *mesh.Slice
 	polygonVertexDecoder polygonVertexDecoder
 }
 
 func (d *polygonVerticesDecoder) Open() error {
-	d.polygonVertexDecoder.r = d.r
 	d.polygonVertexDecoder.slice = d.slice
 	return nil
 }
@@ -194,7 +187,6 @@ func (d *polygonVerticesDecoder) Child(name xml.Name) (child nodeDecoder) {
 
 type polygonVertexDecoder struct {
 	emptyDecoder
-	r     *Reader
 	slice *mesh.Slice
 }
 
@@ -217,7 +209,6 @@ func (d *polygonVertexDecoder) Attributes(attrs []xml.Attr) (err error) {
 
 type polygonDecoder struct {
 	emptyDecoder
-	r                     *Reader
 	slice                 *mesh.Slice
 	polygonIndex          int
 	polygonSegmentDecoder polygonSegmentDecoder
@@ -225,7 +216,6 @@ type polygonDecoder struct {
 
 func (d *polygonDecoder) Open() error {
 	d.polygonIndex = d.slice.BeginPolygon()
-	d.polygonSegmentDecoder.r = d.r
 	d.polygonSegmentDecoder.slice = d.slice
 	d.polygonSegmentDecoder.polygonIndex = d.polygonIndex
 	return nil
@@ -259,7 +249,6 @@ func (d *polygonDecoder) Attributes(attrs []xml.Attr) (err error) {
 
 type polygonSegmentDecoder struct {
 	emptyDecoder
-	r            *Reader
 	slice        *mesh.Slice
 	polygonIndex int
 }

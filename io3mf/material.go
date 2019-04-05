@@ -10,13 +10,12 @@ import (
 
 type colorGroupDecoder struct {
 	emptyDecoder
-	r            *Reader
 	resource     go3mf.ColorGroupResource
 	colorDecoder colorDecoder
 }
 
 func (d *colorGroupDecoder) Open() error {
-	d.colorDecoder.r = d.r
+	d.resource.ModelPath = d.ModelFile().Path()
 	d.colorDecoder.resource = &d.resource
 	return nil
 }
@@ -25,7 +24,7 @@ func (d *colorGroupDecoder) Close() error {
 	if d.resource.ID == 0 {
 		return errors.New("go3mf: missing color group id attribute")
 	}
-	d.r.addResource(&d.resource)
+	d.ModelFile().AddResource(&d.resource)
 	return nil
 }
 
@@ -52,7 +51,6 @@ func (d *colorGroupDecoder) Attributes(attrs []xml.Attr) (err error) {
 
 type colorDecoder struct {
 	emptyDecoder
-	r        *Reader
 	resource *go3mf.ColorGroupResource
 }
 
@@ -71,7 +69,6 @@ func (d *colorDecoder) Attributes(attrs []xml.Attr) error {
 
 type tex2DCoordDecoder struct {
 	emptyDecoder
-	r        *Reader
 	resource *go3mf.Texture2DGroupResource
 }
 
@@ -95,13 +92,12 @@ func (d *tex2DCoordDecoder) Attributes(attrs []xml.Attr) error {
 
 type tex2DGroupDecoder struct {
 	emptyDecoder
-	r                 *Reader
 	resource          go3mf.Texture2DGroupResource
 	tex2DCoordDecoder tex2DCoordDecoder
 }
 
 func (d *tex2DGroupDecoder) Open() error {
-	d.tex2DCoordDecoder.r = d.r
+	d.resource.ModelPath = d.ModelFile().Path()
 	d.tex2DCoordDecoder.resource = &d.resource
 	return nil
 }
@@ -110,7 +106,7 @@ func (d *tex2DGroupDecoder) Close() error {
 	if d.resource.ID == 0 {
 		return errors.New("go3mf: missing color group id attribute")
 	}
-	d.r.addResource(&d.resource)
+	d.ModelFile().AddResource(&d.resource)
 	return nil
 }
 
@@ -148,15 +144,19 @@ func (d *tex2DGroupDecoder) Attributes(attrs []xml.Attr) (err error) {
 
 type texture2DDecoder struct {
 	emptyDecoder
-	r        *Reader
 	resource go3mf.Texture2DResource
+}
+
+func (d *texture2DDecoder) Open() error {
+	d.resource.ModelPath = d.ModelFile().Path()
+	return nil
 }
 
 func (d *texture2DDecoder) Close() error {
 	if d.resource.ID == 0 {
 		return errors.New("go3mf: missing texture2d id attribute")
 	}
-	d.r.addResource(&d.resource)
+	d.ModelFile().AddResource(&d.resource)
 	return nil
 }
 

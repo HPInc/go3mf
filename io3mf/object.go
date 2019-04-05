@@ -11,21 +11,21 @@ import (
 
 type objectDecoder struct {
 	emptyDecoder
-	r             *Reader
 	progressCount int
 	resource      go3mf.ObjectResource
 }
 
 func (d *objectDecoder) Open() error {
-	if !d.r.progress.progress(1.0-2.0/float64(d.progressCount+2), StageReadResources) {
+	if !d.ModelFile().monitor().progress(1.0-2.0/float64(d.progressCount+2), StageReadResources) {
 		return ErrUserAborted
 	}
-	d.r.progress.pushLevel(1.0-2.0/float64(d.progressCount+2), 1.0-2.0/float64(d.progressCount+1+2))
+	d.ModelFile().monitor().pushLevel(1.0-2.0/float64(d.progressCount+2), 1.0-2.0/float64(d.progressCount+1+2))
+	d.resource.ModelPath = d.ModelFile().Path()
 	return nil
 }
 
 func (d *objectDecoder) Close() error {
-	d.r.progress.popLevel()
+	d.ModelFile().monitor().popLevel()
 	return nil
 }
 
@@ -35,7 +35,7 @@ func (d *objectDecoder) Attributes(attrs []xml.Attr) (err error) {
 		case nsProductionSpec:
 			if a.Name.Local == attrProdUUID {
 				if d.resource.UUID != "" {
-					d.r.addWarning(&ReadError{InvalidMandatoryValue, "go3mf: duplicated object resource uuid attribute"})
+					d.ModelFile().AddWarning(&ReadError{InvalidMandatoryValue, "go3mf: duplicated object resource uuid attribute"})
 				}
 				if _, err = uuid.FromString(a.Value); err != nil {
 					err = errors.New("go3mf: object resource uuid is not valid")
@@ -58,12 +58,12 @@ func (d *objectDecoder) Attributes(attrs []xml.Attr) (err error) {
 func (d *objectDecoder) Child(name xml.Name) (child nodeDecoder) {
 	if name.Space == nsCoreSpec {
 		if name.Local == attrMesh {
-			child = &meshDecoder{r: d.r, resource: go3mf.MeshResource{ObjectResource: d.resource}}
+			child = &meshDecoder{resource: go3mf.MeshResource{ObjectResource: d.resource}}
 		} else if name.Local == attrComponents {
 			if d.resource.DefaultPropertyID != 0 {
-				d.r.addWarning(&ReadError{InvalidOptionalValue, "go3mf: a components object must not have a default PID"})
+				d.ModelFile().AddWarning(&ReadError{InvalidOptionalValue, "go3mf: a components object must not have a default PID"})
 			}
-			child = &componentsDecoder{r: d.r, resource: go3mf.ComponentsResource{ObjectResource: d.resource}}
+			child = &componentsDecoder{resource: go3mf.ComponentsResource{ObjectResource: d.resource}}
 		}
 	}
 	return
@@ -84,7 +84,7 @@ func (d *objectDecoder) parseCoreAttr(a xml.Attr) (err error) {
 		var ok bool
 		d.resource.ObjectType, ok = newObjectType(a.Value)
 		if !ok {
-			d.r.addWarning(&ReadError{InvalidOptionalValue, "go3mf: object resource type is not valid"})
+			d.ModelFile().AddWarning(&ReadError{InvalidOptionalValue, "go3mf: object resource type is not valid"})
 		}
 	case attrThumbnail:
 		d.resource.Thumbnail = a.Value
@@ -100,7 +100,7 @@ func (d *objectDecoder) parseCoreAttr(a xml.Attr) (err error) {
 	case attrPIndex:
 		d.resource.DefaultPropertyIndex, err = strconv.ParseUint(a.Value, 10, 64)
 		if err != nil {
-			err = errors.New("go3mf: object resource ºpindex is not valid")
+			err = errors.New("go3mf: object resource pindex is not valid")
 		}
 	}
 	return
@@ -110,7 +110,7 @@ func (d *objectDecoder) parseSliceAttr(a xml.Attr) (err error) {
 	switch a.Name.Local {
 	case attrSliceRefID:
 		if d.resource.SliceStackID != 0 {
-			d.r.addWarning(&ReadError{InvalidOptionalValue, "go3mf: duplicated object resource slicestackid attribute"})
+			d.ModelFile().AddWarning(&ReadError{InvalidOptionalValue, "go3mf: duplicated object resource slicestackid attribute"})
 		}
 		d.resource.SliceStackID, err = strconv.ParseUint(a.Value, 10, 64)
 		if err != nil {
@@ -128,18 +128,16 @@ func (d *objectDecoder) parseSliceAttr(a xml.Attr) (err error) {
 
 type componentsDecoder struct {
 	emptyDecoder
-	r                *Reader
 	resource         go3mf.ComponentsResource
 	componentDecoder componentDecoder
 }
 
 func (d *componentsDecoder) Open() error {
-	d.componentDecoder.r = d.r
 	d.componentDecoder.resource = &d.resource
 	return nil
 }
 func (d *componentsDecoder) Close() error {
-	d.r.addResource(&d.resource)
+	d.ModelFile().AddResource(&d.resource)
 	return nil
 }
 
@@ -152,7 +150,6 @@ func (d *componentsDecoder) Child(name xml.Name) (child nodeDecoder) {
 
 type componentDecoder struct {
 	emptyDecoder
-	r        *Reader
 	resource *go3mf.ComponentsResource
 }
 
@@ -165,7 +162,7 @@ func (d *componentDecoder) Attributes(attrs []xml.Attr) (err error) {
 		case nsProductionSpec:
 			if a.Name.Local == attrProdUUID {
 				if component.UUID != "" {
-					d.r.addWarning(&ReadError{InvalidMandatoryValue, "go3mf: duplicated component uuid attribute"})
+					d.ModelFile().AddWarning(&ReadError{InvalidMandatoryValue, "go3mf: duplicated component uuid attribute"})
 				}
 				if _, err = uuid.FromString(a.Value); err != nil {
 					err = errors.New("go3mf: component uuid is not valid")
@@ -174,7 +171,7 @@ func (d *componentDecoder) Attributes(attrs []xml.Attr) (err error) {
 				}
 			} else if a.Name.Local == attrPath {
 				if path != "" {
-					d.r.addWarning(&ReadError{InvalidMandatoryValue, "go3mf: duplicated component path attribute"})
+					d.ModelFile().AddWarning(&ReadError{InvalidMandatoryValue, "go3mf: duplicated component path attribute"})
 				}
 				path = a.Value
 			}
@@ -195,10 +192,15 @@ func (d *componentDecoder) Attributes(attrs []xml.Attr) (err error) {
 			break
 		}
 	}
-	if component.UUID == "" && d.r.namespaceRegistered(nsProductionSpec) {
-		d.r.addWarning(&ReadError{MissingMandatoryValue, "go3mf: a UUID for a component is missing"})
+	if component.UUID == "" && d.ModelFile().NamespaceRegistered(nsProductionSpec) {
+		d.ModelFile().AddWarning(&ReadError{MissingMandatoryValue, "go3mf: a UUID for a component is missing"})
 	}
-	resource, ok := d.r.Model.FindResource(path, objectID)
+
+	if path != "" && !d.ModelFile().IsRoot() {
+		return errors.New("go3mf: a component in a non-root model has a path attribute")
+	}
+
+	resource, ok := d.ModelFile().FindResource(path, objectID)
 	if !ok {
 		err = errors.New("go3mf: could not find component object")
 	}

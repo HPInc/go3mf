@@ -10,10 +10,6 @@ import (
 
 type modelDecoder struct {
 	emptyDecoder
-	r                    *Reader
-	path                 string
-	ignoreBuild          bool
-	ignoreMetadata       bool
 	withinIgnoredElement bool
 }
 
@@ -22,20 +18,20 @@ func (d *modelDecoder) Child(name xml.Name) (child nodeDecoder) {
 		switch name.Local {
 		case attrResources:
 			d.withinIgnoredElement = false
-			child = &resourceDecoder{r: d.r, path: d.path}
+			child = &resourceDecoder{}
 		case attrBuild:
-			if d.ignoreBuild {
+			if !d.ModelFile().IsRoot() {
 				d.withinIgnoredElement = true
 			} else {
 				d.withinIgnoredElement = false
-				child = &buildDecoder{r: d.r}
+				child = &buildDecoder{}
 			}
 		case attrMetadata:
-			if d.ignoreMetadata {
+			if !d.ModelFile().IsRoot() {
 				d.withinIgnoredElement = true
 			} else {
 				d.withinIgnoredElement = true
-				child = &metadataDecoder{r: d.r, metadatas: &d.r.Model.Metadata}
+				child = &metadataDecoder{metadatas: &d.ModelFile().r.Model.Metadata}
 			}
 		}
 	}
@@ -48,9 +44,11 @@ func (d *modelDecoder) Attributes(attrs []xml.Attr) error {
 		if a.Name.Space == "" {
 			switch a.Name.Local {
 			case attrUnit:
-				var ok bool
-				if d.r.Model.Units, ok = newUnits(a.Value); !ok {
-					return errors.New("go3mf: invalid model units")
+				if d.ModelFile().IsRoot() {
+					var ok bool
+					if d.ModelFile().r.Model.Units, ok = newUnits(a.Value); !ok {
+						return errors.New("go3mf: invalid model units")
+					}
 				}
 			case attrReqExt:
 				requiredExts = a.Value
@@ -58,19 +56,21 @@ func (d *modelDecoder) Attributes(attrs []xml.Attr) error {
 		} else {
 			switch a.Name.Space {
 			case nsXML:
-				if a.Name.Local == attrLang {
-					d.r.Model.Language = a.Value
+				if d.ModelFile().IsRoot() {
+					if a.Name.Local == attrLang {
+						d.ModelFile().r.Model.Language = a.Value
+					}
 				}
 			case "xmlns":
-				d.r.namespaces[a.Name.Local] = a.Value
+				d.ModelFile().namespaces[a.Name.Local] = a.Value
 			}
 		}
 	}
 
 	for _, ext := range strings.Fields(requiredExts) {
-		ext = d.r.namespaces[ext]
+		ext = d.ModelFile().namespaces[ext]
 		if ext != nsCoreSpec && ext != nsMaterialSpec && ext != nsProductionSpec && ext != nsBeamLatticeSpec && ext != nsSliceSpec {
-			d.r.addWarning(&ReadError{InvalidMandatoryValue, "go3mf: a required extension is not supported"})
+			d.ModelFile().AddWarning(&ReadError{InvalidMandatoryValue, "go3mf: a required extension is not supported"})
 		}
 	}
 	return nil
@@ -78,7 +78,6 @@ func (d *modelDecoder) Attributes(attrs []xml.Attr) error {
 
 type metadataDecoder struct {
 	emptyDecoder
-	r         *Reader
 	metadatas *[]go3mf.Metadata
 	metadata  go3mf.Metadata
 }
@@ -93,7 +92,7 @@ func (d *metadataDecoder) Attributes(attrs []xml.Attr) (err error) {
 			i := strings.IndexByte(a.Value, ':')
 			if i < 0 {
 				d.metadata.Name = a.Value
-			} else if ns, ok := d.r.namespaces[a.Value[0:i]]; ok {
+			} else if ns, ok := d.ModelFile().namespaces[a.Value[0:i]]; ok {
 				d.metadata.Name = ns + ":" + a.Value[i+1:]
 			} else {
 				err = errors.New("go3mf: could not get XML Namespace for a metadata")

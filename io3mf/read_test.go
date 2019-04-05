@@ -497,24 +497,24 @@ func TestReader_processRootModel(t *testing.T) {
 	})
 }
 
-func TestReader_namespaceRegistered(t *testing.T) {
+func Test_modelFile_NamespaceRegistered(t *testing.T) {
 	type args struct {
 		ns string
 	}
 	tests := []struct {
 		name string
-		r    *Reader
+		r    *modelFile
 		args args
 		want bool
 	}{
-		{"empty", &Reader{namespaces: map[string]string{"p": "http://xml.com"}}, args{""}, false},
-		{"exist", &Reader{namespaces: map[string]string{"p": "http://xml.com"}}, args{"http://xml.com"}, true},
-		{"noexist", &Reader{namespaces: map[string]string{"p": "http://xml.com"}}, args{"xmls"}, false},
+		{"empty", &modelFile{namespaces: map[string]string{"p": "http://xml.com"}}, args{""}, false},
+		{"exist", &modelFile{namespaces: map[string]string{"p": "http://xml.com"}}, args{"http://xml.com"}, true},
+		{"noexist", &modelFile{namespaces: map[string]string{"p": "http://xml.com"}}, args{"xmls"}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.r.namespaceRegistered(tt.args.ns); got != tt.want {
-				t.Errorf("Reader.namespaceRegistered() = %v, want %v", got, tt.want)
+			if got := tt.r.NamespaceRegistered(tt.args.ns); got != tt.want {
+				t.Errorf("modelFile.NamespaceRegistered() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -612,7 +612,6 @@ func TestReader_processNonRootModels(t *testing.T) {
 				</resources>
 			`).build(),
 		}}, false, &go3mf.Model{
-			Language: "en-US",
 			ProductionAttachments: []*go3mf.ProductionAttachment{
 				{Path: "3d/new.model"},
 				{Path: "3d/other.model"},

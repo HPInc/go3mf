@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/go-gl/mathgl/mgl32"
 	go3mf "github.com/qmuntal/go3mf"
@@ -63,40 +64,93 @@ type nodeDecoder interface {
 	Text([]byte) error
 	Child(xml.Name) nodeDecoder
 	Close() error
+	SetModelFile(f *modelFile)
+	ModelFile() *modelFile
 }
 
-type emptyDecoder struct{}
+type emptyDecoder struct {
+	file *modelFile
+}
 
 func (d *emptyDecoder) Open() error                 { return nil }
 func (d *emptyDecoder) Attributes([]xml.Attr) error { return nil }
 func (d *emptyDecoder) Text([]byte) error           { return nil }
 func (d *emptyDecoder) Child(xml.Name) nodeDecoder  { return nil }
 func (d *emptyDecoder) Close() error                { return nil }
+func (d *emptyDecoder) ModelFile() *modelFile       { return d.file }
+func (d *emptyDecoder) SetModelFile(f *modelFile)   { d.file = f }
 
-type fileDecoder struct {
+type topLevelDecoder struct {
 	emptyDecoder
-	r            *Reader
-	path         string
-	isAttachment bool
+	isRoot bool
 }
 
-func (d *fileDecoder) Child(name xml.Name) (child nodeDecoder) {
+func (d *topLevelDecoder) Child(name xml.Name) (child nodeDecoder) {
 	modelName := xml.Name{Space: nsCoreSpec, Local: attrModel}
 	if name == modelName {
-		modelDecoder := &modelDecoder{r: d.r, path: d.path}
-		if d.isAttachment {
-			modelDecoder.ignoreBuild = true
-			modelDecoder.ignoreMetadata = true
-		}
-		child = modelDecoder
+		child = new(modelDecoder)
 	}
 	return
 }
 
-func (d *fileDecoder) Decode(x *xml.Decoder) (err error) {
-	if d.r.namespaces == nil {
-		d.r.namespaces = make(map[string]string)
+// modelFile cannot be reused between goroutines.
+type modelFile struct {
+	r            *Reader
+	path         string
+	isRoot       bool
+	warnings     []error
+	resourcesMap map[uint64]go3mf.Identifier
+	resources    []go3mf.Identifier
+	namespaces   map[string]string
+}
+
+func (d *modelFile) monitor() *monitor {
+	return &d.r.progress
+}
+
+func (d *modelFile) AddWarning(err error) {
+	d.warnings = append(d.warnings, err)
+}
+
+func (d *modelFile) AddResource(r go3mf.Identifier) {
+	_, id := r.Identify()
+	d.resourcesMap[id] = r
+	d.resources = append(d.resources, r)
+}
+
+func (d *modelFile) FindResource(path string, id uint64) (r go3mf.Identifier, ok bool) {
+	if path == "" {
+		path = d.r.Model.Path
 	}
+	if path == d.path {
+		r, ok = d.resourcesMap[id]
+	} else {
+		r, ok = d.r.Model.FindResource(path, id)
+	}
+	return
+}
+
+func (d *modelFile) NamespaceRegistered(ns string) bool {
+	for _, space := range d.namespaces {
+		if ns == space {
+			return true
+		}
+	}
+	return false
+}
+
+func (d *modelFile) Path() string {
+	return d.path
+}
+
+func (d *modelFile) IsRoot() bool {
+	return d.isRoot
+}
+
+func (d *modelFile) Decode(x *xml.Decoder) (err error) {
+	d.namespaces = make(map[string]string)
+	d.resourcesMap = make(map[uint64]go3mf.Identifier)
+
 	state := make([]nodeDecoder, 0, 10)
 	names := make([]xml.Name, 0, 10)
 	var (
@@ -105,7 +159,7 @@ func (d *fileDecoder) Decode(x *xml.Decoder) (err error) {
 		currentName    xml.Name
 		t              xml.Token
 	)
-	currentDecoder = d
+	currentDecoder = &topLevelDecoder{isRoot: d.isRoot}
 	for {
 		t, err = x.Token()
 		if err != nil {
@@ -115,6 +169,7 @@ func (d *fileDecoder) Decode(x *xml.Decoder) (err error) {
 		case xml.StartElement:
 			tmpDecoder = currentDecoder.Child(tp.Name)
 			if tmpDecoder != nil {
+				tmpDecoder.SetModelFile(d)
 				state = append(state, currentDecoder)
 				names = append(names, currentName)
 				currentName = tp.Name
@@ -151,7 +206,6 @@ type Reader struct {
 	AttachmentRelations []string
 	progress            monitor
 	r                   packageReader
-	namespaces          map[string]string
 	productionModels    map[string]packageFile
 }
 
@@ -162,27 +216,13 @@ func NewReader(r io.ReaderAt, size int64) (*Reader, error) {
 		return nil, err
 	}
 	return &Reader{
-		r:          opcr,
-		Model:      new(go3mf.Model),
-		namespaces: make(map[string]string),
+		r:     opcr,
+		Model: new(go3mf.Model),
 	}, nil
 }
 
 func (r *Reader) addResource(res go3mf.Identifier) {
 	r.Model.Resources = append(r.Model.Resources, res)
-}
-
-func (r *Reader) addWarning(err error) {
-	r.Warnings = append(r.Warnings, err)
-}
-
-func (r *Reader) namespaceRegistered(ns string) bool {
-	for _, space := range r.namespaces {
-		if ns == space {
-			return true
-		}
-	}
-	return false
 }
 
 // SetProgressCallback specifies the callback to be executed on every step of the progress.
@@ -218,12 +258,22 @@ func (r *Reader) processRootModel() error {
 		return err
 	}
 	defer f.Close()
-	d := fileDecoder{r: r, path: rootFile.Name()}
+	d := modelFile{r: r, path: rootFile.Name(), isRoot: true}
 	err = d.Decode(xml.NewDecoder(f))
 	if err != io.EOF {
 		return err
 	}
+	r.addModelFile(&d)
 	return nil
+}
+
+func (r *Reader) addModelFile(f *modelFile) {
+	for _, res := range f.resources {
+		r.addResource(res)
+	}
+	for _, res := range f.warnings {
+		r.Warnings = append(r.Warnings, res)
+	}
 }
 
 func (r *Reader) processNonRootModels() error {
@@ -231,14 +281,19 @@ func (r *Reader) processNonRootModels() error {
 		return ErrUserAborted
 	}
 	r.progress.pushLevel(0.1, r.nonRootProgress())
+	var mu sync.Mutex
 	prodAttCount := len(r.Model.ProductionAttachments)
 	for i := prodAttCount - 1; i >= 0; i-- {
 		if !r.progress.progress(float64(prodAttCount-i-1)/float64(prodAttCount), StageReadNonRootModels) {
 			return ErrUserAborted
 		}
-		if err := r.readProductionAttachmentModel(i); err != nil {
+		f, err := r.readProductionAttachmentModel(i)
+		if err != nil {
 			return err
 		}
+		mu.Lock()
+		r.addModelFile(f)
+		mu.Unlock()
 	}
 	r.progress.popLevel()
 	return nil
@@ -328,22 +383,22 @@ func (r *Reader) addAttachment(attachments []*go3mf.Attachment, file packageFile
 	return attachments
 }
 
-func (r *Reader) readProductionAttachmentModel(i int) error {
+func (r *Reader) readProductionAttachmentModel(i int) (*modelFile, error) {
 	prodAttCount := len(r.Model.ProductionAttachments)
 	attachment := r.Model.ProductionAttachments[i]
 	file, err := r.productionModels[attachment.Path].Open()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer file.Close()
 	r.progress.pushLevel(float64(prodAttCount-i-1)/float64(prodAttCount), float64(prodAttCount-i)/float64(prodAttCount))
-	d := fileDecoder{r: r, path: attachment.Path, isAttachment: true}
+	d := modelFile{r: r, path: attachment.Path, isRoot: false}
 	err = d.Decode(xml.NewDecoder(file))
 	r.progress.popLevel()
 	if err != io.EOF {
-		return err
+		return nil, err
 	}
-	return nil
+	return &d, nil
 }
 
 func copyFile(file packageFile) (io.Reader, error) {

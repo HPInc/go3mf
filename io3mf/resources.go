@@ -11,59 +11,57 @@ import (
 
 type resourceDecoder struct {
 	emptyDecoder
-	r             *Reader
-	path          string
 	progressCount int
 }
 
 func (d *resourceDecoder) Open() error {
-	if !d.r.progress.progress(0.2, StageReadResources) {
+	if !d.ModelFile().monitor().progress(0.2, StageReadResources) {
 		return ErrUserAborted
 	}
-	d.r.progress.pushLevel(0.2, 0.9)
+	d.ModelFile().monitor().pushLevel(0.2, 0.9)
 	return nil
 }
 
 func (d *resourceDecoder) Close() error {
-	d.r.progress.popLevel()
+	d.ModelFile().monitor().popLevel()
 	return nil
 }
+
 func (d *resourceDecoder) Child(name xml.Name) (child nodeDecoder) {
 	if name.Space == nsCoreSpec {
 		switch name.Local {
 		case attrObject:
 			d.progressCount++
-			child = &objectDecoder{r: d.r, progressCount: d.progressCount, resource: go3mf.ObjectResource{ModelPath: d.path}}
+			child = &objectDecoder{progressCount: d.progressCount}
 		case attrBaseMaterials:
-			child = &baseMaterialsDecoder{r: d.r, resource: go3mf.BaseMaterialsResource{ModelPath: d.path}}
+			child = new(baseMaterialsDecoder)
 		}
 	} else if name.Space == nsMaterialSpec {
 		switch name.Local {
 		case attrColorGroup:
-			child = &colorGroupDecoder{r: d.r, resource: go3mf.ColorGroupResource{ModelPath: d.path}}
+			child = new(colorGroupDecoder)
 		case attrTexture2DGroup:
-			child = &tex2DGroupDecoder{r: d.r, resource: go3mf.Texture2DGroupResource{ModelPath: d.path}}
+			child = new(tex2DGroupDecoder)
 		case attrTexture2D:
-			child = &texture2DDecoder{r: d.r, resource: go3mf.Texture2DResource{ModelPath: d.path}}
+			child = new(texture2DDecoder)
 		case attrComposite:
-			d.r.addWarning(&ReadError{InvalidOptionalValue, "go3mf: composite materials extension not supported"})
+			d.ModelFile().AddWarning(&ReadError{InvalidOptionalValue, "go3mf: composite materials extension not supported"})
 		}
 	} else if name.Space == nsSliceSpec && name.Local == attrSliceStack {
 		d.progressCount++
-		child = &sliceStackDecoder{r: d.r, progressCount: d.progressCount, resource: go3mf.SliceStackResource{ModelPath: d.path}}
+		child = &sliceStackDecoder{progressCount: d.progressCount}
 	}
 	return
 }
 
 type baseMaterialsDecoder struct {
 	emptyDecoder
-	r                   *Reader
 	resource            go3mf.BaseMaterialsResource
 	baseMaterialDecoder baseMaterialDecoder
 }
 
 func (d *baseMaterialsDecoder) Open() error {
-	d.baseMaterialDecoder.r = d.r
+	d.resource.ModelPath = d.ModelFile().Path()
 	d.baseMaterialDecoder.resource = &d.resource
 	return nil
 }
@@ -72,7 +70,7 @@ func (d *baseMaterialsDecoder) Close() error {
 	if d.resource.ID == 0 {
 		return errors.New("go3mf: missing base materials resource id attribute")
 	}
-	d.r.addResource(&d.resource)
+	d.ModelFile().AddResource(&d.resource)
 	return nil
 }
 
@@ -105,7 +103,6 @@ func (d *baseMaterialsDecoder) Attributes(attrs []xml.Attr) (err error) {
 
 type baseMaterialDecoder struct {
 	emptyDecoder
-	r        *Reader
 	resource *go3mf.BaseMaterialsResource
 }
 

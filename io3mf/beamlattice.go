@@ -10,7 +10,6 @@ import (
 
 type beamLatticeDecoder struct {
 	emptyDecoder
-	r        *Reader
 	resource *go3mf.MeshResource
 }
 
@@ -47,9 +46,9 @@ func (d *beamLatticeDecoder) Attributes(attrs []xml.Attr) (err error) {
 func (d *beamLatticeDecoder) Child(name xml.Name) (child nodeDecoder) {
 	if name.Space == nsBeamLatticeSpec {
 		if name.Local == attrBeams {
-			child = &beamsDecoder{r: d.r, mesh: d.resource.Mesh}
+			child = &beamsDecoder{mesh: d.resource.Mesh}
 		} else if name.Local == attrBeamSets {
-			child = &beamSetsDecoder{r: d.r, mesh: d.resource.Mesh}
+			child = &beamSetsDecoder{mesh: d.resource.Mesh}
 		}
 	}
 	return
@@ -57,13 +56,11 @@ func (d *beamLatticeDecoder) Child(name xml.Name) (child nodeDecoder) {
 
 type beamsDecoder struct {
 	emptyDecoder
-	r           *Reader
 	mesh        *mesh.Mesh
 	beamDecoder beamDecoder
 }
 
 func (d *beamsDecoder) Open() error {
-	d.beamDecoder.r = d.r
 	d.beamDecoder.mesh = d.mesh
 	return nil
 }
@@ -77,7 +74,6 @@ func (d *beamsDecoder) Child(name xml.Name) (child nodeDecoder) {
 
 type beamDecoder struct {
 	emptyDecoder
-	r    *Reader
 	mesh *mesh.Mesh
 }
 
@@ -137,27 +133,24 @@ func (d *beamDecoder) Attributes(attrs []xml.Attr) (err error) {
 
 type beamSetsDecoder struct {
 	emptyDecoder
-	r    *Reader
 	mesh *mesh.Mesh
 }
 
 func (d *beamSetsDecoder) Child(name xml.Name) (child nodeDecoder) {
 	if name.Space == nsBeamLatticeSpec && name.Local == attrBeamSet {
-		child = &beamSetDecoder{r: d.r, mesh: d.mesh}
+		child = &beamSetDecoder{mesh: d.mesh}
 	}
 	return
 }
 
 type beamSetDecoder struct {
 	emptyDecoder
-	r              *Reader
 	mesh           *mesh.Mesh
 	beamSet        mesh.BeamSet
 	beamRefDecoder beamRefDecoder
 }
 
 func (d *beamSetDecoder) Open() error {
-	d.beamRefDecoder.r = d.r
 	d.beamRefDecoder.beamSet = &d.beamSet
 	return nil
 }
@@ -191,7 +184,6 @@ func (d *beamSetDecoder) Child(name xml.Name) (child nodeDecoder) {
 
 type beamRefDecoder struct {
 	emptyDecoder
-	r       *Reader
 	beamSet *mesh.BeamSet
 }
 
