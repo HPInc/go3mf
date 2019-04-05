@@ -265,7 +265,7 @@ func (r *Reader) addModelFile(f *modelFile) {
 	}
 }
 
-func (r *Reader) processNonRootModels() error {
+func (r *Reader) processNonRootModels() (err error) {
 	var wg sync.WaitGroup
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -275,20 +275,20 @@ func (r *Reader) processNonRootModels() error {
 	for i := 0; i < prodAttCount; i++ {
 		go func(i int) {
 			defer wg.Done()
-			f, err := r.readProductionAttachmentModel(i)
+			f, err1 := r.readProductionAttachmentModel(i)
 			select {
 			case <-ctx.Done():
 				return // Error somewhere, terminate
 			default: // Default is must to avoid blocking
 			}
-			if err != nil {
+			if err1 != nil {
+				err = err1
 				cancel()
 			}
 			files.Store(i, f)
 		}(i)
 	}
 	wg.Wait()
-	err := ctx.Err()
 	if err != nil {
 		return err
 	}
