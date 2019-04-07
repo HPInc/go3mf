@@ -11,11 +11,12 @@ import (
 
 type buildDecoder struct {
 	emptyDecoder
+	model *go3mf.Model
 }
 
 func (d *buildDecoder) Child(name xml.Name) (child nodeDecoder) {
 	if name.Space == nsCoreSpec && name.Local == attrItem {
-		child = &buildItemDecoder{}
+		child = &buildItemDecoder{model: d.model}
 	}
 	return
 }
@@ -23,17 +24,17 @@ func (d *buildDecoder) Child(name xml.Name) (child nodeDecoder) {
 func (d *buildDecoder) Attributes(attrs []xml.Attr) error {
 	for _, a := range attrs {
 		if a.Name.Space == nsProductionSpec && a.Name.Local == attrProdUUID {
-			if d.ModelFile().r.Model.UUID != "" {
+			if d.model.UUID != "" {
 				return errors.New("go3mf: duplicated build uuid attribute")
 			}
 			if _, err := uuid.FromString(a.Value); err != nil {
 				return errors.New("go3mf: build uuid is not valid")
 			}
-			d.ModelFile().r.Model.UUID = a.Value
+			d.model.UUID = a.Value
 		}
 	}
 
-	if d.ModelFile().r.Model.UUID == "" && d.ModelFile().NamespaceRegistered(nsProductionSpec) {
+	if d.model.UUID == "" && d.ModelFile().NamespaceRegistered(nsProductionSpec) {
 		d.ModelFile().AddWarning(&ReadError{MissingMandatoryValue, "go3mf: a UUID for a build is missing"})
 	}
 	return nil
@@ -41,6 +42,7 @@ func (d *buildDecoder) Attributes(attrs []xml.Attr) error {
 
 type buildItemDecoder struct {
 	emptyDecoder
+	model      *go3mf.Model
 	item       go3mf.BuildItem
 	objectID   uint64
 	objectPath string
@@ -69,7 +71,7 @@ func (d *buildItemDecoder) processItem() error {
 	if !d.item.IsValidForSlices() {
 		d.ModelFile().AddWarning(&ReadError{InvalidMandatoryValue, "go3mf: A slicestack posesses a nonplanar transformation"})
 	}
-	d.ModelFile().r.Model.BuildItems = append(d.ModelFile().r.Model.BuildItems, &d.item)
+	d.model.BuildItems = append(d.model.BuildItems, &d.item)
 	return nil
 }
 

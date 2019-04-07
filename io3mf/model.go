@@ -10,6 +10,7 @@ import (
 
 type modelDecoder struct {
 	emptyDecoder
+	model                *go3mf.Model
 	withinIgnoredElement bool
 }
 
@@ -24,14 +25,14 @@ func (d *modelDecoder) Child(name xml.Name) (child nodeDecoder) {
 				d.withinIgnoredElement = true
 			} else {
 				d.withinIgnoredElement = false
-				child = &buildDecoder{}
+				child = &buildDecoder{model: d.model}
 			}
 		case attrMetadata:
 			if !d.ModelFile().IsRoot() {
 				d.withinIgnoredElement = true
 			} else {
 				d.withinIgnoredElement = true
-				child = &metadataDecoder{metadatas: &d.ModelFile().r.Model.Metadata}
+				child = &metadataDecoder{metadatas: &d.model.Metadata}
 			}
 		}
 	}
@@ -46,7 +47,7 @@ func (d *modelDecoder) Attributes(attrs []xml.Attr) error {
 			case attrUnit:
 				if d.ModelFile().IsRoot() {
 					var ok bool
-					if d.ModelFile().r.Model.Units, ok = newUnits(a.Value); !ok {
+					if d.model.Units, ok = newUnits(a.Value); !ok {
 						return errors.New("go3mf: invalid model units")
 					}
 				}
@@ -58,7 +59,7 @@ func (d *modelDecoder) Attributes(attrs []xml.Attr) error {
 			case nsXML:
 				if d.ModelFile().IsRoot() {
 					if a.Name.Local == attrLang {
-						d.ModelFile().r.Model.Language = a.Value
+						d.model.Language = a.Value
 					}
 				}
 			case "xmlns":

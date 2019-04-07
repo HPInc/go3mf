@@ -183,28 +183,28 @@ func TestReader_processOPC(t *testing.T) {
 		want    *go3mf.Model
 		wantErr bool
 	}{
-		{"noRoot", &Reader{Model: new(go3mf.Model), r: newMockPackage(nil)}, &go3mf.Model{}, true},
-		{"noRels", &Reader{Model: new(go3mf.Model), r: newMockPackage(newMockFile("/a.model", nil, nil, nil, false))}, &go3mf.Model{Path: "/a.model"}, false},
-		{"withThumb", &Reader{Model: new(go3mf.Model),
+		{"noRoot", &Reader{r: newMockPackage(nil)}, &go3mf.Model{}, true},
+		{"noRels", &Reader{r: newMockPackage(newMockFile("/a.model", nil, nil, nil, false))}, &go3mf.Model{Path: "/a.model"}, false},
+		{"withThumb", &Reader{
 			r: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeThumbnail, "/a.png")}, thumbFile, thumbFile, false)),
 		}, &go3mf.Model{
 			Path:        "/a.model",
 			Thumbnail:   &go3mf.Attachment{RelationshipType: relTypeThumbnail, Path: "/Metadata/thumbnail.png", Stream: new(bytes.Buffer)},
 			Attachments: []*go3mf.Attachment{{RelationshipType: relTypeThumbnail, Path: "/a.png", Stream: new(bytes.Buffer)}},
 		}, false},
-		{"withThumbErr", &Reader{Model: new(go3mf.Model),
+		{"withThumbErr", &Reader{
 			r: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeThumbnail, "/a.png")}, thumbErr, thumbErr, false)),
 		}, &go3mf.Model{Path: "/a.model"}, false},
-		{"withOtherRel", &Reader{Model: new(go3mf.Model),
+		{"withOtherRel", &Reader{
 			r: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship("other", "/a.png")}, nil, nil, false)),
 		}, &go3mf.Model{Path: "/a.model"}, false},
-		{"withModelAttachment", &Reader{Model: new(go3mf.Model),
+		{"withModelAttachment", &Reader{
 			r: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeModel3D, "/a.model")}, nil, newMockFile("/a.model", nil, nil, nil, false), false)),
 		}, &go3mf.Model{
 			Path:                  "/a.model",
 			ProductionAttachments: []*go3mf.ProductionAttachment{{RelationshipType: relTypeModel3D, Path: "/a.model"}},
 		}, false},
-		{"withAttRel", &Reader{Model: new(go3mf.Model), AttachmentRelations: []string{"b"},
+		{"withAttRel", &Reader{AttachmentRelations: []string{"b"},
 			r: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship("b", "/a.xml")}, nil, newMockFile("/a.xml", nil, nil, nil, false), false)),
 		}, &go3mf.Model{
 			Path:        "/a.model",
@@ -213,12 +213,13 @@ func TestReader_processOPC(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := tt.d.processOPC()
+			model := new(go3mf.Model)
+			_, err := tt.d.processOPC(model)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Reader.processOPC() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if diff := deep.Equal(tt.d.Model, tt.want); diff != nil {
+			if diff := deep.Equal(model, tt.want); diff != nil {
 				t.Errorf("Reader.processOPC() = %v", diff)
 				return
 			}
@@ -238,8 +239,7 @@ func TestReader_processRootModel_Fail(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &Reader{Model: new(go3mf.Model)}
-			if err := r.processRootModel(tt.f); (err != nil) != tt.wantErr {
+			if err := new(Reader).processRootModel(tt.f, new(go3mf.Model)); (err != nil) != tt.wantErr {
 				t.Errorf("Reader.processRootModel() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
@@ -368,7 +368,6 @@ func TestReader_processRootModel(t *testing.T) {
 	got := new(go3mf.Model)
 	got.Path = "/3d/3dmodel.model"
 	got.Resources = append(got.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices}, otherMesh)
-	r := &Reader{Model: got}
 	rootFile := new(modelBuilder).withDefaultModel().withElement(`
 			<resources>
 			<basematerials id="5">
@@ -482,13 +481,13 @@ func TestReader_processRootModel(t *testing.T) {
 		`).build()
 
 	t.Run("base", func(t *testing.T) {
-		if err := r.processRootModel(rootFile); err != nil {
+		if err := new(Reader).processRootModel(rootFile, got); err != nil {
 			t.Errorf("Reader.processRootModel() unexpected error = %v", err)
 			return
 		}
 		deep.CompareUnexportedFields = true
 		deep.MaxDepth = 20
-		if diff := deep.Equal(r.Model, want); diff != nil {
+		if diff := deep.Equal(got, want); diff != nil {
 			t.Errorf("Reader.processRootModel() = %v", diff)
 			return
 		}
@@ -586,14 +585,15 @@ func Test_strToSRGB(t *testing.T) {
 func TestReader_processNonRootModels(t *testing.T) {
 	tests := []struct {
 		name    string
-		r       *Reader
+		model       *go3mf.Model
+		r *Reader
 		wantErr bool
 		want    *go3mf.Model
 	}{
-		{"base", &Reader{Model: &go3mf.Model{ProductionAttachments: []*go3mf.ProductionAttachment{
+		{"base", &go3mf.Model{ProductionAttachments: []*go3mf.ProductionAttachment{
 			{Path: "3d/new.model"},
 			{Path: "3d/other.model"},
-		}}, productionModels: map[string]packageFile{
+		}}, &Reader{productionModels: map[string]packageFile{
 			"3d/new.model": new(modelBuilder).withDefaultModel().withElement(`
 				<resources>
 					<basematerials id="5">
@@ -619,17 +619,17 @@ func TestReader_processNonRootModels(t *testing.T) {
 				&go3mf.Texture2DResource{ID: 6, ModelPath: "3d/other.model", Path: "/3D/Texture/msLogo.png", ContentType: go3mf.PNGTexture, TileStyleU: go3mf.TileWrap, TileStyleV: go3mf.TileMirror, Filter: go3mf.TextureFilterAuto},
 			},
 		}},
-		{"noAtt", &Reader{Model: new(go3mf.Model)}, false, new(go3mf.Model)},
+		{"noAtt", new(go3mf.Model), new(Reader), false, new(go3mf.Model)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.r.processNonRootModels(); (err != nil) != tt.wantErr {
+			if err := tt.r.processNonRootModels(tt.model); (err != nil) != tt.wantErr {
 				t.Errorf("Reader.processNonRootModels() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			deep.CompareUnexportedFields = true
 			deep.MaxDepth = 20
-			if diff := deep.Equal(tt.r.Model, tt.want); diff != nil {
+			if diff := deep.Equal(tt.model, tt.want); diff != nil {
 				t.Errorf("Reader.processNonRootModels() = %v", diff)
 				return
 			}
@@ -643,13 +643,13 @@ func TestReader_Decode(t *testing.T) {
 		r       *Reader
 		wantErr bool
 	}{
-		{"base", &Reader{Model: new(go3mf.Model), AttachmentRelations: []string{"b"},
+		{"base", &Reader{AttachmentRelations: []string{"b"},
 			r: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship("b", "/a.xml")}, nil, newMockFile("/a.xml", nil, nil, nil, false), false)),
 		}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.r.Decode(); (err != nil) != tt.wantErr {
+			if err := tt.r.Decode(new(go3mf.Model)); (err != nil) != tt.wantErr {
 				t.Errorf("Reader.Decode() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
