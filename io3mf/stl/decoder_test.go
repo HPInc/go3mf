@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/go-test/deep"
-	"github.com/qmuntal/go3mf/mesh"
+	"github.com/qmuntal/go3mf"
 )
 
 func TestNewDecoder(t *testing.T) {
@@ -41,22 +41,29 @@ func TestDecoder_Decode(t *testing.T) {
 	tests := []struct {
 		name    string
 		d       *Decoder
-		want    *mesh.Mesh
+		want    *go3mf.MeshResource
 		wantErr bool
 	}{
 		{"empty", NewDecoder(new(bytes.Buffer)), nil, true},
-		{"binary", NewDecoder(bytes.NewReader(triangle)), createMeshTriangle(), false},
-		{"ascii", NewDecoder(bytes.NewBufferString(triangleASCII)), createMeshTriangle(), false},
+		{"binary", NewDecoder(bytes.NewReader(triangle)), &go3mf.MeshResource{
+			ObjectResource: go3mf.ObjectResource{ID: 1},
+			Mesh: createMeshTriangle(),
+		}, false},
+		{"ascii", NewDecoder(bytes.NewBufferString(triangleASCII)), &go3mf.MeshResource{
+			ObjectResource: go3mf.ObjectResource{ID: 1},
+			Mesh: createMeshTriangle(),
+		}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.d.Decode()
+			got := new(go3mf.Model)
+			err := tt.d.Decode(got)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Decoder.Decode() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !tt.wantErr {
-				if diff := deep.Equal(got, tt.want); diff != nil {
+				if diff := deep.Equal(got.Resources[0], tt.want); diff != nil {
 					t.Errorf("Decoder.Decode() = %v", diff)
 					return
 				}

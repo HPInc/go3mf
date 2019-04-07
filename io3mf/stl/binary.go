@@ -24,14 +24,13 @@ type binaryDecoder struct {
 }
 
 // decode loads a binary stl from a io.Reader.
-func (d *binaryDecoder) decode() (*mesh.Mesh, error) {
-	newMesh := new(mesh.Mesh)
-	newMesh.StartCreation(mesh.CreationOptions{CalculateConnectivity: true})
-	defer newMesh.EndCreation()
+func (d *binaryDecoder) decode(m *mesh.Mesh) error {
+	m.StartCreation(mesh.CreationOptions{CalculateConnectivity: true})
+	defer m.EndCreation()
 	var header binaryHeader
 	err := binary.Read(d.r, binary.LittleEndian, &header)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	var facet binaryFace
@@ -40,20 +39,20 @@ func (d *binaryDecoder) decode() (*mesh.Mesh, error) {
 		if err != nil {
 			break
 		}
-		d.decodeFace(&facet, newMesh)
+		d.decodeFace(&facet, m)
 	}
 
-	return newMesh, err
+	return err
 }
 
-func (d *binaryDecoder) decodeFace(facet *binaryFace, newMesh *mesh.Mesh) {
+func (d *binaryDecoder) decodeFace(facet *binaryFace, m *mesh.Mesh) {
 	var nodes [3]uint32
 	for nVertex := 0; nVertex < 3; nVertex++ {
 		pos := facet.Vertices[nVertex]
-		nodes[nVertex] = newMesh.AddNode(mesh.Node{pos[0], pos[1], pos[2]})
+		nodes[nVertex] = m.AddNode(mesh.Node{pos[0], pos[1], pos[2]})
 	}
 
-	newMesh.AddFace(nodes[0], nodes[1], nodes[2])
+	m.AddFace(nodes[0], nodes[1], nodes[2])
 }
 
 type binaryEncoder struct {

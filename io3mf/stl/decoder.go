@@ -6,6 +6,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/qmuntal/go3mf"
 	"github.com/qmuntal/go3mf/mesh"
 )
 
@@ -25,20 +26,30 @@ func NewDecoder(r io.Reader) *Decoder {
 }
 
 // Decode creates a mesh from a read stream.
-func (d *Decoder) Decode() (*mesh.Mesh, error) {
+func (d *Decoder) Decode(m *go3mf.Model) error {
 	b := bufio.NewReader(d.r)
 	isASCII, err := d.isASCII(b)
 	if err != nil {
-		return nil, err
+		return err
 	}
+	newMesh := new(mesh.Mesh)
 	if isASCII {
 		decoder := asciiDecoder{r: b}
-		if m, err := decoder.decode(); err == nil {
-			return m, nil
-		}
+		err = decoder.decode(newMesh)
+	} else {
+		decoder := binaryDecoder{r: b}
+		err = decoder.decode(newMesh)
 	}
-	decoder := binaryDecoder{r: b}
-	return decoder.decode()
+	if err == nil {
+		m.Resources = append(m.Resources, &go3mf.MeshResource{
+			ObjectResource: go3mf.ObjectResource{
+				ModelPath: m.Path,
+				ID:        m.UnusedID(),
+			},
+			Mesh: newMesh,
+		})
+	}
+	return err
 }
 
 func (d *Decoder) isASCII(r *bufio.Reader) (bool, error) {

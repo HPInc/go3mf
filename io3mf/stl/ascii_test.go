@@ -21,7 +21,8 @@ func Test_asciiDecoder_decode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.d.decode()
+			got := new(mesh.Mesh)
+			err := tt.d.decode(got)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("asciiDecoder.decode() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -59,7 +60,8 @@ func Test_asciiEncoder_encode(t *testing.T) {
 			if !tt.wantErr {
 				// We do decoder and then encoder again, and the result must be the same
 				decoder := &asciiDecoder{r: tt.e.w.(*bytes.Buffer)}
-				got, _ := decoder.decode()
+				got := new(mesh.Mesh)
+				decoder.decode(got)
 				if diff := deep.Equal(got, tt.args.m); diff != nil {
 					t.Errorf("asciiDecoder.encode() = %v", diff)
 					return

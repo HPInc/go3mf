@@ -10,16 +10,15 @@ import (
 	"github.com/qmuntal/go3mf/mesh"
 )
 
-// asciiDecoder can create a Mesh from a Read stream that is feeded with a ASCII STL.
+// asciiDecoder can create a Model from a Read stream that is feeded with a ASCII STL.
 type asciiDecoder struct {
 	r     io.Reader
 	units float32
 }
 
-func (d *asciiDecoder) decode() (*mesh.Mesh, error) {
-	newMesh := new(mesh.Mesh)
-	newMesh.StartCreation(mesh.CreationOptions{CalculateConnectivity: true})
-	defer newMesh.EndCreation()
+func (d *asciiDecoder) decode(m *mesh.Mesh) error {
+	m.StartCreation(mesh.CreationOptions{CalculateConnectivity: true})
+	defer m.EndCreation()
 	position := 0
 	var nodes [3]uint32
 	scanner := bufio.NewScanner(d.r)
@@ -31,17 +30,17 @@ func (d *asciiDecoder) decode() (*mesh.Mesh, error) {
 			f[0], _ = strconv.ParseFloat(fields[1], 32)
 			f[1], _ = strconv.ParseFloat(fields[2], 32)
 			f[2], _ = strconv.ParseFloat(fields[3], 32)
-			nodes[position] = newMesh.AddNode(mesh.Node{float32(f[0]), float32(f[1]), float32(f[2])})
+			nodes[position] = m.AddNode(mesh.Node{float32(f[0]), float32(f[1]), float32(f[2])})
 			position++
 
 			if position == 3 {
 				position = 0
-				newMesh.AddFace(nodes[0], nodes[1], nodes[2])
+				m.AddFace(nodes[0], nodes[1], nodes[2])
 			}
 		}
 	}
 
-	return newMesh, scanner.Err()
+	return scanner.Err()
 }
 
 type asciiEncoder struct {
