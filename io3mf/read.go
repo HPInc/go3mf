@@ -30,6 +30,7 @@ type packageFile interface {
 }
 
 type packageReader interface {
+	Open() error
 	FindFileFromRel(string) (packageFile, bool)
 	FindFileFromName(string) (packageFile, bool)
 }
@@ -51,8 +52,7 @@ func OpenReader(name string) (*ReadCloser, error) {
 		f.Close()
 		return nil, err
 	}
-	r, err := NewReader(f, fi.Size())
-	return &ReadCloser{f: f, Reader: r}, err
+	return &ReadCloser{f: f, Reader: NewReader(f, fi.Size())}, nil
 }
 
 // Close closes the 3MF file, rendering it unusable for I/O.
@@ -208,15 +208,11 @@ type Reader struct {
 }
 
 // NewReader returns a new Reader reading a 3mf file from r.
-func NewReader(r io.ReaderAt, size int64) (*Reader, error) {
-	opcr, err := newOPCReader(r, size)
-	if err != nil {
-		return nil, err
-	}
+func NewReader(r io.ReaderAt, size int64) *Reader {
 	return &Reader{
-		r:     opcr,
+		r:     &opcReader{ra: r, size: size},
 		Model: new(go3mf.Model),
-	}, nil
+	}
 }
 
 func (r *Reader) addResource(res go3mf.Resource) {
@@ -225,23 +221,20 @@ func (r *Reader) addResource(res go3mf.Resource) {
 
 // Decode reads the 3mf file and unmarshall its content into the model.
 func (r *Reader) Decode() error {
-	if err := r.processOPC(); err != nil {
+	rootFile, err := r.processOPC()
+	if err != nil {
 		return err
 	}
 	if err := r.processNonRootModels(); err != nil {
 		return err
 	}
-	if err := r.processRootModel(); err != nil {
+	if err := r.processRootModel(rootFile); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *Reader) processRootModel() error {
-	rootFile, ok := r.r.FindFileFromRel(relTypeModel3D)
-	if !ok {
-		return errors.New("go3mf: package does not have root model")
-	}
+func (r *Reader) processRootModel(rootFile packageFile) error {
 	f, err := rootFile.Open()
 	if err != nil {
 		return err
@@ -305,10 +298,14 @@ func (r *Reader) processNonRootModels() (err error) {
 	return nil
 }
 
-func (r *Reader) processOPC() error {
+func (r *Reader) processOPC() (packageFile, error) {
+	err := r.r.Open()
+	if err != nil {
+		return nil, err
+	}
 	rootFile, ok := r.r.FindFileFromRel(relTypeModel3D)
 	if !ok {
-		return errors.New("go3mf: package does not have root model")
+		return nil, errors.New("go3mf: package does not have root model")
 	}
 
 	r.Model.Path = rootFile.Name()
@@ -327,7 +324,7 @@ func (r *Reader) processOPC() error {
 		}
 	}
 
-	return nil
+	return rootFile, nil
 }
 
 func (r *Reader) nonRootProgress() float64 {

@@ -1,7 +1,6 @@
 package io3mf
 
 import (
-	"io"
 	"reflect"
 	"testing"
 
@@ -138,33 +137,6 @@ func Test_opcFile_Relationships(t *testing.T) {
 	}
 }
 
-func Test_newOPCReader(t *testing.T) {
-	type args struct {
-		r    io.ReaderAt
-		size int64
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    *opcReader
-		wantErr bool
-	}{
-		{"error", args{new(io.SectionReader), 0}, nil, true},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := newOPCReader(tt.args.r, tt.args.size)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("newOPCReader() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("newOPCReader() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func Test_opcReader_FindFileFromRel(t *testing.T) {
 	reader := &opc.Reader{
 		Relationships: []*opc.Relationship{
@@ -182,9 +154,9 @@ func Test_opcReader_FindFileFromRel(t *testing.T) {
 		args args
 		want packageFile
 	}{
-		{"foundA", &opcReader{reader}, args{"http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture"}, &opcFile{reader, &opc.File{Part: &opc.Part{Name: "/a.xml"}}}},
-		{"noFile", &opcReader{reader}, args{"http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"}, nil},
-		{"noRel", &opcReader{reader}, args{"other"}, nil},
+		{"foundA", &opcReader{nil, 0, reader}, args{"http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture"}, &opcFile{reader, &opc.File{Part: &opc.Part{Name: "/a.xml"}}}},
+		{"noFile", &opcReader{nil, 0, reader}, args{"http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"}, nil},
+		{"noRel", &opcReader{nil, 0, reader}, args{"other"}, nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -206,9 +178,9 @@ func Test_opcReader_FindFileFromName(t *testing.T) {
 		args args
 		want packageFile
 	}{
-		{"foundA", &opcReader{reader}, args{"/a.xml"}, &opcFile{reader, &opc.File{Part: &opc.Part{Name: "/a.xml"}}}},
-		{"foundB", &opcReader{reader}, args{"/b.xml"}, &opcFile{reader, &opc.File{Part: &opc.Part{Name: "/b.xml"}}}},
-		{"notfound", &opcReader{reader}, args{"/c.xml"}, nil},
+		{"foundA", &opcReader{nil, 0, reader}, args{"/a.xml"}, &opcFile{reader, &opc.File{Part: &opc.Part{Name: "/a.xml"}}}},
+		{"foundB", &opcReader{nil, 0, reader}, args{"/b.xml"}, &opcFile{reader, &opc.File{Part: &opc.Part{Name: "/b.xml"}}}},
+		{"notfound", &opcReader{nil, 0, reader}, args{"/c.xml"}, nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

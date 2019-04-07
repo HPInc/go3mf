@@ -135,9 +135,15 @@ type mockPackage struct {
 
 func newMockPackage(other *mockFile) *mockPackage {
 	m := new(mockPackage)
+	m.On("Open").Return(nil).Maybe()
 	m.On("FindFileFromRel", mock.Anything).Return(other, other != nil).Maybe()
 	m.On("FindFileFromName", mock.Anything).Return(other, other != nil).Maybe()
 	return m
+}
+
+func (m *mockPackage) Open() error {
+	args := m.Called()
+	return args.Error(0)
 }
 
 func (m *mockPackage) FindFileFromName(args0 string) (packageFile, bool) {
@@ -207,7 +213,7 @@ func TestReader_processOPC(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.d.processOPC()
+			_, err := tt.d.processOPC()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Reader.processOPC() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -223,17 +229,17 @@ func TestReader_processOPC(t *testing.T) {
 func TestReader_processRootModel_Fail(t *testing.T) {
 	tests := []struct {
 		name    string
-		r       *Reader
+		f       *mockFile
 		wantErr bool
 	}{
-		{"noRoot", &Reader{Model: new(go3mf.Model), r: newMockPackage(nil)}, true},
-		{"errOpen", &Reader{Model: new(go3mf.Model), r: newMockPackage(newMockFile("/a.model", nil, nil, nil, true))}, true},
-		{"errEncode", &Reader{Model: new(go3mf.Model), r: newMockPackage(new(modelBuilder).withEncoding("utf16").build())}, true},
-		{"invalidUnits", &Reader{Model: new(go3mf.Model), r: newMockPackage(new(modelBuilder).withModel("other", "en-US").build())}, true},
+		{"errOpen", newMockFile("/a.model", nil, nil, nil, true), true},
+		{"errEncode", new(modelBuilder).withEncoding("utf16").build(), true},
+		{"invalidUnits", new(modelBuilder).withModel("other", "en-US").build(), true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.r.processRootModel(); (err != nil) != tt.wantErr {
+			r := &Reader{Model: new(go3mf.Model)}
+			if err := r.processRootModel(tt.f); (err != nil) != tt.wantErr {
 				t.Errorf("Reader.processRootModel() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
@@ -362,9 +368,8 @@ func TestReader_processRootModel(t *testing.T) {
 	got := new(go3mf.Model)
 	got.Path = "/3d/3dmodel.model"
 	got.Resources = append(got.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices}, otherMesh)
-	r := &Reader{
-		Model: got,
-		r: newMockPackage(new(modelBuilder).withDefaultModel().withElement(`
+	r := &Reader{Model: got}
+	rootFile := new(modelBuilder).withDefaultModel().withElement(`
 			<resources>
 			<basematerials id="5">
 			<base name="Blue PLA" displaycolor="#0000FF" />
@@ -474,11 +479,10 @@ func TestReader_processRootModel(t *testing.T) {
 			<metadata name="Application">go3mf app</metadata>
 			<metadata name="p:CustomMetadata1" type="xs:string" preserve="1">CE8A91FB-C44E-4F00-B634-BAA411465F6A</metadata>
 			<other />
-		`).build()),
-	}
+		`).build()
 
 	t.Run("base", func(t *testing.T) {
-		if err := r.processRootModel(); err != nil {
+		if err := r.processRootModel(rootFile); err != nil {
 			t.Errorf("Reader.processRootModel() unexpected error = %v", err)
 			return
 		}

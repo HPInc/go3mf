@@ -56,15 +56,14 @@ func (o *opcFile) Relationships() []relationship {
 }
 
 type opcReader struct {
-	r *opc.Reader
+	ra   io.ReaderAt
+	size int64
+	r    *opc.Reader // nil until call Open.
 }
 
-func newOPCReader(r io.ReaderAt, size int64) (*opcReader, error) {
-	opcr, err := opc.NewReader(r, size)
-	if err != nil {
-		return nil, err
-	}
-	return &opcReader{opcr}, nil
+func (o *opcReader) Open() (err error) {
+	o.r, err = opc.NewReader(o.ra, o.size)
+	return
 }
 
 func (o *opcReader) FindFileFromRel(relType string) (packageFile, bool) {
