@@ -217,20 +217,25 @@ func NewReader(r io.ReaderAt, size int64) *Reader {
 
 // Decode reads the 3mf file and unmarshall its content into the model.
 func (r *Reader) Decode(model *go3mf.Model) error {
+	return r.DecodeContext(context.Background(), model)
+}
+
+// DecodeContext reads the 3mf file and unmarshall its content into the model.
+func (r *Reader) DecodeContext(ctx context.Context, model *go3mf.Model) error {
 	rootFile, err := r.processOPC(model)
 	if err != nil {
 		return err
 	}
-	if err := r.processNonRootModels(model); err != nil {
+	if err := r.processNonRootModels(ctx, model); err != nil {
 		return err
 	}
-	if err := r.processRootModel(rootFile, model); err != nil {
+	if err := r.processRootModel(ctx, rootFile, model); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *Reader) processRootModel(rootFile packageFile, model *go3mf.Model) error {
+func (r *Reader) processRootModel(ctx context.Context, rootFile packageFile, model *go3mf.Model) error {
 	f, err := rootFile.Open()
 	if err != nil {
 		return err
@@ -254,9 +259,9 @@ func (r *Reader) addModelFile(f *modelFile, model *go3mf.Model) {
 	}
 }
 
-func (r *Reader) processNonRootModels(model *go3mf.Model) (err error) {
+func (r *Reader) processNonRootModels(ctx context.Context, model *go3mf.Model) (err error) {
 	var wg sync.WaitGroup
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	var files sync.Map
 	prodAttCount := len(model.ProductionAttachments)

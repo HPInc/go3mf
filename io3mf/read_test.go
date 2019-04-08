@@ -2,6 +2,7 @@ package io3mf
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"image/color"
@@ -239,7 +240,7 @@ func TestReader_processRootModel_Fail(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := new(Reader).processRootModel(tt.f, new(go3mf.Model)); (err != nil) != tt.wantErr {
+			if err := new(Reader).processRootModel(context.Background(), tt.f, new(go3mf.Model)); (err != nil) != tt.wantErr {
 				t.Errorf("Reader.processRootModel() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
@@ -481,7 +482,7 @@ func TestReader_processRootModel(t *testing.T) {
 		`).build()
 
 	t.Run("base", func(t *testing.T) {
-		if err := new(Reader).processRootModel(rootFile, got); err != nil {
+		if err := new(Reader).processRootModel(context.Background(), rootFile, got); err != nil {
 			t.Errorf("Reader.processRootModel() unexpected error = %v", err)
 			return
 		}
@@ -585,8 +586,8 @@ func Test_strToSRGB(t *testing.T) {
 func TestReader_processNonRootModels(t *testing.T) {
 	tests := []struct {
 		name    string
-		model       *go3mf.Model
-		r *Reader
+		model   *go3mf.Model
+		r       *Reader
 		wantErr bool
 		want    *go3mf.Model
 	}{
@@ -623,7 +624,7 @@ func TestReader_processNonRootModels(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.r.processNonRootModels(tt.model); (err != nil) != tt.wantErr {
+			if err := tt.r.processNonRootModels(context.Background(), tt.model); (err != nil) != tt.wantErr {
 				t.Errorf("Reader.processNonRootModels() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
