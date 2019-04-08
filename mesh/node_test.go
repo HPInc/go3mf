@@ -12,7 +12,7 @@ func Test_nodeStructure_clear(t *testing.T) {
 		name string
 		n    *nodeStructure
 	}{
-		{"base", &nodeStructure{Nodes: make([]Node, 2)}},
+		{"base", &nodeStructure{Nodes: make([]Node3D, 2)}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -25,11 +25,11 @@ func Test_nodeStructure_clear(t *testing.T) {
 }
 
 func Test_nodeStructure_AddNode(t *testing.T) {
-	pos := Node{1.0, 2.0, 3.0}
+	pos := Node3D{1.0, 2.0, 3.0}
 	existingStruct := &nodeStructure{vectorTree: newVectorTree()}
 	existingStruct.AddNode(pos)
 	type args struct {
-		position Node
+		position Node3D
 	}
 	tests := []struct {
 		name string
@@ -38,7 +38,7 @@ func Test_nodeStructure_AddNode(t *testing.T) {
 		want uint32
 	}{
 		{"existing", existingStruct, args{pos}, 0},
-		{"base", &nodeStructure{Nodes: []Node{{}}}, args{Node{1.0, 2.0, 3.0}}, 1},
+		{"base", &nodeStructure{Nodes: []Node3D{{}}}, args{Node3D{1.0, 2.0, 3.0}}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -56,8 +56,8 @@ func Test_nodeStructure_checkSanity(t *testing.T) {
 		n    *nodeStructure
 		want bool
 	}{
-		{"max", &nodeStructure{maxNodeCount: 1, Nodes: []Node{{}, {}}}, false},
-		{"good", &nodeStructure{Nodes: []Node{{}, {}}}, true},
+		{"max", &nodeStructure{maxNodeCount: 1, Nodes: []Node3D{{}, {}}}, false},
+		{"good", &nodeStructure{Nodes: []Node3D{{}, {}}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -70,7 +70,7 @@ func Test_nodeStructure_checkSanity(t *testing.T) {
 
 func Test_nodeStructure_merge(t *testing.T) {
 	type args struct {
-		matrix mgl32.Mat4
+		matrix Matrix
 	}
 	tests := []struct {
 		name  string
@@ -79,12 +79,12 @@ func Test_nodeStructure_merge(t *testing.T) {
 		want  []uint32
 		times int
 	}{
-		{"zero", new(nodeStructure), args{mgl32.Ident4()}, make([]uint32, 0), 0},
-		{"merged", new(nodeStructure), args{mgl32.Translate3D(1.0, 2.0, 3.0)}, []uint32{0, 1}, 2},
+		{"zero", new(nodeStructure), args{Identity()}, make([]uint32, 0), 0},
+		{"merged", new(nodeStructure), args{Matrix(mgl32.Translate3D(1.0, 2.0, 3.0))}, []uint32{0, 1}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			node := Node{}
+			node := Node3D{}
 			mockMesh := new(Mesh)
 			for i := 0; i < tt.times; i++ {
 				mockMesh.Nodes = append(mockMesh.Nodes, node)
@@ -100,14 +100,14 @@ func Test_nodeStructure_merge(t *testing.T) {
 
 func Test_newvec3IFromVec3(t *testing.T) {
 	type args struct {
-		vec Node
+		vec Node3D
 	}
 	tests := []struct {
 		name string
 		args args
 		want vec3I
 	}{
-		{"base", args{Node{1.2, 2.3, 3.4}}, vec3I{1200000, 2300000, 3400000}},
+		{"base", args{Node3D{1.2, 2.3, 3.4}}, vec3I{1200000, 2300000, 3400000}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -137,7 +137,7 @@ func Test_newVectorTree(t *testing.T) {
 func Test_vectorTree_AddFindVector(t *testing.T) {
 	p := newVectorTree()
 	type args struct {
-		vec   Node
+		vec   Node3D
 		value uint32
 	}
 	tests := []struct {
@@ -145,10 +145,10 @@ func Test_vectorTree_AddFindVector(t *testing.T) {
 		t    *vectorTree
 		args args
 	}{
-		{"new", p, args{Node{10000.3, 20000.2, 1}, 2}},
-		{"old", p, args{Node{10000.3, 20000.2, 1}, 4}},
-		{"new2", p, args{Node{2, 1, 3.4}, 5}},
-		{"old2", p, args{Node{2, 1, 3.4}, 1}},
+		{"new", p, args{Node3D{10000.3, 20000.2, 1}, 2}},
+		{"old", p, args{Node3D{10000.3, 20000.2, 1}, 4}},
+		{"new2", p, args{Node3D{2, 1, 3.4}, 5}},
+		{"old2", p, args{Node3D{2, 1, 3.4}, 1}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -167,17 +167,17 @@ func Test_vectorTree_AddFindVector(t *testing.T) {
 
 func Test_vectorTree_RemoveVector(t *testing.T) {
 	p := newVectorTree()
-	p.AddVector(Node{1, 2, 5.3}, 1)
+	p.AddVector(Node3D{1, 2, 5.3}, 1)
 	type args struct {
-		vec Node
+		vec Node3D
 	}
 	tests := []struct {
 		name string
 		t    *vectorTree
 		args args
 	}{
-		{"nil", p, args{Node{2, 3, 4}}},
-		{"old", p, args{Node{1, 2, 5.3}}},
+		{"nil", p, args{Node3D{2, 3, 4}}},
+		{"old", p, args{Node3D{1, 2, 5.3}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

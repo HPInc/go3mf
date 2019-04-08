@@ -2,13 +2,24 @@ package mesh
 
 import (
 	"errors"
-
-	"github.com/go-gl/mathgl/mgl32"
 )
+
+// Node2D defines a node of a slice as an array of 2 coordinates: x and y.
+type Node2D [2]float32
+
+// X returns the x coordinate.
+func (n Node2D) X() float32 {
+	return n[0]
+}
+
+// Y returns the y coordinate.
+func (n Node2D) Y() float32 {
+	return n[1]
+}
 
 // Slice defines the resource object for slices.
 type Slice struct {
-	Vertices [][2]float32
+	Vertices []Node2D
 	Polygons [][]int
 	TopZ     float32
 }
@@ -21,7 +32,7 @@ func (s *Slice) BeginPolygon() int {
 
 // AddVertex adds a new vertex to the slice and returns its index.
 func (s *Slice) AddVertex(x, y float32) int {
-	s.Vertices = append(s.Vertices, mgl32.Vec2{x, y})
+	s.Vertices = append(s.Vertices, Node2D{x, y})
 	return len(s.Vertices) - 1
 }
 

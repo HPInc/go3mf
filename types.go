@@ -1,12 +1,6 @@
 package go3mf
 
-import (
-	"github.com/go-gl/mathgl/mgl32"
-)
-
 const thumbnailPath = "/Metadata/thumbnail.png"
-
-var identityTransform = mgl32.Ident4()
 
 // Units define the allowed model units.
 type Units uint8

@@ -6,7 +6,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/go-gl/mathgl/mgl32"
 	"github.com/qmuntal/go3mf/mesh"
 	"github.com/stretchr/testify/mock"
 )
@@ -32,7 +31,7 @@ func (o *MockObject) Type() ObjectType {
 	return ObjectTypeOther
 }
 
-func (o *MockObject) MergeToMesh(args0 *mesh.Mesh, args1 mgl32.Mat4) {
+func (o *MockObject) MergeToMesh(args0 *mesh.Mesh, args1 mesh.Matrix) {
 	o.Called(args0, args1)
 	return
 }
@@ -42,7 +41,7 @@ func (o *MockObject) IsValid() bool {
 	return args.Bool(0)
 }
 
-func (o *MockObject) IsValidForSlices(args0 mgl32.Mat4) bool {
+func (o *MockObject) IsValidForSlices(args0 mesh.Matrix) bool {
 	args := o.Called(args0)
 	return args.Bool(0)
 }
@@ -166,8 +165,8 @@ func TestBuildItem_HasTransform(t *testing.T) {
 		b    *BuildItem
 		want bool
 	}{
-		{"identity", &BuildItem{Transform: mgl32.Ident4()}, false},
-		{"base", &BuildItem{Transform: mgl32.Mat4{2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}}, true},
+		{"identity", &BuildItem{Transform: mesh.Identity()}, false},
+		{"base", &BuildItem{Transform: mesh.Matrix{2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -220,8 +219,8 @@ func TestComponent_HasTransform(t *testing.T) {
 		c    *Component
 		want bool
 	}{
-		{"identity", &Component{Transform: mgl32.Ident4()}, false},
-		{"base", &Component{Transform: mgl32.Mat4{2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}}, true},
+		{"identity", &Component{Transform: mesh.Identity()}, false},
+		{"base", &Component{Transform: mesh.Matrix{2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -253,7 +252,7 @@ func TestComponentsResource_IsValid(t *testing.T) {
 
 func TestComponentsResource_IsValidForSlices(t *testing.T) {
 	type args struct {
-		transform mgl32.Mat4
+		transform mesh.Matrix
 	}
 	tests := []struct {
 		name string
@@ -261,9 +260,9 @@ func TestComponentsResource_IsValidForSlices(t *testing.T) {
 		args args
 		want bool
 	}{
-		{"empty", new(ComponentsResource), args{mgl32.Ident4()}, true},
-		{"oneInvalid", &ComponentsResource{Components: []*Component{{Object: NewMockObject(true, true)}, {Object: NewMockObject(true, false)}}}, args{mgl32.Ident4()}, false},
-		{"valid", &ComponentsResource{Components: []*Component{{Object: NewMockObject(true, true)}, {Object: NewMockObject(true, true)}}}, args{mgl32.Ident4()}, true},
+		{"empty", new(ComponentsResource), args{mesh.Identity()}, true},
+		{"oneInvalid", &ComponentsResource{Components: []*Component{{Object: NewMockObject(true, true)}, {Object: NewMockObject(true, false)}}}, args{mesh.Identity()}, false},
+		{"valid", &ComponentsResource{Components: []*Component{{Object: NewMockObject(true, true)}, {Object: NewMockObject(true, true)}}}, args{mesh.Identity()}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -277,15 +276,15 @@ func TestComponentsResource_IsValidForSlices(t *testing.T) {
 func TestComponentsResource_MergeToMesh(t *testing.T) {
 	type args struct {
 		m         *mesh.Mesh
-		transform mgl32.Mat4
+		transform mesh.Matrix
 	}
 	tests := []struct {
 		name string
 		c    *ComponentsResource
 		args args
 	}{
-		{"empty", new(ComponentsResource), args{nil, mgl32.Ident4()}},
-		{"base", &ComponentsResource{Components: []*Component{{Object: new(ComponentsResource)}}}, args{nil, mgl32.Ident4()}},
+		{"empty", new(ComponentsResource), args{nil, mesh.Identity()}},
+		{"base", &ComponentsResource{Components: []*Component{{Object: new(ComponentsResource)}}}, args{nil, mesh.Identity()}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -296,7 +295,7 @@ func TestComponentsResource_MergeToMesh(t *testing.T) {
 
 func TestMeshResource_IsValidForSlices(t *testing.T) {
 	type args struct {
-		t mgl32.Mat4
+		t mesh.Matrix
 	}
 	tests := []struct {
 		name string
@@ -304,9 +303,9 @@ func TestMeshResource_IsValidForSlices(t *testing.T) {
 		args args
 		want bool
 	}{
-		{"empty", new(MeshResource), args{mgl32.Mat4{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}}, true},
-		{"valid", &MeshResource{ObjectResource: ObjectResource{SliceStackID: 0}}, args{mgl32.Mat4{1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1}}, true},
-		{"invalid", &MeshResource{ObjectResource: ObjectResource{SliceStackID: 1}}, args{mgl32.Mat4{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}}, false},
+		{"empty", new(MeshResource), args{mesh.Matrix{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}}, true},
+		{"valid", &MeshResource{ObjectResource: ObjectResource{SliceStackID: 0}}, args{mesh.Matrix{1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1}}, true},
+		{"invalid", &MeshResource{ObjectResource: ObjectResource{SliceStackID: 1}}, args{mesh.Matrix{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -342,14 +341,14 @@ func TestMeshResource_IsValid(t *testing.T) {
 func TestMeshResource_MergeToMesh(t *testing.T) {
 	type args struct {
 		m         *mesh.Mesh
-		transform mgl32.Mat4
+		transform mesh.Matrix
 	}
 	tests := []struct {
 		name string
 		c    *MeshResource
 		args args
 	}{
-		{"base", &MeshResource{Mesh: new(mesh.Mesh)}, args{new(mesh.Mesh), mgl32.Ident4()}},
+		{"base", &MeshResource{Mesh: new(mesh.Mesh)}, args{new(mesh.Mesh), mesh.Identity()}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

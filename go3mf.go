@@ -19,9 +19,9 @@ type Resource interface {
 // Object defines a composable object.
 type Object interface {
 	Identify() (string, uint32)
-	MergeToMesh(*mesh.Mesh, mgl32.Mat4)
+	MergeToMesh(*mesh.Mesh, mesh.Matrix)
 	IsValid() bool
-	IsValidForSlices(mgl32.Mat4) bool
+	IsValidForSlices(mesh.Matrix) bool
 	Type() ObjectType
 }
 
@@ -155,14 +155,14 @@ func (ms *BaseMaterialsResource) Merge(other []BaseMaterial) {
 // A BuildItem is an in memory representation of the 3MF build item.
 type BuildItem struct {
 	Object     Object
-	Transform  mgl32.Mat4
+	Transform  mesh.Matrix
 	PartNumber string
 	UUID       string
 }
 
 // HasTransform returns true if the transform is different than the identity.
 func (b *BuildItem) HasTransform() bool {
-	return !b.Transform.ApproxEqual(identityTransform)
+	return !mgl32.Mat4(b.Transform).ApproxEqual(mgl32.Ident4())
 }
 
 // IsValidForSlices checks if the build object is valid to be used with slices.
@@ -203,18 +203,18 @@ func (o *ObjectResource) Type() ObjectType {
 // A Component is an in memory representation of the 3MF component.
 type Component struct {
 	Object    Object
-	Transform mgl32.Mat4
+	Transform mesh.Matrix
 	UUID      string
 }
 
 // HasTransform returns true if the transform is different than the identity.
 func (c *Component) HasTransform() bool {
-	return !c.Transform.ApproxEqual(identityTransform)
+	return !mgl32.Mat4(c.Transform).ApproxEqual(mgl32.Ident4())
 }
 
 // MergeToMesh merges a mesh with the component.
-func (c *Component) MergeToMesh(m *mesh.Mesh, transform mgl32.Mat4) {
-	c.Object.MergeToMesh(m, c.Transform.Mul4(transform))
+func (c *Component) MergeToMesh(m *mesh.Mesh, transform mesh.Matrix) {
+	c.Object.MergeToMesh(m, mesh.Matrix(mgl32.Mat4(c.Transform).Mul4(mgl32.Mat4(transform))))
 }
 
 // A ComponentsResource resource is an in memory representation of the 3MF component object.
@@ -224,7 +224,7 @@ type ComponentsResource struct {
 }
 
 // MergeToMesh merges the mesh with all the components.
-func (c *ComponentsResource) MergeToMesh(m *mesh.Mesh, transform mgl32.Mat4) {
+func (c *ComponentsResource) MergeToMesh(m *mesh.Mesh, transform mesh.Matrix) {
 	for _, comp := range c.Components {
 		comp.MergeToMesh(m, transform)
 	}
@@ -245,13 +245,14 @@ func (c *ComponentsResource) IsValid() bool {
 }
 
 // IsValidForSlices checks if the component resource and all its child are valid to be used with slices.
-func (c *ComponentsResource) IsValidForSlices(transform mgl32.Mat4) bool {
+func (c *ComponentsResource) IsValidForSlices(transform mesh.Matrix) bool {
 	if len(c.Components) == 0 {
 		return true
 	}
 
+	matrix := mgl32.Mat4(transform)
 	for _, comp := range c.Components {
-		if !comp.Object.IsValidForSlices(transform.Mul4(comp.Transform)) {
+		if !comp.Object.IsValidForSlices(mesh.Matrix(matrix.Mul4(mgl32.Mat4(comp.Transform)))) {
 			return false
 		}
 	}
@@ -266,7 +267,7 @@ type MeshResource struct {
 }
 
 // MergeToMesh merges the resource with the mesh.
-func (c *MeshResource) MergeToMesh(m *mesh.Mesh, transform mgl32.Mat4) {
+func (c *MeshResource) MergeToMesh(m *mesh.Mesh, transform mesh.Matrix) {
 	c.Mesh.Merge(m, transform)
 }
 
@@ -290,7 +291,7 @@ func (c *MeshResource) IsValid() bool {
 }
 
 // IsValidForSlices checks if the mesh resource are valid for slices.
-func (c *MeshResource) IsValidForSlices(t mgl32.Mat4) bool {
+func (c *MeshResource) IsValidForSlices(t mesh.Matrix) bool {
 	return c.SliceStackID == 0 || t[2] == 0 && t[6] == 0 && t[8] == 0 && t[9] == 0 && t[10] == 1
 }
 

@@ -13,8 +13,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/go-gl/mathgl/mgl32"
 	go3mf "github.com/qmuntal/go3mf"
+	"github.com/qmuntal/go3mf/mesh"
 )
 
 type relationship interface {
@@ -452,8 +452,8 @@ func strToSRGB(s string) (c color.RGBA, err error) {
 	return
 }
 
-func strToMatrix(s string) (mgl32.Mat4, error) {
-	var matrix mgl32.Mat4
+func strToMatrix(s string) (mesh.Matrix, error) {
+	var matrix mesh.Matrix
 	values := strings.Fields(s)
 	if len(values) != 12 {
 		return matrix, errors.New("go3mf: matrix string does not have 12 values")
@@ -466,7 +466,7 @@ func strToMatrix(s string) (mgl32.Mat4, error) {
 		}
 		t[i] = float32(val)
 	}
-	return mgl32.Mat4{t[0], t[3], t[6], t[9],
+	return mesh.Matrix{t[0], t[3], t[6], t[9],
 		t[1], t[4], t[7], t[10],
 		t[2], t[5], t[8], t[11],
 		0.0, 0.0, 0.0, 1.0}, nil

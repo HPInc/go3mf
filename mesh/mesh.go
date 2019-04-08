@@ -4,6 +4,19 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
+// Matrix is a 4x4 matrix in row major order.
+//
+// m[4*r + c] is the element in the r'th row and c'th column.
+type Matrix [16]float32
+
+// Identity returns the 4x4 identity matrix.
+// The identity matrix is a square matrix with the value 1 on its
+// diagonals. The characteristic property of the identity matrix is that
+// any matrix multiplied by it is itself. (MI = M; IN = N)
+func Identity() Matrix {
+	return Matrix{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}
+}
+
 // CreationOptions defines a set of options for helping in the mesh creation process
 type CreationOptions struct {
 	// True to automatically check if a node with the same coordinates already exists in the mesh
@@ -26,7 +39,7 @@ type Mesh struct {
 // Clone creates a deep clone of the mesh.
 func (m *Mesh) Clone() *Mesh {
 	new := new(Mesh)
-	new.Merge(m, mgl32.Ident4())
+	new.Merge(m, Identity())
 	return new
 }
 
@@ -52,7 +65,7 @@ func (m *Mesh) EndCreation() {
 }
 
 // Merge merges the mesh with another mesh. This includes the nodes, faces, beams and all the informations.
-func (m *Mesh) Merge(mesh *Mesh, matrix mgl32.Mat4) {
+func (m *Mesh) Merge(mesh *Mesh, matrix Matrix) {
 	m.StartCreation(CreationOptions{CalculateConnectivity: true})
 	defer m.EndCreation()
 
@@ -76,7 +89,7 @@ func (m *Mesh) CheckSanity() bool {
 }
 
 // FaceNodes returns the three nodes of a face.
-func (m *Mesh) FaceNodes(i uint32) (*Node, *Node, *Node) {
+func (m *Mesh) FaceNodes(i uint32) (*Node3D, *Node3D, *Node3D) {
 	face := m.Faces[i]
 	return &m.Nodes[face.NodeIndices[0]], &m.Nodes[face.NodeIndices[1]], &m.Nodes[face.NodeIndices[2]]
 }

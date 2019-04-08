@@ -78,7 +78,7 @@ func (d *vertexDecoder) Attributes(attrs []xml.Attr) (err error) {
 		}
 	}
 	if err == nil {
-		d.resource.Mesh.AddNode(mesh.Node{float32(x), float32(y), float32(z)})
+		d.resource.Mesh.AddNode(mesh.Node3D{float32(x), float32(y), float32(z)})
 	}
 	return
 }

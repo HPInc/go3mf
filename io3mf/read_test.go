@@ -13,7 +13,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-gl/mathgl/mgl32"
 	"github.com/go-test/deep"
 	"github.com/qmuntal/go3mf"
 	"github.com/qmuntal/go3mf/mesh"
@@ -260,7 +259,7 @@ func TestReader_processRootModel(t *testing.T) {
 		Slices: []*mesh.Slice{
 			{
 				TopZ:     1.2,
-				Vertices: [][2]float32{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
+				Vertices: []mesh.Node2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
 				Polygons: [][]int{{0, 1, 2, 3, 0}},
 			},
 		},
@@ -270,12 +269,12 @@ func TestReader_processRootModel(t *testing.T) {
 		Slices: []*mesh.Slice{
 			{
 				TopZ:     0,
-				Vertices: [][2]float32{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
+				Vertices: []mesh.Node2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
 				Polygons: [][]int{{0, 1, 2, 3, 0}},
 			},
 			{
 				TopZ:     0.1,
-				Vertices: [][2]float32{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
+				Vertices: []mesh.Node2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
 				Polygons: [][]int{{0, 2, 1, 3, 0}},
 			},
 		},
@@ -288,7 +287,7 @@ func TestReader_processRootModel(t *testing.T) {
 		ObjectResource: go3mf.ObjectResource{ID: 8, Name: "Box 1", ModelPath: "/3d/3dmodel.model", SliceStackID: 3, DefaultPropertyID: 5, SliceResoultion: go3mf.ResolutionLow, PartNumber: "11111111-1111-1111-1111-111111111111"},
 		Mesh:           new(mesh.Mesh),
 	}
-	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []mesh.Node{
+	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []mesh.Node3D{
 		{0, 0, 0},
 		{100, 0, 0},
 		{100, 100, 0},
@@ -321,7 +320,7 @@ func TestReader_processRootModel(t *testing.T) {
 	meshLattice.Mesh.MinLength = 0.0001
 	meshLattice.Mesh.CapMode = mesh.CapModeHemisphere
 	meshLattice.Mesh.DefaultRadius = 1
-	meshLattice.Mesh.Nodes = append(meshLattice.Mesh.Nodes, []mesh.Node{
+	meshLattice.Mesh.Nodes = append(meshLattice.Mesh.Nodes, []mesh.Node3D{
 		{45, 55, 55},
 		{45, 45, 55},
 		{45, 55, 45},
@@ -350,7 +349,7 @@ func TestReader_processRootModel(t *testing.T) {
 	components := &go3mf.ComponentsResource{
 		ObjectResource: go3mf.ObjectResource{ID: 20, UUID: "cb828680-8895-4e08-a1fc-be63e033df15", ModelPath: "/3d/3dmodel.model"},
 		Components: []*go3mf.Component{{UUID: "cb828680-8895-4e08-a1fc-be63e033df16", Object: meshRes,
-			Transform: mgl32.Mat4{3, 0, 0, -66.4, 0, 1, 0, -87.1, 0, 0, 2, 8.8, 0, 0, 0, 1}}},
+			Transform: mesh.Matrix{3, 0, 0, -66.4, 0, 1, 0, -87.1, 0, 0, 2, 8.8, 0, 0, 0, 1}}},
 	}
 
 	want := &go3mf.Model{Units: go3mf.UnitMillimeter, Language: "en-US", Path: "/3d/3dmodel.model", UUID: "e9e25302-6428-402e-8633-cc95528d0ed3"}
@@ -360,7 +359,7 @@ func TestReader_processRootModel(t *testing.T) {
 	want.Resources = append(want.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", SliceStack: otherSlices, TimesRefered: 1})
 	want.Resources = append(want.Resources, []go3mf.Resource{otherMesh, baseMaterials, baseTexture, colorGroup, texGroup, sliceStack, sliceStackRef, meshRes, meshLattice, components}...)
 	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: components, PartNumber: "bob", UUID: "e9e25302-6428-402e-8633-cc95528d0ed2",
-		Transform: mgl32.Mat4{1, 0, 0, -66.4, 0, 2, 0, -87.1, 0, 0, 3, 8.8, 0, 0, 0, 1},
+		Transform: mesh.Matrix{1, 0, 0, -66.4, 0, 2, 0, -87.1, 0, 0, 3, 8.8, 0, 0, 0, 1},
 	})
 	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: otherMesh})
 	want.Metadata = append(want.Metadata, []go3mf.Metadata{
@@ -526,15 +525,15 @@ func Test_strToMatrix(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    mgl32.Mat4
+		want    mesh.Matrix
 		wantErr bool
 	}{
-		{"empty", args{""}, mgl32.Mat4{}, true},
-		{"11values", args{"1 1 1 1 1 1 1 1 1 1 1"}, mgl32.Mat4{}, true},
-		{"13values", args{"1 1 1 1 1 1 1 1 1 1 1 1 1"}, mgl32.Mat4{}, true},
-		{"char", args{"1 1 a 1 1 1 1 1 1 1 1 1"}, mgl32.Mat4{}, true},
-		{"base", args{"1 1 1 1 1 1 1 1 1 1 1 1"}, mgl32.Mat4{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1}, false},
-		{"other", args{"0 1 2 10 11 12 20 21 22 30 31 32"}, mgl32.Mat4{0, 10, 20, 30, 1, 11, 21, 31, 2, 12, 22, 32, 0, 0, 0, 1}, false},
+		{"empty", args{""}, mesh.Matrix{}, true},
+		{"11values", args{"1 1 1 1 1 1 1 1 1 1 1"}, mesh.Matrix{}, true},
+		{"13values", args{"1 1 1 1 1 1 1 1 1 1 1 1 1"}, mesh.Matrix{}, true},
+		{"char", args{"1 1 a 1 1 1 1 1 1 1 1 1"}, mesh.Matrix{}, true},
+		{"base", args{"1 1 1 1 1 1 1 1 1 1 1 1"}, mesh.Matrix{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1}, false},
+		{"other", args{"0 1 2 10 11 12 20 21 22 30 31 32"}, mesh.Matrix{0, 10, 20, 30, 1, 11, 21, 31, 2, 12, 22, 32, 0, 0, 0, 1}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
