@@ -2,11 +2,12 @@ package io3mf
 
 import (
 	"errors"
-	"image/color"
 
 	go3mf "github.com/qmuntal/go3mf"
 	mesh "github.com/qmuntal/go3mf/mesh"
 )
+
+var checkEveryBytes = int64(4 * 1024 * 1024)
 
 const (
 	nsXML             = "http://www.w3.org/XML/1998/namespace"
@@ -110,8 +111,6 @@ const (
 	attrPreserve           = "preserve"
 	attrMetadata           = "metadata"
 )
-
-var defaultColor = color.RGBA{R: 0xff, G: 0xff, B: 0xff, A: 0xff}
 
 // WarningLevel defines the level of a reader warning.
 type WarningLevel int

@@ -3,6 +3,7 @@ package io3mf
 import (
 	"bytes"
 	"context"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"image/color"
@@ -652,6 +653,64 @@ func TestReader_Decode(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := tt.r.Decode(new(go3mf.Model)); (err != nil) != tt.wantErr {
 				t.Errorf("Reader.Decode() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func Test_modelFile_Decode(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	checkEveryBytes = 108
+	type args struct {
+		ctx context.Context
+		x   *xml.Decoder
+	}
+	tests := []struct {
+		name    string
+		d       *modelFile
+		args    args
+		wantErr bool
+	}{
+		{"nochild", new(modelFile), args{context.Background(), xml.NewDecoder(bytes.NewBufferString(`
+			<a></a>
+			<b></b>
+		`))}, false},
+		{"eof", new(modelFile), args{context.Background(), xml.NewDecoder(bytes.NewBufferString(`
+			<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">
+				<build></build>
+		`))}, true},
+		{"canceled", new(modelFile), args{ctx, xml.NewDecoder(bytes.NewBufferString(`
+			<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">
+				<build></build>
+			</model>
+		`))}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.d.Decode(tt.args.ctx, tt.args.x); (err != nil) != tt.wantErr {
+				t.Errorf("modelFile.Decode() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestNewReader(t *testing.T) {
+	type args struct {
+		r    io.ReaderAt
+		size int64
+	}
+	tests := []struct {
+		name string
+		args args
+		want *Reader
+	}{
+		{"base", args{nil, 5}, &Reader{r: &opcReader{ra: nil, size: 5}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewReader(tt.args.r, tt.args.size); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewReader() = %v, want %v", got, tt.want)
 			}
 		})
 	}

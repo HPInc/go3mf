@@ -147,7 +147,7 @@ func (d *modelFile) IsRoot() bool {
 	return d.isRoot
 }
 
-func (d *modelFile) Decode(x *xml.Decoder) (err error) {
+func (d *modelFile) Decode(ctx context.Context, x *xml.Decoder) (err error) {
 	d.namespaces = make(map[string]string)
 	d.resourcesMap = make(map[uint32]go3mf.Resource)
 
@@ -159,6 +159,7 @@ func (d *modelFile) Decode(x *xml.Decoder) (err error) {
 		currentName    xml.Name
 		t              xml.Token
 	)
+	nextBytesCheck := checkEveryBytes
 	currentDecoder = &topLevelDecoder{isRoot: d.isRoot, model: d.model}
 	for {
 		t, err = x.Token()
@@ -191,10 +192,22 @@ func (d *modelFile) Decode(x *xml.Decoder) (err error) {
 					currentName, names = names[len(names)-1], names[:len(names)-1]
 				}
 			}
+			if x.InputOffset() > nextBytesCheck {
+				select {
+				case <-ctx.Done():
+					err = ctx.Err()
+					break
+				default: // Default is must to avoid blocking
+				}
+				nextBytesCheck += checkEveryBytes
+			}
 		}
 		if err != nil {
 			break
 		}
+	}
+	if err == io.EOF {
+		err = nil
 	}
 	return
 }
@@ -242,12 +255,14 @@ func (r *Reader) processRootModel(ctx context.Context, rootFile packageFile, mod
 	}
 	defer f.Close()
 	d := modelFile{r: r, path: rootFile.Name(), isRoot: true, model: model}
-	err = d.Decode(xml.NewDecoder(f))
-	if err != io.EOF {
-		return err
+	err = d.Decode(ctx, xml.NewDecoder(f))
+	select {
+	case <-ctx.Done():
+		err = ctx.Err()
+	default: // Default is must to avoid blocking
 	}
 	r.addModelFile(&d, model)
-	return nil
+	return err
 }
 
 func (r *Reader) addModelFile(f *modelFile, model *go3mf.Model) {
@@ -269,7 +284,7 @@ func (r *Reader) processNonRootModels(ctx context.Context, model *go3mf.Model) (
 	for i := 0; i < prodAttCount; i++ {
 		go func(i int) {
 			defer wg.Done()
-			f, err1 := r.readProductionAttachmentModel(i, model)
+			f, err1 := r.readProductionAttachmentModel(ctx, i, model)
 			select {
 			case <-ctx.Done():
 				return // Error somewhere, terminate
@@ -377,7 +392,7 @@ func (r *Reader) addAttachment(attachments []*go3mf.Attachment, file packageFile
 	return attachments
 }
 
-func (r *Reader) readProductionAttachmentModel(i int, model *go3mf.Model) (*modelFile, error) {
+func (r *Reader) readProductionAttachmentModel(ctx context.Context, i int, model *go3mf.Model) (*modelFile, error) {
 	attachment := model.ProductionAttachments[i]
 	file, err := r.productionModels[attachment.Path].Open()
 	if err != nil {
@@ -385,10 +400,7 @@ func (r *Reader) readProductionAttachmentModel(i int, model *go3mf.Model) (*mode
 	}
 	defer file.Close()
 	d := modelFile{r: r, path: attachment.Path, isRoot: false, model: model}
-	err = d.Decode(xml.NewDecoder(file))
-	if err != io.EOF {
-		return nil, err
-	}
+	err = d.Decode(ctx, xml.NewDecoder(file))
 	return &d, nil
 }
 
