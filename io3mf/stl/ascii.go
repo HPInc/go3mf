@@ -2,6 +2,7 @@ package stl
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"io"
 	"strconv"
@@ -16,10 +17,11 @@ type asciiDecoder struct {
 	units float32
 }
 
-func (d *asciiDecoder) decode(m *mesh.Mesh) error {
+func (d *asciiDecoder) decode(ctx context.Context, m *mesh.Mesh) (err error) {
 	m.StartCreation(mesh.CreationOptions{CalculateConnectivity: true})
 	defer m.EndCreation()
 	position := 0
+	nextFaceCheck := checkEveryFaces
 	var nodes [3]uint32
 	scanner := bufio.NewScanner(d.r)
 	for scanner.Scan() {
@@ -36,10 +38,21 @@ func (d *asciiDecoder) decode(m *mesh.Mesh) error {
 			if position == 3 {
 				position = 0
 				m.AddFace(nodes[0], nodes[1], nodes[2])
+				if len(m.Faces) > nextFaceCheck {
+					select {
+					case <-ctx.Done():
+						err = ctx.Err()
+						break
+					default: // Default is must to avoid blocking
+					}
+					nextFaceCheck += checkEveryFaces
+				}
 			}
 		}
+		if err != nil {
+			return err
+		}
 	}
-
 	return scanner.Err()
 }
 

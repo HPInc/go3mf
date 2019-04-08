@@ -1,6 +1,7 @@
 package stl
 
 import (
+	"context"
 	"encoding/binary"
 	"io"
 
@@ -24,7 +25,7 @@ type binaryDecoder struct {
 }
 
 // decode loads a binary stl from a io.Reader.
-func (d *binaryDecoder) decode(m *mesh.Mesh) error {
+func (d *binaryDecoder) decode(ctx context.Context, m *mesh.Mesh) error {
 	m.StartCreation(mesh.CreationOptions{CalculateConnectivity: true})
 	defer m.EndCreation()
 	var header binaryHeader
@@ -33,6 +34,7 @@ func (d *binaryDecoder) decode(m *mesh.Mesh) error {
 		return err
 	}
 
+	nextFaceCheck := checkEveryFaces
 	var facet binaryFace
 	for nFace := 0; nFace < int(header.FaceCount); nFace++ {
 		err = binary.Read(d.r, binary.LittleEndian, &facet)
@@ -40,6 +42,15 @@ func (d *binaryDecoder) decode(m *mesh.Mesh) error {
 			break
 		}
 		d.decodeFace(&facet, m)
+		if len(m.Faces) > nextFaceCheck {
+			select {
+			case <-ctx.Done():
+				err = ctx.Err()
+				break
+			default: // Default is must to avoid blocking
+			}
+			nextFaceCheck += checkEveryFaces
+		}
 	}
 
 	return err

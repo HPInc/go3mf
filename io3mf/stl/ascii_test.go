@@ -2,6 +2,7 @@ package stl
 
 import (
 	"bytes"
+	"context"
 	"testing"
 
 	"github.com/go-test/deep"
@@ -9,20 +10,26 @@ import (
 )
 
 func Test_asciiDecoder_decode(t *testing.T) {
+	checkEveryFaces = 1
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	checkEveryFaces = 1
 	triangle := createASCIITriangle()
 	tests := []struct {
 		name    string
 		d       *asciiDecoder
+		ctx     context.Context
 		want    *mesh.Mesh
 		wantErr bool
 	}{
-		{"eof", &asciiDecoder{r: bytes.NewReader(make([]byte, 0))}, new(mesh.Mesh), false},
-		{"base", &asciiDecoder{r: bytes.NewBufferString(triangle)}, createMeshTriangle(), false},
+		{"eof", &asciiDecoder{r: bytes.NewReader(make([]byte, 0))}, context.Background(), new(mesh.Mesh), false},
+		{"base", &asciiDecoder{r: bytes.NewBufferString(triangle)}, context.Background(), createMeshTriangle(), false},
+		{"cancel", &asciiDecoder{r: bytes.NewBufferString(triangle)}, ctx, createMeshTriangle(), true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := new(mesh.Mesh)
-			err := tt.d.decode(got)
+			err := tt.d.decode(tt.ctx, got)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("asciiDecoder.decode() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -61,7 +68,7 @@ func Test_asciiEncoder_encode(t *testing.T) {
 				// We do decoder and then encoder again, and the result must be the same
 				decoder := &asciiDecoder{r: tt.e.w.(*bytes.Buffer)}
 				got := new(mesh.Mesh)
-				decoder.decode(got)
+				decoder.decode(context.Background(), got)
 				if diff := deep.Equal(got, tt.args.m); diff != nil {
 					t.Errorf("asciiDecoder.encode() = %v", diff)
 					return

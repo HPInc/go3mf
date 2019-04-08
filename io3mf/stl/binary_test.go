@@ -2,6 +2,7 @@ package stl
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"testing"
 
@@ -10,22 +11,27 @@ import (
 )
 
 func Test_binaryDecoder_decode(t *testing.T) {
+	checkEveryFaces = 1
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
 	triangle := createBinaryTriangle()
 	tests := []struct {
 		name    string
 		d       *binaryDecoder
+		ctx     context.Context
 		want    *mesh.Mesh
 		wantErr bool
 	}{
-		{"base", &binaryDecoder{r: bytes.NewReader(triangle)}, createMeshTriangle(), false},
-		{"eof", &binaryDecoder{r: bytes.NewReader(make([]byte, 0))}, nil, true},
-		{"onlyheader", &binaryDecoder{r: bytes.NewReader(make([]byte, 80))}, nil, true},
-		{"invalidface", &binaryDecoder{r: bytes.NewReader(triangle[:100])}, nil, true},
+		{"base", &binaryDecoder{r: bytes.NewReader(triangle)}, context.Background(), createMeshTriangle(), false},
+		{"cancel", &binaryDecoder{r: bytes.NewReader(triangle)}, ctx, createMeshTriangle(), true},
+		{"eof", &binaryDecoder{r: bytes.NewReader(make([]byte, 0))}, context.Background(), nil, true},
+		{"onlyheader", &binaryDecoder{r: bytes.NewReader(make([]byte, 80))}, context.Background(), nil, true},
+		{"invalidface", &binaryDecoder{r: bytes.NewReader(triangle[:100])}, context.Background(), nil, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := new(mesh.Mesh)
-			err := tt.d.decode(got)
+			err := tt.d.decode(tt.ctx, got)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("binaryDecoder.decode() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -65,7 +71,7 @@ func Test_binaryEncoder_encode(t *testing.T) {
 				// We do decoder and then encoder again, and the result must be the same
 				decoder := &binaryDecoder{r: tt.e.w.(*bytes.Buffer)}
 				got := new(mesh.Mesh)
-				decoder.decode(got)
+				decoder.decode(context.Background(), got)
 				if diff := deep.Equal(got, tt.args.m); diff != nil {
 					t.Errorf("binaryDecoder.encode() = %v", diff)
 					return

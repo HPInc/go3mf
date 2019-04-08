@@ -2,6 +2,7 @@ package stl
 
 import (
 	"bufio"
+	"context"
 	"io"
 	"strings"
 	"unicode/utf8"
@@ -9,6 +10,8 @@ import (
 	"github.com/qmuntal/go3mf"
 	"github.com/qmuntal/go3mf/mesh"
 )
+
+var checkEveryFaces = 1000
 
 const sizeOfHeader = 300 // minimum size of a closed mesh in binary is 384 bytes, corresponding to a triangle.
 
@@ -27,6 +30,11 @@ func NewDecoder(r io.Reader) *Decoder {
 
 // Decode creates a mesh from a read stream.
 func (d *Decoder) Decode(m *go3mf.Model) error {
+	return d.DecodeContext(context.Background(), m)
+}
+
+// DecodeContext creates a mesh from a read stream.
+func (d *Decoder) DecodeContext(ctx context.Context, m *go3mf.Model) error {
 	b := bufio.NewReader(d.r)
 	isASCII, err := d.isASCII(b)
 	if err != nil {
@@ -35,10 +43,10 @@ func (d *Decoder) Decode(m *go3mf.Model) error {
 	newMesh := new(mesh.Mesh)
 	if isASCII {
 		decoder := asciiDecoder{r: b}
-		err = decoder.decode(newMesh)
+		err = decoder.decode(ctx, newMesh)
 	} else {
 		decoder := binaryDecoder{r: b}
-		err = decoder.decode(newMesh)
+		err = decoder.decode(ctx, newMesh)
 	}
 	if err == nil {
 		m.Resources = append(m.Resources, &go3mf.MeshResource{
