@@ -47,11 +47,11 @@ func TestDecoder_Decode(t *testing.T) {
 		{"empty", NewDecoder(new(bytes.Buffer)), nil, true},
 		{"binary", NewDecoder(bytes.NewReader(triangle)), &go3mf.MeshResource{
 			ObjectResource: go3mf.ObjectResource{ID: 1},
-			Mesh: createMeshTriangle(),
+			Mesh:           createMeshTriangle(),
 		}, false},
 		{"ascii", NewDecoder(bytes.NewBufferString(triangleASCII)), &go3mf.MeshResource{
 			ObjectResource: go3mf.ObjectResource{ID: 1},
-			Mesh: createMeshTriangle(),
+			Mesh:           createMeshTriangle(),
 		}, false},
 	}
 	for _, tt := range tests {

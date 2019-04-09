@@ -17,6 +17,15 @@ import (
 	"github.com/qmuntal/go3mf/mesh"
 )
 
+// A XMLDecoder is anything that can decode a stream of XML tokens, including a Decoder.
+type XMLDecoder interface {
+	xml.TokenReader
+	// Skip reads tokens until it has consumed the end element matching the most recent start element already consumed.
+	Skip() error
+	// InputOffset returns the input stream byte offset of the current decoder position.
+	InputOffset() int64
+}
+
 type relationship interface {
 	Type() string
 	TargetURI() string
@@ -30,7 +39,7 @@ type packageFile interface {
 }
 
 type packageReader interface {
-	Open() error
+	Open(func(r io.Reader) io.ReadCloser) error
 	FindFileFromRel(string) (packageFile, bool)
 	FindFileFromName(string) (packageFile, bool)
 }
@@ -147,7 +156,7 @@ func (d *modelFile) IsRoot() bool {
 	return d.isRoot
 }
 
-func (d *modelFile) Decode(ctx context.Context, x *xml.Decoder) (err error) {
+func (d *modelFile) Decode(ctx context.Context, x XMLDecoder) (err error) {
 	d.namespaces = make(map[string]string)
 	d.resourcesMap = make(map[uint32]go3mf.Resource)
 
@@ -216,7 +225,9 @@ func (d *modelFile) Decode(ctx context.Context, x *xml.Decoder) (err error) {
 type Reader struct {
 	Warnings            []error
 	AttachmentRelations []string
-	r                   packageReader
+	p                   packageReader
+	x                   func(r io.Reader) XMLDecoder
+	flate               func(r io.Reader) io.ReadCloser
 	productionModels    map[string]packageFile
 	ctx                 context.Context
 }
@@ -224,13 +235,23 @@ type Reader struct {
 // NewReader returns a new Reader reading a 3mf file from r.
 func NewReader(r io.ReaderAt, size int64) *Reader {
 	return &Reader{
-		r: &opcReader{ra: r, size: size},
+		p: &opcReader{ra: r, size: size},
 	}
 }
 
 // Decode reads the 3mf file and unmarshall its content into the model.
 func (r *Reader) Decode(model *go3mf.Model) error {
 	return r.DecodeContext(context.Background(), model)
+}
+
+// SetXMLDecoder sets the XML decoder to use when reading XML files.
+func (r *Reader) SetXMLDecoder(d func(r io.Reader) XMLDecoder) {
+	r.x = d
+}
+
+// SetDecompressor sets or overrides a custom decompressor for deflating the zip package.
+func (r *Reader) SetDecompressor(dcomp func(r io.Reader) io.ReadCloser) {
+	r.flate = dcomp
 }
 
 // DecodeContext reads the 3mf file and unmarshall its content into the model.
@@ -248,6 +269,13 @@ func (r *Reader) DecodeContext(ctx context.Context, model *go3mf.Model) error {
 	return nil
 }
 
+func (r *Reader) tokenReader(xr io.Reader) XMLDecoder {
+	if r.x == nil {
+		return xml.NewDecoder(xr)
+	}
+	return r.x(xr)
+}
+
 func (r *Reader) processRootModel(ctx context.Context, rootFile packageFile, model *go3mf.Model) error {
 	f, err := rootFile.Open()
 	if err != nil {
@@ -255,7 +283,7 @@ func (r *Reader) processRootModel(ctx context.Context, rootFile packageFile, mod
 	}
 	defer f.Close()
 	d := modelFile{r: r, path: rootFile.Name(), isRoot: true, model: model}
-	err = d.Decode(ctx, xml.NewDecoder(f))
+	err = d.Decode(ctx, r.tokenReader(f))
 	select {
 	case <-ctx.Done():
 		err = ctx.Err()
@@ -315,11 +343,11 @@ func (r *Reader) processNonRootModels(ctx context.Context, model *go3mf.Model) (
 }
 
 func (r *Reader) processOPC(model *go3mf.Model) (packageFile, error) {
-	err := r.r.Open()
+	err := r.p.Open(r.flate)
 	if err != nil {
 		return nil, err
 	}
-	rootFile, ok := r.r.FindFileFromRel(relTypeModel3D)
+	rootFile, ok := r.p.FindFileFromRel(relTypeModel3D)
 	if !ok {
 		return nil, errors.New("go3mf: package does not have root model")
 	}
@@ -329,7 +357,7 @@ func (r *Reader) processOPC(model *go3mf.Model) (packageFile, error) {
 	r.extractCustomAttachments(rootFile, model)
 	r.extractModelAttachments(rootFile, model)
 	for _, a := range model.ProductionAttachments {
-		file, _ := r.r.FindFileFromName(a.Path)
+		file, _ := r.p.FindFileFromName(a.Path)
 		r.extractCustomAttachments(file, model)
 		r.extractTexturesAttachments(file, model)
 	}
@@ -400,7 +428,7 @@ func (r *Reader) readProductionAttachmentModel(ctx context.Context, i int, model
 	}
 	defer file.Close()
 	d := modelFile{r: r, path: attachment.Path, isRoot: false, model: model}
-	err = d.Decode(ctx, xml.NewDecoder(file))
+	err = d.Decode(ctx, r.tokenReader(file))
 	return &d, nil
 }
 

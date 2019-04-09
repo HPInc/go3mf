@@ -1,10 +1,7 @@
 package io3mf
 
 import (
-	"fmt"
 	"io"
-	"path/filepath"
-	"strings"
 
 	"github.com/qmuntal/opc"
 )
@@ -44,10 +41,7 @@ func (o *opcFile) Name() string {
 
 func (o *opcFile) FindFileFromRel(relType string) (packageFile, bool) {
 	name := findOPCFileURIFromRel(relType, o.f.Relationships)
-	if !strings.HasPrefix(name, "/") && !strings.HasPrefix(name, "\\") {
-		base := strings.Replace(filepath.Dir(o.f.Name), "\\", "/", -1)
-		name = fmt.Sprintf("%s/%s", base, name)
-	}
+	name = opc.ResolveRelationship(o.f.Name, name)
 	return findOPCFileFromName(name, o.r)
 }
 
@@ -61,8 +55,11 @@ type opcReader struct {
 	r    *opc.Reader // nil until call Open.
 }
 
-func (o *opcReader) Open() (err error) {
+func (o *opcReader) Open(f func(r io.Reader) io.ReadCloser) (err error) {
 	o.r, err = opc.NewReader(o.ra, o.size)
+	if f != nil {
+		o.r.SetDecompressor(f)
+	}
 	return
 }
 

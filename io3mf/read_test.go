@@ -2,6 +2,7 @@ package io3mf
 
 import (
 	"bytes"
+	"compress/flate"
 	"context"
 	"encoding/xml"
 	"errors"
@@ -136,14 +137,14 @@ type mockPackage struct {
 
 func newMockPackage(other *mockFile) *mockPackage {
 	m := new(mockPackage)
-	m.On("Open").Return(nil).Maybe()
+	m.On("Open", mock.Anything).Return(nil).Maybe()
 	m.On("FindFileFromRel", mock.Anything).Return(other, other != nil).Maybe()
 	m.On("FindFileFromName", mock.Anything).Return(other, other != nil).Maybe()
 	return m
 }
 
-func (m *mockPackage) Open() error {
-	args := m.Called()
+func (m *mockPackage) Open(f func(r io.Reader) io.ReadCloser) error {
+	args := m.Called(f)
 	return args.Error(0)
 }
 
@@ -184,29 +185,29 @@ func TestReader_processOPC(t *testing.T) {
 		want    *go3mf.Model
 		wantErr bool
 	}{
-		{"noRoot", &Reader{r: newMockPackage(nil)}, &go3mf.Model{}, true},
-		{"noRels", &Reader{r: newMockPackage(newMockFile("/a.model", nil, nil, nil, false))}, &go3mf.Model{Path: "/a.model"}, false},
+		{"noRoot", &Reader{p: newMockPackage(nil)}, &go3mf.Model{}, true},
+		{"noRels", &Reader{p: newMockPackage(newMockFile("/a.model", nil, nil, nil, false))}, &go3mf.Model{Path: "/a.model"}, false},
 		{"withThumb", &Reader{
-			r: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeThumbnail, "/a.png")}, thumbFile, thumbFile, false)),
+			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeThumbnail, "/a.png")}, thumbFile, thumbFile, false)),
 		}, &go3mf.Model{
 			Path:        "/a.model",
 			Thumbnail:   &go3mf.Attachment{RelationshipType: relTypeThumbnail, Path: "/Metadata/thumbnail.png", Stream: new(bytes.Buffer)},
 			Attachments: []*go3mf.Attachment{{RelationshipType: relTypeThumbnail, Path: "/a.png", Stream: new(bytes.Buffer)}},
 		}, false},
 		{"withThumbErr", &Reader{
-			r: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeThumbnail, "/a.png")}, thumbErr, thumbErr, false)),
+			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeThumbnail, "/a.png")}, thumbErr, thumbErr, false)),
 		}, &go3mf.Model{Path: "/a.model"}, false},
 		{"withOtherRel", &Reader{
-			r: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship("other", "/a.png")}, nil, nil, false)),
+			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship("other", "/a.png")}, nil, nil, false)),
 		}, &go3mf.Model{Path: "/a.model"}, false},
 		{"withModelAttachment", &Reader{
-			r: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeModel3D, "/a.model")}, nil, newMockFile("/a.model", nil, nil, nil, false), false)),
+			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeModel3D, "/a.model")}, nil, newMockFile("/a.model", nil, nil, nil, false), false)),
 		}, &go3mf.Model{
 			Path:                  "/a.model",
 			ProductionAttachments: []*go3mf.ProductionAttachment{{RelationshipType: relTypeModel3D, Path: "/a.model"}},
 		}, false},
 		{"withAttRel", &Reader{AttachmentRelations: []string{"b"},
-			r: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship("b", "/a.xml")}, nil, newMockFile("/a.xml", nil, nil, nil, false), false)),
+			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship("b", "/a.xml")}, nil, newMockFile("/a.xml", nil, nil, nil, false), false)),
 		}, &go3mf.Model{
 			Path:        "/a.model",
 			Attachments: []*go3mf.Attachment{{RelationshipType: "b", Path: "/a.xml", Stream: new(bytes.Buffer)}},
@@ -482,7 +483,10 @@ func TestReader_processRootModel(t *testing.T) {
 		`).build()
 
 	t.Run("base", func(t *testing.T) {
-		if err := new(Reader).processRootModel(context.Background(), rootFile, got); err != nil {
+		reader := new(Reader)
+		reader.SetDecompressor(func(r io.Reader) io.ReadCloser { return flate.NewReader(r) })
+		reader.SetXMLDecoder(func(r io.Reader) XMLDecoder { return xml.NewDecoder(r) })
+		if err := reader.processRootModel(context.Background(), rootFile, got); err != nil {
 			t.Errorf("Reader.processRootModel() unexpected error = %v", err)
 			return
 		}
@@ -645,7 +649,7 @@ func TestReader_Decode(t *testing.T) {
 		wantErr bool
 	}{
 		{"base", &Reader{AttachmentRelations: []string{"b"},
-			r: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship("b", "/a.xml")}, nil, newMockFile("/a.xml", nil, nil, nil, false), false)),
+			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship("b", "/a.xml")}, nil, newMockFile("/a.xml", nil, nil, nil, false), false)),
 		}, false},
 	}
 	for _, tt := range tests {
@@ -704,7 +708,7 @@ func TestNewReader(t *testing.T) {
 		args args
 		want *Reader
 	}{
-		{"base", args{nil, 5}, &Reader{r: &opcReader{ra: nil, size: 5}}},
+		{"base", args{nil, 5}, &Reader{p: &opcReader{ra: nil, size: 5}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
