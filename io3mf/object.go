@@ -2,8 +2,6 @@ package io3mf
 
 import (
 	"encoding/xml"
-	"errors"
-	"strconv"
 
 	"github.com/gofrs/uuid"
 	go3mf "github.com/qmuntal/go3mf"
@@ -15,35 +13,35 @@ type objectDecoder struct {
 	resource      go3mf.ObjectResource
 }
 
-func (d *objectDecoder) Open() error {
-	d.resource.ModelPath = d.ModelFile().Path()
-	return nil
+func (d *objectDecoder) Open() {
+	d.resource.ModelPath = d.file.path
 }
 
-func (d *objectDecoder) Attributes(attrs []xml.Attr) (err error) {
+func (d *objectDecoder) Close() bool {
+	return d.file.parser.CloseResource()
+}
+
+func (d *objectDecoder) Attributes(attrs []xml.Attr) bool {
+	ok := true
 	for _, a := range attrs {
 		switch a.Name.Space {
 		case nsProductionSpec:
 			if a.Name.Local == attrProdUUID {
-				if d.resource.UUID != "" {
-					d.ModelFile().AddWarning(&ReadError{InvalidMandatoryValue, "go3mf: duplicated object resource uuid attribute"})
+				if _, err := uuid.FromString(a.Value); err != nil {
+					ok = d.file.parser.InvalidRequiredAttr(attrProdUUID)
 				}
-				if _, err = uuid.FromString(a.Value); err != nil {
-					err = errors.New("go3mf: object resource uuid is not valid")
-				} else {
-					d.resource.UUID = a.Value
-				}
+				d.resource.UUID = a.Value
 			}
 		case nsSliceSpec:
-			err = d.parseSliceAttr(a)
+			ok = d.parseSliceAttr(a)
 		case "":
-			err = d.parseCoreAttr(a)
+			ok = d.parseCoreAttr(a)
 		}
-		if err != nil {
+		if !ok {
 			break
 		}
 	}
-	return
+	return ok
 }
 
 func (d *objectDecoder) Child(name xml.Name) (child nodeDecoder) {
@@ -52,7 +50,7 @@ func (d *objectDecoder) Child(name xml.Name) (child nodeDecoder) {
 			child = &meshDecoder{resource: go3mf.MeshResource{ObjectResource: d.resource}}
 		} else if name.Local == attrComponents {
 			if d.resource.DefaultPropertyID != 0 {
-				d.ModelFile().AddWarning(&ReadError{InvalidOptionalValue, "go3mf: a components object must not have a default PID"})
+				d.file.parser.GenericError(true, "a components object must not have a default PID")
 			}
 			child = &componentsDecoder{resource: go3mf.ComponentsResource{ObjectResource: d.resource}}
 		}
@@ -60,24 +58,16 @@ func (d *objectDecoder) Child(name xml.Name) (child nodeDecoder) {
 	return
 }
 
-func (d *objectDecoder) parseCoreAttr(a xml.Attr) (err error) {
+func (d *objectDecoder) parseCoreAttr(a xml.Attr) bool {
+	ok := true
 	switch a.Name.Local {
 	case attrID:
-		if d.resource.ID != 0 {
-			err = errors.New("go3mf: duplicated object resource id attribute")
-		} else {
-			var id uint64
-			id, err = strconv.ParseUint(a.Value, 10, 32)
-			if err != nil {
-				err = errors.New("go3mf: object resource id is not valid")
-			}
-			d.resource.ID = uint32(id)
-		}
+		d.resource.ID, ok = d.file.parser.ParseResourceID(a.Value)
 	case attrType:
-		var ok bool
 		d.resource.ObjectType, ok = newObjectType(a.Value)
 		if !ok {
-			d.ModelFile().AddWarning(&ReadError{InvalidOptionalValue, "go3mf: object resource type is not valid"})
+			ok = true
+			d.file.parser.InvalidOptionalAttr(attrType)
 		}
 	case attrThumbnail:
 		d.resource.Thumbnail = a.Value
@@ -86,43 +76,26 @@ func (d *objectDecoder) parseCoreAttr(a xml.Attr) (err error) {
 	case attrPartNumber:
 		d.resource.PartNumber = a.Value
 	case attrPID:
-		var id uint64
-		id, err = strconv.ParseUint(a.Value, 10, 32)
-		if err != nil {
-			err = errors.New("go3mf: object resource pid is not valid")
-		}
-		d.resource.DefaultPropertyID = uint32(id)
+		d.resource.DefaultPropertyID = d.file.parser.ParseUint32Optional(attrPID, a.Value)
 	case attrPIndex:
-		var id uint64
-		id, err = strconv.ParseUint(a.Value, 10, 32)
-		if err != nil {
-			err = errors.New("go3mf: object resource pindex is not valid")
-		}
-		d.resource.DefaultPropertyIndex = uint32(id)
+		d.resource.DefaultPropertyIndex = d.file.parser.ParseUint32Optional(attrPIndex, a.Value)
 	}
-	return
+	return ok
 }
 
-func (d *objectDecoder) parseSliceAttr(a xml.Attr) (err error) {
+func (d *objectDecoder) parseSliceAttr(a xml.Attr) bool {
+	ok := true
 	switch a.Name.Local {
 	case attrSliceRefID:
-		if d.resource.SliceStackID != 0 {
-			d.ModelFile().AddWarning(&ReadError{InvalidOptionalValue, "go3mf: duplicated object resource slicestackid attribute"})
-		}
-		var id uint64
-		id, err = strconv.ParseUint(a.Value, 10, 32)
-		if err != nil {
-			err = errors.New("go3mf: object resource slicestackid is not valid")
-		}
-		d.resource.SliceStackID = uint32(id)
+		d.resource.SliceStackID, ok = d.file.parser.ParseUint32Required(attrSliceRefID, a.Value)
 	case attrMeshRes:
-		var ok bool
 		d.resource.SliceResoultion, ok = newSliceResolution(a.Value)
 		if !ok {
-			err = errors.New("go3mf: object resource sliceresolution is not valid")
+			ok = true
+			d.file.parser.InvalidOptionalAttr(attrMeshRes)
 		}
 	}
-	return
+	return ok
 }
 
 type componentsDecoder struct {
@@ -131,13 +104,12 @@ type componentsDecoder struct {
 	componentDecoder componentDecoder
 }
 
-func (d *componentsDecoder) Open() error {
+func (d *componentsDecoder) Open() {
 	d.componentDecoder.resource = &d.resource
-	return nil
 }
-func (d *componentsDecoder) Close() error {
-	d.ModelFile().AddResource(&d.resource)
-	return nil
+func (d *componentsDecoder) Close() bool {
+	d.file.AddResource(&d.resource)
+	return true
 }
 
 func (d *componentsDecoder) Child(name xml.Name) (child nodeDecoder) {
@@ -152,61 +124,60 @@ type componentDecoder struct {
 	resource *go3mf.ComponentsResource
 }
 
-func (d *componentDecoder) Attributes(attrs []xml.Attr) (err error) {
-	var component go3mf.Component
-	var path string
-	var objectID uint64
+func (d *componentDecoder) Attributes(attrs []xml.Attr) bool {
+	var (
+		component go3mf.Component
+		path      string
+		objectID  uint32
+	)
+	ok := true
 	for _, a := range attrs {
 		switch a.Name.Space {
 		case nsProductionSpec:
 			if a.Name.Local == attrProdUUID {
-				if component.UUID != "" {
-					d.ModelFile().AddWarning(&ReadError{InvalidMandatoryValue, "go3mf: duplicated component uuid attribute"})
+				if _, err := uuid.FromString(a.Value); err != nil {
+					ok = d.file.parser.InvalidRequiredAttr(attrProdUUID)
 				}
-				if _, err = uuid.FromString(a.Value); err != nil {
-					err = errors.New("go3mf: component uuid is not valid")
-				} else {
-					component.UUID = a.Value
-				}
+				component.UUID = a.Value
 			} else if a.Name.Local == attrPath {
-				if path != "" {
-					d.ModelFile().AddWarning(&ReadError{InvalidMandatoryValue, "go3mf: duplicated component path attribute"})
-				}
 				path = a.Value
 			}
 		case "":
 			if a.Name.Local == attrObjectID {
-				if objectID != 0 {
-					err = errors.New("go3mf: duplicated component objectid attribute")
-				}
-				objectID, err = strconv.ParseUint(a.Value, 10, 32)
-				if err != nil {
-					err = errors.New("go3mf: component id is not valid")
-				}
+				objectID, ok = d.file.parser.ParseUint32Required(attrObjectID, a.Value)
 			} else if a.Name.Local == attrTransform {
+				var err error
 				component.Transform, err = strToMatrix(a.Value)
+				if err != nil {
+					d.file.parser.InvalidOptionalAttr(attrTransform)
+				}
 			}
 		}
-		if err != nil {
-			break
+		if !ok {
+			return false
 		}
 	}
-	if component.UUID == "" && d.ModelFile().NamespaceRegistered(nsProductionSpec) {
-		d.ModelFile().AddWarning(&ReadError{MissingMandatoryValue, "go3mf: a UUID for a component is missing"})
+
+	if component.UUID == "" && d.file.NamespaceRegistered(nsProductionSpec) {
+		if !d.file.parser.MissingAttr(attrProdUUID) {
+			return false
+		}
 	}
 
-	if path != "" && !d.ModelFile().IsRoot() {
-		return errors.New("go3mf: a component in a non-root model has a path attribute")
+	if path != "" && !d.file.isRoot {
+		if !d.file.parser.GenericError(true, "a component in a non-root model has a path attribute") {
+			return false
+		}
 	}
 
-	resource, ok := d.ModelFile().FindResource(path, uint32(objectID))
+	resource, ok := d.file.FindResource(path, uint32(objectID))
 	if !ok {
-		err = errors.New("go3mf: could not find component object")
+		return d.file.parser.GenericError(true, "could not find component object")
 	}
 	component.Object, ok = resource.(go3mf.Object)
 	if !ok {
-		return errors.New("go3mf: could not find component object")
+		return d.file.parser.GenericError(true, "a component points to a non-object resource")
 	}
 	d.resource.Components = append(d.resource.Components, &component)
-	return
+	return true
 }

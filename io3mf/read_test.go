@@ -237,7 +237,7 @@ func TestReader_processRootModel_Fail(t *testing.T) {
 	}{
 		{"errOpen", newMockFile("/a.model", nil, nil, nil, true), true},
 		{"errEncode", new(modelBuilder).withEncoding("utf16").build(), true},
-		{"invalidUnits", new(modelBuilder).withModel("other", "en-US").build(), true},
+		{"invalidUnits", new(modelBuilder).withModel("other", "en-US").build(), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -362,7 +362,7 @@ func TestReader_processRootModel(t *testing.T) {
 	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: components, PartNumber: "bob", UUID: "e9e25302-6428-402e-8633-cc95528d0ed2",
 		Transform: mesh.Matrix{1, 0, 0, -66.4, 0, 2, 0, -87.1, 0, 0, 3, 8.8, 0, 0, 0, 1},
 	})
-	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: otherMesh})
+	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: otherMesh, UUID: "e9e25302-6428-402e-8633-cc95528d0ed3"})
 	want.Metadata = append(want.Metadata, []go3mf.Metadata{
 		{Name: "Application", Value: "go3mf app"},
 		{Name: nsProductionSpec + ":CustomMetadata1", Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},
@@ -475,7 +475,7 @@ func TestReader_processRootModel(t *testing.T) {
 			</resources>
 			<build p:UUID="e9e25302-6428-402e-8633-cc95528d0ed3">
 				<item partnumber="bob" objectid="20" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed2" transform="1 0 0 0 2 0 0 0 3 -66.4 -87.1 8.8" />
-				<item objectid="8" p:path="/3d/other.model" />
+				<item objectid="8" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed3" p:path="/3d/other.model" />
 			</build>
 			<metadata name="Application">go3mf app</metadata>
 			<metadata name="p:CustomMetadata1" type="xs:string" preserve="1">CE8A91FB-C44E-4F00-B634-BAA411465F6A</metadata>

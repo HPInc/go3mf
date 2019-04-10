@@ -305,7 +305,7 @@ type SliceStack struct {
 // AddSlice adds an slice to the stack and returns its index.
 func (s *SliceStack) AddSlice(slice *mesh.Slice) (int, error) {
 	if slice.TopZ < s.BottomZ || (len(s.Slices) != 0 && slice.TopZ < s.Slices[0].TopZ) {
-		return 0, errors.New("go3mf: The z-coordinates of slices within a slicestack are not increasing")
+		return 0, errors.New("the z-coordinates of slices within a slicestack are not increasing")
 	}
 	s.Slices = append(s.Slices, slice)
 	return len(s.Slices) - 1, nil

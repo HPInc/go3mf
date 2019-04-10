@@ -70,26 +70,24 @@ func (r *ReadCloser) Close() error {
 }
 
 type nodeDecoder interface {
-	Open() error
-	Attributes([]xml.Attr) error
-	Text([]byte) error
+	Open()
+	Attributes([]xml.Attr) bool
+	Text([]byte) bool
 	Child(xml.Name) nodeDecoder
-	Close() error
+	Close() bool
 	SetModelFile(f *modelFile)
-	ModelFile() *modelFile
 }
 
 type emptyDecoder struct {
 	file *modelFile
 }
 
-func (d *emptyDecoder) Open() error                 { return nil }
-func (d *emptyDecoder) Attributes([]xml.Attr) error { return nil }
-func (d *emptyDecoder) Text([]byte) error           { return nil }
-func (d *emptyDecoder) Child(xml.Name) nodeDecoder  { return nil }
-func (d *emptyDecoder) Close() error                { return nil }
-func (d *emptyDecoder) ModelFile() *modelFile       { return d.file }
-func (d *emptyDecoder) SetModelFile(f *modelFile)   { d.file = f }
+func (d *emptyDecoder) Open()                      { return }
+func (d *emptyDecoder) Attributes([]xml.Attr) bool { return true }
+func (d *emptyDecoder) Text([]byte) bool           { return true }
+func (d *emptyDecoder) Child(xml.Name) nodeDecoder { return nil }
+func (d *emptyDecoder) Close() bool                { return true }
+func (d *emptyDecoder) SetModelFile(f *modelFile)  { d.file = f }
 
 type topLevelDecoder struct {
 	emptyDecoder
@@ -115,6 +113,7 @@ type modelFile struct {
 	resourcesMap map[uint32]go3mf.Resource
 	resources    []go3mf.Resource
 	namespaces   map[string]string
+	parser       parser
 }
 
 func (d *modelFile) AddWarning(err error) {
@@ -148,15 +147,8 @@ func (d *modelFile) NamespaceRegistered(ns string) bool {
 	return false
 }
 
-func (d *modelFile) Path() string {
-	return d.path
-}
-
-func (d *modelFile) IsRoot() bool {
-	return d.isRoot
-}
-
 func (d *modelFile) Decode(ctx context.Context, x XMLDecoder) (err error) {
+	d.parser = parser{Strict: true, ModelPath: d.path}
 	d.namespaces = make(map[string]string)
 	d.resourcesMap = make(map[uint32]go3mf.Resource)
 
@@ -180,25 +172,29 @@ func (d *modelFile) Decode(ctx context.Context, x XMLDecoder) (err error) {
 			tmpDecoder = currentDecoder.Child(tp.Name)
 			if tmpDecoder != nil {
 				tmpDecoder.SetModelFile(d)
+				d.parser.Element = tp.Name.Local
 				state = append(state, currentDecoder)
 				names = append(names, currentName)
 				currentName = tp.Name
 				currentDecoder = tmpDecoder
-				err = currentDecoder.Open()
-				if err == nil {
-					err = currentDecoder.Attributes(tp.Attr)
+				currentDecoder.Open()
+				if !currentDecoder.Attributes(tp.Attr) {
+					err = d.parser.Err
 				}
 			} else {
 				err = x.Skip()
 			}
 		case xml.CharData:
-			err = currentDecoder.Text(tp)
+			if !currentDecoder.Text(tp) {
+				err = d.parser.Err
+			}
 		case xml.EndElement:
 			if currentName == tp.Name {
-				err = currentDecoder.Close()
-				if err == nil {
+				if currentDecoder.Close() {
 					currentDecoder, state = state[len(state)-1], state[:len(state)-1]
 					currentName, names = names[len(names)-1], names[:len(names)-1]
+				} else {
+					err = d.parser.Err
 				}
 			}
 			if x.InputOffset() > nextBytesCheck {

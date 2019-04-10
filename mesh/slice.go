@@ -39,16 +39,16 @@ func (s *Slice) AddVertex(x, y float32) int {
 // AddPolygonIndex adds a new index to the polygon.
 func (s *Slice) AddPolygonIndex(polygonIndex, index int) error {
 	if polygonIndex >= len(s.Polygons) {
-		return errors.New("go3mf: invalid polygon index")
+		return errors.New("invalid polygon index")
 	}
 
 	if index >= len(s.Vertices) {
-		return errors.New("go3mf: invalid slice segment index")
+		return errors.New("invalid slice segment index")
 	}
 
 	p := s.Polygons[polygonIndex]
 	if len(p) > 0 && p[len(p)-1] == index {
-		return errors.New("go3mf: duplicated slice segment index")
+		return errors.New("duplicated slice segment index")
 	}
 	s.Polygons[polygonIndex] = append(s.Polygons[polygonIndex], index)
 	return nil

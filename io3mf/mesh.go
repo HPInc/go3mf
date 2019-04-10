@@ -2,8 +2,6 @@ package io3mf
 
 import (
 	"encoding/xml"
-	"errors"
-	"strconv"
 
 	"github.com/qmuntal/go3mf"
 	"github.com/qmuntal/go3mf/mesh"
@@ -14,16 +12,15 @@ type meshDecoder struct {
 	resource go3mf.MeshResource
 }
 
-func (d *meshDecoder) Open() error {
+func (d *meshDecoder) Open() {
 	d.resource.Mesh = new(mesh.Mesh)
 	d.resource.Mesh.StartCreation(mesh.CreationOptions{CalculateConnectivity: false})
-	return nil
 }
 
-func (d *meshDecoder) Close() error {
+func (d *meshDecoder) Close() bool {
 	d.resource.Mesh.EndCreation()
-	d.ModelFile().AddResource(&d.resource)
-	return nil
+	d.file.AddResource(&d.resource)
+	return true
 }
 
 func (d *meshDecoder) Child(name xml.Name) (child nodeDecoder) {
@@ -45,9 +42,8 @@ type verticesDecoder struct {
 	vertexDecoder vertexDecoder
 }
 
-func (d *verticesDecoder) Open() error {
+func (d *verticesDecoder) Open() {
 	d.vertexDecoder.resource = d.resource
-	return nil
 }
 
 func (d *verticesDecoder) Child(name xml.Name) (child nodeDecoder) {
@@ -62,25 +58,24 @@ type vertexDecoder struct {
 	resource *go3mf.MeshResource
 }
 
-func (d *vertexDecoder) Attributes(attrs []xml.Attr) (err error) {
-	var x, y, z float64
+func (d *vertexDecoder) Attributes(attrs []xml.Attr) bool {
+	var x, y, z float32
+	ok := true
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrX:
-			x, err = strconv.ParseFloat(a.Value, 32)
+			x, ok = d.file.parser.ParseFloat32Required(a.Name.Local, a.Value)
 		case attrY:
-			y, err = strconv.ParseFloat(a.Value, 32)
+			y, ok = d.file.parser.ParseFloat32Required(a.Name.Local, a.Value)
 		case attrZ:
-			z, err = strconv.ParseFloat(a.Value, 32)
+			z, ok = d.file.parser.ParseFloat32Required(a.Name.Local, a.Value)
 		}
-		if err != nil {
-			break
+		if !ok {
+			return false
 		}
 	}
-	if err == nil {
-		d.resource.Mesh.AddNode(mesh.Node3D{float32(x), float32(y), float32(z)})
-	}
-	return
+	d.resource.Mesh.AddNode(mesh.Node3D{x, y, z})
+	return true
 }
 
 type trianglesDecoder struct {
@@ -89,13 +84,12 @@ type trianglesDecoder struct {
 	triangleDecoder triangleDecoder
 }
 
-func (d *trianglesDecoder) Open() error {
+func (d *trianglesDecoder) Open() {
 	d.triangleDecoder.resource = d.resource
 
 	if len(d.resource.Mesh.Faces) == 0 && len(d.resource.Mesh.Nodes) > 0 {
 		d.resource.Mesh.Faces = make([]mesh.Face, 0, len(d.resource.Mesh.Nodes)-1)
 	}
-	return nil
 }
 
 func (d *trianglesDecoder) Child(name xml.Name) (child nodeDecoder) {
@@ -110,63 +104,61 @@ type triangleDecoder struct {
 	resource *go3mf.MeshResource
 }
 
-func (d *triangleDecoder) Attributes(attrs []xml.Attr) (err error) {
-	var v1, v2, v3, pid, p1, p2, p3 uint64
+func (d *triangleDecoder) Attributes(attrs []xml.Attr) bool {
+	var v1, v2, v3, pid, p1, p2, p3 uint32
 	var hasPID, hasP1, hasP2, hasP3 bool
+	ok := true
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrV1:
-			v1, err = strconv.ParseUint(a.Value, 10, 32)
+			v1, ok = d.file.parser.ParseUint32Required(a.Name.Local, a.Value)
 		case attrV2:
-			v2, err = strconv.ParseUint(a.Value, 10, 32)
+			v2, ok = d.file.parser.ParseUint32Required(a.Name.Local, a.Value)
 		case attrV3:
-			v3, err = strconv.ParseUint(a.Value, 10, 32)
+			v3, ok = d.file.parser.ParseUint32Required(a.Name.Local, a.Value)
 		case attrPID:
-			pid, err = strconv.ParseUint(a.Value, 10, 32)
+			pid = d.file.parser.ParseUint32Optional(a.Name.Local, a.Value)
 			hasPID = true
 		case attrP1:
-			p1, err = strconv.ParseUint(a.Value, 10, 32)
+			p1 = d.file.parser.ParseUint32Optional(a.Name.Local, a.Value)
 			hasP1 = true
 		case attrP2:
-			p2, err = strconv.ParseUint(a.Value, 10, 32)
+			p2 = d.file.parser.ParseUint32Optional(a.Name.Local, a.Value)
 			hasP2 = true
 		case attrP3:
-			p3, err = strconv.ParseUint(a.Value, 10, 32)
+			p3 = d.file.parser.ParseUint32Optional(a.Name.Local, a.Value)
 			hasP3 = true
 		}
-		if err != nil {
-			break
+		if !ok {
+			return false
 		}
 	}
-	if err != nil {
-		return
-	}
 
-	p1 = applyDefault(p1, uint64(d.resource.DefaultPropertyIndex), hasP1)
+	p1 = applyDefault(p1, d.resource.DefaultPropertyIndex, hasP1)
 	p2 = applyDefault(p2, p1, hasP2)
 	p3 = applyDefault(p3, p1, hasP3)
-	pid = applyDefault(pid, uint64(d.resource.DefaultPropertyID), hasPID)
+	pid = applyDefault(pid, d.resource.DefaultPropertyID, hasPID)
 
-	return d.addTriangle(uint32(v1), uint32(v2), uint32(v3), uint32(pid), uint32(p1), uint32(p2), uint32(p3))
+	return d.addTriangle(v1, v2, v3, pid, p1, p2, p3)
 }
 
-func (d *triangleDecoder) addTriangle(v1, v2, v3, pid, p1, p2, p3 uint32) error {
+func (d *triangleDecoder) addTriangle(v1, v2, v3, pid, p1, p2, p3 uint32) bool {
 	if v1 == v2 || v1 == v3 || v2 == v3 {
-		return errors.New("go3mf: invalid triangle indices")
+		return d.file.parser.GenericError(true, "invalid triangle indices")
 	}
 	nodeCount := uint32(len(d.resource.Mesh.Nodes))
 	if v1 >= nodeCount || v2 >= nodeCount || v3 >= nodeCount {
-		return errors.New("go3mf: triangle index is out of range")
+		return d.file.parser.GenericError(true, "triangle index is out of range")
 	}
 	d.resource.Mesh.Faces = append(d.resource.Mesh.Faces, mesh.Face{
 		NodeIndices:     [3]uint32{v1, v2, v3},
 		Resource:        pid,
 		ResourceIndices: [3]uint32{p1, p2, p3},
 	})
-	return nil
+	return true
 }
 
-func applyDefault(val, defVal uint64, noDef bool) uint64 {
+func applyDefault(val, defVal uint32, noDef bool) uint32 {
 	if noDef {
 		return val
 	}

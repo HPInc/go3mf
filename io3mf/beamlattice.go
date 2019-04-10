@@ -2,7 +2,6 @@ package io3mf
 
 import (
 	"encoding/xml"
-	"strconv"
 
 	"github.com/qmuntal/go3mf"
 	"github.com/qmuntal/go3mf/mesh"
@@ -13,34 +12,40 @@ type beamLatticeDecoder struct {
 	resource *go3mf.MeshResource
 }
 
-func (d *beamLatticeDecoder) Attributes(attrs []xml.Attr) (err error) {
+func (d *beamLatticeDecoder) Attributes(attrs []xml.Attr) bool {
+	ok := true
+	var hasRadius, hasMinLength bool
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
 		}
 		switch a.Name.Local {
 		case attrRadius:
-			d.resource.Mesh.DefaultRadius, err = strconv.ParseFloat(a.Value, 64)
+			d.resource.Mesh.DefaultRadius, ok = d.file.parser.ParseFloat64Required(a.Name.Local, a.Value)
+			hasRadius = true
 		case attrMinLength, attrPrecision: // lib3mf legacy
-			d.resource.Mesh.MinLength, err = strconv.ParseFloat(a.Value, 64)
+			d.resource.Mesh.MinLength, ok = d.file.parser.ParseFloat64Required(a.Name.Local, a.Value)
+			hasMinLength = true
 		case attrClippingMode, attrClipping: // lib3mf legacy
 			d.resource.BeamLatticeAttributes.ClipMode, _ = newClipMode(a.Value)
 		case attrClippingMesh:
-			var val uint64
-			val, err = strconv.ParseUint(a.Value, 10, 32)
-			d.resource.BeamLatticeAttributes.ClippingMeshID = uint32(val)
+			d.resource.BeamLatticeAttributes.ClippingMeshID = d.file.parser.ParseUint32Optional(a.Name.Local, a.Value)
 		case attrRepresentationMesh:
-			var val uint64
-			val, err = strconv.ParseUint(a.Value, 10, 32)
-			d.resource.BeamLatticeAttributes.RepresentationMeshID = uint32(val)
+			d.resource.BeamLatticeAttributes.RepresentationMeshID = d.file.parser.ParseUint32Optional(a.Name.Local, a.Value)
 		case attrCap:
 			d.resource.Mesh.CapMode, _ = newCapMode(a.Value)
 		}
-		if err != nil {
-			break
+		if !ok {
+			return false
 		}
 	}
-	return
+	if !hasRadius {
+		ok = d.file.parser.MissingAttr(attrRadius)
+	}
+	if !hasMinLength {
+		ok = d.file.parser.MissingAttr(attrMinLength)
+	}
+	return ok
 }
 
 func (d *beamLatticeDecoder) Child(name xml.Name) (child nodeDecoder) {
@@ -60,9 +65,8 @@ type beamsDecoder struct {
 	beamDecoder beamDecoder
 }
 
-func (d *beamsDecoder) Open() error {
+func (d *beamsDecoder) Open() {
 	d.beamDecoder.mesh = d.mesh
-	return nil
 }
 
 func (d *beamsDecoder) Child(name xml.Name) (child nodeDecoder) {
@@ -77,26 +81,29 @@ type beamDecoder struct {
 	mesh *mesh.Mesh
 }
 
-func (d *beamDecoder) Attributes(attrs []xml.Attr) (err error) {
+func (d *beamDecoder) Attributes(attrs []xml.Attr) bool {
 	var (
-		v1, v2           uint64
-		r1, r2           float64
-		cap1, cap2       mesh.CapMode
-		hasCap1, hasCap2 bool
+		v1, v2                         uint32
+		r1, r2                         float64
+		cap1, cap2                     mesh.CapMode
+		hasV1, hasV2, hasCap1, hasCap2 bool
 	)
+	ok := true
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
 		}
 		switch a.Name.Local {
 		case attrV1:
-			v1, err = strconv.ParseUint(a.Value, 10, 32)
+			v1, ok = d.file.parser.ParseUint32Required(a.Name.Local, a.Value)
+			hasV1 = true
 		case attrV2:
-			v2, err = strconv.ParseUint(a.Value, 10, 32)
+			v2, ok = d.file.parser.ParseUint32Required(a.Name.Local, a.Value)
+			hasV2 = true
 		case attrR1:
-			r1, err = strconv.ParseFloat(a.Value, 64)
+			r1 = d.file.parser.ParseFloat64Optional(a.Name.Local, a.Value)
 		case attrR2:
-			r2, err = strconv.ParseFloat(a.Value, 64)
+			r2 = d.file.parser.ParseFloat64Optional(a.Name.Local, a.Value)
 		case attrCap1:
 			cap1, _ = newCapMode(a.Value)
 			hasCap1 = true
@@ -104,12 +111,21 @@ func (d *beamDecoder) Attributes(attrs []xml.Attr) (err error) {
 			cap2, _ = newCapMode(a.Value)
 			hasCap2 = true
 		}
-		if err != nil {
+		if !ok {
 			break
 		}
 	}
-	if err != nil {
-		return
+	if !ok {
+		return false
+	}
+	if !hasV1 {
+		ok = d.file.parser.MissingAttr(attrV1)
+	}
+	if !hasV2 {
+		ok = d.file.parser.MissingAttr(attrV2)
+	}
+	if !ok {
+		return false
 	}
 	if r1 == 0 {
 		r1 = d.mesh.DefaultRadius
@@ -124,11 +140,11 @@ func (d *beamDecoder) Attributes(attrs []xml.Attr) (err error) {
 		cap2 = d.mesh.CapMode
 	}
 	d.mesh.Beams = append(d.mesh.Beams, mesh.Beam{
-		NodeIndices: [2]uint32{uint32(v1), uint32(v2)},
+		NodeIndices: [2]uint32{v1, v2},
 		Radius:      [2]float64{r1, r2},
 		CapMode:     [2]mesh.CapMode{cap1, cap2},
 	})
-	return
+	return true
 }
 
 type beamSetsDecoder struct {
@@ -150,17 +166,16 @@ type beamSetDecoder struct {
 	beamRefDecoder beamRefDecoder
 }
 
-func (d *beamSetDecoder) Open() error {
+func (d *beamSetDecoder) Open() {
 	d.beamRefDecoder.beamSet = &d.beamSet
-	return nil
 }
 
-func (d *beamSetDecoder) Close() error {
+func (d *beamSetDecoder) Close() bool {
 	d.mesh.BeamSets = append(d.mesh.BeamSets, d.beamSet)
-	return nil
+	return true
 }
 
-func (d *beamSetDecoder) Attributes(attrs []xml.Attr) (err error) {
+func (d *beamSetDecoder) Attributes(attrs []xml.Attr) bool {
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
@@ -172,7 +187,7 @@ func (d *beamSetDecoder) Attributes(attrs []xml.Attr) (err error) {
 			d.beamSet.Identifier = a.Value
 		}
 	}
-	return
+	return true
 }
 
 func (d *beamSetDecoder) Child(name xml.Name) (child nodeDecoder) {
@@ -187,16 +202,16 @@ type beamRefDecoder struct {
 	beamSet *mesh.BeamSet
 }
 
-func (d *beamRefDecoder) Attributes(attrs []xml.Attr) (err error) {
-	var index uint64
+func (d *beamRefDecoder) Attributes(attrs []xml.Attr) bool {
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrIndex {
-			index, err = strconv.ParseUint(a.Value, 10, 32)
+			index, ok := d.file.parser.ParseUint32Required(a.Name.Local, a.Value)
+			if ok {
+				d.beamSet.Refs = append(d.beamSet.Refs, uint32(index))
+				return true
+			}
 			break
 		}
 	}
-	if err == nil {
-		d.beamSet.Refs = append(d.beamSet.Refs, uint32(index))
-	}
-	return
+	return d.file.parser.MissingAttr(attrIndex)
 }

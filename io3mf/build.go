@@ -2,8 +2,6 @@ package io3mf
 
 import (
 	"encoding/xml"
-	"errors"
-	"strconv"
 
 	"github.com/gofrs/uuid"
 	go3mf "github.com/qmuntal/go3mf"
@@ -21,104 +19,97 @@ func (d *buildDecoder) Child(name xml.Name) (child nodeDecoder) {
 	return
 }
 
-func (d *buildDecoder) Attributes(attrs []xml.Attr) error {
+func (d *buildDecoder) Attributes(attrs []xml.Attr) bool {
 	for _, a := range attrs {
 		if a.Name.Space == nsProductionSpec && a.Name.Local == attrProdUUID {
-			if d.model.UUID != "" {
-				return errors.New("go3mf: duplicated build uuid attribute")
-			}
 			if _, err := uuid.FromString(a.Value); err != nil {
-				return errors.New("go3mf: build uuid is not valid")
+				return d.file.parser.InvalidRequiredAttr(attrProdUUID)
 			}
 			d.model.UUID = a.Value
 		}
 	}
 
-	if d.model.UUID == "" && d.ModelFile().NamespaceRegistered(nsProductionSpec) {
-		d.ModelFile().AddWarning(&ReadError{MissingMandatoryValue, "go3mf: a UUID for a build is missing"})
+	if d.model.UUID == "" && d.file.NamespaceRegistered(nsProductionSpec) {
+		return d.file.parser.MissingAttr(attrProdUUID)
 	}
-	return nil
+	return true
 }
 
 type buildItemDecoder struct {
 	emptyDecoder
 	model      *go3mf.Model
 	item       go3mf.BuildItem
-	objectID   uint64
+	objectID   uint32
 	objectPath string
 }
 
-func (d *buildItemDecoder) Close() error {
+func (d *buildItemDecoder) Close() bool {
 	if d.objectID == 0 {
-		return errors.New("go3mf: build item does not have objectid attribute")
+		return d.file.parser.CloseResource()
 	}
 
-	return d.processItem()
+	if d.processItem() {
+		if d.item.Object.Type() == go3mf.ObjectTypeOther {
+			if !d.file.parser.GenericError(true, "build item must not reference object of type OTHER") {
+				return false
+			}
+		}
+
+	}
+	return true
 }
 
-func (d *buildItemDecoder) processItem() error {
-	resource, ok := d.ModelFile().FindResource(d.objectPath, uint32(d.objectID))
+func (d *buildItemDecoder) processItem() bool {
+	resource, ok := d.file.FindResource(d.objectPath, uint32(d.objectID))
 	if !ok {
-		return errors.New("go3mf: could not find build item object")
+		return d.file.parser.GenericError(true, "could not find build item object")
 	}
 	d.item.Object, ok = resource.(go3mf.Object)
 	if !ok {
-		return errors.New("go3mf: could not find build item object")
-	}
-	if d.item.Object.Type() == go3mf.ObjectTypeOther {
-		d.ModelFile().AddWarning(&ReadError{InvalidMandatoryValue, "go3mf: build item must not reference object of type OTHER"})
-	}
-	if !d.item.IsValidForSlices() {
-		d.ModelFile().AddWarning(&ReadError{InvalidMandatoryValue, "go3mf: A slicestack posesses a nonplanar transformation"})
+		return d.file.parser.GenericError(true, "a build item points to a non-object resource")
 	}
 	d.model.BuildItems = append(d.model.BuildItems, &d.item)
-	return nil
+	return true
 }
 
-func (d *buildItemDecoder) Attributes(attrs []xml.Attr) error {
+func (d *buildItemDecoder) Attributes(attrs []xml.Attr) bool {
 	for _, a := range attrs {
 		switch a.Name.Space {
 		case nsProductionSpec:
 			if a.Name.Local == attrProdUUID {
-				if d.item.UUID != "" {
-					return errors.New("go3mf: duplicated build item uuid attribute")
-				}
 				if _, err := uuid.FromString(a.Value); err != nil {
-					return errors.New("go3mf: build item uuid is not valid")
+					return d.file.parser.InvalidRequiredAttr(attrProdUUID)
 				}
 				d.item.UUID = a.Value
 			} else if a.Name.Local == attrPath {
-				if d.objectPath != "" {
-					return errors.New("go3mf: duplicated build item path attribute")
-				}
 				d.objectPath = a.Value
 			}
 		case "":
-			if err := d.parseCoreAttr(a); err != nil {
-				return err
+			if !d.parseCoreAttr(a) {
+				return false
 			}
 		}
 	}
 
-	if d.item.UUID == "" && d.ModelFile().NamespaceRegistered(nsProductionSpec) {
-		d.ModelFile().AddWarning(&ReadError{MissingMandatoryValue, "go3mf: a UUID for a build item is missing"})
+	if d.item.UUID == "" && d.file.NamespaceRegistered(nsProductionSpec) {
+		return d.file.parser.MissingAttr(attrProdUUID)
 	}
-	return nil
+	return true
 }
 
-func (d *buildItemDecoder) parseCoreAttr(a xml.Attr) (err error) {
+func (d *buildItemDecoder) parseCoreAttr(a xml.Attr) bool {
+	ok := true
 	switch a.Name.Local {
 	case attrObjectID:
-		if d.objectID != 0 {
-			return errors.New("go3mf: duplicated build item objectid attribute")
-		}
-		if d.objectID, err = strconv.ParseUint(a.Value, 10, 32); err != nil {
-			return errors.New("go3mf: build item id is not valid")
-		}
+		d.objectID, ok = d.file.parser.ParseResourceID(a.Value)
 	case attrPartNumber:
 		d.item.PartNumber = a.Value
 	case attrTransform:
+		var err error
 		d.item.Transform, err = strToMatrix(a.Value)
+		if err != nil {
+			d.file.parser.InvalidOptionalAttr(attrTransform)
+		}
 	}
-	return
+	return ok
 }

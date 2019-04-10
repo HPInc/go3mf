@@ -2,8 +2,6 @@ package io3mf
 
 import (
 	"encoding/xml"
-	"errors"
-	"strconv"
 
 	go3mf "github.com/qmuntal/go3mf"
 	"github.com/qmuntal/go3mf/mesh"
@@ -16,20 +14,20 @@ type sliceStackDecoder struct {
 	hasSlice      bool
 }
 
-func (d *sliceStackDecoder) Open() error {
-	d.resource.ModelPath = d.ModelFile().Path()
+func (d *sliceStackDecoder) Open() {
+	d.resource.ModelPath = d.file.path
 	d.resource.SliceStack = new(go3mf.SliceStack)
-	return nil
 }
-func (d *sliceStackDecoder) Close() error {
-	if d.resource.ID == 0 {
-		return errors.New("go3mf: missing slice stack id attribute")
+
+func (d *sliceStackDecoder) Close() bool {
+	if !d.file.parser.CloseResource() {
+		return false
 	}
 	if d.resource.UsesSliceRef && d.hasSlice {
-		return errors.New("go3mf: slicestack contains slices and slicerefs")
+		return d.file.parser.GenericError(true, "slicestack contains slices and slicerefs")
 	}
-	d.ModelFile().AddResource(&d.resource)
-	return nil
+	d.file.AddResource(&d.resource)
+	return true
 }
 func (d *sliceStackDecoder) Child(name xml.Name) (child nodeDecoder) {
 	if name.Space == nsSliceSpec {
@@ -43,27 +41,17 @@ func (d *sliceStackDecoder) Child(name xml.Name) (child nodeDecoder) {
 	return
 }
 
-func (d *sliceStackDecoder) Attributes(attrs []xml.Attr) (err error) {
+func (d *sliceStackDecoder) Attributes(attrs []xml.Attr) bool {
+	ok := true
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrID:
-			if d.resource.ID != 0 {
-				err = errors.New("go3mf: duplicated slicestack id attribute")
-			} else {
-				var id uint64
-				id, err = strconv.ParseUint(a.Value, 10, 32)
-				d.resource.ID = uint32(id)
-			}
+			d.resource.ID, ok = d.file.parser.ParseResourceID(a.Value)
 		case attrZBottom:
-			var bottomZ float64
-			bottomZ, err = strconv.ParseFloat(a.Value, 32)
-			d.resource.SliceStack.BottomZ = float32(bottomZ)
-		}
-		if err != nil {
-			return errors.New("go3mf: texture2d attribute not valid")
+			d.resource.SliceStack.BottomZ = d.file.parser.ParseFloat32Optional(a.Name.Local, a.Value)
 		}
 	}
-	return
+	return ok
 }
 
 type sliceRefDecoder struct {
@@ -71,66 +59,69 @@ type sliceRefDecoder struct {
 	resource *go3mf.SliceStackResource
 }
 
-func (d *sliceRefDecoder) Attributes(attrs []xml.Attr) (err error) {
-	var sliceStackID uint64
-	var path string
+func (d *sliceRefDecoder) Attributes(attrs []xml.Attr) bool {
+	var (
+		sliceStackID uint32
+		path         string
+		ok           bool
+	)
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrSliceRefID:
-			sliceStackID, err = strconv.ParseUint(a.Value, 10, 32)
+			sliceStackID, ok = d.file.parser.ParseUint32Required(a.Name.Local, a.Value)
 		case attrSlicePath:
 			path = a.Value
 		}
 	}
-	if err != nil {
-		return errors.New("go3mf: a sliceref has an invalid slicestackid attribute")
+	if !ok {
+		return false
+	}
+	if sliceStackID == 0 {
+		return d.file.parser.MissingAttr(attrSliceRefID)
 	}
 
-	return d.addSliceRef(uint32(sliceStackID), path)
+	return d.addSliceRef(sliceStackID, path)
 }
 
-func (d *sliceRefDecoder) addSliceRef(sliceStackID uint32, path string) error {
+func (d *sliceRefDecoder) addSliceRef(sliceStackID uint32, path string) bool {
 	if path == d.resource.ModelPath {
-		return errors.New("go3mf: a slicepath is invalid")
+		return d.file.parser.GenericError(true, "a slicepath is invalid")
 	}
-	resource, ok := d.ModelFile().FindResource(path, sliceStackID)
+	resource, ok := d.file.FindResource(path, sliceStackID)
 	if !ok {
-		return errors.New("go3mf: a sliceref points to a unexisting resource")
+		return d.file.parser.GenericError(true, "a sliceref points to a unexisting resource")
 	}
 	sliceStackResource, ok := resource.(*go3mf.SliceStackResource)
 	if !ok {
-		return errors.New("go3mf: a sliceref points to a resource that is not an slicestack")
+		return d.file.parser.GenericError(true, "a sliceref points to a resource that is not an slicestack")
 	}
 	sliceStackResource.TimesRefered++
 	for _, s := range sliceStackResource.SliceStack.Slices {
 		if _, err := d.resource.AddSlice(s); err != nil {
-			return err
+			if !d.file.parser.GenericError(true, err.Error()) {
+				return false
+			}
 		}
 	}
 	d.resource.UsesSliceRef = true
-	return nil
+	return true
 }
 
 type sliceDecoder struct {
 	emptyDecoder
 	resource               *go3mf.SliceStackResource
 	slice                  mesh.Slice
-	hasTopZ                bool
 	polygonDecoder         polygonDecoder
 	polygonVerticesDecoder polygonVerticesDecoder
 }
 
-func (d *sliceDecoder) Open() error {
+func (d *sliceDecoder) Open() {
 	d.polygonDecoder.slice = &d.slice
 	d.polygonVerticesDecoder.slice = &d.slice
-	return nil
 }
-func (d *sliceDecoder) Close() error {
-	if !d.hasTopZ {
-		return errors.New("go3mf: missing slice topz attribute")
-	}
+func (d *sliceDecoder) Close() bool {
 	d.resource.SliceStack.Slices = append(d.resource.SliceStack.Slices, &d.slice)
-	return nil
+	return true
 }
 func (d *sliceDecoder) Child(name xml.Name) (child nodeDecoder) {
 	if name.Space == nsSliceSpec {
@@ -143,20 +134,20 @@ func (d *sliceDecoder) Child(name xml.Name) (child nodeDecoder) {
 	return
 }
 
-func (d *sliceDecoder) Attributes(attrs []xml.Attr) (err error) {
+func (d *sliceDecoder) Attributes(attrs []xml.Attr) bool {
+	var hasTopZ bool
+	ok := true
 	for _, a := range attrs {
 		if a.Name.Local == attrZTop {
-			if d.hasTopZ {
-				err = errors.New("go3mf: duplicated slice topz attribute")
-			} else {
-				d.hasTopZ = true
-				var topZ float64
-				topZ, err = strconv.ParseFloat(a.Value, 32)
-				d.slice.TopZ = float32(topZ)
-			}
+			hasTopZ = true
+			d.slice.TopZ, ok = d.file.parser.ParseFloat32Required(a.Name.Local, a.Value)
+			break
 		}
 	}
-	return
+	if !hasTopZ {
+		ok = d.file.parser.MissingAttr(attrZTop)
+	}
+	return ok
 }
 
 type polygonVerticesDecoder struct {
@@ -165,9 +156,8 @@ type polygonVerticesDecoder struct {
 	polygonVertexDecoder polygonVertexDecoder
 }
 
-func (d *polygonVerticesDecoder) Open() error {
+func (d *polygonVerticesDecoder) Open() {
 	d.polygonVertexDecoder.slice = d.slice
-	return nil
 }
 
 func (d *polygonVerticesDecoder) Child(name xml.Name) (child nodeDecoder) {
@@ -182,21 +172,22 @@ type polygonVertexDecoder struct {
 	slice *mesh.Slice
 }
 
-func (d *polygonVertexDecoder) Attributes(attrs []xml.Attr) (err error) {
-	var x, y float64
+func (d *polygonVertexDecoder) Attributes(attrs []xml.Attr) bool {
+	var x, y float32
+	ok := true
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrX:
-			x, err = strconv.ParseFloat(a.Value, 32)
+			x, ok = d.file.parser.ParseFloat32Required(a.Name.Local, a.Value)
 		case attrY:
-			y, err = strconv.ParseFloat(a.Value, 32)
+			y, ok = d.file.parser.ParseFloat32Required(a.Name.Local, a.Value)
 		}
-		if err != nil {
-			return errors.New("go3mf: slice vertex has an invalid coordinate attribute")
+		if !ok {
+			break
 		}
 	}
-	d.slice.AddVertex(float32(x), float32(y))
-	return
+	d.slice.AddVertex(x, y)
+	return ok
 }
 
 type polygonDecoder struct {
@@ -206,18 +197,19 @@ type polygonDecoder struct {
 	polygonSegmentDecoder polygonSegmentDecoder
 }
 
-func (d *polygonDecoder) Open() error {
+func (d *polygonDecoder) Open() {
 	d.polygonIndex = d.slice.BeginPolygon()
 	d.polygonSegmentDecoder.slice = d.slice
 	d.polygonSegmentDecoder.polygonIndex = d.polygonIndex
-	return nil
 }
-func (d *polygonDecoder) Close() error {
+
+func (d *polygonDecoder) Close() bool {
 	if !d.slice.IsPolygonValid(d.polygonIndex) {
-		return errors.New("go3mf: a closed slice polygon is actually a line")
+		return d.file.parser.GenericError(true, "a closed slice polygon is actually a line")
 	}
-	return nil
+	return true
 }
+
 func (d *polygonDecoder) Child(name xml.Name) (child nodeDecoder) {
 	if name.Space == nsSliceSpec && name.Local == attrSegment {
 		child = &d.polygonSegmentDecoder
@@ -225,18 +217,22 @@ func (d *polygonDecoder) Child(name xml.Name) (child nodeDecoder) {
 	return
 }
 
-func (d *polygonDecoder) Attributes(attrs []xml.Attr) (err error) {
-	var start uint64
+func (d *polygonDecoder) Attributes(attrs []xml.Attr) bool {
+	var start uint32
+	ok := true
 	for _, a := range attrs {
 		if a.Name.Local == attrStartV {
-			start, err = strconv.ParseUint(a.Value, 10, 32)
+			start, ok = d.file.parser.ParseUint32Required(a.Name.Local, a.Value)
 			break
 		}
 	}
-	if err == nil {
-		err = d.slice.AddPolygonIndex(d.polygonIndex, int(start))
+	if ok {
+		err := d.slice.AddPolygonIndex(d.polygonIndex, int(start))
+		if err != nil {
+			ok = d.file.parser.GenericError(true, err.Error())
+		}
 	}
-	return
+	return ok
 }
 
 type polygonSegmentDecoder struct {
@@ -245,18 +241,20 @@ type polygonSegmentDecoder struct {
 	polygonIndex int
 }
 
-func (d *polygonSegmentDecoder) Attributes(attrs []xml.Attr) (err error) {
+func (d *polygonSegmentDecoder) Attributes(attrs []xml.Attr) bool {
+	var v2 uint32
+	ok := true
 	for _, a := range attrs {
 		if a.Name.Local == attrV2 {
-			var v264 uint64
-			v264, err = strconv.ParseUint(a.Value, 10, 32)
-			if err != nil {
-				err = errors.New("go3mf: a polygon has an invalid v2 attribute")
-			} else {
-				d.slice.AddPolygonIndex(d.polygonIndex, int(v264))
-			}
+			v2, ok = d.file.parser.ParseUint32Required(a.Name.Local, a.Value)
 			break
 		}
 	}
-	return
+	if ok {
+		err := d.slice.AddPolygonIndex(d.polygonIndex, int(v2))
+		if err != nil {
+			ok = d.file.parser.GenericError(true, err.Error())
+		}
+	}
+	return true
 }

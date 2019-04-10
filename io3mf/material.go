@@ -2,8 +2,6 @@ package io3mf
 
 import (
 	"encoding/xml"
-	"errors"
-	"strconv"
 
 	go3mf "github.com/qmuntal/go3mf"
 )
@@ -14,18 +12,15 @@ type colorGroupDecoder struct {
 	colorDecoder colorDecoder
 }
 
-func (d *colorGroupDecoder) Open() error {
-	d.resource.ModelPath = d.ModelFile().Path()
+func (d *colorGroupDecoder) Open() {
+	d.resource.ModelPath = d.file.path
 	d.colorDecoder.resource = &d.resource
-	return nil
 }
 
-func (d *colorGroupDecoder) Close() error {
-	if d.resource.ID == 0 {
-		return errors.New("go3mf: missing color group id attribute")
-	}
-	d.ModelFile().AddResource(&d.resource)
-	return nil
+func (d *colorGroupDecoder) Close() bool {
+	d.file.parser.CloseResource()
+	d.file.AddResource(&d.resource)
+	return true
 }
 
 func (d *colorGroupDecoder) Child(name xml.Name) (child nodeDecoder) {
@@ -35,20 +30,15 @@ func (d *colorGroupDecoder) Child(name xml.Name) (child nodeDecoder) {
 	return
 }
 
-func (d *colorGroupDecoder) Attributes(attrs []xml.Attr) (err error) {
+func (d *colorGroupDecoder) Attributes(attrs []xml.Attr) bool {
+	ok := true
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrID {
-			if d.resource.ID != 0 {
-				return errors.New("go3mf: duplicated color group id attribute")
-			}
-			var id uint64
-			if id, err = strconv.ParseUint(a.Value, 10, 32); err != nil {
-				return errors.New("go3mf: color group id is not valid")
-			}
-			d.resource.ID = uint32(id)
+			d.resource.ID, ok = d.file.parser.ParseResourceID(a.Value)
+			break
 		}
 	}
-	return nil
+	return ok
 }
 
 type colorDecoder struct {
@@ -56,17 +46,17 @@ type colorDecoder struct {
 	resource *go3mf.ColorGroupResource
 }
 
-func (d *colorDecoder) Attributes(attrs []xml.Attr) error {
+func (d *colorDecoder) Attributes(attrs []xml.Attr) bool {
 	for _, a := range attrs {
 		if a.Name.Local == attrColor {
 			c, err := strToSRGB(a.Value)
 			if err != nil {
-				return err
+				return d.file.parser.InvalidRequiredAttr(attrColor)
 			}
 			d.resource.Colors = append(d.resource.Colors, c)
 		}
 	}
-	return nil
+	return true
 }
 
 type tex2DCoordDecoder struct {
@@ -74,22 +64,22 @@ type tex2DCoordDecoder struct {
 	resource *go3mf.Texture2DGroupResource
 }
 
-func (d *tex2DCoordDecoder) Attributes(attrs []xml.Attr) error {
-	var u, v float64
-	var err error
+func (d *tex2DCoordDecoder) Attributes(attrs []xml.Attr) bool {
+	var u, v float32
+	ok := true
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrU:
-			u, err = strconv.ParseFloat(a.Value, 64)
+			u, ok = d.file.parser.ParseFloat32Required(a.Name.Local, a.Value)
 		case attrV:
-			v, err = strconv.ParseFloat(a.Value, 64)
+			v, ok = d.file.parser.ParseFloat32Required(a.Name.Local, a.Value)
 		}
-		if err != nil {
-			return err
+		if !ok {
+			break
 		}
 	}
 	d.resource.Coords = append(d.resource.Coords, go3mf.TextureCoord{float32(u), float32(v)})
-	return nil
+	return ok
 }
 
 type tex2DGroupDecoder struct {
@@ -98,18 +88,17 @@ type tex2DGroupDecoder struct {
 	tex2DCoordDecoder tex2DCoordDecoder
 }
 
-func (d *tex2DGroupDecoder) Open() error {
-	d.resource.ModelPath = d.ModelFile().Path()
+func (d *tex2DGroupDecoder) Open() {
+	d.resource.ModelPath = d.file.path
 	d.tex2DCoordDecoder.resource = &d.resource
-	return nil
 }
 
-func (d *tex2DGroupDecoder) Close() error {
-	if d.resource.ID == 0 {
-		return errors.New("go3mf: missing color group id attribute")
+func (d *tex2DGroupDecoder) Close() bool {
+	if !d.file.parser.CloseResource() {
+		return false
 	}
-	d.ModelFile().AddResource(&d.resource)
-	return nil
+	d.file.AddResource(&d.resource)
+	return true
 }
 
 func (d *tex2DGroupDecoder) Child(name xml.Name) (child nodeDecoder) {
@@ -119,33 +108,23 @@ func (d *tex2DGroupDecoder) Child(name xml.Name) (child nodeDecoder) {
 	return
 }
 
-func (d *tex2DGroupDecoder) Attributes(attrs []xml.Attr) (err error) {
+func (d *tex2DGroupDecoder) Attributes(attrs []xml.Attr) bool {
+	ok := true
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
 		}
 		switch a.Name.Local {
 		case attrID:
-			if d.resource.ID != 0 {
-				return errors.New("go3mf: duplicated tex2Coord group id attribute")
-			}
-			var id uint64
-			if id, err = strconv.ParseUint(a.Value, 10, 32); err != nil {
-				return errors.New("go3mf: tex2Coord group id is not valid")
-			}
-			d.resource.ID = uint32(id)
+			d.resource.ID, ok = d.file.parser.ParseResourceID(a.Value)
 		case attrTexID:
-			if d.resource.TextureID != 0 {
-				return errors.New("go3mf: duplicated tex2Coord group texid attribute")
-			}
-			var id uint64
-			if id, err = strconv.ParseUint(a.Value, 10, 32); err != nil {
-				return errors.New("go3mf: tex2Coord group texid is not valid")
-			}
-			d.resource.TextureID = uint32(id)
+			d.resource.TextureID, ok = d.file.parser.ParseUint32Required(a.Name.Local, a.Value)
+		}
+		if !ok {
+			break
 		}
 	}
-	return nil
+	return ok
 }
 
 type texture2DDecoder struct {
@@ -153,49 +132,44 @@ type texture2DDecoder struct {
 	resource go3mf.Texture2DResource
 }
 
-func (d *texture2DDecoder) Open() error {
-	d.resource.ModelPath = d.ModelFile().Path()
-	return nil
+func (d *texture2DDecoder) Open() {
+	d.resource.ModelPath = d.file.path
 }
 
-func (d *texture2DDecoder) Close() error {
-	if d.resource.ID == 0 {
-		return errors.New("go3mf: missing texture2d id attribute")
+func (d *texture2DDecoder) Close() bool {
+	if !d.file.parser.CloseResource() {
+		return false
 	}
-	d.ModelFile().AddResource(&d.resource)
-	return nil
+	d.file.AddResource(&d.resource)
+	return true
 }
 
-func (d *texture2DDecoder) Attributes(attrs []xml.Attr) error {
+func (d *texture2DDecoder) Attributes(attrs []xml.Attr) bool {
+	ok := true
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
 		}
-		var err error
-		ok := true
 		switch a.Name.Local {
 		case attrID:
-			if d.resource.ID != 0 {
-				err = errors.New("go3mf: duplicated texture2d id attribute")
-			} else {
-				var id uint64
-				id, err = strconv.ParseUint(a.Value, 10, 32)
-				d.resource.ID = uint32(id)
-			}
+			d.resource.ID, ok = d.file.parser.ParseResourceID(a.Value)
 		case attrPath:
 			d.resource.Path = a.Value
 		case attrContentType:
-			d.resource.ContentType, ok = newTexture2DType(a.Value)
+			d.resource.ContentType, _ = newTexture2DType(a.Value)
 		case attrTileStyleU:
-			d.resource.TileStyleU, ok = newTileStyle(a.Value)
+			d.resource.TileStyleU, _ = newTileStyle(a.Value)
 		case attrTileStyleV:
-			d.resource.TileStyleV, ok = newTileStyle(a.Value)
+			d.resource.TileStyleV, _ = newTileStyle(a.Value)
 		case attrFilter:
-			d.resource.Filter, ok = newTextureFilter(a.Value)
+			d.resource.Filter, _ = newTextureFilter(a.Value)
 		}
-		if err != nil || !ok {
-			return errors.New("go3mf: texture2d attribute not valid")
+		if !ok {
+			break
 		}
 	}
-	return nil
+	if d.resource.Path == "" {
+		return d.file.parser.MissingAttr(attrPath)
+	}
+	return ok
 }

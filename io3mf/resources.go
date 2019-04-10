@@ -2,9 +2,7 @@ package io3mf
 
 import (
 	"encoding/xml"
-	"errors"
 	"image/color"
-	"strconv"
 
 	go3mf "github.com/qmuntal/go3mf"
 )
@@ -32,7 +30,7 @@ func (d *resourceDecoder) Child(name xml.Name) (child nodeDecoder) {
 		case attrTexture2D:
 			child = new(texture2DDecoder)
 		case attrComposite:
-			d.ModelFile().AddWarning(&ReadError{InvalidOptionalValue, "go3mf: composite materials extension not supported"})
+			d.file.AddWarning(&ReadError{InvalidOptionalValue, "go3mf: composite materials extension not supported"})
 		}
 	} else if name.Space == nsSliceSpec && name.Local == attrSliceStack {
 		d.progressCount++
@@ -47,18 +45,17 @@ type baseMaterialsDecoder struct {
 	baseMaterialDecoder baseMaterialDecoder
 }
 
-func (d *baseMaterialsDecoder) Open() error {
-	d.resource.ModelPath = d.ModelFile().Path()
+func (d *baseMaterialsDecoder) Open() {
+	d.resource.ModelPath = d.file.path
 	d.baseMaterialDecoder.resource = &d.resource
-	return nil
 }
 
-func (d *baseMaterialsDecoder) Close() error {
-	if d.resource.ID == 0 {
-		return errors.New("go3mf: missing base materials resource id attribute")
+func (d *baseMaterialsDecoder) Close() bool {
+	if !d.file.parser.CloseResource() {
+		return false
 	}
-	d.ModelFile().AddResource(&d.resource)
-	return nil
+	d.file.AddResource(&d.resource)
+	return true
 }
 
 func (d *baseMaterialsDecoder) Child(name xml.Name) (child nodeDecoder) {
@@ -68,26 +65,15 @@ func (d *baseMaterialsDecoder) Child(name xml.Name) (child nodeDecoder) {
 	return
 }
 
-func (d *baseMaterialsDecoder) Attributes(attrs []xml.Attr) (err error) {
+func (d *baseMaterialsDecoder) Attributes(attrs []xml.Attr) bool {
+	ok := true
 	for _, a := range attrs {
 		if a.Name.Space != "" || a.Name.Local != attrID {
 			continue
 		}
-		if d.resource.ID == 0 {
-			var id uint64
-			id, err = strconv.ParseUint(a.Value, 10, 32)
-			if err != nil {
-				err = errors.New("go3mf: base materials id is not valid")
-			}
-			d.resource.ID = uint32(id)
-		} else {
-			err = errors.New("go3mf: duplicated base materials id attribute")
-		}
-		if err != nil {
-			break
-		}
+		d.resource.ID, ok = d.file.parser.ParseResourceID(a.Value)
 	}
-	return
+	return ok
 }
 
 type baseMaterialDecoder struct {
@@ -95,26 +81,33 @@ type baseMaterialDecoder struct {
 	resource *go3mf.BaseMaterialsResource
 }
 
-func (d *baseMaterialDecoder) Attributes(attrs []xml.Attr) (err error) {
+func (d *baseMaterialDecoder) Attributes(attrs []xml.Attr) bool {
 	var name string
 	var withColor bool
 	baseColor := color.RGBA{}
-
+	ok := true
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrName:
 			name = a.Value
 		case attrBaseMaterialColor:
+			var err error
 			baseColor, err = strToSRGB(a.Value)
-			if err != nil {
-				return
-			}
 			withColor = true
+			if err != nil {
+				ok = d.file.parser.InvalidRequiredAttr(attrBaseMaterialColor)
+			}
+		}
+		if !ok {
+			return false
 		}
 	}
-	if name == "" || !withColor {
-		return errors.New("go3mf: missing base material attributes")
+	if name == "" {
+		ok = d.file.parser.MissingAttr(attrName)
+	}
+	if !withColor {
+		ok = d.file.parser.MissingAttr(attrBaseMaterialColor)
 	}
 	d.resource.Materials = append(d.resource.Materials, go3mf.BaseMaterial{Name: name, Color: baseColor})
-	return
+	return ok
 }
