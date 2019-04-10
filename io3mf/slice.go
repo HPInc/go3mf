@@ -13,19 +13,18 @@ type sliceStackDecoder struct {
 	emptyDecoder
 	progressCount int
 	resource      go3mf.SliceStackResource
-	hasSlice      bool
 }
 
 func (d *sliceStackDecoder) Open() error {
 	d.resource.ModelPath = d.ModelFile().Path()
-	d.resource.SliceStack = new(go3mf.SliceStack)
+	d.resource.Stack = new(go3mf.SliceStack)
 	return nil
 }
 func (d *sliceStackDecoder) Close() error {
 	if d.resource.ID == 0 {
 		return errors.New("go3mf: missing slice stack id attribute")
 	}
-	if d.resource.UsesSliceRef && d.hasSlice {
+	if len(d.resource.Stack.Refs) > 0 && len(d.resource.Stack.Slices) > 0 {
 		return errors.New("go3mf: slicestack contains slices and slicerefs")
 	}
 	d.ModelFile().AddResource(&d.resource)
@@ -34,7 +33,6 @@ func (d *sliceStackDecoder) Close() error {
 func (d *sliceStackDecoder) Child(name xml.Name) (child nodeDecoder) {
 	if name.Space == nsSliceSpec {
 		if name.Local == attrSlice {
-			d.hasSlice = true
 			child = &sliceDecoder{resource: &d.resource}
 		} else if name.Local == attrSliceRef {
 			child = &sliceRefDecoder{resource: &d.resource}
@@ -57,7 +55,7 @@ func (d *sliceStackDecoder) Attributes(attrs []xml.Attr) (err error) {
 		case attrZBottom:
 			var bottomZ float64
 			bottomZ, err = strconv.ParseFloat(a.Value, 32)
-			d.resource.SliceStack.BottomZ = float32(bottomZ)
+			d.resource.Stack.BottomZ = float32(bottomZ)
 		}
 		if err != nil {
 			return errors.New("go3mf: texture2d attribute not valid")
@@ -97,17 +95,10 @@ func (d *sliceRefDecoder) addSliceRef(sliceStackID uint32, path string) error {
 	if !ok {
 		return errors.New("go3mf: a sliceref points to a unexisting resource")
 	}
-	sliceStackResource, ok := resource.(*go3mf.SliceStackResource)
-	if !ok {
+	if _, ok = resource.(*go3mf.SliceStackResource); !ok {
 		return errors.New("go3mf: a sliceref points to a resource that is not an slicestack")
 	}
-	sliceStackResource.TimesRefered++
-	for _, s := range sliceStackResource.SliceStack.Slices {
-		if _, err := d.resource.AddSlice(s); err != nil {
-			return err
-		}
-	}
-	d.resource.UsesSliceRef = true
+	d.resource.Stack.Refs = append(d.resource.Stack.Refs, go3mf.SliceRef{SliceStackID: sliceStackID, Path: path})
 	return nil
 }
 
@@ -129,7 +120,7 @@ func (d *sliceDecoder) Close() error {
 	if !d.hasTopZ {
 		return errors.New("go3mf: missing slice topz attribute")
 	}
-	d.resource.SliceStack.Slices = append(d.resource.SliceStack.Slices, &d.slice)
+	d.resource.Stack.Slices = append(d.resource.Stack.Slices, &d.slice)
 	return nil
 }
 func (d *sliceDecoder) Child(name xml.Name) (child nodeDecoder) {
