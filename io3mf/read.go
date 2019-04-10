@@ -109,15 +109,10 @@ type modelFile struct {
 	model        *go3mf.Model
 	path         string
 	isRoot       bool
-	warnings     []error
 	resourcesMap map[uint32]go3mf.Resource
 	resources    []go3mf.Resource
 	namespaces   map[string]string
 	parser       parser
-}
-
-func (d *modelFile) AddWarning(err error) {
-	d.warnings = append(d.warnings, err)
 }
 
 func (d *modelFile) AddResource(r go3mf.Resource) {
@@ -293,7 +288,7 @@ func (r *Reader) addModelFile(f *modelFile, model *go3mf.Model) {
 	for _, res := range f.resources {
 		model.Resources = append(model.Resources, res)
 	}
-	for _, res := range f.warnings {
+	for _, res := range f.parser.Warnings {
 		r.Warnings = append(r.Warnings, res)
 	}
 }

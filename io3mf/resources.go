@@ -29,8 +29,6 @@ func (d *resourceDecoder) Child(name xml.Name) (child nodeDecoder) {
 			child = new(tex2DGroupDecoder)
 		case attrTexture2D:
 			child = new(texture2DDecoder)
-		case attrComposite:
-			d.file.AddWarning(&ReadError{InvalidOptionalValue, "go3mf: composite materials extension not supported"})
 		}
 	} else if name.Space == nsSliceSpec && name.Local == attrSliceStack {
 		d.progressCount++
