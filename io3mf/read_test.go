@@ -481,6 +481,7 @@ func TestReader_processRootModel(t *testing.T) {
 
 	t.Run("base", func(t *testing.T) {
 		reader := new(Reader)
+		reader.Strict = true
 		reader.SetDecompressor(func(r io.Reader) io.ReadCloser { return flate.NewReader(r) })
 		reader.SetXMLDecoder(func(r io.Reader) XMLDecoder { return xml.NewDecoder(r) })
 		if err := reader.processRootModel(context.Background(), rootFile, got); err != nil {
@@ -705,7 +706,7 @@ func TestNewReader(t *testing.T) {
 		args args
 		want *Reader
 	}{
-		{"base", args{nil, 5}, &Reader{p: &opcReader{ra: nil, size: 5}}},
+		{"base", args{nil, 5}, &Reader{Strict: true, p: &opcReader{ra: nil, size: 5}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

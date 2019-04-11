@@ -107,6 +107,7 @@ func (d *topLevelDecoder) Child(name xml.Name) (child nodeDecoder) {
 type modelFile struct {
 	r            *Reader
 	model        *go3mf.Model
+	strict       bool
 	path         string
 	isRoot       bool
 	resourcesMap map[uint32]go3mf.Resource
@@ -143,7 +144,7 @@ func (d *modelFile) NamespaceRegistered(ns string) bool {
 }
 
 func (d *modelFile) Decode(ctx context.Context, x XMLDecoder) (err error) {
-	d.parser = parser{Strict: true, ModelPath: d.path}
+	d.parser = parser{Strict: d.strict, ModelPath: d.path}
 	d.namespaces = make(map[string]string)
 	d.resourcesMap = make(map[uint32]go3mf.Resource)
 
@@ -214,6 +215,7 @@ func (d *modelFile) Decode(ctx context.Context, x XMLDecoder) (err error) {
 
 // Reader implements a 3mf file reader.
 type Reader struct {
+	Strict              bool
 	Warnings            []error
 	AttachmentRelations []string
 	p                   packageReader
@@ -226,7 +228,8 @@ type Reader struct {
 // NewReader returns a new Reader reading a 3mf file from r.
 func NewReader(r io.ReaderAt, size int64) *Reader {
 	return &Reader{
-		p: &opcReader{ra: r, size: size},
+		p:      &opcReader{ra: r, size: size},
+		Strict: true,
 	}
 }
 
@@ -273,7 +276,7 @@ func (r *Reader) processRootModel(ctx context.Context, rootFile packageFile, mod
 		return err
 	}
 	defer f.Close()
-	d := modelFile{r: r, path: rootFile.Name(), isRoot: true, model: model}
+	d := modelFile{r: r, path: rootFile.Name(), isRoot: true, model: model, strict: r.Strict}
 	err = d.Decode(ctx, r.tokenReader(f))
 	select {
 	case <-ctx.Done():
@@ -418,7 +421,7 @@ func (r *Reader) readProductionAttachmentModel(ctx context.Context, i int, model
 		return nil, err
 	}
 	defer file.Close()
-	d := modelFile{r: r, path: attachment.Path, isRoot: false, model: model}
+	d := modelFile{r: r, path: attachment.Path, isRoot: false, model: model, strict: r.Strict}
 	err = d.Decode(ctx, r.tokenReader(file))
 	return &d, nil
 }
