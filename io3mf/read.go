@@ -420,7 +420,7 @@ func (r *Reader) readProductionAttachmentModel(ctx context.Context, i int, model
 	defer file.Close()
 	d := modelFile{r: r, path: attachment.Path, isRoot: false, model: model, strict: r.Strict}
 	err = d.Decode(ctx, r.tokenReader(file))
-	return &d, nil
+	return &d, err
 }
 
 func copyFile(file packageFile) (io.Reader, error) {

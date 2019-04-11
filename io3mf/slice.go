@@ -243,5 +243,5 @@ func (d *polygonSegmentDecoder) Attributes(attrs []xml.Attr) bool {
 			ok = d.file.parser.GenericError(true, err.Error())
 		}
 	}
-	return true
+	return ok
 }
