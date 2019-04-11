@@ -298,15 +298,15 @@ func (c *MeshResource) IsValidForSlices(t mesh.Matrix) bool {
 // SliceRef reference to a slice stack.
 type SliceRef struct {
 	SliceStackID uint32
-	Path string
+	Path         string
 }
 
 // SliceStack defines an stack of slices.
 // It can either contain Slices or a Refs.
 type SliceStack struct {
-	BottomZ      float32
-	Slices       []*mesh.Slice
-	Refs 		 []SliceRef
+	BottomZ float32
+	Slices  []*mesh.Slice
+	Refs    []SliceRef
 }
 
 // AddSlice adds an slice to the stack and returns its index.
@@ -321,9 +321,9 @@ func (s *SliceStack) AddSlice(slice *mesh.Slice) (int, error) {
 // SliceStackResource defines a slice stack resource.
 // It can either contain a SliceStack or a Refs slice.
 type SliceStackResource struct {
-	Stack *SliceStack
-	ID           uint32
-	ModelPath    string
+	Stack     *SliceStack
+	ID        uint32
+	ModelPath string
 }
 
 // Identify returns the unique ID of the resource.

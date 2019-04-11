@@ -257,10 +257,7 @@ func (r *Reader) DecodeContext(ctx context.Context, model *go3mf.Model) error {
 	if err := r.processNonRootModels(ctx, model); err != nil {
 		return err
 	}
-	if err := r.processRootModel(ctx, rootFile, model); err != nil {
-		return err
-	}
-	return nil
+	return r.processRootModel(ctx, rootFile, model)
 }
 
 func (r *Reader) tokenReader(xr io.Reader) XMLDecoder {
