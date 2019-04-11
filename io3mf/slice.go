@@ -11,19 +11,18 @@ type sliceStackDecoder struct {
 	emptyDecoder
 	progressCount int
 	resource      go3mf.SliceStackResource
-	hasSlice      bool
 }
 
 func (d *sliceStackDecoder) Open() {
 	d.resource.ModelPath = d.file.path
-	d.resource.SliceStack = new(go3mf.SliceStack)
+	d.resource.Stack = new(go3mf.SliceStack)
 }
 
 func (d *sliceStackDecoder) Close() bool {
 	if !d.file.parser.CloseResource() {
 		return false
 	}
-	if d.resource.UsesSliceRef && d.hasSlice {
+	if len(d.resource.Stack.Refs) > 0 && len(d.resource.Stack.Slices) > 0 {
 		return d.file.parser.GenericError(true, "slicestack contains slices and slicerefs")
 	}
 	d.file.AddResource(&d.resource)
@@ -32,7 +31,6 @@ func (d *sliceStackDecoder) Close() bool {
 func (d *sliceStackDecoder) Child(name xml.Name) (child nodeDecoder) {
 	if name.Space == nsSliceSpec {
 		if name.Local == attrSlice {
-			d.hasSlice = true
 			child = &sliceDecoder{resource: &d.resource}
 		} else if name.Local == attrSliceRef {
 			child = &sliceRefDecoder{resource: &d.resource}
@@ -48,7 +46,7 @@ func (d *sliceStackDecoder) Attributes(attrs []xml.Attr) bool {
 		case attrID:
 			d.resource.ID, ok = d.file.parser.ParseResourceID(a.Value)
 		case attrZBottom:
-			d.resource.SliceStack.BottomZ = d.file.parser.ParseFloat32Optional(a.Name.Local, a.Value)
+			d.resource.Stack.BottomZ = d.file.parser.ParseFloat32Optional(a.Name.Local, a.Value)
 		}
 	}
 	return ok
@@ -91,19 +89,10 @@ func (d *sliceRefDecoder) addSliceRef(sliceStackID uint32, path string) bool {
 	if !ok {
 		return d.file.parser.GenericError(true, "a sliceref points to a unexisting resource")
 	}
-	sliceStackResource, ok := resource.(*go3mf.SliceStackResource)
-	if !ok {
+	if _, ok = resource.(*go3mf.SliceStackResource); !ok {
 		return d.file.parser.GenericError(true, "a sliceref points to a resource that is not an slicestack")
 	}
-	sliceStackResource.TimesRefered++
-	for _, s := range sliceStackResource.SliceStack.Slices {
-		if _, err := d.resource.AddSlice(s); err != nil {
-			if !d.file.parser.GenericError(true, err.Error()) {
-				return false
-			}
-		}
-	}
-	d.resource.UsesSliceRef = true
+	d.resource.Stack.Refs = append(d.resource.Stack.Refs, go3mf.SliceRef{SliceStackID: sliceStackID, Path: path})
 	return true
 }
 
@@ -120,7 +109,7 @@ func (d *sliceDecoder) Open() {
 	d.polygonVerticesDecoder.slice = &d.slice
 }
 func (d *sliceDecoder) Close() bool {
-	d.resource.SliceStack.Slices = append(d.resource.SliceStack.Slices, &d.slice)
+	d.resource.Stack.Slices = append(d.resource.Stack.Slices, &d.slice)
 	return true
 }
 func (d *sliceDecoder) Child(name xml.Name) (child nodeDecoder) {
