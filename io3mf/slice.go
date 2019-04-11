@@ -15,7 +15,6 @@ type sliceStackDecoder struct {
 
 func (d *sliceStackDecoder) Open() {
 	d.resource.ModelPath = d.file.path
-	d.resource.Stack = new(go3mf.SliceStack)
 }
 
 func (d *sliceStackDecoder) Close() bool {

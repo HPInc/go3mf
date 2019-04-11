@@ -255,7 +255,7 @@ func TestReader_processRootModel(t *testing.T) {
 		{Name: "Red ABS", Color: color.RGBA{85, 0, 0, 255}},
 	}}
 	baseTexture := &go3mf.Texture2DResource{ID: 6, ModelPath: "/3d/3dmodel.model", Path: "/3D/Texture/msLogo.png", ContentType: go3mf.PNGTexture, TileStyleU: go3mf.TileWrap, TileStyleV: go3mf.TileMirror, Filter: go3mf.TextureFilterAuto}
-	otherSlices := &go3mf.SliceStack{
+	otherSlices := go3mf.SliceStack{
 		BottomZ: 2,
 		Slices: []*mesh.Slice{
 			{
@@ -265,7 +265,7 @@ func TestReader_processRootModel(t *testing.T) {
 			},
 		},
 	}
-	sliceStack := &go3mf.SliceStackResource{ID: 3, ModelPath: "/3d/3dmodel.model", Stack: &go3mf.SliceStack{
+	sliceStack := &go3mf.SliceStackResource{ID: 3, ModelPath: "/3d/3dmodel.model", Stack: go3mf.SliceStack{
 		BottomZ: 1,
 		Slices: []*mesh.Slice{
 			{
@@ -280,7 +280,7 @@ func TestReader_processRootModel(t *testing.T) {
 			},
 		},
 	}}
-	sliceStackRef := &go3mf.SliceStackResource{ID: 7, ModelPath: "/3d/3dmodel.model", Stack: &go3mf.SliceStack{BottomZ: 1.1, Refs: []go3mf.SliceRef{{SliceStackID: 10, Path: "/2D/2Dmodel.model"}}}}
+	sliceStackRef := &go3mf.SliceStackResource{ID: 7, ModelPath: "/3d/3dmodel.model", Stack: go3mf.SliceStack{BottomZ: 1.1, Refs: []go3mf.SliceRef{{SliceStackID: 10, Path: "/2D/2Dmodel.model"}}}}
 	meshRes := &go3mf.MeshResource{
 		ObjectResource: go3mf.ObjectResource{ID: 8, Name: "Box 1", ModelPath: "/3d/3dmodel.model", SliceStackID: 3, DefaultPropertyID: 5, SliceResoultion: go3mf.ResolutionLow, PartNumber: "11111111-1111-1111-1111-111111111111"},
 		Mesh:           new(mesh.Mesh),

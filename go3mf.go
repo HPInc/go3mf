@@ -321,7 +321,7 @@ func (s *SliceStack) AddSlice(slice *mesh.Slice) (int, error) {
 // SliceStackResource defines a slice stack resource.
 // It can either contain a SliceStack or a Refs slice.
 type SliceStackResource struct {
-	Stack     *SliceStack
+	Stack     SliceStack
 	ID        uint32
 	ModelPath string
 }
