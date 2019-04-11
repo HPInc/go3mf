@@ -19,11 +19,11 @@ func (d *sliceStackDecoder) Open() {
 }
 
 func (d *sliceStackDecoder) Close() bool {
-	if !d.file.parser.CloseResource() {
-		return false
-	}
 	if len(d.resource.Stack.Refs) > 0 && len(d.resource.Stack.Slices) > 0 {
 		return d.file.parser.GenericError(true, "slicestack contains slices and slicerefs")
+	}
+	if !d.file.parser.CloseResource() {
+		return false
 	}
 	d.file.AddResource(&d.resource)
 	return true
@@ -71,29 +71,27 @@ func (d *sliceRefDecoder) Attributes(attrs []xml.Attr) bool {
 			path = a.Value
 		}
 	}
-	if !ok {
-		return false
-	}
-	if sliceStackID == 0 {
-		return d.file.parser.MissingAttr(attrSliceRefID)
-	}
 
-	return d.addSliceRef(sliceStackID, path)
+	return ok && d.addSliceRef(sliceStackID, path)
 }
 
 func (d *sliceRefDecoder) addSliceRef(sliceStackID uint32, path string) bool {
-	if path == d.resource.ModelPath {
-		return d.file.parser.GenericError(true, "a slicepath is invalid")
+	if sliceStackID == 0 && !d.file.parser.MissingAttr(attrSliceRefID) {
+		return false
+	}
+	if path == d.resource.ModelPath && !d.file.parser.GenericError(true, "a slicepath is invalid") {
+		return false
 	}
 	resource, ok := d.file.FindResource(path, sliceStackID)
 	if !ok {
-		return d.file.parser.GenericError(true, "a sliceref points to a unexisting resource")
+		ok = d.file.parser.GenericError(true, "non-existent referenced resource")
+	} else if _, ok = resource.(*go3mf.SliceStackResource); !ok {
+		ok = d.file.parser.GenericError(true, "non-slicestack referenced resource")
 	}
-	if _, ok = resource.(*go3mf.SliceStackResource); !ok {
-		return d.file.parser.GenericError(true, "a sliceref points to a resource that is not an slicestack")
+	if ok {
+		d.resource.Stack.Refs = append(d.resource.Stack.Refs, go3mf.SliceRef{SliceStackID: sliceStackID, Path: path})
 	}
-	d.resource.Stack.Refs = append(d.resource.Stack.Refs, go3mf.SliceRef{SliceStackID: sliceStackID, Path: path})
-	return true
+	return ok
 }
 
 type sliceDecoder struct {

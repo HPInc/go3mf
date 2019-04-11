@@ -51,7 +51,7 @@ func (d *colorDecoder) Attributes(attrs []xml.Attr) bool {
 		if a.Name.Local == attrColor {
 			c, err := strToSRGB(a.Value)
 			if err != nil {
-				return d.file.parser.InvalidRequiredAttr(attrColor)
+				return d.file.parser.InvalidRequiredAttr(attrColor, a.Value)
 			}
 			d.resource.Colors = append(d.resource.Colors, c)
 		}

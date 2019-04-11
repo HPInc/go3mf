@@ -48,7 +48,7 @@ func (d *modelDecoder) Attributes(attrs []xml.Attr) bool {
 				if d.file.isRoot {
 					var ok bool
 					if d.model.Units, ok = newUnits(a.Value); !ok {
-						d.file.parser.InvalidOptionalAttr(a.Name.Local)
+						d.file.parser.InvalidOptionalAttr(a.Name.Local, a.Value)
 					}
 				}
 			case attrReqExt:
@@ -99,7 +99,7 @@ func (d *metadataDecoder) Attributes(attrs []xml.Attr) bool {
 			} else if ns, ok := d.file.namespaces[a.Value[0:i]]; ok {
 				d.metadata.Name = ns + ":" + a.Value[i+1:]
 			} else {
-				if !d.file.parser.GenericError(true, "could not get XML Namespace for a metadata") {
+				if !d.file.parser.GenericError(true, "unregistered namespace") {
 					return false
 				}
 			}

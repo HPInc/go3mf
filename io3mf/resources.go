@@ -93,7 +93,7 @@ func (d *baseMaterialDecoder) Attributes(attrs []xml.Attr) bool {
 			baseColor, err = strToSRGB(a.Value)
 			withColor = true
 			if err != nil {
-				ok = d.file.parser.InvalidRequiredAttr(attrBaseMaterialColor)
+				ok = d.file.parser.InvalidRequiredAttr(attrBaseMaterialColor, a.Value)
 			}
 		}
 		if !ok {

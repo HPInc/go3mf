@@ -28,7 +28,7 @@ func (d *objectDecoder) Attributes(attrs []xml.Attr) bool {
 		case nsProductionSpec:
 			if a.Name.Local == attrProdUUID {
 				if _, err := uuid.FromString(a.Value); err != nil {
-					ok = d.file.parser.InvalidRequiredAttr(attrProdUUID)
+					ok = d.file.parser.InvalidRequiredAttr(attrProdUUID, a.Value)
 				}
 				d.resource.UUID = a.Value
 			}
@@ -50,7 +50,7 @@ func (d *objectDecoder) Child(name xml.Name) (child nodeDecoder) {
 			child = &meshDecoder{resource: go3mf.MeshResource{ObjectResource: d.resource}}
 		} else if name.Local == attrComponents {
 			if d.resource.DefaultPropertyID != 0 {
-				d.file.parser.GenericError(true, "a components object must not have a default PID")
+				d.file.parser.GenericError(true, "default PID is not supported for component objects")
 			}
 			child = &componentsDecoder{resource: go3mf.ComponentsResource{ObjectResource: d.resource}}
 		}
@@ -67,7 +67,7 @@ func (d *objectDecoder) parseCoreAttr(a xml.Attr) bool {
 		d.resource.ObjectType, ok = newObjectType(a.Value)
 		if !ok {
 			ok = true
-			d.file.parser.InvalidOptionalAttr(attrType)
+			d.file.parser.InvalidOptionalAttr(attrType, a.Value)
 		}
 	case attrThumbnail:
 		d.resource.Thumbnail = a.Value
@@ -92,7 +92,7 @@ func (d *objectDecoder) parseSliceAttr(a xml.Attr) bool {
 		d.resource.SliceResoultion, ok = newSliceResolution(a.Value)
 		if !ok {
 			ok = true
-			d.file.parser.InvalidOptionalAttr(attrMeshRes)
+			d.file.parser.InvalidOptionalAttr(attrMeshRes, a.Value)
 		}
 	}
 	return ok
@@ -136,7 +136,7 @@ func (d *componentDecoder) Attributes(attrs []xml.Attr) bool {
 		case nsProductionSpec:
 			if a.Name.Local == attrProdUUID {
 				if _, err := uuid.FromString(a.Value); err != nil {
-					ok = d.file.parser.InvalidRequiredAttr(attrProdUUID)
+					ok = d.file.parser.InvalidRequiredAttr(attrProdUUID, a.Value)
 				}
 				component.UUID = a.Value
 			} else if a.Name.Local == attrPath {
@@ -149,7 +149,7 @@ func (d *componentDecoder) Attributes(attrs []xml.Attr) bool {
 				var err error
 				component.Transform, err = strToMatrix(a.Value)
 				if err != nil {
-					d.file.parser.InvalidOptionalAttr(attrTransform)
+					d.file.parser.InvalidOptionalAttr(attrTransform, a.Value)
 				}
 			}
 		}
@@ -157,27 +157,29 @@ func (d *componentDecoder) Attributes(attrs []xml.Attr) bool {
 			return false
 		}
 	}
+	return ok && d.addComponent(&component, path, objectID)
+}
 
+func (d *componentDecoder) addComponent(component *go3mf.Component, path string, objectID uint32) bool {
+	ok := true
 	if component.UUID == "" && d.file.NamespaceRegistered(nsProductionSpec) {
-		if !d.file.parser.MissingAttr(attrProdUUID) {
-			return false
-		}
+		ok = d.file.parser.MissingAttr(attrProdUUID)
 	}
-
-	if path != "" && !d.file.isRoot {
-		if !d.file.parser.GenericError(true, "a component in a non-root model has a path attribute") {
-			return false
-		}
+	if ok && path != "" && !d.file.isRoot {
+		ok = d.file.parser.GenericError(true, "path attribute in a non-root file is not supported")
+	}
+	if !ok {
+		return false
 	}
 
 	resource, ok := d.file.FindResource(path, uint32(objectID))
 	if !ok {
-		return d.file.parser.GenericError(true, "could not find component object")
+		ok = d.file.parser.GenericError(true, "non-existent referenced object")
+	} else if component.Object, ok = resource.(go3mf.Object); !ok {
+		ok = d.file.parser.GenericError(true, "non-object referenced resource")
 	}
-	component.Object, ok = resource.(go3mf.Object)
-	if !ok {
-		return d.file.parser.GenericError(true, "a component points to a non-object resource")
+	if ok {
+		d.resource.Components = append(d.resource.Components, component)
 	}
-	d.resource.Components = append(d.resource.Components, &component)
-	return true
+	return ok
 }

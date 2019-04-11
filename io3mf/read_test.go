@@ -368,115 +368,115 @@ func TestReader_processRootModel(t *testing.T) {
 	got.Path = "/3d/3dmodel.model"
 	got.Resources = append(got.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", Stack: otherSlices}, otherMesh)
 	rootFile := new(modelBuilder).withDefaultModel().withElement(`
-			<resources>
+		<resources>
 			<basematerials id="5">
-			<base name="Blue PLA" displaycolor="#0000FF" />
-			<base name="Red ABS" displaycolor="#FF0000" />
+				<base name="Blue PLA" displaycolor="#0000FF" />
+				<base name="Red ABS" displaycolor="#FF0000" />
 			</basematerials>
 			<m:texture2d id="6" path="/3D/Texture/msLogo.png" contenttype="image/png" tilestyleu="wrap" tilestylev="mirror" filter="auto" />
 			<m:colorgroup id="1">
-			<m:color color="#FFFFFF" /> <m:color color="#000000" /> <m:color color="#1AB567" /> <m:color color="#DF045A" />
+				<m:color color="#FFFFFF" /> <m:color color="#000000" /> <m:color color="#1AB567" /> <m:color color="#DF045A" />
 			</m:colorgroup>
 			<m:texture2dgroup id="2" texid="6">
-			<m:tex2coord u="0.3" v="0.5" /> <m:tex2coord u="0.3" v="0.8" />	<m:tex2coord u="0.5" v="0.8" />	<m:tex2coord u="0.5" v="0.5" />
-				</m:texture2dgroup>
-				<s:slicestack id="3" zbottom="1">
-					<s:slice ztop="0">
-						<s:vertices>
-							<s:vertex x="1.01" y="1.02" /> <s:vertex x="9.03" y="1.04" /> <s:vertex x="9.05" y="9.06" /> <s:vertex x="1.07" y="9.08" />
-						</s:vertices>
-						<s:polygon startv="0">
-							<s:segment v2="1"></s:segment> <s:segment v2="2"></s:segment> <s:segment v2="3"></s:segment> <s:segment v2="0"></s:segment>
-						</s:polygon>
-					</s:slice>
-					<s:slice ztop="0.1">
-						<s:vertices>
-							<s:vertex x="1.01" y="1.02" /> <s:vertex x="9.03" y="1.04" /> <s:vertex x="9.05" y="9.06" /> <s:vertex x="1.07" y="9.08" />
-						</s:vertices>
-						<s:polygon startv="0"> 
-							<s:segment v2="2"></s:segment> <s:segment v2="1"></s:segment> <s:segment v2="3"></s:segment> <s:segment v2="0"></s:segment>
-						</s:polygon>
-					</s:slice>
-				</s:slicestack>
-				<s:slicestack id="7" zbottom="1.1">
-					<s:sliceref slicestackid="10" slicepath="/2D/2Dmodel.model" />
-				</s:slicestack>
-				<object id="8" name="Box 1" pid="5" pindex="0" s:meshresolution="lowres" s:slicestackid="3" partnumber="11111111-1111-1111-1111-111111111111" type="model">
-					<mesh>
-						<vertices>
-							<vertex x="0" y="0" z="0" />
-							<vertex x="100.00000" y="0" z="0" />
-							<vertex x="100.00000" y="100.00000" z="0" />
-							<vertex x="0" y="100.00000" z="0" />
-							<vertex x="0" y="0" z="100.00000" />
-							<vertex x="100.00000" y="0" z="100.00000" />
-							<vertex x="100.00000" y="100.00000" z="100.00000" />
-							<vertex x="0" y="100.00000" z="100.00000" />
-						</vertices>
-						<triangles>
-							<triangle v1="3" v2="2" v3="1" />
-							<triangle v1="1" v2="0" v3="3" />
-							<triangle v1="4" v2="5" v3="6" p1="1" />
-							<triangle v1="6" v2="7" v3="4" pid="5" p1="1" />
-							<triangle v1="0" v2="1" v3="5" pid="2" p1="0" p2="1" p3="2"/>
-							<triangle v1="5" v2="4" v3="0" pid="2" p1="3" p2="0" p3="2"/>
-							<triangle v1="1" v2="2" v3="6" pid="1" p1="0" p2="1" p3="2"/>
-							<triangle v1="6" v2="5" v3="1" pid="1" p1="2" p2="1" p3="3"/>
-							<triangle v1="2" v2="3" v3="7" />
-							<triangle v1="7" v2="6" v3="2" />
-							<triangle v1="3" v2="0" v3="4" />
-							<triangle v1="4" v2="7" v3="3" />
-						</triangles>
-					</mesh>
-				</object>
-				<object id="15" name="Box" partnumber="e1ef01d4-cbd4-4a62-86b6-9634e2ca198b" type="model">
-					<mesh>
-						<vertices>
-							<vertex x="45.00000" y="55.00000" z="55.00000"/>
-							<vertex x="45.00000" y="45.00000" z="55.00000"/>
-							<vertex x="45.00000" y="55.00000" z="45.00000"/>
-							<vertex x="45.00000" y="45.00000" z="45.00000"/>
-							<vertex x="55.00000" y="55.00000" z="45.00000"/>
-							<vertex x="55.00000" y="55.00000" z="55.00000"/>
-							<vertex x="55.00000" y="45.00000" z="55.00000"/>
-							<vertex x="55.00000" y="45.00000" z="45.00000"/>
-						</vertices>
-						<b:beamlattice radius="1" minlength="0.0001" cap="hemisphere" clippingmode="inside" clippingmesh="8" representationmesh="8">
-							<b:beams>
-								<b:beam v1="0" v2="1" r1="1.50000" r2="1.60000" cap1="sphere" cap2="butt"/>
-								<b:beam v1="2" v2="0" r1="3.00000" r2="1.50000" cap1="sphere"/>
-								<b:beam v1="1" v2="3" r1="1.60000" r2="3.00000"/>
-								<b:beam v1="3" v2="2" />
-								<b:beam v1="2" v2="4" r1="3.00000" r2="2.00000"/>
-								<b:beam v1="4" v2="5" r1="2.00000"/>
-								<b:beam v1="5" v2="6" r1="2.00000"/>
-								<b:beam v1="7" v2="6" r1="2.00000"/>
-								<b:beam v1="1" v2="6" r1="1.60000" r2="2.00000"/>
-								<b:beam v1="7" v2="4" r1="2.00000"/>
-								<b:beam v1="7" v2="3" r1="2.00000" r2="3.00000"/>
-								<b:beam v1="0" v2="5" r1="1.50000" r2="2.00000" cap2="butt"/>
-							</b:beams>
-							<b:beamsets>
-								<b:beamset name="test" identifier="set_id">
-									<b:ref index="1"/>
-								</b:beamset>
-							</b:beamsets>
-						</b:beamlattice>
-					</mesh>
-				</object>
-				<object id="20" p:UUID="cb828680-8895-4e08-a1fc-be63e033df15">
-					<components>
-                		<component objectid="8" p:UUID="cb828680-8895-4e08-a1fc-be63e033df16" transform="3 0 0 0 1 0 0 0 2 -66.4 -87.1 8.8"/>
-            		</components>
-				</object>
-			</resources>
-			<build p:UUID="e9e25302-6428-402e-8633-cc95528d0ed3">
-				<item partnumber="bob" objectid="20" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed2" transform="1 0 0 0 2 0 0 0 3 -66.4 -87.1 8.8" />
-				<item objectid="8" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed3" p:path="/3d/other.model" />
-			</build>
-			<metadata name="Application">go3mf app</metadata>
-			<metadata name="p:CustomMetadata1" type="xs:string" preserve="1">CE8A91FB-C44E-4F00-B634-BAA411465F6A</metadata>
-			<other />
+				<m:tex2coord u="0.3" v="0.5" /> <m:tex2coord u="0.3" v="0.8" />	<m:tex2coord u="0.5" v="0.8" />	<m:tex2coord u="0.5" v="0.5" />
+			</m:texture2dgroup>
+			<s:slicestack id="3" zbottom="1">
+				<s:slice ztop="0">
+					<s:vertices>
+						<s:vertex x="1.01" y="1.02" /> <s:vertex x="9.03" y="1.04" /> <s:vertex x="9.05" y="9.06" /> <s:vertex x="1.07" y="9.08" />
+					</s:vertices>
+					<s:polygon startv="0">
+						<s:segment v2="1"></s:segment> <s:segment v2="2"></s:segment> <s:segment v2="3"></s:segment> <s:segment v2="0"></s:segment>
+					</s:polygon>
+				</s:slice>
+				<s:slice ztop="0.1">
+					<s:vertices>
+						<s:vertex x="1.01" y="1.02" /> <s:vertex x="9.03" y="1.04" /> <s:vertex x="9.05" y="9.06" /> <s:vertex x="1.07" y="9.08" />
+					</s:vertices>
+					<s:polygon startv="0"> 
+						<s:segment v2="2"></s:segment> <s:segment v2="1"></s:segment> <s:segment v2="3"></s:segment> <s:segment v2="0"></s:segment>
+					</s:polygon>
+				</s:slice>
+			</s:slicestack>
+			<s:slicestack id="7" zbottom="1.1">
+				<s:sliceref slicestackid="10" slicepath="/2D/2Dmodel.model" />
+			</s:slicestack>
+			<object id="8" name="Box 1" pid="5" pindex="0" s:meshresolution="lowres" s:slicestackid="3" partnumber="11111111-1111-1111-1111-111111111111" type="model">
+				<mesh>
+					<vertices>
+						<vertex x="0" y="0" z="0" />
+						<vertex x="100.00000" y="0" z="0" />
+						<vertex x="100.00000" y="100.00000" z="0" />
+						<vertex x="0" y="100.00000" z="0" />
+						<vertex x="0" y="0" z="100.00000" />
+						<vertex x="100.00000" y="0" z="100.00000" />
+						<vertex x="100.00000" y="100.00000" z="100.00000" />
+						<vertex x="0" y="100.00000" z="100.00000" />
+					</vertices>
+					<triangles>
+						<triangle v1="3" v2="2" v3="1" />
+						<triangle v1="1" v2="0" v3="3" />
+						<triangle v1="4" v2="5" v3="6" p1="1" />
+						<triangle v1="6" v2="7" v3="4" pid="5" p1="1" />
+						<triangle v1="0" v2="1" v3="5" pid="2" p1="0" p2="1" p3="2"/>
+						<triangle v1="5" v2="4" v3="0" pid="2" p1="3" p2="0" p3="2"/>
+						<triangle v1="1" v2="2" v3="6" pid="1" p1="0" p2="1" p3="2"/>
+						<triangle v1="6" v2="5" v3="1" pid="1" p1="2" p2="1" p3="3"/>
+						<triangle v1="2" v2="3" v3="7" />
+						<triangle v1="7" v2="6" v3="2" />
+						<triangle v1="3" v2="0" v3="4" />
+						<triangle v1="4" v2="7" v3="3" />
+					</triangles>
+				</mesh>
+			</object>
+			<object id="15" name="Box" partnumber="e1ef01d4-cbd4-4a62-86b6-9634e2ca198b" type="model">
+				<mesh>
+					<vertices>
+						<vertex x="45.00000" y="55.00000" z="55.00000"/>
+						<vertex x="45.00000" y="45.00000" z="55.00000"/>
+						<vertex x="45.00000" y="55.00000" z="45.00000"/>
+						<vertex x="45.00000" y="45.00000" z="45.00000"/>
+						<vertex x="55.00000" y="55.00000" z="45.00000"/>
+						<vertex x="55.00000" y="55.00000" z="55.00000"/>
+						<vertex x="55.00000" y="45.00000" z="55.00000"/>
+						<vertex x="55.00000" y="45.00000" z="45.00000"/>
+					</vertices>
+					<b:beamlattice radius="1" minlength="0.0001" cap="hemisphere" clippingmode="inside" clippingmesh="8" representationmesh="8">
+						<b:beams>
+							<b:beam v1="0" v2="1" r1="1.50000" r2="1.60000" cap1="sphere" cap2="butt"/>
+							<b:beam v1="2" v2="0" r1="3.00000" r2="1.50000" cap1="sphere"/>
+							<b:beam v1="1" v2="3" r1="1.60000" r2="3.00000"/>
+							<b:beam v1="3" v2="2" />
+							<b:beam v1="2" v2="4" r1="3.00000" r2="2.00000"/>
+							<b:beam v1="4" v2="5" r1="2.00000"/>
+							<b:beam v1="5" v2="6" r1="2.00000"/>
+							<b:beam v1="7" v2="6" r1="2.00000"/>
+							<b:beam v1="1" v2="6" r1="1.60000" r2="2.00000"/>
+							<b:beam v1="7" v2="4" r1="2.00000"/>
+							<b:beam v1="7" v2="3" r1="2.00000" r2="3.00000"/>
+							<b:beam v1="0" v2="5" r1="1.50000" r2="2.00000" cap2="butt"/>
+						</b:beams>
+						<b:beamsets>
+							<b:beamset name="test" identifier="set_id">
+								<b:ref index="1"/>
+							</b:beamset>
+						</b:beamsets>
+					</b:beamlattice>
+				</mesh>
+			</object>
+			<object id="20" p:UUID="cb828680-8895-4e08-a1fc-be63e033df15">
+				<components>
+					<component objectid="8" p:UUID="cb828680-8895-4e08-a1fc-be63e033df16" transform="3 0 0 0 1 0 0 0 2 -66.4 -87.1 8.8"/>
+				</components>
+			</object>
+		</resources>
+		<build p:UUID="e9e25302-6428-402e-8633-cc95528d0ed3">
+			<item partnumber="bob" objectid="20" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed2" transform="1 0 0 0 2 0 0 0 3 -66.4 -87.1 8.8" />
+			<item objectid="8" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed3" p:path="/3d/other.model" />
+		</build>
+		<metadata name="Application">go3mf app</metadata>
+		<metadata name="p:CustomMetadata1" type="xs:string" preserve="1">CE8A91FB-C44E-4F00-B634-BAA411465F6A</metadata>
+		<other />
 		`).build()
 
 	t.Run("base", func(t *testing.T) {
@@ -715,4 +715,150 @@ func TestNewReader(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestReader_processRootModel_warns(t *testing.T) {
+	want := []error{
+		GenericError{ResourceID: 7, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced resource"},
+		MissingPropertyError{ResourceID: 0, Element: "build", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
+		ParsePropertyError{ResourceID: 20, Element: "item", Name: "transform", Value: "1 0 0 0 2 0 0 0 3 -66.4 -87.1", ModelPath: "/3d/3dmodel.model", Type: PropertyOptional},
+		GenericError{ResourceID: 20, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "referenced object cannot be have OTHER type"},
+		MissingPropertyError{ResourceID: 8, Element: "item", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
+		GenericError{ResourceID: 8, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced object"},
+		GenericError{ResourceID: 5, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "non-object referenced resource"},
+		ParsePropertyError{ResourceID: 15, Element: "item", Name: "UUID", Value: "e9e", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
+		ParsePropertyError{ResourceID: 0, Element: "build", Name: "UUID", Value: "e9e25302-6428-402e-8633ed2", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
+	}
+	got := new(go3mf.Model)
+	got.Path = "/3d/3dmodel.model"
+	rootFile := new(modelBuilder).withDefaultModel().withElement(`
+		<resources>
+			<basematerials id="5">
+				<base name="Blue PLA" displaycolor="#0000FF" />
+				<base name="Red ABS" displaycolor="#FF0000" />
+			</basematerials>
+			<m:texture2d id="6" path="/3D/Texture/msLogo.png" contenttype="image/png" tilestyleu="wrap" tilestylev="mirror" filter="auto" />
+			<m:colorgroup id="1">
+				<m:color color="#FFFFFF" /> <m:color color="#000000" /> <m:color color="#1AB567" /> <m:color color="#DF045A" />
+			</m:colorgroup>
+			<m:texture2dgroup id="2" texid="6">
+				<m:tex2coord u="0.3" v="0.5" /> <m:tex2coord u="0.3" v="0.8" />	<m:tex2coord u="0.5" v="0.8" />	<m:tex2coord u="0.5" v="0.5" />
+			</m:texture2dgroup>
+			<s:slicestack id="3" zbottom="1">
+				<s:slice ztop="0">
+					<s:vertices>
+						<s:vertex x="1.01" y="1.02" /> <s:vertex x="9.03" y="1.04" /> <s:vertex x="9.05" y="9.06" /> <s:vertex x="1.07" y="9.08" />
+					</s:vertices>
+					<s:polygon startv="0">
+						<s:segment v2="1"></s:segment> <s:segment v2="2"></s:segment> <s:segment v2="3"></s:segment> <s:segment v2="0"></s:segment>
+					</s:polygon>
+				</s:slice>
+				<s:slice ztop="0.1">
+					<s:vertices>
+						<s:vertex x="1.01" y="1.02" /> <s:vertex x="9.03" y="1.04" /> <s:vertex x="9.05" y="9.06" /> <s:vertex x="1.07" y="9.08" />
+					</s:vertices>
+					<s:polygon startv="0"> 
+						<s:segment v2="2"></s:segment> <s:segment v2="1"></s:segment> <s:segment v2="3"></s:segment> <s:segment v2="0"></s:segment>
+					</s:polygon>
+				</s:slice>
+			</s:slicestack>
+			<s:slicestack id="7" zbottom="1.1">
+				<s:sliceref slicestackid="10" slicepath="/2D/2Dmodel.model" />
+			</s:slicestack>
+			<object id="8" name="Box 1" pid="5" pindex="0" s:meshresolution="lowres" s:slicestackid="3" partnumber="11111111-1111-1111-1111-111111111111" type="model">
+				<mesh>
+					<vertices>
+						<vertex x="0" y="0" z="0" />
+						<vertex x="100.00000" y="0" z="0" />
+						<vertex x="100.00000" y="100.00000" z="0" />
+						<vertex x="0" y="100.00000" z="0" />
+						<vertex x="0" y="0" z="100.00000" />
+						<vertex x="100.00000" y="0" z="100.00000" />
+						<vertex x="100.00000" y="100.00000" z="100.00000" />
+						<vertex x="0" y="100.00000" z="100.00000" />
+					</vertices>
+					<triangles>
+						<triangle v1="3" v2="2" v3="1" />
+						<triangle v1="1" v2="0" v3="3" />
+						<triangle v1="4" v2="5" v3="6" p1="1" />
+						<triangle v1="6" v2="7" v3="4" pid="5" p1="1" />
+						<triangle v1="0" v2="1" v3="5" pid="2" p1="0" p2="1" p3="2"/>
+						<triangle v1="5" v2="4" v3="0" pid="2" p1="3" p2="0" p3="2"/>
+						<triangle v1="1" v2="2" v3="6" pid="1" p1="0" p2="1" p3="2"/>
+						<triangle v1="6" v2="5" v3="1" pid="1" p1="2" p2="1" p3="3"/>
+						<triangle v1="2" v2="3" v3="7" />
+						<triangle v1="7" v2="6" v3="2" />
+						<triangle v1="3" v2="0" v3="4" />
+						<triangle v1="4" v2="7" v3="3" />
+					</triangles>
+				</mesh>
+			</object>
+			<object id="15" name="Box" partnumber="e1ef01d4-cbd4-4a62-86b6-9634e2ca198b" type="model">
+				<mesh>
+					<vertices>
+						<vertex x="45.00000" y="55.00000" z="55.00000"/>
+						<vertex x="45.00000" y="45.00000" z="55.00000"/>
+						<vertex x="45.00000" y="55.00000" z="45.00000"/>
+						<vertex x="45.00000" y="45.00000" z="45.00000"/>
+						<vertex x="55.00000" y="55.00000" z="45.00000"/>
+						<vertex x="55.00000" y="55.00000" z="55.00000"/>
+						<vertex x="55.00000" y="45.00000" z="55.00000"/>
+						<vertex x="55.00000" y="45.00000" z="45.00000"/>
+					</vertices>
+					<b:beamlattice radius="1" minlength="0.0001" cap="hemisphere" clippingmode="inside" clippingmesh="8" representationmesh="8">
+						<b:beams>
+							<b:beam v1="0" v2="1" r1="1.50000" r2="1.60000" cap1="sphere" cap2="butt"/>
+							<b:beam v1="2" v2="0" r1="3.00000" r2="1.50000" cap1="sphere"/>
+							<b:beam v1="1" v2="3" r1="1.60000" r2="3.00000"/>
+							<b:beam v1="3" v2="2" />
+							<b:beam v1="2" v2="4" r1="3.00000" r2="2.00000"/>
+							<b:beam v1="4" v2="5" r1="2.00000"/>
+							<b:beam v1="5" v2="6" r1="2.00000"/>
+							<b:beam v1="7" v2="6" r1="2.00000"/>
+							<b:beam v1="1" v2="6" r1="1.60000" r2="2.00000"/>
+							<b:beam v1="7" v2="4" r1="2.00000"/>
+							<b:beam v1="7" v2="3" r1="2.00000" r2="3.00000"/>
+							<b:beam v1="0" v2="5" r1="1.50000" r2="2.00000" cap2="butt"/>
+						</b:beams>
+						<b:beamsets>
+							<b:beamset name="test" identifier="set_id">
+								<b:ref index="1"/>
+							</b:beamset>
+						</b:beamsets>
+					</b:beamlattice>
+				</mesh>
+			</object>
+			<object id="20" p:UUID="cb828680-8895-4e08-a1fc-be63e033df15" type="other">
+				<components>
+					<component objectid="8" p:UUID="cb828680-8895-4e08-a1fc-be63e033df16" transform="3 0 0 0 1 0 0 0 2 -66.4 -87.1 8.8"/>
+				</components>
+			</object>
+		</resources>
+		<build>
+			<item partnumber="bob" objectid="20" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed2" transform="1 0 0 0 2 0 0 0 3 -66.4 -87.1" />
+			<item objectid="8" p:path="/3d/other.model"/>
+			<item objectid="5" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed4"/>
+			<item objectid="15" p:UUID="e9e"/>
+		</build>
+		<build p:UUID="e9e25302-6428-402e-8633ed2"/>
+		<metadata name="Application">go3mf app</metadata>
+		<metadata name="p:CustomMetadata1" type="xs:string" preserve="1">CE8A91FB-C44E-4F00-B634-BAA411465F6A</metadata>
+		<other />
+		`).build()
+
+	t.Run("base", func(t *testing.T) {
+		reader := new(Reader)
+		reader.Strict = false
+		reader.SetDecompressor(func(r io.Reader) io.ReadCloser { return flate.NewReader(r) })
+		reader.SetXMLDecoder(func(r io.Reader) XMLDecoder { return xml.NewDecoder(r) })
+		if err := reader.processRootModel(context.Background(), rootFile, got); err != nil {
+			t.Errorf("Reader.processRootModel() unexpected error = %v", err)
+			return
+		}
+		deep.MaxDiff = 1
+		if diff := deep.Equal(reader.Warnings, want); diff != nil {
+			t.Errorf("Reader.processRootModel() = %v", diff)
+			return
+		}
+	})
 }

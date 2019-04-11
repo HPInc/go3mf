@@ -20,19 +20,21 @@ func (d *buildDecoder) Child(name xml.Name) (child nodeDecoder) {
 }
 
 func (d *buildDecoder) Attributes(attrs []xml.Attr) bool {
+	ok := true
 	for _, a := range attrs {
 		if a.Name.Space == nsProductionSpec && a.Name.Local == attrProdUUID {
 			if _, err := uuid.FromString(a.Value); err != nil {
-				return d.file.parser.InvalidRequiredAttr(attrProdUUID)
+				ok = d.file.parser.InvalidRequiredAttr(attrProdUUID, a.Value)
 			}
 			d.model.UUID = a.Value
+			break
 		}
 	}
 
-	if d.model.UUID == "" && d.file.NamespaceRegistered(nsProductionSpec) {
-		return d.file.parser.MissingAttr(attrProdUUID)
+	if ok && d.model.UUID == "" && d.file.NamespaceRegistered(nsProductionSpec) {
+		ok = d.file.parser.MissingAttr(attrProdUUID)
 	}
-	return true
+	return ok
 }
 
 type buildItemDecoder struct {
@@ -44,57 +46,52 @@ type buildItemDecoder struct {
 }
 
 func (d *buildItemDecoder) Close() bool {
-	if d.objectID == 0 {
-		return d.file.parser.CloseResource()
-	}
-
-	if d.processItem() {
-		if d.item.Object.Type() == go3mf.ObjectTypeOther {
-			if !d.file.parser.GenericError(true, "build item must not reference object of type OTHER") {
-				return false
-			}
-		}
-
-	}
-	return true
+	return d.processItem() && d.file.parser.CloseResource()
 }
 
 func (d *buildItemDecoder) processItem() bool {
 	resource, ok := d.file.FindResource(d.objectPath, uint32(d.objectID))
 	if !ok {
-		return d.file.parser.GenericError(true, "could not find build item object")
+		ok = d.file.parser.GenericError(true, "non-existent referenced object")
+	} else if d.item.Object, ok = resource.(go3mf.Object); !ok {
+		ok = d.file.parser.GenericError(true, "non-object referenced resource")
 	}
-	d.item.Object, ok = resource.(go3mf.Object)
-	if !ok {
-		return d.file.parser.GenericError(true, "a build item points to a non-object resource")
+	if ok {
+		if d.item.Object != nil && d.item.Object.Type() == go3mf.ObjectTypeOther {
+			ok = d.file.parser.GenericError(true, "referenced object cannot be have OTHER type")
+		}
 	}
-	d.model.BuildItems = append(d.model.BuildItems, &d.item)
-	return true
+	if ok {
+		d.model.BuildItems = append(d.model.BuildItems, &d.item)
+	}
+	return ok
 }
 
 func (d *buildItemDecoder) Attributes(attrs []xml.Attr) bool {
+	ok := true
 	for _, a := range attrs {
 		switch a.Name.Space {
 		case nsProductionSpec:
 			if a.Name.Local == attrProdUUID {
 				if _, err := uuid.FromString(a.Value); err != nil {
-					return d.file.parser.InvalidRequiredAttr(attrProdUUID)
+					ok = d.file.parser.InvalidRequiredAttr(attrProdUUID, a.Value)
 				}
 				d.item.UUID = a.Value
 			} else if a.Name.Local == attrPath {
 				d.objectPath = a.Value
 			}
 		case "":
-			if !d.parseCoreAttr(a) {
-				return false
-			}
+			ok = d.parseCoreAttr(a)
+		}
+		if !ok {
+			return false
 		}
 	}
 
 	if d.item.UUID == "" && d.file.NamespaceRegistered(nsProductionSpec) {
-		return d.file.parser.MissingAttr(attrProdUUID)
+		ok = d.file.parser.MissingAttr(attrProdUUID)
 	}
-	return true
+	return ok
 }
 
 func (d *buildItemDecoder) parseCoreAttr(a xml.Attr) bool {
@@ -108,7 +105,7 @@ func (d *buildItemDecoder) parseCoreAttr(a xml.Attr) bool {
 		var err error
 		d.item.Transform, err = strToMatrix(a.Value)
 		if err != nil {
-			d.file.parser.InvalidOptionalAttr(attrTransform)
+			d.file.parser.InvalidOptionalAttr(attrTransform, a.Value)
 		}
 	}
 	return ok

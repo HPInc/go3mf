@@ -5,47 +5,49 @@ import (
 	"strconv"
 )
 
-// A MissingAttrError represents a missing required attribute error.
-// If MissingAttrError is 0 means that the error took place while parsing the resource attributes before the ID appeared.
-type MissingAttrError struct {
+// A MissingPropertyError represents a missing required property error.
+// If MissingPropertyError is 0 means that the error took place while parsing the resource property before the ID appeared.
+// When Element is 'item' the ResourceID is the objectID property of a build item.
+type MissingPropertyError struct {
 	ResourceID uint32
 	ModelPath  string
 	Element    string
-	Attr       string
+	Name       string
 }
 
-func (e MissingAttrError) Error() string {
-	return fmt.Sprintf("go3mf: missing required required attribute '%s' of element '%s' in resource '%d'", e.Attr, e.Element, e.ResourceID)
+func (e MissingPropertyError) Error() string {
+	return fmt.Sprintf("go3mf: missing required property '%s' of element '%s' in resource '%s:%d'", e.Name, e.Element, e.ModelPath, e.ResourceID)
 }
 
-// A RequiredAttrError represents an error while decoding a required attribute.
-// If ResourceID is 0 means that the error took place while parsing the resource attributes before the ID appeared.
-type RequiredAttrError struct {
+// PropertyType defines the possible property types.
+type PropertyType string
+
+const (
+	// PropertyRequired is mandatory.
+	PropertyRequired PropertyType = "required"
+	// PropertyOptional is optional.
+	PropertyOptional = "optional"
+)
+
+// A ParsePropertyError represents an error while decoding a required or an optional property.
+// If ResourceID is 0 means that the error took place while parsing the resource property before the ID appeared.
+// When Element is 'item' the ResourceID is the objectID property of a build item.
+type ParsePropertyError struct {
 	ResourceID uint32
 	ModelPath  string
 	Element    string
-	Attr       string
+	Name       string
+	Value      string
+	Type       PropertyType
 }
 
-func (e RequiredAttrError) Error() string {
-	return fmt.Sprintf("go3mf: error decoding a required attribute '%s' of element '%s' in resource '%d'", e.Attr, e.Element, e.ResourceID)
-}
-
-// A OptionalAttrError represents an error while decoding aan optional attribute.
-// If ResourceID is 0 means that the error took place while parsing the resource attributes before the ID appeared.
-type OptionalAttrError struct {
-	ResourceID uint32
-	ModelPath  string
-	Element    string
-	Attr       string
-}
-
-func (e OptionalAttrError) Error() string {
-	return fmt.Sprintf("go3mf: error decoding an optional attribute '%s' of element '%s' in resource '%d'", e.Attr, e.Element, e.ResourceID)
+func (e ParsePropertyError) Error() string {
+	return fmt.Sprintf("go3mf: [%s] error parsing property '%s = %s' of element '%s' in resource '%s:%d'", e.Type, e.Name, e.Value, e.Element, e.ModelPath, e.ResourceID)
 }
 
 // A GenericError represents a generic error.
-// If ResourceID is 0 means that the error took place while parsing the resource attributes before the ID appeared.
+// If ResourceID is 0 means that the error took place while parsing the resource property before the ID appeared.
+// When Element is 'item' the ResourceID is the objectID property of a build item.
 type GenericError struct {
 	ResourceID uint32
 	ModelPath  string
@@ -54,7 +56,7 @@ type GenericError struct {
 }
 
 func (e GenericError) Error() string {
-	return fmt.Sprintf("go3mf: error at element '%s' in resource '%d' with messages '%s'", e.Element, e.ResourceID, e.Message)
+	return fmt.Sprintf("go3mf: error at element '%s' in resource '%s:%d' with messages '%s'", e.Element, e.ModelPath, e.ResourceID, e.Message)
 }
 
 type parser struct {
@@ -84,22 +86,22 @@ func (p *parser) GenericError(strict bool, msg string) bool {
 	return true
 }
 
-func (p *parser) InvalidRequiredAttr(attr string) bool {
-	return p.strictError(RequiredAttrError{ResourceID: p.ResourceID, Element: p.Element, Attr: attr, ModelPath: p.ModelPath})
+func (p *parser) InvalidRequiredAttr(attr string, val string) bool {
+	return p.strictError(ParsePropertyError{ResourceID: p.ResourceID, Element: p.Element, Name: attr, Value: val, ModelPath: p.ModelPath, Type: PropertyRequired})
 }
 
-func (p *parser) InvalidOptionalAttr(attr string) {
-	p.Warnings = append(p.Warnings, OptionalAttrError{ResourceID: p.ResourceID, Element: p.Element, Attr: attr, ModelPath: p.ModelPath})
+func (p *parser) InvalidOptionalAttr(attr string, val string) {
+	p.Warnings = append(p.Warnings, ParsePropertyError{ResourceID: p.ResourceID, Element: p.Element, Name: attr, Value: val, ModelPath: p.ModelPath, Type: PropertyOptional})
 }
 
 func (p *parser) MissingAttr(attr string) bool {
-	return p.strictError(MissingAttrError{ResourceID: p.ResourceID, Element: p.Element, Attr: attr, ModelPath: p.ModelPath})
+	return p.strictError(MissingPropertyError{ResourceID: p.ResourceID, Element: p.Element, Name: attr, ModelPath: p.ModelPath})
 }
 
 func (p *parser) ParseResourceID(s string) (uint32, bool) {
 	n, err := strconv.ParseUint(s, 10, 32)
 	if err != nil {
-		return 0, p.strictError(RequiredAttrError{ResourceID: p.ResourceID, Element: p.Element, Attr: attrID, ModelPath: p.ModelPath})
+		return 0, p.InvalidRequiredAttr(attrID, s)
 	}
 	p.ResourceID = uint32(n)
 	return p.ResourceID, true
@@ -107,7 +109,7 @@ func (p *parser) ParseResourceID(s string) (uint32, bool) {
 
 func (p *parser) CloseResource() bool {
 	if p.ResourceID == 0 {
-		return p.strictError(MissingAttrError{ResourceID: 0, Element: p.Element, Attr: attrID, ModelPath: p.ModelPath})
+		return p.InvalidRequiredAttr(attrID, "0")
 	}
 	p.ResourceID = 0
 	return true
@@ -116,7 +118,7 @@ func (p *parser) CloseResource() bool {
 func (p *parser) ParseUint32Required(attr string, s string) (uint32, bool) {
 	n, err := strconv.ParseUint(s, 10, 32)
 	if err != nil {
-		return 0, p.strictError(RequiredAttrError{ResourceID: p.ResourceID, Element: p.Element, Attr: attr, ModelPath: p.ModelPath})
+		return 0, p.InvalidRequiredAttr(attr, s)
 	}
 	return uint32(n), true
 }
@@ -124,7 +126,7 @@ func (p *parser) ParseUint32Required(attr string, s string) (uint32, bool) {
 func (p *parser) ParseUint32Optional(attr string, s string) uint32 {
 	n, err := strconv.ParseUint(s, 10, 32)
 	if err != nil {
-		p.InvalidOptionalAttr(attr)
+		p.InvalidOptionalAttr(attr, s)
 	}
 	return uint32(n)
 }
@@ -132,7 +134,7 @@ func (p *parser) ParseUint32Optional(attr string, s string) uint32 {
 func (p *parser) ParseFloat32Required(attr string, s string) (float32, bool) {
 	n, err := strconv.ParseFloat(s, 32)
 	if err != nil {
-		return 0, p.strictError(RequiredAttrError{ResourceID: p.ResourceID, Element: p.Element, Attr: attr, ModelPath: p.ModelPath})
+		return 0, p.InvalidRequiredAttr(attr, s)
 	}
 	return float32(n), true
 }
@@ -140,7 +142,7 @@ func (p *parser) ParseFloat32Required(attr string, s string) (float32, bool) {
 func (p *parser) ParseFloat32Optional(attr string, s string) float32 {
 	n, err := strconv.ParseFloat(s, 32)
 	if err != nil {
-		p.InvalidOptionalAttr(attr)
+		p.InvalidOptionalAttr(attr, s)
 	}
 	return float32(n)
 }
@@ -148,7 +150,7 @@ func (p *parser) ParseFloat32Optional(attr string, s string) float32 {
 func (p *parser) ParseFloat64Required(attr string, s string) (float64, bool) {
 	n, err := strconv.ParseFloat(s, 64)
 	if err != nil {
-		return 0, p.strictError(RequiredAttrError{ResourceID: p.ResourceID, Element: p.Element, Attr: attr, ModelPath: p.ModelPath})
+		return 0, p.InvalidRequiredAttr(attr, s)
 	}
 	return n, true
 }
@@ -156,7 +158,7 @@ func (p *parser) ParseFloat64Required(attr string, s string) (float64, bool) {
 func (p *parser) ParseFloat64Optional(attr string, s string) float64 {
 	n, err := strconv.ParseFloat(s, 64)
 	if err != nil {
-		p.InvalidOptionalAttr(attr)
+		p.InvalidOptionalAttr(attr, s)
 	}
 	return n
 }

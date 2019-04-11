@@ -144,11 +144,11 @@ func (d *triangleDecoder) Attributes(attrs []xml.Attr) bool {
 
 func (d *triangleDecoder) addTriangle(v1, v2, v3, pid, p1, p2, p3 uint32) bool {
 	if v1 == v2 || v1 == v3 || v2 == v3 {
-		return d.file.parser.GenericError(true, "invalid triangle indices")
+		return d.file.parser.GenericError(true, "duplicated triangle indices")
 	}
 	nodeCount := uint32(len(d.resource.Mesh.Nodes))
 	if v1 >= nodeCount || v2 >= nodeCount || v3 >= nodeCount {
-		return d.file.parser.GenericError(true, "triangle index is out of range")
+		return d.file.parser.GenericError(true, "triangle indices are out of range")
 	}
 	d.resource.Mesh.Faces = append(d.resource.Mesh.Faces, mesh.Face{
 		NodeIndices:     [3]uint32{v1, v2, v3},
