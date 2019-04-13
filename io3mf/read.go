@@ -172,6 +172,7 @@ func (d *modelFile) Decode(ctx context.Context, x XMLDecoder) (err error) {
 				state = append(state, currentDecoder)
 				names = append(names, currentName)
 				currentName = tp.Name
+				d.parser.Element = tp.Name.Local
 				currentDecoder = tmpDecoder
 				currentDecoder.Open()
 				if !currentDecoder.Attributes(tp.Attr) {
@@ -186,6 +187,7 @@ func (d *modelFile) Decode(ctx context.Context, x XMLDecoder) (err error) {
 			}
 		case xml.EndElement:
 			if currentName == tp.Name {
+				d.parser.Element = tp.Name.Local
 				if currentDecoder.Close() {
 					currentDecoder, state = state[len(state)-1], state[:len(state)-1]
 					currentName, names = names[len(names)-1], names[:len(names)-1]

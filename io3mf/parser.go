@@ -109,7 +109,7 @@ func (p *parser) ParseResourceID(s string) (uint32, bool) {
 
 func (p *parser) CloseResource() bool {
 	if p.ResourceID == 0 {
-		return p.InvalidRequiredAttr(attrID, "0")
+		return p.MissingAttr(attrID)
 	}
 	p.ResourceID = 0
 	return true

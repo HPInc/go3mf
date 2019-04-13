@@ -49,11 +49,11 @@ func (d *baseMaterialsDecoder) Open() {
 }
 
 func (d *baseMaterialsDecoder) Close() bool {
-	if !d.file.parser.CloseResource() {
-		return false
+	ok := d.file.parser.CloseResource()
+	if ok {
+		d.file.AddResource(&d.resource)
 	}
-	d.file.AddResource(&d.resource)
-	return true
+	return ok
 }
 
 func (d *baseMaterialsDecoder) Child(name xml.Name) (child nodeDecoder) {
@@ -66,10 +66,10 @@ func (d *baseMaterialsDecoder) Child(name xml.Name) (child nodeDecoder) {
 func (d *baseMaterialsDecoder) Attributes(attrs []xml.Attr) bool {
 	ok := true
 	for _, a := range attrs {
-		if a.Name.Space != "" || a.Name.Local != attrID {
-			continue
+		if a.Name.Space == "" && a.Name.Local == attrID {
+			d.resource.ID, ok = d.file.parser.ParseResourceID(a.Value)
+			break
 		}
-		d.resource.ID, ok = d.file.parser.ParseResourceID(a.Value)
 	}
 	return ok
 }

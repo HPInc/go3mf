@@ -719,6 +719,12 @@ func TestNewReader(t *testing.T) {
 
 func TestReader_processRootModel_warns(t *testing.T) {
 	want := []error{
+		ParsePropertyError{ResourceID: 0, Element: "base", Name: "displaycolor", Value: "0000FF", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
+		MissingPropertyError{ResourceID: 0, Element: "base", ModelPath: "/3d/3dmodel.model", Name: "name"},
+		MissingPropertyError{ResourceID: 0, Element: "base", ModelPath: "/3d/3dmodel.model", Name: "displaycolor"},
+		MissingPropertyError{ResourceID: 0, Element: "basematerials", ModelPath: "/3d/3dmodel.model", Name: "id"},
+		ParsePropertyError{ResourceID: 0, Element: "basematerials", Name: "id", Value: "a", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
+		MissingPropertyError{ResourceID: 0, Element: "basematerials", ModelPath: "/3d/3dmodel.model", Name: "id"},
 		GenericError{ResourceID: 7, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced resource"},
 		MissingPropertyError{ResourceID: 0, Element: "build", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
 		ParsePropertyError{ResourceID: 20, Element: "item", Name: "transform", Value: "1 0 0 0 2 0 0 0 3 -66.4 -87.1", ModelPath: "/3d/3dmodel.model", Type: PropertyOptional},
@@ -733,10 +739,15 @@ func TestReader_processRootModel_warns(t *testing.T) {
 	got.Path = "/3d/3dmodel.model"
 	rootFile := new(modelBuilder).withDefaultModel().withElement(`
 		<resources>
+			<basematerials>
+				<base name="Blue PLA" displaycolor="0000FF" />
+				<base />
+			</basematerials>
+			<basematerials id="a"/>
 			<basematerials id="5">
 				<base name="Blue PLA" displaycolor="#0000FF" />
 				<base name="Red ABS" displaycolor="#FF0000" />
-			</basematerials>
+			</basematerials>			
 			<m:texture2d id="6" path="/3D/Texture/msLogo.png" contenttype="image/png" tilestyleu="wrap" tilestylev="mirror" filter="auto" />
 			<m:colorgroup id="1">
 				<m:color color="#FFFFFF" /> <m:color color="#000000" /> <m:color color="#1AB567" /> <m:color color="#DF045A" />
