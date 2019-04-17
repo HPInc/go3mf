@@ -96,16 +96,15 @@ func (d *baseMaterialDecoder) Attributes(attrs []xml.Attr) bool {
 				ok = d.file.parser.InvalidRequiredAttr(attrBaseMaterialColor, a.Value)
 			}
 		}
-		if !ok {
-			return false
+	}
+	if ok {
+		if name == "" {
+			ok = d.file.parser.MissingAttr(attrName)
 		}
+		if !withColor {
+			ok = d.file.parser.MissingAttr(attrBaseMaterialColor)
+		}
+		d.resource.Materials = append(d.resource.Materials, go3mf.BaseMaterial{Name: name, Color: baseColor})
 	}
-	if name == "" {
-		ok = d.file.parser.MissingAttr(attrName)
-	}
-	if !withColor {
-		ok = d.file.parser.MissingAttr(attrBaseMaterialColor)
-	}
-	d.resource.Materials = append(d.resource.Materials, go3mf.BaseMaterial{Name: name, Color: baseColor})
 	return ok
 }

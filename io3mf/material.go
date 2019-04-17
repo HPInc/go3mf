@@ -18,9 +18,8 @@ func (d *colorGroupDecoder) Open() {
 }
 
 func (d *colorGroupDecoder) Close() bool {
-	d.file.parser.CloseResource()
 	d.file.AddResource(&d.resource)
-	return true
+	return d.file.parser.CloseResource()
 }
 
 func (d *colorGroupDecoder) Child(name xml.Name) (child nodeDecoder) {
@@ -48,7 +47,7 @@ type colorDecoder struct {
 
 func (d *colorDecoder) Attributes(attrs []xml.Attr) bool {
 	for _, a := range attrs {
-		if a.Name.Local == attrColor {
+		if a.Name.Space == "" && a.Name.Local == attrColor {
 			c, err := strToSRGB(a.Value)
 			if err != nil {
 				return d.file.parser.InvalidRequiredAttr(attrColor, a.Value)
@@ -68,6 +67,9 @@ func (d *tex2DCoordDecoder) Attributes(attrs []xml.Attr) bool {
 	var u, v float32
 	ok := true
 	for _, a := range attrs {
+		if a.Name.Space != "" {
+			continue
+		}
 		switch a.Name.Local {
 		case attrU:
 			u, ok = d.file.parser.ParseFloat32Required(a.Name.Local, a.Value)
@@ -94,11 +96,8 @@ func (d *tex2DGroupDecoder) Open() {
 }
 
 func (d *tex2DGroupDecoder) Close() bool {
-	if !d.file.parser.CloseResource() {
-		return false
-	}
 	d.file.AddResource(&d.resource)
-	return true
+	return d.file.parser.CloseResource()
 }
 
 func (d *tex2DGroupDecoder) Child(name xml.Name) (child nodeDecoder) {
@@ -137,11 +136,8 @@ func (d *texture2DDecoder) Open() {
 }
 
 func (d *texture2DDecoder) Close() bool {
-	if !d.file.parser.CloseResource() {
-		return false
-	}
 	d.file.AddResource(&d.resource)
-	return true
+	return d.file.parser.CloseResource()
 }
 
 func (d *texture2DDecoder) Attributes(attrs []xml.Attr) bool {

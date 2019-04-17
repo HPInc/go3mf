@@ -725,6 +725,12 @@ func TestReader_processRootModel_warns(t *testing.T) {
 		MissingPropertyError{ResourceID: 0, Element: "basematerials", ModelPath: "/3d/3dmodel.model", Name: "id"},
 		ParsePropertyError{ResourceID: 0, Element: "basematerials", Name: "id", Value: "a", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
 		MissingPropertyError{ResourceID: 0, Element: "basematerials", ModelPath: "/3d/3dmodel.model", Name: "id"},
+		ParsePropertyError{ResourceID: 0, Element: "texture2d", Name: "id", Value: "b", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
+		MissingPropertyError{ResourceID: 0, Element: "texture2d", ModelPath: "/3d/3dmodel.model", Name: "path"},
+		MissingPropertyError{ResourceID: 0, Element: "texture2d", ModelPath: "/3d/3dmodel.model", Name: "id"},
+		ParsePropertyError{ResourceID: 1, Element: "color", Name: "color", Value: "#FFFFF", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
+		ParsePropertyError{ResourceID: 2, Element: "tex2coord", Name: "u", Value: "b", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
+		ParsePropertyError{ResourceID: 2, Element: "tex2coord", Name: "v", Value: "c", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
 		GenericError{ResourceID: 7, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced resource"},
 		MissingPropertyError{ResourceID: 0, Element: "build", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
 		ParsePropertyError{ResourceID: 20, Element: "item", Name: "transform", Value: "1 0 0 0 2 0 0 0 3 -66.4 -87.1", ModelPath: "/3d/3dmodel.model", Type: PropertyOptional},
@@ -748,12 +754,13 @@ func TestReader_processRootModel_warns(t *testing.T) {
 				<base name="Blue PLA" displaycolor="#0000FF" />
 				<base name="Red ABS" displaycolor="#FF0000" />
 			</basematerials>			
-			<m:texture2d id="6" path="/3D/Texture/msLogo.png" contenttype="image/png" tilestyleu="wrap" tilestylev="mirror" filter="auto" />
+			<m:texture2d id="6" qm:mq="other" path="/3D/Texture/msLogo.png" contenttype="image/png" tilestyleu="wrap" tilestylev="mirror" filter="auto" />
+			<m:texture2d id="b" contenttype="image/png" tilestyleu="wrap" tilestylev="mirror" filter="auto" />
 			<m:colorgroup id="1">
-				<m:color color="#FFFFFF" /> <m:color color="#000000" /> <m:color color="#1AB567" /> <m:color color="#DF045A" />
+				<m:color color="#FFFFF" /> <m:color color="#000000" /> <m:color color="#1AB567" /> <m:color color="#DF045A" />
 			</m:colorgroup>
-			<m:texture2dgroup id="2" texid="6">
-				<m:tex2coord u="0.3" v="0.5" /> <m:tex2coord u="0.3" v="0.8" />	<m:tex2coord u="0.5" v="0.8" />	<m:tex2coord u="0.5" v="0.5" />
+			<m:texture2dgroup qm:mq="other" id="2" texid="6">
+				<m:tex2coord qm:mq="other" u="b" v="0.5" /> <m:tex2coord u="0.3" v="c" />	<m:tex2coord u="0.5" v="0.8" />	<m:tex2coord u="0.5" v="0.5" />
 			</m:texture2dgroup>
 			<s:slicestack id="3" zbottom="1">
 				<s:slice ztop="0">
