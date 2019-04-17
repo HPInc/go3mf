@@ -731,6 +731,16 @@ func TestReader_processRootModel_warns(t *testing.T) {
 		ParsePropertyError{ResourceID: 1, Element: "color", Name: "color", Value: "#FFFFF", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
 		ParsePropertyError{ResourceID: 2, Element: "tex2coord", Name: "u", Value: "b", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
 		ParsePropertyError{ResourceID: 2, Element: "tex2coord", Name: "v", Value: "c", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
+		MissingPropertyError{ResourceID: 3, Element: "slice", ModelPath: "/3d/3dmodel.model", Name: "ztop"},
+		ParsePropertyError{ResourceID: 3, Element: "vertex", Name: "x", Value: "a", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
+		ParsePropertyError{ResourceID: 3, Element: "vertex", Name: "y", Value: "b", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
+		GenericError{ResourceID: 3, Element: "polygon", ModelPath: "/3d/3dmodel.model", Message: "invalid slice segment index"},
+		GenericError{ResourceID: 3, Element: "segment", ModelPath: "/3d/3dmodel.model", Message: "invalid slice segment index"},
+		GenericError{ResourceID: 3, Element: "polygon", ModelPath: "/3d/3dmodel.model", Message: "a closed slice polygon is actually a line"},
+		GenericError{ResourceID: 3, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Message: "a slicepath is invalid"},
+		GenericError{ResourceID: 3, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced resource"},
+		GenericError{ResourceID: 3, Element: "slicestack", ModelPath: "/3d/3dmodel.model", Message: "slicestack contains slices and slicerefs"},
+		MissingPropertyError{ResourceID: 7, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Name: "slicestackid"},
 		GenericError{ResourceID: 7, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced resource"},
 		MissingPropertyError{ResourceID: 0, Element: "build", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
 		ParsePropertyError{ResourceID: 20, Element: "item", Name: "transform", Value: "1 0 0 0 2 0 0 0 3 -66.4 -87.1", ModelPath: "/3d/3dmodel.model", Type: PropertyOptional},
@@ -763,12 +773,13 @@ func TestReader_processRootModel_warns(t *testing.T) {
 				<m:tex2coord qm:mq="other" u="b" v="0.5" /> <m:tex2coord u="0.3" v="c" />	<m:tex2coord u="0.5" v="0.8" />	<m:tex2coord u="0.5" v="0.5" />
 			</m:texture2dgroup>
 			<s:slicestack id="3" zbottom="1">
-				<s:slice ztop="0">
+				<s:slice>
 					<s:vertices>
-						<s:vertex x="1.01" y="1.02" /> <s:vertex x="9.03" y="1.04" /> <s:vertex x="9.05" y="9.06" /> <s:vertex x="1.07" y="9.08" />
+						<s:vertex x="a" y="1.02" /> <s:vertex x="9.03" y="b" /> <s:vertex x="9.05" y="9.06" /> <s:vertex x="1.07" y="9.08" />
 					</s:vertices>
-					<s:polygon startv="0">
-						<s:segment v2="1"></s:segment> <s:segment v2="2"></s:segment> <s:segment v2="3"></s:segment> <s:segment v2="0"></s:segment>
+					<s:polygon startv="50">
+						<s:segment v2="1"/>
+						<s:segment v2="100"/>
 					</s:polygon>
 				</s:slice>
 				<s:slice ztop="0.1">
@@ -779,9 +790,10 @@ func TestReader_processRootModel_warns(t *testing.T) {
 						<s:segment v2="2"></s:segment> <s:segment v2="1"></s:segment> <s:segment v2="3"></s:segment> <s:segment v2="0"></s:segment>
 					</s:polygon>
 				</s:slice>
+				<s:sliceref slicestackid="10" slicepath="/3d/3dmodel.model" />
 			</s:slicestack>
 			<s:slicestack id="7" zbottom="1.1">
-				<s:sliceref slicestackid="10" slicepath="/2D/2Dmodel.model" />
+				<s:sliceref slicepath="/2D/2Dmodel.model" />
 			</s:slicestack>
 			<object id="8" name="Box 1" pid="5" pindex="0" s:meshresolution="lowres" s:slicestackid="3" partnumber="11111111-1111-1111-1111-111111111111" type="model">
 				<mesh>

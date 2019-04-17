@@ -99,9 +99,7 @@ func (d *metadataDecoder) Attributes(attrs []xml.Attr) bool {
 			} else if ns, ok := d.file.namespaces[a.Value[0:i]]; ok {
 				d.metadata.Name = ns + ":" + a.Value[i+1:]
 			} else {
-				if !d.file.parser.GenericError(true, "unregistered namespace") {
-					return false
-				}
+				ok = d.file.parser.GenericError(true, "unregistered namespace")
 			}
 		case attrType:
 			d.metadata.Type = a.Value

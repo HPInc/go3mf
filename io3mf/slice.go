@@ -18,14 +18,12 @@ func (d *sliceStackDecoder) Open() {
 }
 
 func (d *sliceStackDecoder) Close() bool {
+	ok := true
 	if len(d.resource.Stack.Refs) > 0 && len(d.resource.Stack.Slices) > 0 {
-		return d.file.parser.GenericError(true, "slicestack contains slices and slicerefs")
-	}
-	if !d.file.parser.CloseResource() {
-		return false
+		ok = d.file.parser.GenericError(true, "slicestack contains slices and slicerefs")
 	}
 	d.file.AddResource(&d.resource)
-	return true
+	return d.file.parser.CloseResource() && ok
 }
 func (d *sliceStackDecoder) Child(name xml.Name) (child nodeDecoder) {
 	if name.Space == nsSliceSpec {
@@ -60,8 +58,8 @@ func (d *sliceRefDecoder) Attributes(attrs []xml.Attr) bool {
 	var (
 		sliceStackID uint32
 		path         string
-		ok           bool
 	)
+	ok := true
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrSliceRefID:
@@ -75,12 +73,8 @@ func (d *sliceRefDecoder) Attributes(attrs []xml.Attr) bool {
 }
 
 func (d *sliceRefDecoder) addSliceRef(sliceStackID uint32, path string) bool {
-	if sliceStackID == 0 && !d.file.parser.MissingAttr(attrSliceRefID) {
-		return false
-	}
-	if path == d.resource.ModelPath && !d.file.parser.GenericError(true, "a slicepath is invalid") {
-		return false
-	}
+	ok := sliceStackID != 0 || d.file.parser.MissingAttr(attrSliceRefID)
+	ok = ok && path != d.resource.ModelPath || d.file.parser.GenericError(true, "a slicepath is invalid")
 	resource, ok := d.file.FindResource(path, sliceStackID)
 	if !ok {
 		ok = d.file.parser.GenericError(true, "non-existent referenced resource")
