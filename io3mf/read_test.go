@@ -742,6 +742,12 @@ func TestReader_processRootModel_warns(t *testing.T) {
 		GenericError{ResourceID: 3, Element: "slicestack", ModelPath: "/3d/3dmodel.model", Message: "slicestack contains slices and slicerefs"},
 		MissingPropertyError{ResourceID: 7, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Name: "slicestackid"},
 		GenericError{ResourceID: 7, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced resource"},
+		MissingPropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3d/3dmodel.model", Name: "radius"},
+		MissingPropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3d/3dmodel.model", Name: "minlength"},
+		MissingPropertyError{ResourceID: 15, Element: "beam", ModelPath: "/3d/3dmodel.model", Name: "v1"},
+		MissingPropertyError{ResourceID: 15, Element: "beam", ModelPath: "/3d/3dmodel.model", Name: "v2"},
+		MissingPropertyError{ResourceID: 15, Element: "ref", ModelPath: "/3d/3dmodel.model", Name: "index"},
+		ParsePropertyError{ResourceID: 15, Element: "ref", Name: "index", Value: "a", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
 		MissingPropertyError{ResourceID: 0, Element: "build", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
 		ParsePropertyError{ResourceID: 20, Element: "item", Name: "transform", Value: "1 0 0 0 2 0 0 0 3 -66.4 -87.1", ModelPath: "/3d/3dmodel.model", Type: PropertyOptional},
 		GenericError{ResourceID: 20, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "referenced object cannot be have OTHER type"},
@@ -835,12 +841,14 @@ func TestReader_processRootModel_warns(t *testing.T) {
 						<vertex x="55.00000" y="45.00000" z="55.00000"/>
 						<vertex x="55.00000" y="45.00000" z="45.00000"/>
 					</vertices>
-					<b:beamlattice radius="1" minlength="0.0001" cap="hemisphere" clippingmode="inside" clippingmesh="8" representationmesh="8">
+					<b:beamlattice />
+					<b:beamlattice qm:mq="other" radius="1" minlength="0.0001" cap="hemisphere" clippingmode="inside" clippingmesh="8" representationmesh="8">
 						<b:beams>
-							<b:beam v1="0" v2="1" r1="1.50000" r2="1.60000" cap1="sphere" cap2="butt"/>
+							<b:beam qm:mq="other" v1="0" v2="1" r1="1.50000" r2="1.60000" cap1="sphere" cap2="butt"/>
 							<b:beam v1="2" v2="0" r1="3.00000" r2="1.50000" cap1="sphere"/>
 							<b:beam v1="1" v2="3" r1="1.60000" r2="3.00000"/>
 							<b:beam v1="3" v2="2" />
+							<b:beam />
 							<b:beam v1="2" v2="4" r1="3.00000" r2="2.00000"/>
 							<b:beam v1="4" v2="5" r1="2.00000"/>
 							<b:beam v1="5" v2="6" r1="2.00000"/>
@@ -851,8 +859,10 @@ func TestReader_processRootModel_warns(t *testing.T) {
 							<b:beam v1="0" v2="5" r1="1.50000" r2="2.00000" cap2="butt"/>
 						</b:beams>
 						<b:beamsets>
-							<b:beamset name="test" identifier="set_id">
+							<b:beamset qm:mq="other" name="test" identifier="set_id">
 								<b:ref index="1"/>
+								<b:ref />
+								<b:ref index="a"/>
 							</b:beamset>
 						</b:beamsets>
 					</b:beamlattice>
