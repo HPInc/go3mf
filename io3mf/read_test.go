@@ -742,6 +742,8 @@ func TestReader_processRootModel_warns(t *testing.T) {
 		GenericError{ResourceID: 3, Element: "slicestack", ModelPath: "/3d/3dmodel.model", Message: "slicestack contains slices and slicerefs"},
 		MissingPropertyError{ResourceID: 7, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Name: "slicestackid"},
 		GenericError{ResourceID: 7, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced resource"},
+		GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3d/3dmodel.model", Message: "duplicated triangle indices"},
+		GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3d/3dmodel.model", Message: "triangle indices are out of range"},
 		MissingPropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3d/3dmodel.model", Name: "radius"},
 		MissingPropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3d/3dmodel.model", Name: "minlength"},
 		MissingPropertyError{ResourceID: 15, Element: "beam", ModelPath: "/3d/3dmodel.model", Name: "v1"},
@@ -814,6 +816,8 @@ func TestReader_processRootModel_warns(t *testing.T) {
 						<vertex x="0" y="100.00000" z="100.00000" />
 					</vertices>
 					<triangles>
+						<triangle v1="2" v2="2" v3="1" />
+						<triangle v1="30" v2="2" v3="1" />
 						<triangle v1="3" v2="2" v3="1" />
 						<triangle v1="1" v2="0" v3="3" />
 						<triangle v1="4" v2="5" v3="6" p1="1" />
