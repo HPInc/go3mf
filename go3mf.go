@@ -373,7 +373,6 @@ type Texture2DGroupResource struct {
 	ID                uint32
 	ModelPath         string
 	TextureID         uint32
-	DisplayPropertyID uint32
 	Coords            []TextureCoord
 }
 
@@ -386,7 +385,6 @@ func (t *Texture2DGroupResource) Identify() (string, uint32) {
 type ColorGroupResource struct {
 	ID                uint32
 	ModelPath         string
-	DisplayPropertyID uint32
 	Colors            []color.RGBA
 }
 
