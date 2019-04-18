@@ -29,8 +29,9 @@ func (d *objectDecoder) Attributes(attrs []xml.Attr) bool {
 			if a.Name.Local == attrProdUUID {
 				if _, err := uuid.FromString(a.Value); err != nil {
 					ok = d.file.parser.InvalidRequiredAttr(attrProdUUID, a.Value)
+				} else {
+					d.resource.UUID = a.Value
 				}
-				d.resource.UUID = a.Value
 			}
 		case nsSliceSpec:
 			ok = d.parseSliceAttr(a)
@@ -137,8 +138,9 @@ func (d *componentDecoder) Attributes(attrs []xml.Attr) bool {
 			if a.Name.Local == attrProdUUID {
 				if _, err := uuid.FromString(a.Value); err != nil {
 					ok = d.file.parser.InvalidRequiredAttr(attrProdUUID, a.Value)
+				} else {
+					component.UUID = a.Value
 				}
-				component.UUID = a.Value
 			} else if a.Name.Local == attrPath {
 				path = a.Value
 			}

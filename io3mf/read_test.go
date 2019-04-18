@@ -282,7 +282,7 @@ func TestReader_processRootModel(t *testing.T) {
 	}}
 	sliceStackRef := &go3mf.SliceStackResource{ID: 7, ModelPath: "/3d/3dmodel.model", Stack: go3mf.SliceStack{BottomZ: 1.1, Refs: []go3mf.SliceRef{{SliceStackID: 10, Path: "/2D/2Dmodel.model"}}}}
 	meshRes := &go3mf.MeshResource{
-		ObjectResource: go3mf.ObjectResource{ID: 8, Name: "Box 1", ModelPath: "/3d/3dmodel.model", SliceStackID: 3, DefaultPropertyID: 5, SliceResoultion: go3mf.ResolutionLow, PartNumber: "11111111-1111-1111-1111-111111111111"},
+		ObjectResource: go3mf.ObjectResource{ID: 8, Name: "Box 1", ModelPath: "/3d/3dmodel.model", SliceStackID: 3, Thumbnail: "/a.png", DefaultPropertyID: 5, SliceResoultion: go3mf.ResolutionLow, PartNumber: "11111111-1111-1111-1111-111111111111"},
 		Mesh:           new(mesh.Mesh),
 	}
 	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []mesh.Node3D{
@@ -401,7 +401,7 @@ func TestReader_processRootModel(t *testing.T) {
 			<s:slicestack id="7" zbottom="1.1">
 				<s:sliceref slicestackid="10" slicepath="/2D/2Dmodel.model" />
 			</s:slicestack>
-			<object id="8" name="Box 1" pid="5" pindex="0" s:meshresolution="lowres" s:slicestackid="3" partnumber="11111111-1111-1111-1111-111111111111" type="model">
+			<object id="8" name="Box 1" pid="5" pindex="0" thumbnail="/a.png" s:meshresolution="lowres" s:slicestackid="3" partnumber="11111111-1111-1111-1111-111111111111" type="model">
 				<mesh>
 					<vertices>
 						<vertex x="0" y="0" z="0" />
@@ -742,6 +742,7 @@ func TestReader_processRootModel_warns(t *testing.T) {
 		GenericError{ResourceID: 3, Element: "slicestack", ModelPath: "/3d/3dmodel.model", Message: "slicestack contains slices and slicerefs"},
 		MissingPropertyError{ResourceID: 7, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Name: "slicestackid"},
 		GenericError{ResourceID: 7, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced resource"},
+		ParsePropertyError{ResourceID: 8, Element: "object", ModelPath: "/3d/3dmodel.model", Name: "meshresolution", Value: "invalid", Type: PropertyOptional},
 		GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3d/3dmodel.model", Message: "duplicated triangle indices"},
 		GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3d/3dmodel.model", Message: "triangle indices are out of range"},
 		MissingPropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3d/3dmodel.model", Name: "radius"},
@@ -750,6 +751,14 @@ func TestReader_processRootModel_warns(t *testing.T) {
 		MissingPropertyError{ResourceID: 15, Element: "beam", ModelPath: "/3d/3dmodel.model", Name: "v2"},
 		MissingPropertyError{ResourceID: 15, Element: "ref", ModelPath: "/3d/3dmodel.model", Name: "index"},
 		ParsePropertyError{ResourceID: 15, Element: "ref", Name: "index", Value: "a", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
+		ParsePropertyError{ResourceID: 22, Element: "object", ModelPath: "/3d/3dmodel.model", Name: "type", Value: "invalid", Type: PropertyOptional},
+		ParsePropertyError{ResourceID: 20, Element: "object", ModelPath: "/3d/3dmodel.model", Name: "UUID", Value: "cb8286808895-4e08-a1fc-be63e033df15", Type: PropertyRequired},
+		GenericError{ResourceID: 20, Element: "object", ModelPath: "/3d/3dmodel.model", Message: "default PID is not supported for component objects"},
+		ParsePropertyError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Name: "UUID", Value: "cb8286808895-4e08-a1fc-be63e033df16", Type: PropertyRequired},
+		ParsePropertyError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Name: "transform", Value: "0 0 0 1 0 0 0 2 -66.4 -87.1 8.8", Type: PropertyOptional},
+		MissingPropertyError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
+		GenericError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced object"},
+		GenericError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Message: "non-object referenced resource"},
 		MissingPropertyError{ResourceID: 0, Element: "build", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
 		ParsePropertyError{ResourceID: 20, Element: "item", Name: "transform", Value: "1 0 0 0 2 0 0 0 3 -66.4 -87.1", ModelPath: "/3d/3dmodel.model", Type: PropertyOptional},
 		GenericError{ResourceID: 20, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "referenced object cannot be have OTHER type"},
@@ -803,7 +812,7 @@ func TestReader_processRootModel_warns(t *testing.T) {
 			<s:slicestack id="7" zbottom="1.1">
 				<s:sliceref slicepath="/2D/2Dmodel.model" />
 			</s:slicestack>
-			<object id="8" name="Box 1" pid="5" pindex="0" s:meshresolution="lowres" s:slicestackid="3" partnumber="11111111-1111-1111-1111-111111111111" type="model">
+			<object id="8" name="Box 1" pid="5" pindex="0" s:meshresolution="invalid" s:slicestackid="3" partnumber="11111111-1111-1111-1111-111111111111" type="model">
 				<mesh>
 					<vertices>
 						<vertex x="0" y="0" z="0" />
@@ -872,9 +881,11 @@ func TestReader_processRootModel_warns(t *testing.T) {
 					</b:beamlattice>
 				</mesh>
 			</object>
-			<object id="20" p:UUID="cb828680-8895-4e08-a1fc-be63e033df15" type="other">
+			<object id="22" p:UUID="cb828680-8895-4e08-a1fc-be63e033df15" type="invalid" />
+			<object id="20" pid="3" p:UUID="cb8286808895-4e08-a1fc-be63e033df15" type="other">
 				<components>
-					<component objectid="8" p:UUID="cb828680-8895-4e08-a1fc-be63e033df16" transform="3 0 0 0 1 0 0 0 2 -66.4 -87.1 8.8"/>
+					<component objectid="8" p:path="/2d/2d.model" p:UUID="cb8286808895-4e08-a1fc-be63e033df16" transform="0 0 0 1 0 0 0 2 -66.4 -87.1 8.8"/>
+					<component objectid="3" p:UUID="cb828680-8895-4e08-a1fc-be63e033df16"/>
 				</components>
 			</object>
 		</resources>
