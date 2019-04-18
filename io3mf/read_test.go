@@ -345,7 +345,10 @@ func TestReader_processRootModel(t *testing.T) {
 	}...)
 
 	components := &go3mf.ComponentsResource{
-		ObjectResource: go3mf.ObjectResource{ID: 20, UUID: "cb828680-8895-4e08-a1fc-be63e033df15", ModelPath: "/3d/3dmodel.model"},
+		ObjectResource: go3mf.ObjectResource{
+			ID: 20, UUID: "cb828680-8895-4e08-a1fc-be63e033df15", ModelPath: "/3d/3dmodel.model",
+			Metadata: []go3mf.Metadata{{Name: nsProductionSpec + ":CustomMetadata3", Type: "xs:boolean", Value: "1"},{Name: nsProductionSpec + ":CustomMetadata4", Type: "xs:boolean", Value: "2"}},
+		},
 		Components: []*go3mf.Component{{UUID: "cb828680-8895-4e08-a1fc-be63e033df16", Object: meshRes,
 			Transform: mesh.Matrix{3, 0, 0, -66.4, 0, 1, 0, -87.1, 0, 0, 2, 8.8, 0, 0, 0, 1}}},
 	}
@@ -359,7 +362,7 @@ func TestReader_processRootModel(t *testing.T) {
 	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: components, PartNumber: "bob", UUID: "e9e25302-6428-402e-8633-cc95528d0ed2",
 		Transform: mesh.Matrix{1, 0, 0, -66.4, 0, 2, 0, -87.1, 0, 0, 3, 8.8, 0, 0, 0, 1},
 	})
-	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: otherMesh, UUID: "e9e25302-6428-402e-8633-cc95528d0ed3"})
+	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: otherMesh, UUID: "e9e25302-6428-402e-8633-cc95528d0ed3", Metadata: []go3mf.Metadata{{Name: nsProductionSpec + ":CustomMetadata3", Type: "xs:boolean", Value: "1"}}})
 	want.Metadata = append(want.Metadata, []go3mf.Metadata{
 		{Name: "Application", Value: "go3mf app"},
 		{Name: nsProductionSpec + ":CustomMetadata1", Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},
@@ -465,6 +468,10 @@ func TestReader_processRootModel(t *testing.T) {
 				</mesh>
 			</object>
 			<object id="20" p:UUID="cb828680-8895-4e08-a1fc-be63e033df15">
+				<metadatagroup>
+					<metadata name="p:CustomMetadata3" type="xs:boolean">1</metadata>
+					<metadata name="p:CustomMetadata4" type="xs:boolean">2</metadata>
+				</metadatagroup>
 				<components>
 					<component objectid="8" p:UUID="cb828680-8895-4e08-a1fc-be63e033df16" transform="3 0 0 0 1 0 0 0 2 -66.4 -87.1 8.8"/>
 				</components>
@@ -472,7 +479,11 @@ func TestReader_processRootModel(t *testing.T) {
 		</resources>
 		<build p:UUID="e9e25302-6428-402e-8633-cc95528d0ed3">
 			<item partnumber="bob" objectid="20" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed2" transform="1 0 0 0 2 0 0 0 3 -66.4 -87.1 8.8" />
-			<item objectid="8" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed3" p:path="/3d/other.model" />
+			<item objectid="8" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed3" p:path="/3d/other.model">
+				<metadatagroup>
+					<metadata name="p:CustomMetadata3" type="xs:boolean">1</metadata>
+				</metadatagroup>
+			</item>
 		</build>
 		<metadata name="Application">go3mf app</metadata>
 		<metadata name="p:CustomMetadata1" type="xs:string" preserve="1">CE8A91FB-C44E-4F00-B634-BAA411465F6A</metadata>

@@ -79,6 +79,18 @@ func (d *modelDecoder) Attributes(attrs []xml.Attr) bool {
 	return true
 }
 
+type metadataGroupDecoder struct {
+	emptyDecoder
+	metadatas *[]go3mf.Metadata
+}
+
+func (d *metadataGroupDecoder) Child(name xml.Name) (child nodeDecoder) {
+	if name.Space == nsCoreSpec && name.Local == attrMetadata {
+		child = &metadataDecoder{metadatas: d.metadatas}
+	}
+	return
+}
+
 type metadataDecoder struct {
 	emptyDecoder
 	metadatas *[]go3mf.Metadata
@@ -94,9 +106,10 @@ func (d *metadataDecoder) Attributes(attrs []xml.Attr) bool {
 		switch a.Name.Local {
 		case attrName:
 			i := strings.IndexByte(a.Value, ':')
+			var ns string
 			if i < 0 {
 				d.metadata.Name = a.Value
-			} else if ns, ok := d.file.namespaces[a.Value[0:i]]; ok {
+			} else if ns, ok = d.file.namespaces[a.Value[0:i]]; ok {
 				d.metadata.Name = ns + ":" + a.Value[i+1:]
 			} else {
 				ok = d.file.parser.GenericError(true, "unregistered namespace")

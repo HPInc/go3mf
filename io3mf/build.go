@@ -49,6 +49,13 @@ func (d *buildItemDecoder) Close() bool {
 	return d.processItem() && d.file.parser.CloseResource()
 }
 
+func (d *buildItemDecoder) Child(name xml.Name) (child nodeDecoder) {
+	if name.Space == nsCoreSpec && name.Local == attrMetadataGroup {
+		child = &metadataGroupDecoder{metadatas: &d.item.Metadata}
+	}
+	return
+}
+
 func (d *buildItemDecoder) processItem() bool {
 	resource, ok := d.file.FindResource(d.objectPath, uint32(d.objectID))
 	if !ok {

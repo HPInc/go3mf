@@ -158,6 +158,7 @@ type BuildItem struct {
 	Transform  mesh.Matrix
 	PartNumber string
 	UUID       string
+	Metadata   []Metadata
 }
 
 // HasTransform returns true if the transform is different than the identity.
@@ -188,6 +189,7 @@ type ObjectResource struct {
 	DefaultPropertyID    uint32
 	DefaultPropertyIndex uint32
 	ObjectType           ObjectType
+	Metadata             []Metadata
 }
 
 // Identify returns the unique ID of the resource.
@@ -370,10 +372,10 @@ func (t TextureCoord) V() float32 {
 
 // Texture2DGroupResource acts as a container for texture coordinate properties.
 type Texture2DGroupResource struct {
-	ID                uint32
-	ModelPath         string
-	TextureID         uint32
-	Coords            []TextureCoord
+	ID        uint32
+	ModelPath string
+	TextureID uint32
+	Coords    []TextureCoord
 }
 
 // Identify returns the unique ID of the resource.
@@ -383,9 +385,9 @@ func (t *Texture2DGroupResource) Identify() (string, uint32) {
 
 // ColorGroupResource acts as a container for color properties.
 type ColorGroupResource struct {
-	ID                uint32
-	ModelPath         string
-	Colors            []color.RGBA
+	ID        uint32
+	ModelPath string
+	Colors    []color.RGBA
 }
 
 // Identify returns the unique ID of the resource.

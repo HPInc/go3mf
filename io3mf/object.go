@@ -54,6 +54,8 @@ func (d *objectDecoder) Child(name xml.Name) (child nodeDecoder) {
 				d.file.parser.GenericError(true, "default PID is not supported for component objects")
 			}
 			child = &componentsDecoder{resource: go3mf.ComponentsResource{ObjectResource: d.resource}}
+		} else if name.Local == attrMetadataGroup {
+			child = &metadataGroupDecoder{metadatas: &d.resource.Metadata}
 		}
 	}
 	return

@@ -110,6 +110,7 @@ const (
 	attrIndex              = "index"
 	attrPreserve           = "preserve"
 	attrMetadata           = "metadata"
+	attrMetadataGroup      = "metadatagroup"
 )
 
 // WarningLevel defines the level of a reader warning.
