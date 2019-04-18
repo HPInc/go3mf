@@ -614,3 +614,25 @@ func TestColorGroupResource_Identify(t *testing.T) {
 		})
 	}
 }
+
+func TestCompositeMaterialsResource_Identify(t *testing.T) {
+	tests := []struct {
+		name  string
+		c     *CompositeMaterialsResource
+		want  string
+		want1 uint32
+	}{
+		{"base", &CompositeMaterialsResource{ID: 1, ModelPath: "3d/3dmodel.model"}, "3d/3dmodel.model", 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := tt.c.Identify()
+			if got != tt.want {
+				t.Errorf("CompositeMaterialsResource.Identify() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("CompositeMaterialsResource.Identify() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}

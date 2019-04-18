@@ -394,3 +394,19 @@ type ColorGroupResource struct {
 func (c *ColorGroupResource) Identify() (string, uint32) {
 	return c.ModelPath, c.ID
 }
+
+// A Composite specifies the proportion of the overall mixture for each material.
+type Composite []uint32
+
+// CompositeMaterialsResource defines materials derived by mixing 2 or more base materials in defined ratios.
+type CompositeMaterialsResource struct {
+	ID         uint32
+	ModelPath  string
+	Indices    []uint32
+	Composites []Composite
+}
+
+// Identify returns the unique ID of the resource.
+func (c *CompositeMaterialsResource) Identify() (string, uint32) {
+	return c.ModelPath, c.ID
+}
