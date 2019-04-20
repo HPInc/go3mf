@@ -357,8 +357,9 @@ func TestReader_processRootModel(t *testing.T) {
 	otherMesh := &go3mf.MeshResource{ObjectResource: go3mf.ObjectResource{ID: 8, ModelPath: "/3d/other.model"}, Mesh: new(mesh.Mesh)}
 	colorGroup := &go3mf.ColorGroupResource{ID: 1, ModelPath: "/3d/3dmodel.model", Colors: []color.RGBA{{R: 85, G: 85, B: 85, A: 255}, {R: 0, G: 0, B: 0, A: 255}, {R: 16, G: 21, B: 103, A: 255}, {R: 53, G: 4, B: 80, A: 255}}}
 	texGroup := &go3mf.Texture2DGroupResource{ID: 2, ModelPath: "/3d/3dmodel.model", TextureID: 6, Coords: []go3mf.TextureCoord{{0.3, 0.5}, {0.3, 0.8}, {0.5, 0.8}, {0.5, 0.5}}}
+	compositeGroup := &go3mf.CompositeMaterialsResource{ID: 4, ModelPath: "/3d/3dmodel.model", MaterialID: 5, Indices: []uint32{1, 2}, Composites: []go3mf.Composite{{0.5,0.5}, {0.2, 0.8}}}
 	want.Resources = append(want.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", Stack: otherSlices})
-	want.Resources = append(want.Resources, []go3mf.Resource{otherMesh, baseMaterials, baseTexture, colorGroup, texGroup, sliceStack, sliceStackRef, meshRes, meshLattice, components}...)
+	want.Resources = append(want.Resources, []go3mf.Resource{otherMesh, baseMaterials, baseTexture, colorGroup, texGroup, compositeGroup, sliceStack, sliceStackRef, meshRes, meshLattice, components}...)
 	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: components, PartNumber: "bob", UUID: "e9e25302-6428-402e-8633-cc95528d0ed2",
 		Transform: mesh.Matrix{1, 0, 0, -66.4, 0, 2, 0, -87.1, 0, 0, 3, 8.8, 0, 0, 0, 1},
 	})
@@ -383,6 +384,10 @@ func TestReader_processRootModel(t *testing.T) {
 			<m:texture2dgroup id="2" texid="6">
 				<m:tex2coord u="0.3" v="0.5" /> <m:tex2coord u="0.3" v="0.8" />	<m:tex2coord u="0.5" v="0.8" />	<m:tex2coord u="0.5" v="0.5" />
 			</m:texture2dgroup>
+			<m:compositematerials id="4" matid="5" matindices="1 2">
+				<m:composite values="0.5 0.5"/>
+				<m:composite values="0.2 0.8"/>
+			</m:compositematerials>
 			<s:slicestack id="3" zbottom="1">
 				<s:slice ztop="0">
 					<s:vertices>
@@ -742,6 +747,10 @@ func TestReader_processRootModel_warns(t *testing.T) {
 		ParsePropertyError{ResourceID: 1, Element: "color", Name: "color", Value: "#FFFFF", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
 		ParsePropertyError{ResourceID: 2, Element: "tex2coord", Name: "u", Value: "b", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
 		ParsePropertyError{ResourceID: 2, Element: "tex2coord", Name: "v", Value: "c", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
+		MissingPropertyError{ResourceID: 4, Element: "compositematerials", ModelPath: "/3d/3dmodel.model", Name: "matid"},
+		MissingPropertyError{ResourceID: 4, Element: "compositematerials", ModelPath: "/3d/3dmodel.model", Name: "matindices"},
+		MissingPropertyError{ResourceID: 4, Element: "composite", ModelPath: "/3d/3dmodel.model", Name: "values"},
+		ParsePropertyError{ResourceID: 4, Element: "composite", Name: "values", Value: "a", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
 		MissingPropertyError{ResourceID: 3, Element: "slice", ModelPath: "/3d/3dmodel.model", Name: "ztop"},
 		ParsePropertyError{ResourceID: 3, Element: "vertex", Name: "x", Value: "a", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
 		ParsePropertyError{ResourceID: 3, Element: "vertex", Name: "y", Value: "b", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
@@ -800,6 +809,10 @@ func TestReader_processRootModel_warns(t *testing.T) {
 			<m:texture2dgroup qm:mq="other" id="2" texid="6">
 				<m:tex2coord qm:mq="other" u="b" v="0.5" /> <m:tex2coord u="0.3" v="c" />	<m:tex2coord u="0.5" v="0.8" />	<m:tex2coord u="0.5" v="0.5" />
 			</m:texture2dgroup>
+			<m:compositematerials id="4" qm:mq="other">
+				<m:composite/>
+				<m:composite values="a 0.8"/>
+			</m:compositematerials>
 			<s:slicestack id="3" zbottom="1">
 				<s:slice>
 					<s:vertices>

@@ -197,11 +197,11 @@ func (d *compositeMaterialsDecoder) Child(name xml.Name) (child nodeDecoder) {
 func (d *compositeMaterialsDecoder) Attributes(attrs []xml.Attr) bool {
 	ok := true
 	for _, a := range attrs {
-		if a.Name.Space == "" {
+		if a.Name.Space != "" {
 			continue
 		}
 		switch a.Name.Local {
-		case attrValues:
+		case attrID:
 			d.resource.ID, ok = d.file.parser.ParseResourceID(a.Value)
 		case attrMatID:
 			d.resource.MaterialID, ok = d.file.parser.ParseUint32Required(attrMatID, a.Value)
