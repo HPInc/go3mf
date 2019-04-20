@@ -56,7 +56,6 @@ const (
 	attrTileStyleV         = "tilestylev"
 	attrFilter             = "filter"
 	attrTexture2D          = "texture2d"
-	attrComposite          = "compositematerials"
 	attrZBottom            = "zbottom"
 	attrSlice              = "slice"
 	attrSliceRef           = "sliceref"
@@ -111,6 +110,11 @@ const (
 	attrPreserve           = "preserve"
 	attrMetadata           = "metadata"
 	attrMetadataGroup      = "metadatagroup"
+	attrComposite          = "composite"
+	attrCompositematerials = "compositematerials"
+	attrValues             = "values"
+	attrMatID              = "matid"
+	attrMatIndices         = "matindices"
 )
 
 // WarningLevel defines the level of a reader warning.

@@ -2,6 +2,7 @@ package io3mf
 
 import (
 	"encoding/xml"
+	"strings"
 
 	go3mf "github.com/qmuntal/go3mf"
 )
@@ -166,6 +167,91 @@ func (d *texture2DDecoder) Attributes(attrs []xml.Attr) bool {
 	}
 	if d.resource.Path == "" {
 		return d.file.parser.MissingAttr(attrPath)
+	}
+	return ok
+}
+
+type compositeMaterialsDecoder struct {
+	emptyDecoder
+	resource         go3mf.CompositeMaterialsResource
+	compositeDecoder compositeDecoder
+}
+
+func (d *compositeMaterialsDecoder) Open() {
+	d.resource.ModelPath = d.file.path
+	d.compositeDecoder.resource = &d.resource
+}
+
+func (d *compositeMaterialsDecoder) Close() bool {
+	d.file.AddResource(&d.resource)
+	return d.file.parser.CloseResource()
+}
+
+func (d *compositeMaterialsDecoder) Child(name xml.Name) (child nodeDecoder) {
+	if name.Space == nsMaterialSpec && name.Local == attrComposite {
+		child = &d.compositeDecoder
+	}
+	return
+}
+
+func (d *compositeMaterialsDecoder) Attributes(attrs []xml.Attr) bool {
+	ok := true
+	for _, a := range attrs {
+		if a.Name.Space == "" {
+			continue
+		}
+		switch a.Name.Local {
+		case attrValues:
+			d.resource.ID, ok = d.file.parser.ParseResourceID(a.Value)
+		case attrMatID:
+			d.resource.MaterialID, ok = d.file.parser.ParseUint32Required(attrMatID, a.Value)
+		case attrMatIndices:
+			for _, f := range strings.Fields(a.Value) {
+				var val uint32
+				if val, ok = d.file.parser.ParseUint32Required(attrValues, f); ok {
+					d.resource.Indices = append(d.resource.Indices, val)
+				} else {
+					break
+				}
+			}
+		}
+		if !ok {
+			break
+		}
+	}
+	if d.resource.MaterialID == 0 {
+		ok = d.file.parser.MissingAttr(attrMatID)
+	}
+	if ok && len(d.resource.Indices) == 0 {
+		ok = d.file.parser.MissingAttr(attrMatIndices)
+	}
+	return ok
+}
+
+type compositeDecoder struct {
+	emptyDecoder
+	resource *go3mf.CompositeMaterialsResource
+}
+
+func (d *compositeDecoder) Attributes(attrs []xml.Attr) (ok bool) {
+	composite := make(go3mf.Composite, 0)
+	for _, a := range attrs {
+		if a.Name.Space == "" && a.Name.Local == attrValues {
+			for _, f := range strings.Fields(a.Value) {
+				var val float64
+				if val, ok = d.file.parser.ParseFloat64Required(attrValues, f); ok {
+					composite = append(composite, val)
+				} else {
+					break
+				}
+			}
+		}
+	}
+	if len(composite) == 0 {
+		ok = d.file.parser.MissingAttr(attrValues)
+	}
+	if ok {
+		d.resource.Composites = append(d.resource.Composites, composite)
 	}
 	return ok
 }

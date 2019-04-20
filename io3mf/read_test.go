@@ -347,7 +347,7 @@ func TestReader_processRootModel(t *testing.T) {
 	components := &go3mf.ComponentsResource{
 		ObjectResource: go3mf.ObjectResource{
 			ID: 20, UUID: "cb828680-8895-4e08-a1fc-be63e033df15", ModelPath: "/3d/3dmodel.model",
-			Metadata: []go3mf.Metadata{{Name: nsProductionSpec + ":CustomMetadata3", Type: "xs:boolean", Value: "1"},{Name: nsProductionSpec + ":CustomMetadata4", Type: "xs:boolean", Value: "2"}},
+			Metadata: []go3mf.Metadata{{Name: nsProductionSpec + ":CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: nsProductionSpec + ":CustomMetadata4", Type: "xs:boolean", Value: "2"}},
 		},
 		Components: []*go3mf.Component{{UUID: "cb828680-8895-4e08-a1fc-be63e033df16", Object: meshRes,
 			Transform: mesh.Matrix{3, 0, 0, -66.4, 0, 1, 0, -87.1, 0, 0, 2, 8.8, 0, 0, 0, 1}}},
