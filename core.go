@@ -1,7 +1,6 @@
 package go3mf
 
 import (
-	"errors"
 	"fmt"
 	"image/color"
 	"io"
@@ -166,11 +165,6 @@ func (b *BuildItem) HasTransform() bool {
 	return !mgl32.Mat4(b.Transform).ApproxEqual(mgl32.Ident4())
 }
 
-// IsValidForSlices checks if the build object is valid to be used with slices.
-func (b *BuildItem) IsValidForSlices() bool {
-	return b.Object.IsValidForSlices(b.Transform)
-}
-
 // MergeToMesh merges the build object with the mesh.
 func (b *BuildItem) MergeToMesh(m *mesh.Mesh) {
 	b.Object.MergeToMesh(m, b.Transform)
@@ -246,21 +240,6 @@ func (c *ComponentsResource) IsValid() bool {
 	return true
 }
 
-// IsValidForSlices checks if the component resource and all its child are valid to be used with slices.
-func (c *ComponentsResource) IsValidForSlices(transform mesh.Matrix) bool {
-	if len(c.Components) == 0 {
-		return true
-	}
-
-	matrix := mgl32.Mat4(transform)
-	for _, comp := range c.Components {
-		if !comp.Object.IsValidForSlices(mesh.Matrix(matrix.Mul4(mgl32.Mat4(comp.Transform)))) {
-			return false
-		}
-	}
-	return true
-}
-
 // A MeshResource is an in memory representation of the 3MF mesh object.
 type MeshResource struct {
 	ObjectResource
@@ -290,124 +269,4 @@ func (c *MeshResource) IsValid() bool {
 	}
 
 	return false
-}
-
-// IsValidForSlices checks if the mesh resource are valid for slices.
-func (c *MeshResource) IsValidForSlices(t mesh.Matrix) bool {
-	return c.SliceStackID == 0 || t[2] == 0 && t[6] == 0 && t[8] == 0 && t[9] == 0 && t[10] == 1
-}
-
-// SliceRef reference to a slice stack.
-type SliceRef struct {
-	SliceStackID uint32
-	Path         string
-}
-
-// SliceStack defines an stack of slices.
-// It can either contain Slices or a Refs.
-type SliceStack struct {
-	BottomZ float32
-	Slices  []*mesh.Slice
-	Refs    []SliceRef
-}
-
-// AddSlice adds an slice to the stack and returns its index.
-func (s *SliceStack) AddSlice(slice *mesh.Slice) (int, error) {
-	if slice.TopZ < s.BottomZ || (len(s.Slices) != 0 && slice.TopZ < s.Slices[0].TopZ) {
-		return 0, errors.New("the z-coordinates of slices within a slicestack are not increasing")
-	}
-	s.Slices = append(s.Slices, slice)
-	return len(s.Slices) - 1, nil
-}
-
-// SliceStackResource defines a slice stack resource.
-// It can either contain a SliceStack or a Refs slice.
-type SliceStackResource struct {
-	Stack     SliceStack
-	ID        uint32
-	ModelPath string
-}
-
-// Identify returns the unique ID of the resource.
-func (s *SliceStackResource) Identify() (string, uint32) {
-	return s.ModelPath, s.ID
-}
-
-// Texture2DResource defines the Model Texture 2D.
-type Texture2DResource struct {
-	ID          uint32
-	ModelPath   string
-	Path        string
-	ContentType Texture2DType
-	TileStyleU  TileStyle
-	TileStyleV  TileStyle
-	Filter      TextureFilter
-}
-
-// Identify returns the unique ID of the resource.
-func (t *Texture2DResource) Identify() (string, uint32) {
-	return t.ModelPath, t.ID
-}
-
-// Copy copies the properties from another texture.
-func (t *Texture2DResource) Copy(other *Texture2DResource) {
-	t.Path = other.Path
-	t.ContentType = other.ContentType
-	t.TileStyleU = other.TileStyleU
-	t.TileStyleV = other.TileStyleV
-}
-
-// TextureCoord map a vertex of a triangle to a position in image space (U, V coordinates)
-type TextureCoord [2]float32
-
-// U returns the first coordinate.
-func (t TextureCoord) U() float32 {
-	return t[0]
-}
-
-// V returns the second coordinate.
-func (t TextureCoord) V() float32 {
-	return t[1]
-}
-
-// Texture2DGroupResource acts as a container for texture coordinate properties.
-type Texture2DGroupResource struct {
-	ID        uint32
-	ModelPath string
-	TextureID uint32
-	Coords    []TextureCoord
-}
-
-// Identify returns the unique ID of the resource.
-func (t *Texture2DGroupResource) Identify() (string, uint32) {
-	return t.ModelPath, t.ID
-}
-
-// ColorGroupResource acts as a container for color properties.
-type ColorGroupResource struct {
-	ID        uint32
-	ModelPath string
-	Colors    []color.RGBA
-}
-
-// Identify returns the unique ID of the resource.
-func (c *ColorGroupResource) Identify() (string, uint32) {
-	return c.ModelPath, c.ID
-}
-
-// A Composite specifies the proportion of the overall mixture for each material.
-type Composite []float64
-
-// CompositeMaterialsResource defines materials derived by mixing 2 or more base materials in defined ratios.
-type CompositeMaterialsResource struct {
-	ID         uint32
-	ModelPath  string
-	MaterialID uint32
-	Indices    []uint32
-	Composites []Composite
-}
-
-// Identify returns the unique ID of the resource.
-func (c *CompositeMaterialsResource) Identify() (string, uint32) {
-	return c.ModelPath, c.ID
 }
