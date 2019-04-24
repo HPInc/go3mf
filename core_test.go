@@ -374,3 +374,43 @@ func TestModel_UnusedID(t *testing.T) {
 		})
 	}
 }
+
+func TestObjectType_String(t *testing.T) {
+	tests := []struct {
+		name string
+		o    ObjectType
+	}{
+		{"model", ObjectTypeModel},
+		{"other", ObjectTypeOther},
+		{"support", ObjectTypeSupport},
+		{"solidsupport", ObjectTypeSolidSupport},
+		{"surface", ObjectTypeSurface},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.o.String(); got != tt.name {
+				t.Errorf("ObjectType.String() = %v, want %v", got, tt.name)
+			}
+		})
+	}
+}
+func TestUnits_String(t *testing.T) {
+	tests := []struct {
+		name string
+		u    Units
+	}{
+		{"micron", UnitMicrometer},
+		{"millimeter", UnitMillimeter},
+		{"centimeter", UnitCentimeter},
+		{"inch", UnitInch},
+		{"foot", UnitFoot},
+		{"meter", UnitMeter},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.u.String(); got != tt.name {
+				t.Errorf("Units.String() = %v, want %v", got, tt.name)
+			}
+		})
+	}
+}

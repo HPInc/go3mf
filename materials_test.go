@@ -148,3 +148,92 @@ func TestCompositeMaterialsResource_Identify(t *testing.T) {
 		})
 	}
 }
+
+func TestTexture2DType_String(t *testing.T) {
+	tests := []struct {
+		name string
+		t    Texture2DType
+	}{
+		{"image/png", PNGTexture},
+		{"image/jpeg", JPEGTexture},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.t.String(); got != tt.name {
+				t.Errorf("Texture2DType.String() = %v, want %v", got, tt.name)
+			}
+		})
+	}
+}
+
+func TestBlendMethod_String(t *testing.T) {
+	tests := []struct {
+		name string
+		b    BlendMethod
+	}{
+		{"mix", BlendMix},
+		{"multiply", BlendMultiply},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.b.String(); got != tt.name {
+				t.Errorf("BlendMethod.String() = %v, want %v", got, tt.name)
+			}
+		})
+	}
+}
+
+func TestTileStyle_String(t *testing.T) {
+	tests := []struct {
+		name string
+		t    TileStyle
+	}{
+		{"wrap", TileWrap},
+		{"mirror", TileMirror},
+		{"clamp", TileClamp},
+		{"none", TileNone},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.t.String(); got != tt.name {
+				t.Errorf("TileStyle.String() = %v, want %v", got, tt.name)
+			}
+		})
+	}
+}
+
+func TestTextureFilter_String(t *testing.T) {
+	tests := []struct {
+		name string
+		t    TextureFilter
+	}{
+		{"auto", TextureFilterAuto},
+		{"linear", TextureFilterLinear},
+		{"nearest", TextureFilterNearest},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.t.String(); got != tt.name {
+				t.Errorf("TextureFilter.String() = %v, want %v", got, tt.name)
+			}
+		})
+	}
+}
+
+func TestClipMode_String(t *testing.T) {
+	tests := []struct {
+		name string
+		c    ClipMode
+	}{
+		{"none", ClipNone},
+		{"inside", ClipInside},
+		{"outside", ClipOutside},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.c.String(); got != tt.name {
+				t.Errorf("ClipMode.String() = %v, want %v", got, tt.name)
+			}
+		})
+	}
+}

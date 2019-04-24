@@ -10,6 +10,83 @@ import (
 	"github.com/qmuntal/go3mf/mesh"
 )
 
+const thumbnailPath = "/Metadata/thumbnail.png"
+
+// Units define the allowed model units.
+type Units uint8
+
+const (
+	// UnitMillimeter for millimeter
+	UnitMillimeter Units = iota
+	// UnitMicrometer for microns
+	UnitMicrometer
+	// UnitCentimeter for centimeter
+	UnitCentimeter
+	// UnitInch for inch
+	UnitInch
+	// UnitFoot for foot
+	UnitFoot
+	// UnitMeter for meter
+	UnitMeter
+)
+
+func (u Units) String() string {
+	return map[Units]string{
+		UnitMillimeter: "millimeter",
+		UnitMicrometer: "micron",
+		UnitCentimeter: "centimeter",
+		UnitInch:       "inch",
+		UnitFoot:       "foot",
+		UnitMeter:      "meter",
+	}[u]
+}
+
+// ClipMode defines the clipping modes for the beam lattices.
+type ClipMode uint8
+
+const (
+	// ClipNone defines a beam lattice without clipping.
+	ClipNone ClipMode = iota
+	// ClipInside defines a beam lattice with clipping inside.
+	ClipInside
+	// ClipOutside defines a beam lattice with clipping outside.
+	ClipOutside
+)
+
+func (c ClipMode) String() string {
+	return map[ClipMode]string{
+		ClipNone:    "none",
+		ClipInside:  "inside",
+		ClipOutside: "outside",
+	}[c]
+}
+
+// ObjectType defines the allowed object types.
+type ObjectType int8
+
+const (
+	// ObjectTypeModel defines a model object type.
+	ObjectTypeModel ObjectType = iota
+	// ObjectTypeOther defines a generic object type.
+	ObjectTypeOther
+	// ObjectTypeSupport defines a support object type.
+	ObjectTypeSupport
+	// ObjectTypeSolidSupport defines a solid support object type.
+	ObjectTypeSolidSupport
+	// ObjectTypeSurface defines a surface object type.
+	ObjectTypeSurface
+)
+
+func (o ObjectType) String() string {
+	return map[ObjectType]string{
+		ObjectTypeModel:        "model",
+		ObjectTypeOther:        "other",
+		ObjectTypeSupport:      "support",
+		ObjectTypeSolidSupport: "solidsupport",
+		ObjectTypeSurface:      "surface",
+	}[o]
+}
+
 // Resource defines build resource.
 type Resource interface {
 	Identify() (string, uint32)

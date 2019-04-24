@@ -2,6 +2,83 @@ package go3mf
 
 import "image/color"
 
+// Texture2DType defines the allowed texture 2D types.
+type Texture2DType uint8
+
+const (
+	// PNGTexture defines a png texture type.
+	PNGTexture Texture2DType = iota + 1
+	// JPEGTexture defines a jpeg texture type.
+	JPEGTexture
+)
+
+func (t Texture2DType) String() string {
+	return map[Texture2DType]string{
+		PNGTexture:  "image/png",
+		JPEGTexture: "image/jpeg",
+	}[t]
+}
+
+// TileStyle defines the allowed tile styles.
+type TileStyle uint8
+
+const (
+	// TileWrap wraps the tile.
+	TileWrap TileStyle = iota
+	// TileMirror mirrors the tile.
+	TileMirror
+	// TileClamp clamps the tile.
+	TileClamp
+	// TileNone apply no style.
+	TileNone
+)
+
+func (t TileStyle) String() string {
+	return map[TileStyle]string{
+		TileWrap:   "wrap",
+		TileMirror: "mirror",
+		TileClamp:  "clamp",
+		TileNone:   "none",
+	}[t]
+}
+
+// TextureFilter defines the allowed texture filters.
+type TextureFilter uint8
+
+const (
+	// TextureFilterAuto applies an automatic filter.
+	TextureFilterAuto TextureFilter = iota
+	// TextureFilterLinear applies a linear filter.
+	TextureFilterLinear
+	// TextureFilterNearest applies an nearest filter.
+	TextureFilterNearest
+)
+
+func (t TextureFilter) String() string {
+	return map[TextureFilter]string{
+		TextureFilterAuto:    "auto",
+		TextureFilterLinear:  "linear",
+		TextureFilterNearest: "nearest",
+	}[t]
+}
+
+// BlendMethod defines the equation to use when blending a layer with the previous layer.
+type BlendMethod uint8
+
+const (
+	// BlendMix to mix the layer properties.
+	BlendMix BlendMethod = iota
+	// BlendMultiple multiply the layer properties.
+	BlendMultiply
+)
+
+func (b BlendMethod) String() string {
+	return map[BlendMethod]string{
+		BlendMix:      "mix",
+		BlendMultiply: "multiply",
+	}[b]
+}
+
 // Texture2DResource defines the Model Texture 2D.
 type Texture2DResource struct {
 	ID          uint32

@@ -7,6 +7,23 @@ import (
 	"github.com/qmuntal/go3mf/mesh"
 )
 
+// SliceResolution defines the resolutions for a slice.
+type SliceResolution uint8
+
+const (
+	// ResolutionFull defines a full resolution slice.
+	ResolutionFull SliceResolution = iota
+	// ResolutionLow defines a low resolution slice.
+	ResolutionLow
+)
+
+func (c SliceResolution) String() string {
+	return map[SliceResolution]string{
+		ResolutionFull: "fullres",
+		ResolutionLow:  "lowres",
+	}[c]
+}
+
 // IsValidForSlices checks if the component resource and all its child are valid to be used with slices.
 func (c *ComponentsResource) IsValidForSlices(transform mesh.Matrix) bool {
 	if len(c.Components) == 0 {

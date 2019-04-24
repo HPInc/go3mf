@@ -120,3 +120,20 @@ func TestSliceStackResource_Identify(t *testing.T) {
 		})
 	}
 }
+
+func TestSliceResolution_String(t *testing.T) {
+	tests := []struct {
+		name string
+		c    SliceResolution
+	}{
+		{"fullres", ResolutionFull},
+		{"lowres", ResolutionLow},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.c.String(); got != tt.name {
+				t.Errorf("SliceResolution.String() = %v, want %v", got, tt.name)
+			}
+		})
+	}
+}
