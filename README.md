@@ -17,7 +17,11 @@ WIP
   * [x] Concurrent 3MF parsing when using Production spec and multiple model files.
 * Full 3MF Core spec implementation.
 * Clean API.
-* 3MF validation and complete non-conformity report.
+* 3MF i/o
+  * [x] Read from io.ReaderAt.
+  * [] Save to io.Writer.
+  * [x] Boilerplate to read from disk.
+  * [x] Validation and complete non-conformity report.
 * Robust implementation with full coverage and validated against real cases.
 * Extensions
   * [x] spec_production.
