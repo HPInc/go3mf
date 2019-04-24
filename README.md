@@ -10,6 +10,21 @@
 
 WIP
 
+## Features
+* High parsing speed and moderate memory consumption
+  * [x] Customizable XML reader, by default using the standard encode/xml.
+  * [x] Customizable ZIP Flate method, by default using the standard flate/zip.
+  * [x] Concurrent 3MF parsing when using Production spec and multiple model files.
+* Full 3MF Core spec implementation.
+* Clean API.
+* 3MF validation and complete non-conformity report.
+* Robust implementation with full coverage and validated against real cases.
+* Extensions
+  * [x] spec_production.
+  * [x] spec_slice.
+  * [x] spec_beamlattice.
+  * [x] spec_materials, only missing the display resources.
+
 ## Examples
 ### Read from file
 ```go
