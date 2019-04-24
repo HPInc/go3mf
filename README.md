@@ -39,7 +39,7 @@ import (
 	"github.com/qmuntal/go3mf/io3mf"
 )
 
-func ExampleOpenReader() {
+func main() {
 	model := new(go3mf.Model)
 	r, _ := io3mf.OpenReader("/testdata/cube.3mf")
 	r.Decode(model)
