@@ -147,9 +147,9 @@ func (d *modelFile) Decode(ctx context.Context, x XMLDecoder) (err error) {
 	d.parser = parser{Strict: d.strict, ModelPath: d.path}
 	d.namespaces = make(map[string]string)
 	d.resourcesMap = make(map[uint32]go3mf.Resource)
-
 	state := make([]nodeDecoder, 0, 10)
 	names := make([]xml.Name, 0, 10)
+
 	var (
 		currentDecoder nodeDecoder
 		tmpDecoder     nodeDecoder
@@ -158,6 +158,7 @@ func (d *modelFile) Decode(ctx context.Context, x XMLDecoder) (err error) {
 	)
 	nextBytesCheck := checkEveryBytes
 	currentDecoder = &topLevelDecoder{isRoot: d.isRoot, model: d.model}
+
 	for {
 		t, err = x.Token()
 		if err != nil {
@@ -168,7 +169,6 @@ func (d *modelFile) Decode(ctx context.Context, x XMLDecoder) (err error) {
 			tmpDecoder = currentDecoder.Child(tp.Name)
 			if tmpDecoder != nil {
 				tmpDecoder.SetModelFile(d)
-				d.parser.Element = tp.Name.Local
 				state = append(state, currentDecoder)
 				names = append(names, currentName)
 				currentName = tp.Name
@@ -212,7 +212,7 @@ func (d *modelFile) Decode(ctx context.Context, x XMLDecoder) (err error) {
 	if err == io.EOF {
 		err = nil
 	}
-	return
+	return err
 }
 
 // Reader implements a 3mf file reader.

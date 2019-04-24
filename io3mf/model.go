@@ -55,19 +55,14 @@ func (d *modelDecoder) Attributes(attrs []xml.Attr) bool {
 				requiredExts = a.Value
 			}
 		} else {
-			switch a.Name.Space {
-			case nsXML:
-				if d.file.isRoot {
-					if a.Name.Local == attrLang {
-						d.model.Language = a.Value
-					}
-				}
-			case "xmlns":
-				d.file.namespaces[a.Name.Local] = a.Value
-			}
+			d.noCoreAttribute(a)
 		}
 	}
 
+	return d.checkRequiredExt(requiredExts)
+}
+
+func (d *modelDecoder) checkRequiredExt(requiredExts string) bool {
 	for _, ext := range strings.Fields(requiredExts) {
 		ext = d.file.namespaces[ext]
 		if ext != nsCoreSpec && ext != nsMaterialSpec && ext != nsProductionSpec && ext != nsBeamLatticeSpec && ext != nsSliceSpec {
@@ -77,6 +72,19 @@ func (d *modelDecoder) Attributes(attrs []xml.Attr) bool {
 		}
 	}
 	return true
+}
+
+func (d *modelDecoder) noCoreAttribute(a xml.Attr) {
+	switch a.Name.Space {
+	case nsXML:
+		if d.file.isRoot {
+			if a.Name.Local == attrLang {
+				d.model.Language = a.Value
+			}
+		}
+	case attrXmlns:
+		d.file.namespaces[a.Name.Local] = a.Value
+	}
 }
 
 type metadataGroupDecoder struct {

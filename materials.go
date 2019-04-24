@@ -68,7 +68,7 @@ type BlendMethod uint8
 const (
 	// BlendMix to mix the layer properties.
 	BlendMix BlendMethod = iota
-	// BlendMultiple multiply the layer properties.
+	// BlendMultiply multiply the layer properties.
 	BlendMultiply
 )
 

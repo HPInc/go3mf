@@ -82,10 +82,8 @@ type beamDecoder struct {
 }
 
 func (d *beamDecoder) Attributes(attrs []xml.Attr) bool {
+	beam := mesh.Beam{}
 	var (
-		v1, v2                         uint32
-		r1, r2                         float64
-		cap1, cap2                     mesh.CapMode
 		hasV1, hasV2, hasCap1, hasCap2 bool
 	)
 	ok := true
@@ -95,28 +93,25 @@ func (d *beamDecoder) Attributes(attrs []xml.Attr) bool {
 		}
 		switch a.Name.Local {
 		case attrV1:
-			v1, ok = d.file.parser.ParseUint32Required(a.Name.Local, a.Value)
+			beam.NodeIndices[0], ok = d.file.parser.ParseUint32Required(a.Name.Local, a.Value)
 			hasV1 = true
 		case attrV2:
-			v2, ok = d.file.parser.ParseUint32Required(a.Name.Local, a.Value)
+			beam.NodeIndices[1], ok = d.file.parser.ParseUint32Required(a.Name.Local, a.Value)
 			hasV2 = true
 		case attrR1:
-			r1 = d.file.parser.ParseFloat64Optional(a.Name.Local, a.Value)
+			beam.Radius[0] = d.file.parser.ParseFloat64Optional(a.Name.Local, a.Value)
 		case attrR2:
-			r2 = d.file.parser.ParseFloat64Optional(a.Name.Local, a.Value)
+			beam.Radius[1] = d.file.parser.ParseFloat64Optional(a.Name.Local, a.Value)
 		case attrCap1:
-			cap1, _ = newCapMode(a.Value)
+			beam.CapMode[0], _ = newCapMode(a.Value)
 			hasCap1 = true
 		case attrCap2:
-			cap2, _ = newCapMode(a.Value)
+			beam.CapMode[1], _ = newCapMode(a.Value)
 			hasCap2 = true
 		}
 		if !ok {
-			break
+			return false
 		}
-	}
-	if !ok {
-		return false
 	}
 	if !hasV1 {
 		ok = d.file.parser.MissingAttr(attrV1)
@@ -124,27 +119,22 @@ func (d *beamDecoder) Attributes(attrs []xml.Attr) bool {
 	if !hasV2 {
 		ok = d.file.parser.MissingAttr(attrV2)
 	}
-	if !ok {
-		return false
+	if ok {
+		if beam.Radius[0] == 0 {
+			beam.Radius[0] = d.mesh.DefaultRadius
+		}
+		if beam.Radius[1] == 0 {
+			beam.Radius[1] = beam.Radius[0]
+		}
+		if !hasCap1 {
+			beam.CapMode[0] = d.mesh.CapMode
+		}
+		if !hasCap2 {
+			beam.CapMode[1] = d.mesh.CapMode
+		}
+		d.mesh.Beams = append(d.mesh.Beams, beam)
 	}
-	if r1 == 0 {
-		r1 = d.mesh.DefaultRadius
-	}
-	if r2 == 0 {
-		r2 = r1
-	}
-	if !hasCap1 {
-		cap1 = d.mesh.CapMode
-	}
-	if !hasCap2 {
-		cap2 = d.mesh.CapMode
-	}
-	d.mesh.Beams = append(d.mesh.Beams, mesh.Beam{
-		NodeIndices: [2]uint32{v1, v2},
-		Radius:      [2]float64{r1, r2},
-		CapMode:     [2]mesh.CapMode{cap1, cap2},
-	})
-	return true
+	return ok
 }
 
 type beamSetsDecoder struct {

@@ -26,6 +26,7 @@ const (
 )
 
 const (
+	attrXmlns              = "xmlns"
 	attrID                 = "id"
 	attrName               = "name"
 	attrProdUUID           = "UUID"
