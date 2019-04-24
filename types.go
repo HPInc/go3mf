@@ -153,3 +153,20 @@ func (t TextureFilter) String() string {
 		TextureFilterNearest: "nearest",
 	}[t]
 }
+
+// BlendMethod defines the equation to use when blending a layer with the previous layer.
+type BlendMethod uint8
+
+const (
+	// BlendMix to mix the layer properties.
+	BlendMix BlendMethod = iota
+	// BlendMultiple multiply the layer properties.
+	BlendMultiply
+)
+
+func (b BlendMethod) String() string {
+	return map[BlendMethod]string{
+		BlendMix:      "mix",
+		BlendMultiply: "multiply",
+	}[b]
+}

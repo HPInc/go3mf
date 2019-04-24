@@ -65,7 +65,9 @@ func (c *ColorGroupResource) Identify() (string, uint32) {
 }
 
 // A Composite specifies the proportion of the overall mixture for each material.
-type Composite []float64
+type Composite struct {
+	Values []float64
+}
 
 // CompositeMaterialsResource defines materials derived by mixing 2 or more base materials in defined ratios.
 type CompositeMaterialsResource struct {
@@ -79,4 +81,18 @@ type CompositeMaterialsResource struct {
 // Identify returns the unique ID of the resource.
 func (c *CompositeMaterialsResource) Identify() (string, uint32) {
 	return c.ModelPath, c.ID
+}
+
+// The Multi element combines the constituent materials and properties.
+type Multi struct {
+	ResourceIndices []uint32
+}
+
+// A MultiPropertiesResource element acts as a container for Multi
+// elements which are indexable groups of property indices.
+type MultiPropertiesResource struct {
+	ID           uint32
+	Resources    []uint32
+	BlendMethods []BlendMethod
+	Multis       []Multi
 }

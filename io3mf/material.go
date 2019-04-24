@@ -234,20 +234,20 @@ type compositeDecoder struct {
 }
 
 func (d *compositeDecoder) Attributes(attrs []xml.Attr) (ok bool) {
-	composite := make(go3mf.Composite, 0)
+	composite := go3mf.Composite{Values: make([]float64, 0)}
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrValues {
 			for _, f := range strings.Fields(a.Value) {
 				var val float64
 				if val, ok = d.file.parser.ParseFloat64Required(attrValues, f); ok {
-					composite = append(composite, val)
+					composite.Values = append(composite.Values, val)
 				} else {
 					break
 				}
 			}
 		}
 	}
-	if len(composite) == 0 {
+	if len(composite.Values) == 0 {
 		ok = d.file.parser.MissingAttr(attrValues)
 	}
 	if ok {
