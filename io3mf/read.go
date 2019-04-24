@@ -199,7 +199,6 @@ func (d *modelFile) Decode(ctx context.Context, x XMLDecoder) (err error) {
 				select {
 				case <-ctx.Done():
 					err = ctx.Err()
-					break
 				default: // Default is must to avoid blocking
 				}
 				nextBytesCheck += checkEveryBytes
