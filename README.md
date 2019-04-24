@@ -48,3 +48,28 @@ func ExampleOpenReader() {
 	fmt.Println(model)
 }
 ```
+### Read from HTTP body
+```go
+package main
+
+import (
+    "archive/zip"
+    "bytes"
+    "fmt"
+    "io/ioutil"
+    "net/http"
+    "github.com/qmuntal/go3mf"
+    "github.com/qmuntal/go3mf/io3mf"
+)
+
+func main() {
+    resp, _ := http.Get("zip file url")
+    defer resp.Body.Close()
+    body, _ := ioutil.ReadAll(resp.Body)
+    
+    model := new(go3mf.Model)
+    r, _ := io3mf.NewReader(bytes.NewReader(body), int64(len(body)))
+    r.Decode(model)
+    fmt.Println(model)
+}
+```
