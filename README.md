@@ -9,3 +9,23 @@
 3D Manufacturing Format file implementation for Go ported from [Lib3MF](https://github.com/3MFConsortium/lib3mf), the reference implementation of 3MF made by the 3MFConsortium.
 
 WIP
+
+## Examples
+### Read from file
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/qmuntal/go3mf"
+	"github.com/qmuntal/go3mf/io3mf"
+)
+
+func ExampleOpenReader() {
+	model := new(go3mf.Model)
+	r, _ := io3mf.OpenReader("/testdata/cube.3mf")
+	r.Decode(model)
+	fmt.Println(model)
+}
+```
