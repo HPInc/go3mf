@@ -6,9 +6,7 @@
 [![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://opensource.org/licenses/BSD-2-Clause)
 
 # go3mf
-3D Manufacturing Format file implementation for Go ported from [Lib3MF](https://github.com/3MFConsortium/lib3mf), the reference implementation of 3MF made by the 3MFConsortium.
-
-WIP
+The 3D Manufacturing Format (3MF) is a 3D printing format that allows design applications to send full-fidelity 3D models to a mix of other applications, platforms, services and printers. The 3MF specification allows companies to focus on innovation, rather than on basic interoperability issues, and it is engineered to avoid the problems associated with other 3D file formats. Detailed info about the 3MF specification can be fint at https://3mf.io/specification/.
 
 ## Features
 * High parsing speed and moderate memory consumption
