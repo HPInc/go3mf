@@ -31,6 +31,8 @@ func (d *resourceDecoder) Child(name xml.Name) (child nodeDecoder) {
 			child = new(texture2DDecoder)
 		case attrCompositematerials:
 			child = new(compositeMaterialsDecoder)
+		case attrMultiProps:
+			child = new(multiPropertiesDecoder)
 		}
 	} else if name.Space == nsSliceSpec && name.Local == attrSliceStack {
 		d.progressCount++

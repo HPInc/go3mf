@@ -358,8 +358,9 @@ func TestReader_processRootModel(t *testing.T) {
 	colorGroup := &go3mf.ColorGroupResource{ID: 1, ModelPath: "/3d/3dmodel.model", Colors: []color.RGBA{{R: 85, G: 85, B: 85, A: 255}, {R: 0, G: 0, B: 0, A: 255}, {R: 16, G: 21, B: 103, A: 255}, {R: 53, G: 4, B: 80, A: 255}}}
 	texGroup := &go3mf.Texture2DGroupResource{ID: 2, ModelPath: "/3d/3dmodel.model", TextureID: 6, Coords: []go3mf.TextureCoord{{0.3, 0.5}, {0.3, 0.8}, {0.5, 0.8}, {0.5, 0.5}}}
 	compositeGroup := &go3mf.CompositeMaterialsResource{ID: 4, ModelPath: "/3d/3dmodel.model", MaterialID: 5, Indices: []uint32{1, 2}, Composites: []go3mf.Composite{{Values: []float64{0.5, 0.5}}, {Values: []float64{0.2, 0.8}}}}
+	multiGroup := &go3mf.MultiPropertiesResource{ID: 9, ModelPath: "/3d/3dmodel.model", BlendMethods: []go3mf.BlendMethod{go3mf.BlendMultiply}, Resources: []uint32{5, 2}, Multis: []go3mf.Multi{{ResourceIndices: []uint32{0, 0}}, {ResourceIndices: []uint32{1,0}}, {ResourceIndices: []uint32{2,3}}}}
 	want.Resources = append(want.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", Stack: otherSlices})
-	want.Resources = append(want.Resources, []go3mf.Resource{otherMesh, baseMaterials, baseTexture, colorGroup, texGroup, compositeGroup, sliceStack, sliceStackRef, meshRes, meshLattice, components}...)
+	want.Resources = append(want.Resources, []go3mf.Resource{otherMesh, baseMaterials, baseTexture, colorGroup, texGroup, compositeGroup, sliceStack, sliceStackRef, multiGroup, meshRes, meshLattice, components}...)
 	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: components, PartNumber: "bob", UUID: "e9e25302-6428-402e-8633-cc95528d0ed2",
 		Transform: mesh.Matrix{1, 0, 0, -66.4, 0, 2, 0, -87.1, 0, 0, 3, 8.8, 0, 0, 0, 1},
 	})
@@ -408,7 +409,12 @@ func TestReader_processRootModel(t *testing.T) {
 			</s:slicestack>
 			<s:slicestack id="7" zbottom="1.1">
 				<s:sliceref slicestackid="10" slicepath="/2D/2Dmodel.model" />
-			</s:slicestack>
+			</s:slicestack>			
+			<m:multiproperties id="9" pids="5 2" blendmethods="multiply">
+				<m:multi pindices="0 0" />
+				<m:multi pindices="1 0" />
+				<m:multi pindices="2 3" />
+			</m:multiproperties>
 			<object id="8" name="Box 1" pid="5" pindex="0" thumbnail="/a.png" s:meshresolution="lowres" s:slicestackid="3" partnumber="11111111-1111-1111-1111-111111111111" type="model">
 				<mesh>
 					<vertices>
@@ -762,6 +768,9 @@ func TestReader_processRootModel_warns(t *testing.T) {
 		GenericError{ResourceID: 3, Element: "slicestack", ModelPath: "/3d/3dmodel.model", Message: "slicestack contains slices and slicerefs"},
 		MissingPropertyError{ResourceID: 7, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Name: "slicestackid"},
 		GenericError{ResourceID: 7, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced resource"},
+		ParsePropertyError{ResourceID: 9, Element: "multiproperties", ModelPath: "/3d/3dmodel.model", Name: "pids", Value: "a", Type: PropertyRequired},
+		MissingPropertyError{ResourceID: 9, Element: "multi", ModelPath: "/3d/3dmodel.model", Name: "pindices"},
+		MissingPropertyError{ResourceID: 19, Element: "multiproperties", ModelPath: "/3d/3dmodel.model", Name: "pids"},
 		ParsePropertyError{ResourceID: 8, Element: "object", ModelPath: "/3d/3dmodel.model", Name: "meshresolution", Value: "invalid", Type: PropertyOptional},
 		GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3d/3dmodel.model", Message: "duplicated triangle indices"},
 		GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3d/3dmodel.model", Message: "triangle indices are out of range"},
@@ -836,6 +845,10 @@ func TestReader_processRootModel_warns(t *testing.T) {
 			<s:slicestack id="7" zbottom="1.1">
 				<s:sliceref slicepath="/2D/2Dmodel.model" />
 			</s:slicestack>
+			<m:multiproperties id="9" qm:mq="other" pids="a 2">
+				<m:multi />
+			</m:multiproperties>
+			<m:multiproperties id="19" />
 			<object id="8" name="Box 1" pid="5" pindex="0" s:meshresolution="invalid" s:slicestackid="3" partnumber="11111111-1111-1111-1111-111111111111" type="model">
 				<mesh>
 					<vertices>

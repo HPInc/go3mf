@@ -296,7 +296,7 @@ func (d *multiPropertiesDecoder) Attributes(attrs []xml.Attr) bool {
 		case attrPIDs:
 			for _, f := range strings.Fields(a.Value) {
 				var val uint32
-				if val, ok = d.file.parser.ParseUint32Required(attrValues, f); ok {
+				if val, ok = d.file.parser.ParseUint32Required(attrPIDs, f); ok {
 					d.resource.Resources = append(d.resource.Resources, val)
 				} else {
 					break
@@ -324,7 +324,7 @@ func (d *multiDecoder) Attributes(attrs []xml.Attr) (ok bool) {
 		if a.Name.Space == "" && a.Name.Local == attrPIndices {
 			for _, f := range strings.Fields(a.Value) {
 				var val uint32
-				if val, ok = d.file.parser.ParseUint32Required(attrValues, f); ok {
+				if val, ok = d.file.parser.ParseUint32Required(attrPIndices, f); ok {
 					multi.ResourceIndices = append(multi.ResourceIndices, val)
 				} else {
 					break
