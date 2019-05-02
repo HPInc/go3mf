@@ -7,24 +7,6 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
-func TestMesh_Clone(t *testing.T) {
-	tests := []struct {
-		name string
-		m    *Mesh
-		want *Mesh
-	}{
-		{"base", new(Mesh), new(Mesh)},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := tt.m.Clone()
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Mesh.Clone() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestMesh_Merge(t *testing.T) {
 	type args struct {
 		mesh   *Mesh

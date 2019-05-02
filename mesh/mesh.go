@@ -36,13 +36,6 @@ type Mesh struct {
 	beamLattice
 }
 
-// Clone creates a deep clone of the mesh.
-func (m *Mesh) Clone() *Mesh {
-	new := new(Mesh)
-	new.Merge(m, Identity())
-	return new
-}
-
 // StartCreation can be called before populating the mesh.
 // If so, the connectivity will be automatically calculated but producing and speed penalty.
 // When the creationg process is finished EndCreation() must be called in order to clean temporary data.
