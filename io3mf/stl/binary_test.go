@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/go-test/deep"
-	"github.com/qmuntal/go3mf/mesh"
+	"github.com/qmuntal/go3mf/geo"
 )
 
 func Test_binaryDecoder_decode(t *testing.T) {
@@ -19,7 +19,7 @@ func Test_binaryDecoder_decode(t *testing.T) {
 		name    string
 		d       *binaryDecoder
 		ctx     context.Context
-		want    *mesh.Mesh
+		want    *geo.Mesh
 		wantErr bool
 	}{
 		{"base", &binaryDecoder{r: bytes.NewReader(triangle)}, context.Background(), createMeshTriangle(), false},
@@ -30,7 +30,7 @@ func Test_binaryDecoder_decode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := new(mesh.Mesh)
+			got := new(geo.Mesh)
 			err := tt.d.decode(tt.ctx, got)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("binaryDecoder.decode() error = %v, wantErr %v", err, tt.wantErr)
@@ -49,7 +49,7 @@ func Test_binaryDecoder_decode(t *testing.T) {
 func Test_binaryEncoder_encode(t *testing.T) {
 	triangle := createMeshTriangle()
 	type args struct {
-		m *mesh.Mesh
+		m *geo.Mesh
 	}
 	tests := []struct {
 		name    string
@@ -70,7 +70,7 @@ func Test_binaryEncoder_encode(t *testing.T) {
 			if !tt.wantErr {
 				// We do decoder and then encoder again, and the result must be the same
 				decoder := &binaryDecoder{r: tt.e.w.(*bytes.Buffer)}
-				got := new(mesh.Mesh)
+				got := new(geo.Mesh)
 				decoder.decode(context.Background(), got)
 				if diff := deep.Equal(got, tt.args.m); diff != nil {
 					t.Errorf("binaryDecoder.encode() = %v", diff)
@@ -94,14 +94,14 @@ func (w *errorWriter) Write(p []byte) (n int, err error) {
 	return 0, nil
 }
 
-func createMeshTriangle() *mesh.Mesh {
-	m := new(mesh.Mesh)
-	n1 := m.AddNode(mesh.Point3D{-20.0, -20.0, 0.0})
-	n2 := m.AddNode(mesh.Point3D{20.0, -20.0, 0.0})
-	n3 := m.AddNode(mesh.Point3D{0.0019989014, 0.0019989014, 39.998})
-	n4 := m.AddNode(mesh.Point3D{-20.0, 20.0, 0.0})
-	n5 := m.AddNode(mesh.Point3D{0.0, 0.0019989014, 39.998})
-	n6 := m.AddNode(mesh.Point3D{20.0, 20.0, 0.0})
+func createMeshTriangle() *geo.Mesh {
+	m := new(geo.Mesh)
+	n1 := m.AddNode(geo.Point3D{-20.0, -20.0, 0.0})
+	n2 := m.AddNode(geo.Point3D{20.0, -20.0, 0.0})
+	n3 := m.AddNode(geo.Point3D{0.0019989014, 0.0019989014, 39.998})
+	n4 := m.AddNode(geo.Point3D{-20.0, 20.0, 0.0})
+	n5 := m.AddNode(geo.Point3D{0.0, 0.0019989014, 39.998})
+	n6 := m.AddNode(geo.Point3D{20.0, 20.0, 0.0})
 	m.AddFace(n1, n2, n3)
 	m.AddFace(n4, n2, n1)
 	m.AddFace(n1, n5, n4)

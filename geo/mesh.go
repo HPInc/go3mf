@@ -1,8 +1,4 @@
-package mesh
-
-import (
-	"github.com/go-gl/mathgl/mgl32"
-)
+package geo
 
 // Matrix is a 4x4 matrix in row major order.
 //
@@ -72,16 +68,6 @@ func (m *Mesh) CheckSanity() bool {
 func (m *Mesh) FaceNodes(i uint32) (*Point3D, *Point3D, *Point3D) {
 	face := m.Faces[i]
 	return &m.Nodes[face.NodeIndices[0]], &m.Nodes[face.NodeIndices[1]], &m.Nodes[face.NodeIndices[2]]
-}
-
-// FaceNormal returns the normal of a face.
-func (m *Mesh) FaceNormal(i uint32) [3]float32 {
-	node1, node2, node3 := m.FaceNodes(i)
-	return faceNormal(mgl32.Vec3(*node1), mgl32.Vec3(*node2), mgl32.Vec3(*node3))
-}
-
-func faceNormal(n1, n2, n3 mgl32.Vec3) mgl32.Vec3 {
-	return n2.Sub(n1).Cross(n3.Sub(n1)).Normalize()
 }
 
 // IsManifoldAndOriented returns true if the mesh is manifold and oriented.

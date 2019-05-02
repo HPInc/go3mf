@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/qmuntal/go3mf/mesh"
+	"github.com/qmuntal/go3mf/geo"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -31,7 +31,7 @@ func (o *MockObject) Type() ObjectType {
 	return ObjectTypeOther
 }
 
-func (o *MockObject) MergeToMesh(args0 *mesh.Mesh, args1 mesh.Matrix) {
+func (o *MockObject) MergeToMesh(args0 *geo.Mesh, args1 geo.Matrix) {
 	o.Called(args0, args1)
 	return
 }
@@ -41,7 +41,7 @@ func (o *MockObject) IsValid() bool {
 	return args.Bool(0)
 }
 
-func (o *MockObject) IsValidForSlices(args0 mesh.Matrix) bool {
+func (o *MockObject) IsValidForSlices(args0 geo.Matrix) bool {
 	args := o.Called(args0)
 	return args.Bool(0)
 }
@@ -68,14 +68,14 @@ func TestModel_SetThumbnail(t *testing.T) {
 }
 func TestModel_MergeToMesh(t *testing.T) {
 	type args struct {
-		msh *mesh.Mesh
+		msh *geo.Mesh
 	}
 	tests := []struct {
 		name string
 		m    *Model
 		args args
 	}{
-		{"base", &Model{BuildItems: []*BuildItem{{Object: new(ComponentsResource)}}}, args{new(mesh.Mesh)}},
+		{"base", &Model{BuildItems: []*BuildItem{{Object: new(ComponentsResource)}}}, args{new(geo.Mesh)}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -165,8 +165,8 @@ func TestBuildItem_HasTransform(t *testing.T) {
 		b    *BuildItem
 		want bool
 	}{
-		{"identity", &BuildItem{Transform: mesh.Identity()}, false},
-		{"base", &BuildItem{Transform: mesh.Matrix{2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}}, true},
+		{"identity", &BuildItem{Transform: geo.Identity()}, false},
+		{"base", &BuildItem{Transform: geo.Matrix{2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -179,14 +179,14 @@ func TestBuildItem_HasTransform(t *testing.T) {
 
 func TestBuildItem_MergeToMesh(t *testing.T) {
 	type args struct {
-		m *mesh.Mesh
+		m *geo.Mesh
 	}
 	tests := []struct {
 		name string
 		b    *BuildItem
 		args args
 	}{
-		{"base", &BuildItem{Object: new(ComponentsResource)}, args{new(mesh.Mesh)}},
+		{"base", &BuildItem{Object: new(ComponentsResource)}, args{new(geo.Mesh)}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -201,8 +201,8 @@ func TestComponent_HasTransform(t *testing.T) {
 		c    *Component
 		want bool
 	}{
-		{"identity", &Component{Transform: mesh.Identity()}, false},
-		{"base", &Component{Transform: mesh.Matrix{2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}}, true},
+		{"identity", &Component{Transform: geo.Identity()}, false},
+		{"base", &Component{Transform: geo.Matrix{2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -234,16 +234,16 @@ func TestComponentsResource_IsValid(t *testing.T) {
 
 func TestComponentsResource_MergeToMesh(t *testing.T) {
 	type args struct {
-		m         *mesh.Mesh
-		transform mesh.Matrix
+		m         *geo.Mesh
+		transform geo.Matrix
 	}
 	tests := []struct {
 		name string
 		c    *ComponentsResource
 		args args
 	}{
-		{"empty", new(ComponentsResource), args{nil, mesh.Identity()}},
-		{"base", &ComponentsResource{Components: []*Component{{Object: new(ComponentsResource)}}}, args{nil, mesh.Identity()}},
+		{"empty", new(ComponentsResource), args{nil, geo.Identity()}},
+		{"base", &ComponentsResource{Components: []*Component{{Object: new(ComponentsResource)}}}, args{nil, geo.Identity()}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -259,11 +259,11 @@ func TestMeshResource_IsValid(t *testing.T) {
 		want bool
 	}{
 		{"empty", new(MeshResource), false},
-		{"other", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeOther}}, false},
-		{"surface", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeSurface}}, true},
-		{"support", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeSupport}}, true},
-		{"solidsupport", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeSolidSupport}}, false},
-		{"model", &MeshResource{Mesh: new(mesh.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeModel}}, false},
+		{"other", &MeshResource{Mesh: new(geo.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeOther}}, false},
+		{"surface", &MeshResource{Mesh: new(geo.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeSurface}}, true},
+		{"support", &MeshResource{Mesh: new(geo.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeSupport}}, true},
+		{"solidsupport", &MeshResource{Mesh: new(geo.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeSolidSupport}}, false},
+		{"model", &MeshResource{Mesh: new(geo.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeModel}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -276,15 +276,15 @@ func TestMeshResource_IsValid(t *testing.T) {
 
 func TestMeshResource_MergeToMesh(t *testing.T) {
 	type args struct {
-		m         *mesh.Mesh
-		transform mesh.Matrix
+		m         *geo.Mesh
+		transform geo.Matrix
 	}
 	tests := []struct {
 		name string
 		c    *MeshResource
 		args args
 	}{
-		{"base", &MeshResource{Mesh: new(mesh.Mesh)}, args{new(mesh.Mesh), mesh.Identity()}},
+		{"base", &MeshResource{Mesh: new(geo.Mesh)}, args{new(geo.Mesh), geo.Identity()}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

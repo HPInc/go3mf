@@ -16,7 +16,7 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/qmuntal/go3mf"
-	"github.com/qmuntal/go3mf/mesh"
+	"github.com/qmuntal/go3mf/geo"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -257,25 +257,25 @@ func TestDecoder_processRootModel(t *testing.T) {
 	baseTexture := &go3mf.Texture2DResource{ID: 6, ModelPath: "/3d/3dmodel.model", Path: "/3D/Texture/msLogo.png", ContentType: go3mf.PNGTexture, TileStyleU: go3mf.TileWrap, TileStyleV: go3mf.TileMirror, Filter: go3mf.TextureFilterAuto}
 	otherSlices := go3mf.SliceStack{
 		BottomZ: 2,
-		Slices: []*mesh.Slice{
+		Slices: []*geo.Slice{
 			{
 				TopZ:     1.2,
-				Vertices: []mesh.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
+				Vertices: []geo.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
 				Polygons: [][]int{{0, 1, 2, 3, 0}},
 			},
 		},
 	}
 	sliceStack := &go3mf.SliceStackResource{ID: 3, ModelPath: "/3d/3dmodel.model", Stack: go3mf.SliceStack{
 		BottomZ: 1,
-		Slices: []*mesh.Slice{
+		Slices: []*geo.Slice{
 			{
 				TopZ:     0,
-				Vertices: []mesh.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
+				Vertices: []geo.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
 				Polygons: [][]int{{0, 1, 2, 3, 0}},
 			},
 			{
 				TopZ:     0.1,
-				Vertices: []mesh.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
+				Vertices: []geo.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
 				Polygons: [][]int{{0, 2, 1, 3, 0}},
 			},
 		},
@@ -283,9 +283,9 @@ func TestDecoder_processRootModel(t *testing.T) {
 	sliceStackRef := &go3mf.SliceStackResource{ID: 7, ModelPath: "/3d/3dmodel.model", Stack: go3mf.SliceStack{BottomZ: 1.1, Refs: []go3mf.SliceRef{{SliceStackID: 10, Path: "/2D/2Dmodel.model"}}}}
 	meshRes := &go3mf.MeshResource{
 		ObjectResource: go3mf.ObjectResource{ID: 8, Name: "Box 1", ModelPath: "/3d/3dmodel.model", SliceStackID: 3, Thumbnail: "/a.png", DefaultPropertyID: 5, SliceResoultion: go3mf.ResolutionLow, PartNumber: "11111111-1111-1111-1111-111111111111"},
-		Mesh:           new(mesh.Mesh),
+		Mesh:           new(geo.Mesh),
 	}
-	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []mesh.Point3D{
+	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []geo.Point3D{
 		{0, 0, 0},
 		{100, 0, 0},
 		{100, 100, 0},
@@ -295,7 +295,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 		{100, 100, 100},
 		{0, 100, 100},
 	}...)
-	meshRes.Mesh.Faces = append(meshRes.Mesh.Faces, []mesh.Face{
+	meshRes.Mesh.Faces = append(meshRes.Mesh.Faces, []geo.Face{
 		{NodeIndices: [3]uint32{3, 2, 1}, Resource: 5},
 		{NodeIndices: [3]uint32{1, 0, 3}, Resource: 5},
 		{NodeIndices: [3]uint32{4, 5, 6}, Resource: 5, ResourceIndices: [3]uint32{1, 1, 1}},
@@ -313,12 +313,12 @@ func TestDecoder_processRootModel(t *testing.T) {
 	meshLattice := &go3mf.MeshResource{
 		ObjectResource:        go3mf.ObjectResource{ID: 15, Name: "Box", ModelPath: "/3d/3dmodel.model", PartNumber: "e1ef01d4-cbd4-4a62-86b6-9634e2ca198b"},
 		BeamLatticeAttributes: go3mf.BeamLatticeAttributes{ClipMode: go3mf.ClipInside, ClippingMeshID: 8, RepresentationMeshID: 8},
-		Mesh:                  new(mesh.Mesh),
+		Mesh:                  new(geo.Mesh),
 	}
 	meshLattice.Mesh.MinLength = 0.0001
-	meshLattice.Mesh.CapMode = mesh.CapModeHemisphere
+	meshLattice.Mesh.CapMode = geo.CapModeHemisphere
 	meshLattice.Mesh.DefaultRadius = 1
-	meshLattice.Mesh.Nodes = append(meshLattice.Mesh.Nodes, []mesh.Point3D{
+	meshLattice.Mesh.Nodes = append(meshLattice.Mesh.Nodes, []geo.Point3D{
 		{45, 55, 55},
 		{45, 45, 55},
 		{45, 55, 45},
@@ -328,20 +328,20 @@ func TestDecoder_processRootModel(t *testing.T) {
 		{55, 45, 55},
 		{55, 45, 45},
 	}...)
-	meshLattice.Mesh.BeamSets = append(meshLattice.Mesh.BeamSets, mesh.BeamSet{Name: "test", Identifier: "set_id", Refs: []uint32{1}})
-	meshLattice.Mesh.Beams = append(meshLattice.Mesh.Beams, []mesh.Beam{
-		{NodeIndices: [2]uint32{0, 1}, Radius: [2]float64{1.5, 1.6}, CapMode: [2]mesh.CapMode{mesh.CapModeSphere, mesh.CapModeButt}},
-		{NodeIndices: [2]uint32{2, 0}, Radius: [2]float64{3, 1.5}, CapMode: [2]mesh.CapMode{mesh.CapModeSphere, mesh.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{1, 3}, Radius: [2]float64{1.6, 3}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{3, 2}, Radius: [2]float64{1, 1}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{2, 4}, Radius: [2]float64{3, 2}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{4, 5}, Radius: [2]float64{2, 2}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{5, 6}, Radius: [2]float64{2, 2}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{7, 6}, Radius: [2]float64{2, 2}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{1, 6}, Radius: [2]float64{1.6, 2}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{7, 4}, Radius: [2]float64{2, 2}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{7, 3}, Radius: [2]float64{2, 3}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{0, 5}, Radius: [2]float64{1.5, 2}, CapMode: [2]mesh.CapMode{mesh.CapModeHemisphere, mesh.CapModeButt}},
+	meshLattice.Mesh.BeamSets = append(meshLattice.Mesh.BeamSets, geo.BeamSet{Name: "test", Identifier: "set_id", Refs: []uint32{1}})
+	meshLattice.Mesh.Beams = append(meshLattice.Mesh.Beams, []geo.Beam{
+		{NodeIndices: [2]uint32{0, 1}, Radius: [2]float64{1.5, 1.6}, CapMode: [2]geo.CapMode{geo.CapModeSphere, geo.CapModeButt}},
+		{NodeIndices: [2]uint32{2, 0}, Radius: [2]float64{3, 1.5}, CapMode: [2]geo.CapMode{geo.CapModeSphere, geo.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{1, 3}, Radius: [2]float64{1.6, 3}, CapMode: [2]geo.CapMode{geo.CapModeHemisphere, geo.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{3, 2}, Radius: [2]float64{1, 1}, CapMode: [2]geo.CapMode{geo.CapModeHemisphere, geo.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{2, 4}, Radius: [2]float64{3, 2}, CapMode: [2]geo.CapMode{geo.CapModeHemisphere, geo.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{4, 5}, Radius: [2]float64{2, 2}, CapMode: [2]geo.CapMode{geo.CapModeHemisphere, geo.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{5, 6}, Radius: [2]float64{2, 2}, CapMode: [2]geo.CapMode{geo.CapModeHemisphere, geo.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{7, 6}, Radius: [2]float64{2, 2}, CapMode: [2]geo.CapMode{geo.CapModeHemisphere, geo.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{1, 6}, Radius: [2]float64{1.6, 2}, CapMode: [2]geo.CapMode{geo.CapModeHemisphere, geo.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{7, 4}, Radius: [2]float64{2, 2}, CapMode: [2]geo.CapMode{geo.CapModeHemisphere, geo.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{7, 3}, Radius: [2]float64{2, 3}, CapMode: [2]geo.CapMode{geo.CapModeHemisphere, geo.CapModeHemisphere}},
+		{NodeIndices: [2]uint32{0, 5}, Radius: [2]float64{1.5, 2}, CapMode: [2]geo.CapMode{geo.CapModeHemisphere, geo.CapModeButt}},
 	}...)
 
 	components := &go3mf.ComponentsResource{
@@ -350,11 +350,11 @@ func TestDecoder_processRootModel(t *testing.T) {
 			Metadata: []go3mf.Metadata{{Name: nsProductionSpec + ":CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: nsProductionSpec + ":CustomMetadata4", Type: "xs:boolean", Value: "2"}},
 		},
 		Components: []*go3mf.Component{{UUID: "cb828680-8895-4e08-a1fc-be63e033df16", Object: meshRes,
-			Transform: mesh.Matrix{3, 0, 0, -66.4, 0, 1, 0, -87.1, 0, 0, 2, 8.8, 0, 0, 0, 1}}},
+			Transform: geo.Matrix{3, 0, 0, -66.4, 0, 1, 0, -87.1, 0, 0, 2, 8.8, 0, 0, 0, 1}}},
 	}
 
 	want := &go3mf.Model{Units: go3mf.UnitMillimeter, Language: "en-US", Path: "/3d/3dmodel.model", UUID: "e9e25302-6428-402e-8633-cc95528d0ed3"}
-	otherMesh := &go3mf.MeshResource{ObjectResource: go3mf.ObjectResource{ID: 8, ModelPath: "/3d/other.model"}, Mesh: new(mesh.Mesh)}
+	otherMesh := &go3mf.MeshResource{ObjectResource: go3mf.ObjectResource{ID: 8, ModelPath: "/3d/other.model"}, Mesh: new(geo.Mesh)}
 	colorGroup := &go3mf.ColorGroupResource{ID: 1, ModelPath: "/3d/3dmodel.model", Colors: []color.RGBA{{R: 85, G: 85, B: 85, A: 255}, {R: 0, G: 0, B: 0, A: 255}, {R: 16, G: 21, B: 103, A: 255}, {R: 53, G: 4, B: 80, A: 255}}}
 	texGroup := &go3mf.Texture2DGroupResource{ID: 2, ModelPath: "/3d/3dmodel.model", TextureID: 6, Coords: []go3mf.TextureCoord{{0.3, 0.5}, {0.3, 0.8}, {0.5, 0.8}, {0.5, 0.5}}}
 	compositeGroup := &go3mf.CompositeMaterialsResource{ID: 4, ModelPath: "/3d/3dmodel.model", MaterialID: 5, Indices: []uint32{1, 2}, Composites: []go3mf.Composite{{Values: []float64{0.5, 0.5}}, {Values: []float64{0.2, 0.8}}}}
@@ -362,7 +362,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 	want.Resources = append(want.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", Stack: otherSlices})
 	want.Resources = append(want.Resources, []go3mf.Resource{otherMesh, baseMaterials, baseTexture, colorGroup, texGroup, compositeGroup, sliceStack, sliceStackRef, multiGroup, meshRes, meshLattice, components}...)
 	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: components, PartNumber: "bob", UUID: "e9e25302-6428-402e-8633-cc95528d0ed2",
-		Transform: mesh.Matrix{1, 0, 0, -66.4, 0, 2, 0, -87.1, 0, 0, 3, 8.8, 0, 0, 0, 1},
+		Transform: geo.Matrix{1, 0, 0, -66.4, 0, 2, 0, -87.1, 0, 0, 3, 8.8, 0, 0, 0, 1},
 	})
 	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: otherMesh, UUID: "e9e25302-6428-402e-8633-cc95528d0ed3", Metadata: []go3mf.Metadata{{Name: nsProductionSpec + ":CustomMetadata3", Type: "xs:boolean", Value: "1"}}})
 	want.Metadata = append(want.Metadata, []go3mf.Metadata{
@@ -549,15 +549,15 @@ func Test_strToMatrix(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    mesh.Matrix
+		want    geo.Matrix
 		wantErr bool
 	}{
-		{"empty", args{""}, mesh.Matrix{}, true},
-		{"11values", args{"1 1 1 1 1 1 1 1 1 1 1"}, mesh.Matrix{}, true},
-		{"13values", args{"1 1 1 1 1 1 1 1 1 1 1 1 1"}, mesh.Matrix{}, true},
-		{"char", args{"1 1 a 1 1 1 1 1 1 1 1 1"}, mesh.Matrix{}, true},
-		{"base", args{"1 1 1 1 1 1 1 1 1 1 1 1"}, mesh.Matrix{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1}, false},
-		{"other", args{"0 1 2 10 11 12 20 21 22 30 31 32"}, mesh.Matrix{0, 10, 20, 30, 1, 11, 21, 31, 2, 12, 22, 32, 0, 0, 0, 1}, false},
+		{"empty", args{""}, geo.Matrix{}, true},
+		{"11values", args{"1 1 1 1 1 1 1 1 1 1 1"}, geo.Matrix{}, true},
+		{"13values", args{"1 1 1 1 1 1 1 1 1 1 1 1 1"}, geo.Matrix{}, true},
+		{"char", args{"1 1 a 1 1 1 1 1 1 1 1 1"}, geo.Matrix{}, true},
+		{"base", args{"1 1 1 1 1 1 1 1 1 1 1 1"}, geo.Matrix{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1}, false},
+		{"other", args{"0 1 2 10 11 12 20 21 22 30 31 32"}, geo.Matrix{0, 10, 20, 30, 1, 11, 21, 31, 2, 12, 22, 32, 0, 0, 0, 1}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

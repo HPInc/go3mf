@@ -8,14 +8,14 @@ import (
 	"unicode/utf8"
 
 	"github.com/qmuntal/go3mf"
-	"github.com/qmuntal/go3mf/mesh"
+	"github.com/qmuntal/go3mf/geo"
 )
 
 var checkEveryFaces = 1000
 
 const sizeOfHeader = 300 // minimum size of a closed mesh in binary is 384 bytes, corresponding to a triangle.
 
-// Decoder can decode an stl to a mesh.
+// Decoder can decode an stl to a geo.
 // It supports automatic detection of binary or ascii stl encoding.
 type Decoder struct {
 	r io.Reader
@@ -40,7 +40,7 @@ func (d *Decoder) DecodeContext(ctx context.Context, m *go3mf.Model) error {
 	if err != nil {
 		return err
 	}
-	newMesh := new(mesh.Mesh)
+	newMesh := new(geo.Mesh)
 	if isASCII {
 		decoder := asciiDecoder{r: b}
 		err = decoder.decode(ctx, newMesh)

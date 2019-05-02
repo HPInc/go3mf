@@ -4,7 +4,7 @@ import (
 	"encoding/xml"
 
 	"github.com/qmuntal/go3mf"
-	"github.com/qmuntal/go3mf/mesh"
+	"github.com/qmuntal/go3mf/geo"
 )
 
 type meshDecoder struct {
@@ -13,8 +13,8 @@ type meshDecoder struct {
 }
 
 func (d *meshDecoder) Open() {
-	d.resource.Mesh = new(mesh.Mesh)
-	d.resource.Mesh.StartCreation(mesh.CreationOptions{CalculateConnectivity: false})
+	d.resource.Mesh = new(geo.Mesh)
+	d.resource.Mesh.StartCreation(geo.CreationOptions{CalculateConnectivity: false})
 }
 
 func (d *meshDecoder) Close() bool {
@@ -74,7 +74,7 @@ func (d *vertexDecoder) Attributes(attrs []xml.Attr) bool {
 			return false
 		}
 	}
-	d.resource.Mesh.AddNode(mesh.Point3D{x, y, z})
+	d.resource.Mesh.AddNode(geo.Point3D{x, y, z})
 	return true
 }
 
@@ -88,7 +88,7 @@ func (d *trianglesDecoder) Open() {
 	d.triangleDecoder.resource = d.resource
 
 	if len(d.resource.Mesh.Faces) == 0 && len(d.resource.Mesh.Nodes) > 0 {
-		d.resource.Mesh.Faces = make([]mesh.Face, 0, len(d.resource.Mesh.Nodes)-1)
+		d.resource.Mesh.Faces = make([]geo.Face, 0, len(d.resource.Mesh.Nodes)-1)
 	}
 }
 
@@ -150,7 +150,7 @@ func (d *triangleDecoder) addTriangle(v1, v2, v3, pid, p1, p2, p3 uint32) bool {
 	if v1 >= nodeCount || v2 >= nodeCount || v3 >= nodeCount {
 		return d.file.parser.GenericError(true, "triangle indices are out of range")
 	}
-	d.resource.Mesh.Faces = append(d.resource.Mesh.Faces, mesh.Face{
+	d.resource.Mesh.Faces = append(d.resource.Mesh.Faces, geo.Face{
 		NodeIndices:     [3]uint32{v1, v2, v3},
 		Resource:        pid,
 		ResourceIndices: [3]uint32{p1, p2, p3},

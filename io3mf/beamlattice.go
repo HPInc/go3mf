@@ -4,7 +4,7 @@ import (
 	"encoding/xml"
 
 	"github.com/qmuntal/go3mf"
-	"github.com/qmuntal/go3mf/mesh"
+	"github.com/qmuntal/go3mf/geo"
 )
 
 type beamLatticeDecoder struct {
@@ -61,7 +61,7 @@ func (d *beamLatticeDecoder) Child(name xml.Name) (child nodeDecoder) {
 
 type beamsDecoder struct {
 	emptyDecoder
-	mesh        *mesh.Mesh
+	mesh        *geo.Mesh
 	beamDecoder beamDecoder
 }
 
@@ -78,11 +78,11 @@ func (d *beamsDecoder) Child(name xml.Name) (child nodeDecoder) {
 
 type beamDecoder struct {
 	emptyDecoder
-	mesh *mesh.Mesh
+	mesh *geo.Mesh
 }
 
 func (d *beamDecoder) Attributes(attrs []xml.Attr) bool {
-	beam := mesh.Beam{}
+	beam := geo.Beam{}
 	var (
 		hasV1, hasV2, hasCap1, hasCap2 bool
 	)
@@ -139,7 +139,7 @@ func (d *beamDecoder) Attributes(attrs []xml.Attr) bool {
 
 type beamSetsDecoder struct {
 	emptyDecoder
-	mesh *mesh.Mesh
+	mesh *geo.Mesh
 }
 
 func (d *beamSetsDecoder) Child(name xml.Name) (child nodeDecoder) {
@@ -151,8 +151,8 @@ func (d *beamSetsDecoder) Child(name xml.Name) (child nodeDecoder) {
 
 type beamSetDecoder struct {
 	emptyDecoder
-	mesh           *mesh.Mesh
-	beamSet        mesh.BeamSet
+	mesh           *geo.Mesh
+	beamSet        geo.BeamSet
 	beamRefDecoder beamRefDecoder
 }
 
@@ -189,7 +189,7 @@ func (d *beamSetDecoder) Child(name xml.Name) (child nodeDecoder) {
 
 type beamRefDecoder struct {
 	emptyDecoder
-	beamSet *mesh.BeamSet
+	beamSet *geo.BeamSet
 }
 
 func (d *beamRefDecoder) Attributes(attrs []xml.Attr) bool {

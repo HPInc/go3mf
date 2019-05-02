@@ -1,4 +1,4 @@
-package mesh
+package geo
 
 // BeamSet defines a set of beams.
 type BeamSet struct {

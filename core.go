@@ -7,7 +7,7 @@ import (
 	"sort"
 
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/qmuntal/go3mf/mesh"
+	"github.com/qmuntal/go3mf/geo"
 )
 
 const thumbnailPath = "/Metadata/thumbnail.png"
@@ -95,9 +95,9 @@ type Resource interface {
 // Object defines a composable object.
 type Object interface {
 	Identify() (string, uint32)
-	MergeToMesh(*mesh.Mesh, mesh.Matrix)
+	MergeToMesh(*geo.Mesh, geo.Matrix)
 	IsValid() bool
-	IsValidForSlices(mesh.Matrix) bool
+	IsValidForSlices(geo.Matrix) bool
 	Type() ObjectType
 }
 
@@ -174,8 +174,8 @@ func (m *Model) SetThumbnail(r io.Reader) *Attachment {
 	return m.Thumbnail
 }
 
-// MergeToMesh merges the build with the mesh.
-func (m *Model) MergeToMesh(msh *mesh.Mesh) {
+// MergeToMesh merges the build with the geo.
+func (m *Model) MergeToMesh(msh *geo.Mesh) {
 	for _, b := range m.BuildItems {
 		b.MergeToMesh(msh)
 	}
@@ -231,7 +231,7 @@ func (ms *BaseMaterialsResource) Merge(other []BaseMaterial) {
 // A BuildItem is an in memory representation of the 3MF build item.
 type BuildItem struct {
 	Object     Object
-	Transform  mesh.Matrix
+	Transform  geo.Matrix
 	PartNumber string
 	UUID       string
 	Metadata   []Metadata
@@ -242,8 +242,8 @@ func (b *BuildItem) HasTransform() bool {
 	return !mgl32.Mat4(b.Transform).ApproxEqual(mgl32.Ident4())
 }
 
-// MergeToMesh merges the build object with the mesh.
-func (b *BuildItem) MergeToMesh(m *mesh.Mesh) {
+// MergeToMesh merges the build object with the geo.
+func (b *BuildItem) MergeToMesh(m *geo.Mesh) {
 	b.Object.MergeToMesh(m, b.Transform)
 }
 
@@ -276,7 +276,7 @@ func (o *ObjectResource) Type() ObjectType {
 // A Component is an in memory representation of the 3MF component.
 type Component struct {
 	Object    Object
-	Transform mesh.Matrix
+	Transform geo.Matrix
 	UUID      string
 }
 
@@ -286,8 +286,8 @@ func (c *Component) HasTransform() bool {
 }
 
 // MergeToMesh merges a mesh with the component.
-func (c *Component) MergeToMesh(m *mesh.Mesh, transform mesh.Matrix) {
-	c.Object.MergeToMesh(m, mesh.Matrix(mgl32.Mat4(c.Transform).Mul4(mgl32.Mat4(transform))))
+func (c *Component) MergeToMesh(m *geo.Mesh, transform geo.Matrix) {
+	c.Object.MergeToMesh(m, geo.Matrix(mgl32.Mat4(c.Transform).Mul4(mgl32.Mat4(transform))))
 }
 
 // A ComponentsResource resource is an in memory representation of the 3MF component object.
@@ -297,7 +297,7 @@ type ComponentsResource struct {
 }
 
 // MergeToMesh merges the mesh with all the components.
-func (c *ComponentsResource) MergeToMesh(m *mesh.Mesh, transform mesh.Matrix) {
+func (c *ComponentsResource) MergeToMesh(m *geo.Mesh, transform geo.Matrix) {
 	for _, comp := range c.Components {
 		comp.MergeToMesh(m, transform)
 	}
@@ -320,12 +320,12 @@ func (c *ComponentsResource) IsValid() bool {
 // A MeshResource is an in memory representation of the 3MF mesh object.
 type MeshResource struct {
 	ObjectResource
-	Mesh                  *mesh.Mesh
+	Mesh                  *geo.Mesh
 	BeamLatticeAttributes BeamLatticeAttributes
 }
 
-// MergeToMesh merges the resource with the mesh.
-func (c *MeshResource) MergeToMesh(m *mesh.Mesh, transform mesh.Matrix) {
+// MergeToMesh merges the resource with the geo.
+func (c *MeshResource) MergeToMesh(m *geo.Mesh, transform geo.Matrix) {
 	c.Mesh.Merge(m, transform)
 }
 

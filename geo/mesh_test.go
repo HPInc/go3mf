@@ -1,10 +1,8 @@
-package mesh
+package geo
 
 import (
 	"reflect"
 	"testing"
-
-	"github.com/go-gl/mathgl/mgl32"
 )
 
 func TestMesh_Merge(t *testing.T) {
@@ -165,56 +163,6 @@ func TestMesh_IsManifoldAndOriented(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.m.IsManifoldAndOriented(); got != tt.want {
 				t.Errorf("Mesh.IsManifoldAndOriented() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_faceNormal(t *testing.T) {
-	type args struct {
-		n1 mgl32.Vec3
-		n2 mgl32.Vec3
-		n3 mgl32.Vec3
-	}
-	tests := []struct {
-		name string
-		args args
-		want mgl32.Vec3
-	}{
-		{"X", args{mgl32.Vec3{0.0, 0.0, 0.0}, mgl32.Vec3{0.0, 20.0, -20.0}, mgl32.Vec3{0.0, 0.0019989014, 0.0019989014}}, mgl32.Vec3{1, 0, 0}},
-		{"-Y", args{mgl32.Vec3{0.0, 0.0, 0.0}, mgl32.Vec3{20.0, 0.0, -20.0}, mgl32.Vec3{0.0019989014, 0.0, 0.0019989014}}, mgl32.Vec3{0, -1, 0}},
-		{"Z", args{mgl32.Vec3{0.0, 0.0, 0.0}, mgl32.Vec3{20.0, -20.0, 0.0}, mgl32.Vec3{0.0019989014, 0.0019989014, 0.0}}, mgl32.Vec3{0, 0, 1}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := faceNormal(tt.args.n1, tt.args.n2, tt.args.n3); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("faceNormal() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestMesh_FaceNormal(t *testing.T) {
-	m := new(Mesh)
-	n1 := m.AddNode(Point3D{0.0, 0.0, 0.0})
-	n2 := m.AddNode(Point3D{20.0, -20.0, 0.0})
-	n3 := m.AddNode(Point3D{0.0019989014, 0.0019989014, 0.0})
-	m.AddFace(n1, n2, n3)
-	type args struct {
-		i uint32
-	}
-	tests := []struct {
-		name string
-		m    *Mesh
-		args args
-		want [3]float32
-	}{
-		{"base", m, args{0}, [3]float32{0, 0, 1}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.m.FaceNormal(tt.args.i); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Mesh.FaceNormal() = %v, want %v", got, tt.want)
 			}
 		})
 	}

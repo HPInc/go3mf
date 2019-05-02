@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	go3mf "github.com/qmuntal/go3mf"
-	mesh "github.com/qmuntal/go3mf/mesh"
+	"github.com/qmuntal/go3mf/geo"
 )
 
 func Test_newTextureFilter(t *testing.T) {
@@ -188,13 +188,13 @@ func Test_newUnits(t *testing.T) {
 func Test_newCapMode(t *testing.T) {
 	tests := []struct {
 		name   string
-		wantT  mesh.CapMode
+		wantT  geo.CapMode
 		wantOk bool
 	}{
-		{"sphere", mesh.CapModeSphere, true},
-		{"hemisphere", mesh.CapModeHemisphere, true},
-		{"butt", mesh.CapModeButt, true},
-		{"empty", mesh.CapModeSphere, false},
+		{"sphere", geo.CapModeSphere, true},
+		{"hemisphere", geo.CapModeHemisphere, true},
+		{"butt", geo.CapModeButt, true},
+		{"empty", geo.CapModeSphere, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

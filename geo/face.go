@@ -1,4 +1,4 @@
-package mesh
+package geo
 
 // Face defines a triangle of a mesh.
 type Face struct {

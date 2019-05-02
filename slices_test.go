@@ -3,7 +3,7 @@ package go3mf
 import (
 	"testing"
 
-	"github.com/qmuntal/go3mf/mesh"
+	"github.com/qmuntal/go3mf/geo"
 )
 
 func TestBuildItem_IsValidForSlices(t *testing.T) {
@@ -26,7 +26,7 @@ func TestBuildItem_IsValidForSlices(t *testing.T) {
 
 func TestComponentsResource_IsValidForSlices(t *testing.T) {
 	type args struct {
-		transform mesh.Matrix
+		transform geo.Matrix
 	}
 	tests := []struct {
 		name string
@@ -34,9 +34,9 @@ func TestComponentsResource_IsValidForSlices(t *testing.T) {
 		args args
 		want bool
 	}{
-		{"empty", new(ComponentsResource), args{mesh.Identity()}, true},
-		{"oneInvalid", &ComponentsResource{Components: []*Component{{Object: NewMockObject(true, true)}, {Object: NewMockObject(true, false)}}}, args{mesh.Identity()}, false},
-		{"valid", &ComponentsResource{Components: []*Component{{Object: NewMockObject(true, true)}, {Object: NewMockObject(true, true)}}}, args{mesh.Identity()}, true},
+		{"empty", new(ComponentsResource), args{geo.Identity()}, true},
+		{"oneInvalid", &ComponentsResource{Components: []*Component{{Object: NewMockObject(true, true)}, {Object: NewMockObject(true, false)}}}, args{geo.Identity()}, false},
+		{"valid", &ComponentsResource{Components: []*Component{{Object: NewMockObject(true, true)}, {Object: NewMockObject(true, true)}}}, args{geo.Identity()}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -49,7 +49,7 @@ func TestComponentsResource_IsValidForSlices(t *testing.T) {
 
 func TestMeshResource_IsValidForSlices(t *testing.T) {
 	type args struct {
-		t mesh.Matrix
+		t geo.Matrix
 	}
 	tests := []struct {
 		name string
@@ -57,9 +57,9 @@ func TestMeshResource_IsValidForSlices(t *testing.T) {
 		args args
 		want bool
 	}{
-		{"empty", new(MeshResource), args{mesh.Matrix{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}}, true},
-		{"valid", &MeshResource{ObjectResource: ObjectResource{SliceStackID: 0}}, args{mesh.Matrix{1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1}}, true},
-		{"invalid", &MeshResource{ObjectResource: ObjectResource{SliceStackID: 1}}, args{mesh.Matrix{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}}, false},
+		{"empty", new(MeshResource), args{geo.Matrix{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}}, true},
+		{"valid", &MeshResource{ObjectResource: ObjectResource{SliceStackID: 0}}, args{geo.Matrix{1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1}}, true},
+		{"invalid", &MeshResource{ObjectResource: ObjectResource{SliceStackID: 1}}, args{geo.Matrix{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -72,7 +72,7 @@ func TestMeshResource_IsValidForSlices(t *testing.T) {
 
 func TestSliceStack_AddSlice(t *testing.T) {
 	type args struct {
-		slice *mesh.Slice
+		slice *geo.Slice
 	}
 	tests := []struct {
 		name    string
@@ -81,9 +81,9 @@ func TestSliceStack_AddSlice(t *testing.T) {
 		want    int
 		wantErr bool
 	}{
-		{"lower", &SliceStack{BottomZ: 1}, args{&mesh.Slice{TopZ: 0.5}}, 0, true},
-		{"top", &SliceStack{Slices: []*mesh.Slice{{TopZ: 1.0}}}, args{&mesh.Slice{TopZ: 0.5}}, 0, true},
-		{"ok", &SliceStack{BottomZ: 1, Slices: []*mesh.Slice{{TopZ: 1.0}}}, args{&mesh.Slice{TopZ: 2.0}}, 1, false},
+		{"lower", &SliceStack{BottomZ: 1}, args{&geo.Slice{TopZ: 0.5}}, 0, true},
+		{"top", &SliceStack{Slices: []*geo.Slice{{TopZ: 1.0}}}, args{&geo.Slice{TopZ: 0.5}}, 0, true},
+		{"ok", &SliceStack{BottomZ: 1, Slices: []*geo.Slice{{TopZ: 1.0}}}, args{&geo.Slice{TopZ: 2.0}}, 1, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

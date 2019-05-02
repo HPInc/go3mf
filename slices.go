@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/qmuntal/go3mf/mesh"
+	"github.com/qmuntal/go3mf/geo"
 )
 
 // SliceResolution defines the resolutions for a slice.
@@ -25,14 +25,14 @@ func (c SliceResolution) String() string {
 }
 
 // IsValidForSlices checks if the component resource and all its child are valid to be used with slices.
-func (c *ComponentsResource) IsValidForSlices(transform mesh.Matrix) bool {
+func (c *ComponentsResource) IsValidForSlices(transform geo.Matrix) bool {
 	if len(c.Components) == 0 {
 		return true
 	}
 
 	matrix := mgl32.Mat4(transform)
 	for _, comp := range c.Components {
-		if !comp.Object.IsValidForSlices(mesh.Matrix(matrix.Mul4(mgl32.Mat4(comp.Transform)))) {
+		if !comp.Object.IsValidForSlices(geo.Matrix(matrix.Mul4(mgl32.Mat4(comp.Transform)))) {
 			return false
 		}
 	}
@@ -45,7 +45,7 @@ func (b *BuildItem) IsValidForSlices() bool {
 }
 
 // IsValidForSlices checks if the mesh resource are valid for slices.
-func (c *MeshResource) IsValidForSlices(t mesh.Matrix) bool {
+func (c *MeshResource) IsValidForSlices(t geo.Matrix) bool {
 	return c.SliceStackID == 0 || t[2] == 0 && t[6] == 0 && t[8] == 0 && t[9] == 0 && t[10] == 1
 }
 
@@ -59,12 +59,12 @@ type SliceRef struct {
 // It can either contain Slices or a Refs.
 type SliceStack struct {
 	BottomZ float32
-	Slices  []*mesh.Slice
+	Slices  []*geo.Slice
 	Refs    []SliceRef
 }
 
 // AddSlice adds an slice to the stack and returns its index.
-func (s *SliceStack) AddSlice(slice *mesh.Slice) (int, error) {
+func (s *SliceStack) AddSlice(slice *geo.Slice) (int, error) {
 	if slice.TopZ < s.BottomZ || (len(s.Slices) != 0 && slice.TopZ < s.Slices[0].TopZ) {
 		return 0, errors.New("the z-coordinates of slices within a slicestack are not increasing")
 	}

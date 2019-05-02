@@ -4,7 +4,7 @@ import (
 	"encoding/xml"
 
 	go3mf "github.com/qmuntal/go3mf"
-	"github.com/qmuntal/go3mf/mesh"
+	"github.com/qmuntal/go3mf/geo"
 )
 
 type sliceStackDecoder struct {
@@ -97,7 +97,7 @@ func (d *sliceRefDecoder) addSliceRef(sliceStackID uint32, path string) bool {
 type sliceDecoder struct {
 	emptyDecoder
 	resource               *go3mf.SliceStackResource
-	slice                  mesh.Slice
+	slice                  geo.Slice
 	polygonDecoder         polygonDecoder
 	polygonVerticesDecoder polygonVerticesDecoder
 }
@@ -139,7 +139,7 @@ func (d *sliceDecoder) Attributes(attrs []xml.Attr) bool {
 
 type polygonVerticesDecoder struct {
 	emptyDecoder
-	slice                *mesh.Slice
+	slice                *geo.Slice
 	polygonVertexDecoder polygonVertexDecoder
 }
 
@@ -156,7 +156,7 @@ func (d *polygonVerticesDecoder) Child(name xml.Name) (child nodeDecoder) {
 
 type polygonVertexDecoder struct {
 	emptyDecoder
-	slice *mesh.Slice
+	slice *geo.Slice
 }
 
 func (d *polygonVertexDecoder) Attributes(attrs []xml.Attr) bool {
@@ -179,7 +179,7 @@ func (d *polygonVertexDecoder) Attributes(attrs []xml.Attr) bool {
 
 type polygonDecoder struct {
 	emptyDecoder
-	slice                 *mesh.Slice
+	slice                 *geo.Slice
 	polygonIndex          int
 	polygonSegmentDecoder polygonSegmentDecoder
 }
@@ -224,7 +224,7 @@ func (d *polygonDecoder) Attributes(attrs []xml.Attr) bool {
 
 type polygonSegmentDecoder struct {
 	emptyDecoder
-	slice        *mesh.Slice
+	slice        *geo.Slice
 	polygonIndex int
 }
 

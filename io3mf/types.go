@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	go3mf "github.com/qmuntal/go3mf"
-	mesh "github.com/qmuntal/go3mf/mesh"
+	"github.com/qmuntal/go3mf/geo"
 )
 
 var checkEveryBytes = int64(4 * 1024 * 1024)
@@ -148,11 +148,11 @@ func (e *ReadError) Error() string {
 	return e.Message
 }
 
-func newCapMode(s string) (t mesh.CapMode, ok bool) {
-	t, ok = map[string]mesh.CapMode{
-		"sphere":     mesh.CapModeSphere,
-		"hemisphere": mesh.CapModeHemisphere,
-		"butt":       mesh.CapModeButt,
+func newCapMode(s string) (t geo.CapMode, ok bool) {
+	t, ok = map[string]geo.CapMode{
+		"sphere":     geo.CapModeSphere,
+		"hemisphere": geo.CapModeHemisphere,
+		"butt":       geo.CapModeButt,
 	}[s]
 	return
 }

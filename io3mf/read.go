@@ -14,7 +14,7 @@ import (
 	"sync"
 
 	go3mf "github.com/qmuntal/go3mf"
-	"github.com/qmuntal/go3mf/mesh"
+	"github.com/qmuntal/go3mf/geo"
 )
 
 // A XMLDecoder is anything that can decode a stream of XML tokens, including a Decoder.
@@ -472,8 +472,8 @@ func strToSRGB(s string) (c color.RGBA, err error) {
 	return
 }
 
-func strToMatrix(s string) (mesh.Matrix, error) {
-	var matrix mesh.Matrix
+func strToMatrix(s string) (geo.Matrix, error) {
+	var matrix geo.Matrix
 	values := strings.Fields(s)
 	if len(values) != 12 {
 		return matrix, errors.New("go3mf: matrix string does not have 12 values")
@@ -486,7 +486,7 @@ func strToMatrix(s string) (mesh.Matrix, error) {
 		}
 		t[i] = float32(val)
 	}
-	return mesh.Matrix{t[0], t[3], t[6], t[9],
+	return geo.Matrix{t[0], t[3], t[6], t[9],
 		t[1], t[4], t[7], t[10],
 		t[2], t[5], t[8], t[11],
 		0.0, 0.0, 0.0, 1.0}, nil

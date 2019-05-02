@@ -3,7 +3,8 @@ package stl
 import (
 	"io"
 
-	"github.com/qmuntal/go3mf/mesh"
+	"github.com/go-gl/mathgl/mgl32"
+	"github.com/qmuntal/go3mf/geo"
 )
 
 // EncodingType is the type of encoding used in the file.
@@ -39,7 +40,7 @@ func NewEncoderType(w io.Writer, encodingType EncodingType) *Encoder {
 }
 
 // Encode encodes a mesh to the writer.
-func (e *Encoder) Encode(m *mesh.Mesh) error {
+func (e *Encoder) Encode(m *geo.Mesh) error {
 	switch e.encodingType {
 	case ASCII:
 		encoder := asciiEncoder{w: e.w}
@@ -48,4 +49,8 @@ func (e *Encoder) Encode(m *mesh.Mesh) error {
 		encoder := binaryEncoder{w: e.w}
 		return encoder.encode(m)
 	}
+}
+
+func faceNormal(n1, n2, n3 mgl32.Vec3) mgl32.Vec3 {
+	return n2.Sub(n1).Cross(n3.Sub(n1)).Normalize()
 }
