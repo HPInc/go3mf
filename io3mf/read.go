@@ -44,10 +44,10 @@ type packageReader interface {
 	FindFileFromName(string) (packageFile, bool)
 }
 
-// ReadCloser wrapps a Reader than can be closed.
+// ReadCloser wrapps a Decoder than can be closed.
 type ReadCloser struct {
 	f *os.File
-	*Reader
+	*Decoder
 }
 
 // OpenReader will open the 3MF file specified by name and return a ReadCloser.
@@ -61,7 +61,7 @@ func OpenReader(name string) (*ReadCloser, error) {
 		f.Close()
 		return nil, err
 	}
-	return &ReadCloser{f: f, Reader: NewReader(f, fi.Size())}, nil
+	return &ReadCloser{f: f, Decoder: NewDecoder(f, fi.Size())}, nil
 }
 
 // Close closes the 3MF file, rendering it unusable for I/O.
@@ -105,7 +105,7 @@ func (d *topLevelDecoder) Child(name xml.Name) (child nodeDecoder) {
 
 // modelFile cannot be reused between goroutines.
 type modelFile struct {
-	r            *Reader
+	d            *Decoder
 	model        *go3mf.Model
 	strict       bool
 	path         string
@@ -214,8 +214,8 @@ func (d *modelFile) Decode(ctx context.Context, x XMLDecoder) (err error) {
 	return err
 }
 
-// Reader implements a 3mf file reader.
-type Reader struct {
+// Decoder implements a 3mf file decoder.
+type Decoder struct {
 	Strict              bool
 	Warnings            []error
 	AttachmentRelations []string
@@ -226,75 +226,75 @@ type Reader struct {
 	ctx                 context.Context
 }
 
-// NewReader returns a new Reader reading a 3mf file from r.
-func NewReader(r io.ReaderAt, size int64) *Reader {
-	return &Reader{
+// NewDecoder returns a new Decoder reading a 3mf file from r.
+func NewDecoder(r io.ReaderAt, size int64) *Decoder {
+	return &Decoder{
 		p:      &opcReader{ra: r, size: size},
 		Strict: true,
 	}
 }
 
 // Decode reads the 3mf file and unmarshall its content into the model.
-func (r *Reader) Decode(model *go3mf.Model) error {
-	return r.DecodeContext(context.Background(), model)
+func (d *Decoder) Decode(model *go3mf.Model) error {
+	return d.DecodeContext(context.Background(), model)
 }
 
 // SetXMLDecoder sets the XML decoder to use when reading XML files.
-func (r *Reader) SetXMLDecoder(d func(r io.Reader) XMLDecoder) {
-	r.x = d
+func (d *Decoder) SetXMLDecoder(x func(r io.Reader) XMLDecoder) {
+	d.x = x
 }
 
 // SetDecompressor sets or overrides a custom decompressor for deflating the zip package.
-func (r *Reader) SetDecompressor(dcomp func(r io.Reader) io.ReadCloser) {
-	r.flate = dcomp
+func (d *Decoder) SetDecompressor(dcomp func(r io.Reader) io.ReadCloser) {
+	d.flate = dcomp
 }
 
 // DecodeContext reads the 3mf file and unmarshall its content into the model.
-func (r *Reader) DecodeContext(ctx context.Context, model *go3mf.Model) error {
-	rootFile, err := r.processOPC(model)
+func (d *Decoder) DecodeContext(ctx context.Context, model *go3mf.Model) error {
+	rootFile, err := d.processOPC(model)
 	if err != nil {
 		return err
 	}
-	if err := r.processNonRootModels(ctx, model); err != nil {
+	if err := d.processNonRootModels(ctx, model); err != nil {
 		return err
 	}
-	return r.processRootModel(ctx, rootFile, model)
+	return d.processRootModel(ctx, rootFile, model)
 }
 
-func (r *Reader) tokenReader(xr io.Reader) XMLDecoder {
-	if r.x == nil {
-		return xml.NewDecoder(xr)
+func (d *Decoder) tokenReader(r io.Reader) XMLDecoder {
+	if d.x == nil {
+		return xml.NewDecoder(r)
 	}
-	return r.x(xr)
+	return d.x(r)
 }
 
-func (r *Reader) processRootModel(ctx context.Context, rootFile packageFile, model *go3mf.Model) error {
+func (d *Decoder) processRootModel(ctx context.Context, rootFile packageFile, model *go3mf.Model) error {
 	f, err := rootFile.Open()
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-	d := modelFile{r: r, path: rootFile.Name(), isRoot: true, model: model, strict: r.Strict}
-	err = d.Decode(ctx, r.tokenReader(f))
+	mf := modelFile{d: d, path: rootFile.Name(), isRoot: true, model: model, strict: d.Strict}
+	err = mf.Decode(ctx, d.tokenReader(f))
 	select {
 	case <-ctx.Done():
 		err = ctx.Err()
 	default: // Default is must to avoid blocking
 	}
-	r.addModelFile(&d, model)
+	d.addModelFile(&mf, model)
 	return err
 }
 
-func (r *Reader) addModelFile(f *modelFile, model *go3mf.Model) {
+func (d *Decoder) addModelFile(f *modelFile, model *go3mf.Model) {
 	for _, res := range f.resources {
 		model.Resources = append(model.Resources, res)
 	}
 	for _, res := range f.parser.Warnings {
-		r.Warnings = append(r.Warnings, res)
+		d.Warnings = append(d.Warnings, res)
 	}
 }
 
-func (r *Reader) processNonRootModels(ctx context.Context, model *go3mf.Model) (err error) {
+func (d *Decoder) processNonRootModels(ctx context.Context, model *go3mf.Model) (err error) {
 	var wg sync.WaitGroup
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -304,7 +304,7 @@ func (r *Reader) processNonRootModels(ctx context.Context, model *go3mf.Model) (
 	for i := 0; i < prodAttCount; i++ {
 		go func(i int) {
 			defer wg.Done()
-			f, err1 := r.readProductionAttachmentModel(ctx, i, model)
+			f, err1 := d.readProductionAttachmentModel(ctx, i, model)
 			select {
 			case <-ctx.Done():
 				return // Error somewhere, terminate
@@ -329,29 +329,29 @@ func (r *Reader) processNonRootModels(ctx context.Context, model *go3mf.Model) (
 	sort.Ints(indices)
 	for _, index := range indices {
 		f, _ := files.Load(index)
-		r.addModelFile(f.(*modelFile), model)
+		d.addModelFile(f.(*modelFile), model)
 	}
 	return nil
 }
 
-func (r *Reader) processOPC(model *go3mf.Model) (packageFile, error) {
-	err := r.p.Open(r.flate)
+func (d *Decoder) processOPC(model *go3mf.Model) (packageFile, error) {
+	err := d.p.Open(d.flate)
 	if err != nil {
 		return nil, err
 	}
-	rootFile, ok := r.p.FindFileFromRel(relTypeModel3D)
+	rootFile, ok := d.p.FindFileFromRel(relTypeModel3D)
 	if !ok {
 		return nil, errors.New("go3mf: package does not have root model")
 	}
 
 	model.Path = rootFile.Name()
-	r.extractTexturesAttachments(rootFile, model)
-	r.extractCustomAttachments(rootFile, model)
-	r.extractModelAttachments(rootFile, model)
+	d.extractTexturesAttachments(rootFile, model)
+	d.extractCustomAttachments(rootFile, model)
+	d.extractModelAttachments(rootFile, model)
 	for _, a := range model.ProductionAttachments {
-		file, _ := r.p.FindFileFromName(a.Path)
-		r.extractCustomAttachments(file, model)
-		r.extractTexturesAttachments(file, model)
+		file, _ := d.p.FindFileFromName(a.Path)
+		d.extractCustomAttachments(file, model)
+		d.extractTexturesAttachments(file, model)
 	}
 	thumbFile, ok := rootFile.FindFileFromRel(relTypeThumbnail)
 	if ok {
@@ -363,28 +363,28 @@ func (r *Reader) processOPC(model *go3mf.Model) (packageFile, error) {
 	return rootFile, nil
 }
 
-func (r *Reader) extractTexturesAttachments(rootFile packageFile, model *go3mf.Model) {
+func (d *Decoder) extractTexturesAttachments(rootFile packageFile, model *go3mf.Model) {
 	for _, rel := range rootFile.Relationships() {
 		if rel.Type() != relTypeTexture3D && rel.Type() != relTypeThumbnail {
 			continue
 		}
 
 		if file, ok := rootFile.FindFileFromRel(rel.TargetURI()); ok {
-			model.Attachments = r.addAttachment(model.Attachments, file, rel.Type())
+			model.Attachments = d.addAttachment(model.Attachments, file, rel.Type())
 		}
 	}
 }
 
-func (r *Reader) extractCustomAttachments(rootFile packageFile, model *go3mf.Model) {
-	for _, rel := range r.AttachmentRelations {
+func (d *Decoder) extractCustomAttachments(rootFile packageFile, model *go3mf.Model) {
+	for _, rel := range d.AttachmentRelations {
 		if file, ok := rootFile.FindFileFromRel(rel); ok {
-			model.Attachments = r.addAttachment(model.Attachments, file, rel)
+			model.Attachments = d.addAttachment(model.Attachments, file, rel)
 		}
 	}
 }
 
-func (r *Reader) extractModelAttachments(rootFile packageFile, model *go3mf.Model) {
-	r.productionModels = make(map[string]packageFile)
+func (d *Decoder) extractModelAttachments(rootFile packageFile, model *go3mf.Model) {
+	d.productionModels = make(map[string]packageFile)
 	for _, rel := range rootFile.Relationships() {
 		if rel.Type() != relTypeModel3D {
 			continue
@@ -395,12 +395,12 @@ func (r *Reader) extractModelAttachments(rootFile packageFile, model *go3mf.Mode
 				RelationshipType: rel.Type(),
 				Path:             file.Name(),
 			})
-			r.productionModels[file.Name()] = file
+			d.productionModels[file.Name()] = file
 		}
 	}
 }
 
-func (r *Reader) addAttachment(attachments []*go3mf.Attachment, file packageFile, relType string) []*go3mf.Attachment {
+func (d *Decoder) addAttachment(attachments []*go3mf.Attachment, file packageFile, relType string) []*go3mf.Attachment {
 	buff, err := copyFile(file)
 	if err == nil {
 		return append(attachments, &go3mf.Attachment{
@@ -412,16 +412,16 @@ func (r *Reader) addAttachment(attachments []*go3mf.Attachment, file packageFile
 	return attachments
 }
 
-func (r *Reader) readProductionAttachmentModel(ctx context.Context, i int, model *go3mf.Model) (*modelFile, error) {
+func (d *Decoder) readProductionAttachmentModel(ctx context.Context, i int, model *go3mf.Model) (*modelFile, error) {
 	attachment := model.ProductionAttachments[i]
-	file, err := r.productionModels[attachment.Path].Open()
+	file, err := d.productionModels[attachment.Path].Open()
 	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
-	d := modelFile{r: r, path: attachment.Path, isRoot: false, model: model, strict: r.Strict}
-	err = d.Decode(ctx, r.tokenReader(file))
-	return &d, err
+	mf := modelFile{d: d, path: attachment.Path, isRoot: false, model: model, strict: d.Strict}
+	err = mf.Decode(ctx, d.tokenReader(file))
+	return &mf, err
 }
 
 func copyFile(file packageFile) (io.Reader, error) {
