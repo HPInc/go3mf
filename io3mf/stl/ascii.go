@@ -32,7 +32,7 @@ func (d *asciiDecoder) decode(ctx context.Context, m *mesh.Mesh) (err error) {
 			f[0], _ = strconv.ParseFloat(fields[1], 32)
 			f[1], _ = strconv.ParseFloat(fields[2], 32)
 			f[2], _ = strconv.ParseFloat(fields[3], 32)
-			nodes[position] = m.AddNode(mesh.Node3D{float32(f[0]), float32(f[1]), float32(f[2])})
+			nodes[position] = m.AddNode(mesh.Point3D{float32(f[0]), float32(f[1]), float32(f[2])})
 			position++
 
 			if position == 3 {

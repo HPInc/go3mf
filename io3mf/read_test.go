@@ -260,7 +260,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 		Slices: []*mesh.Slice{
 			{
 				TopZ:     1.2,
-				Vertices: []mesh.Node2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
+				Vertices: []mesh.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
 				Polygons: [][]int{{0, 1, 2, 3, 0}},
 			},
 		},
@@ -270,12 +270,12 @@ func TestDecoder_processRootModel(t *testing.T) {
 		Slices: []*mesh.Slice{
 			{
 				TopZ:     0,
-				Vertices: []mesh.Node2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
+				Vertices: []mesh.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
 				Polygons: [][]int{{0, 1, 2, 3, 0}},
 			},
 			{
 				TopZ:     0.1,
-				Vertices: []mesh.Node2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
+				Vertices: []mesh.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
 				Polygons: [][]int{{0, 2, 1, 3, 0}},
 			},
 		},
@@ -285,7 +285,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 		ObjectResource: go3mf.ObjectResource{ID: 8, Name: "Box 1", ModelPath: "/3d/3dmodel.model", SliceStackID: 3, Thumbnail: "/a.png", DefaultPropertyID: 5, SliceResoultion: go3mf.ResolutionLow, PartNumber: "11111111-1111-1111-1111-111111111111"},
 		Mesh:           new(mesh.Mesh),
 	}
-	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []mesh.Node3D{
+	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []mesh.Point3D{
 		{0, 0, 0},
 		{100, 0, 0},
 		{100, 100, 0},
@@ -318,7 +318,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 	meshLattice.Mesh.MinLength = 0.0001
 	meshLattice.Mesh.CapMode = mesh.CapModeHemisphere
 	meshLattice.Mesh.DefaultRadius = 1
-	meshLattice.Mesh.Nodes = append(meshLattice.Mesh.Nodes, []mesh.Node3D{
+	meshLattice.Mesh.Nodes = append(meshLattice.Mesh.Nodes, []mesh.Point3D{
 		{45, 55, 55},
 		{45, 45, 55},
 		{45, 55, 45},

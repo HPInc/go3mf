@@ -74,7 +74,7 @@ func (d *vertexDecoder) Attributes(attrs []xml.Attr) bool {
 			return false
 		}
 	}
-	d.resource.Mesh.AddNode(mesh.Node3D{x, y, z})
+	d.resource.Mesh.AddNode(mesh.Point3D{x, y, z})
 	return true
 }
 

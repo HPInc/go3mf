@@ -96,12 +96,12 @@ func (w *errorWriter) Write(p []byte) (n int, err error) {
 
 func createMeshTriangle() *mesh.Mesh {
 	m := new(mesh.Mesh)
-	n1 := m.AddNode(mesh.Node3D{-20.0, -20.0, 0.0})
-	n2 := m.AddNode(mesh.Node3D{20.0, -20.0, 0.0})
-	n3 := m.AddNode(mesh.Node3D{0.0019989014, 0.0019989014, 39.998})
-	n4 := m.AddNode(mesh.Node3D{-20.0, 20.0, 0.0})
-	n5 := m.AddNode(mesh.Node3D{0.0, 0.0019989014, 39.998})
-	n6 := m.AddNode(mesh.Node3D{20.0, 20.0, 0.0})
+	n1 := m.AddNode(mesh.Point3D{-20.0, -20.0, 0.0})
+	n2 := m.AddNode(mesh.Point3D{20.0, -20.0, 0.0})
+	n3 := m.AddNode(mesh.Point3D{0.0019989014, 0.0019989014, 39.998})
+	n4 := m.AddNode(mesh.Point3D{-20.0, 20.0, 0.0})
+	n5 := m.AddNode(mesh.Point3D{0.0, 0.0019989014, 39.998})
+	n6 := m.AddNode(mesh.Point3D{20.0, 20.0, 0.0})
 	m.AddFace(n1, n2, n3)
 	m.AddFace(n4, n2, n1)
 	m.AddFace(n1, n5, n4)

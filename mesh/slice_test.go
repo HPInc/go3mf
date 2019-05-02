@@ -47,7 +47,7 @@ func TestSlice_AddVertex(t *testing.T) {
 				t.Errorf("Slice.AddVertex() = %v, want %v", got, tt.want)
 				return
 			}
-			want := Node2D{tt.args.x, tt.args.y}
+			want := Point2D{tt.args.x, tt.args.y}
 			if !reflect.DeepEqual(tt.s.Vertices[tt.want], want) {
 				t.Errorf("Slice.AddVertex() = %v, want %v", tt.s.Vertices[tt.want], want)
 			}
@@ -68,8 +68,8 @@ func TestSlice_AddPolygonIndex(t *testing.T) {
 	}{
 		{"emptyPolygon", new(Slice), args{0, 0}, true},
 		{"emptyVertices", &Slice{Polygons: [][]int{{}}}, args{0, 0}, true},
-		{"duplicated", &Slice{Polygons: [][]int{{0}}, Vertices: []Node2D{{}}}, args{0, 0}, true},
-		{"base", &Slice{Polygons: [][]int{{}}, Vertices: []Node2D{{}}}, args{0, 0}, false},
+		{"duplicated", &Slice{Polygons: [][]int{{0}}, Vertices: []Point2D{{}}}, args{0, 0}, true},
+		{"base", &Slice{Polygons: [][]int{{}}, Vertices: []Point2D{{}}}, args{0, 0}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -126,15 +126,15 @@ func TestSlice_IsPolygonValid(t *testing.T) {
 func TestNode2D_X(t *testing.T) {
 	tests := []struct {
 		name string
-		n    Node2D
+		n    Point2D
 		want float32
 	}{
-		{"base", Node2D{1, 2}, 1},
+		{"base", Point2D{1, 2}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.n.X(); got != tt.want {
-				t.Errorf("Node2D.X() = %v, want %v", got, tt.want)
+				t.Errorf("Point2D.X() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -143,15 +143,15 @@ func TestNode2D_X(t *testing.T) {
 func TestNode2D_Y(t *testing.T) {
 	tests := []struct {
 		name string
-		n    Node2D
+		n    Point2D
 		want float32
 	}{
-		{"base", Node2D{1, 2}, 2},
+		{"base", Point2D{1, 2}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.n.Y(); got != tt.want {
-				t.Errorf("Node2D.Y() = %v, want %v", got, tt.want)
+				t.Errorf("Point2D.Y() = %v, want %v", got, tt.want)
 			}
 		})
 	}

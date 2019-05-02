@@ -60,7 +60,7 @@ func (d *binaryDecoder) decodeFace(facet *binaryFace, m *mesh.Mesh) {
 	var nodes [3]uint32
 	for nVertex := 0; nVertex < 3; nVertex++ {
 		pos := facet.Vertices[nVertex]
-		nodes[nVertex] = m.AddNode(mesh.Node3D{pos[0], pos[1], pos[2]})
+		nodes[nVertex] = m.AddNode(mesh.Point3D{pos[0], pos[1], pos[2]})
 	}
 
 	m.AddFace(nodes[0], nodes[1], nodes[2])
