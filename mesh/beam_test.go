@@ -4,26 +4,6 @@ import (
 	"testing"
 )
 
-func Test_beamLattice_clearBeamLattice(t *testing.T) {
-	b := new(beamLattice)
-	b.Beams = append(b.Beams, Beam{})
-	b.BeamSets = append(b.BeamSets, BeamSet{})
-	tests := []struct {
-		name string
-		b    *beamLattice
-	}{
-		{"base", b},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.b.clearBeamLattice()
-			if len(tt.b.Beams) != 0 || len(tt.b.BeamSets) != 0 {
-				t.Error("beamLattice.clearBeamLattice() have not cleared all the arrays")
-			}
-		})
-	}
-}
-
 func Test_beamLattice_checkSanity(t *testing.T) {
 	type args struct {
 		nodeCount uint32

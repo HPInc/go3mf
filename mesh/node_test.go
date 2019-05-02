@@ -7,23 +7,6 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
-func Test_nodeStructure_clear(t *testing.T) {
-	tests := []struct {
-		name string
-		n    *nodeStructure
-	}{
-		{"base", &nodeStructure{Nodes: make([]Point3D, 2)}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.n.clear()
-			if got := len(tt.n.Nodes); got != 0 {
-				t.Errorf("nodeStructure.clear() = %v, want %v", got, 0)
-			}
-		})
-	}
-}
-
 func Test_nodeStructure_AddNode(t *testing.T) {
 	pos := Point3D{1.0, 2.0, 3.0}
 	existingStruct := &nodeStructure{vectorTree: newVectorTree()}

@@ -45,11 +45,6 @@ type beamLattice struct {
 	maxBeamCount             int
 }
 
-func (b *beamLattice) clearBeamLattice() {
-	b.Beams = make([]Beam, 0)
-	b.BeamSets = make([]BeamSet, 0)
-}
-
 func (b *beamLattice) checkSanity(nodeCount uint32) bool {
 	if len(b.Beams) > b.getMaxBeamCount() {
 		return false

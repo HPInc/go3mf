@@ -25,20 +25,6 @@ func TestMesh_Clone(t *testing.T) {
 	}
 }
 
-func TestMesh_Clear(t *testing.T) {
-	tests := []struct {
-		name string
-		m    *Mesh
-	}{
-		{"base", new(Mesh)},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.m.Clear()
-		})
-	}
-}
-
 func TestMesh_Merge(t *testing.T) {
 	type args struct {
 		mesh   *Mesh

@@ -43,13 +43,6 @@ func (m *Mesh) Clone() *Mesh {
 	return new
 }
 
-// Clear resets all the mesh nodes, faces, beams and informations.
-func (m *Mesh) Clear() {
-	m.nodeStructure.clear()
-	m.faceStructure.clear()
-	m.clearBeamLattice()
-}
-
 // StartCreation can be called before populating the mesh.
 // If so, the connectivity will be automatically calculated but producing and speed penalty.
 // When the creationg process is finished EndCreation() must be called in order to clean temporary data.

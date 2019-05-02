@@ -14,10 +14,6 @@ type faceStructure struct {
 	maxFaceCount int
 }
 
-func (f *faceStructure) clear() {
-	f.Faces = make([]Face, 0)
-}
-
 // AddFace adds a face to the mesh that has the target nodes.
 func (f *faceStructure) AddFace(node1, node2, node3 uint32) *Face {
 	f.Faces = append(f.Faces, Face{

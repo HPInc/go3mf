@@ -5,23 +5,6 @@ import (
 	"testing"
 )
 
-func Test_faceStructure_clear(t *testing.T) {
-	tests := []struct {
-		name string
-		f    *faceStructure
-	}{
-		{"base", &faceStructure{Faces: make([]Face, 2)}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.f.clear()
-			if got := len(tt.f.Faces); got != 0 {
-				t.Errorf("faceStructure.clear() = %v, want %v", got, 0)
-			}
-		})
-	}
-}
-
 func Test_faceStructure_AddFace(t *testing.T) {
 	type args struct {
 		node1 uint32

@@ -77,10 +77,6 @@ type nodeStructure struct {
 	maxNodeCount int
 }
 
-func (n *nodeStructure) clear() {
-	n.Nodes = make([]Point3D, 0)
-}
-
 // AddNode adds a node the the mesh at the target position.
 func (n *nodeStructure) AddNode(node Point3D) uint32 {
 	if n.vectorTree != nil {
