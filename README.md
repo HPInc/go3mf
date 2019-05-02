@@ -20,6 +20,7 @@ The 3D Manufacturing Format (3MF) is a 3D printing format that allows design app
   * [ ] Save to io.Writer.
   * [x] Boilerplate to read from disk.
   * [x] Validation and complete non-conformity report.
+  * [x] Read from ASCII and Binary STL.
 * Robust implementation with full coverage and validated against real cases.
 * Extensions
   * [x] spec_production.
