@@ -208,3 +208,26 @@ func Test_newCapMode(t *testing.T) {
 		})
 	}
 }
+
+func Test_newBlendMethod(t *testing.T) {
+	tests := []struct {
+		name   string
+		wantB  go3mf.BlendMethod
+		wantOk bool
+	}{
+		{"mix", go3mf.BlendMix, true},
+		{"multiply", go3mf.BlendMultiply, true},
+		{"empty", go3mf.BlendMix, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotB, gotOk := newBlendMethod(tt.name)
+			if !reflect.DeepEqual(gotB, tt.wantB) {
+				t.Errorf("newBlendMethod() gotB = %v, want %v", gotB, tt.wantB)
+			}
+			if gotOk != tt.wantOk {
+				t.Errorf("newBlendMethod() gotOk = %v, want %v", gotOk, tt.wantOk)
+			}
+		})
+	}
+}

@@ -169,7 +169,13 @@ type Multi struct {
 // elements which are indexable groups of property indices.
 type MultiPropertiesResource struct {
 	ID           uint32
+	ModelPath    string
 	Resources    []uint32
 	BlendMethods []BlendMethod
 	Multis       []Multi
+}
+
+// Identify returns the unique ID of the resource.
+func (c *MultiPropertiesResource) Identify() (string, uint32) {
+	return c.ModelPath, c.ID
 }

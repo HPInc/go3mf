@@ -234,7 +234,7 @@ type compositeDecoder struct {
 }
 
 func (d *compositeDecoder) Attributes(attrs []xml.Attr) (ok bool) {
-	composite := go3mf.Composite{Values: make([]float64, 0)}
+	composite := go3mf.Composite{}
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrValues {
 			for _, f := range strings.Fields(a.Value) {
@@ -252,6 +252,91 @@ func (d *compositeDecoder) Attributes(attrs []xml.Attr) (ok bool) {
 	}
 	if ok {
 		d.resource.Composites = append(d.resource.Composites, composite)
+	}
+	return ok
+}
+
+type multiPropertiesDecoder struct {
+	emptyDecoder
+	resource     go3mf.MultiPropertiesResource
+	multiDecoder multiDecoder
+}
+
+func (d *multiPropertiesDecoder) Open() {
+	d.resource.ModelPath = d.file.path
+	d.multiDecoder.resource = &d.resource
+}
+
+func (d *multiPropertiesDecoder) Close() bool {
+	d.file.AddResource(&d.resource)
+	return d.file.parser.CloseResource()
+}
+
+func (d *multiPropertiesDecoder) Child(name xml.Name) (child nodeDecoder) {
+	if name.Space == nsMaterialSpec && name.Local == attrMulti {
+		child = &d.multiDecoder
+	}
+	return
+}
+
+func (d *multiPropertiesDecoder) Attributes(attrs []xml.Attr) bool {
+	ok := true
+	for _, a := range attrs {
+		if a.Name.Space != "" {
+			continue
+		}
+		switch a.Name.Local {
+		case attrID:
+			d.resource.ID, ok = d.file.parser.ParseResourceID(a.Value)
+		case attrBlendMethods:
+			for _, f := range strings.Fields(a.Value) {
+				val, _ := newBlendMethod(f)
+				d.resource.BlendMethods = append(d.resource.BlendMethods, val)
+			}
+		case attrPIDs:
+			for _, f := range strings.Fields(a.Value) {
+				var val uint32
+				if val, ok = d.file.parser.ParseUint32Required(attrValues, f); ok {
+					d.resource.Resources = append(d.resource.Resources, val)
+				} else {
+					break
+				}
+			}
+		}
+		if !ok {
+			break
+		}
+	}
+	if ok && len(d.resource.Resources) == 0 {
+		ok = d.file.parser.MissingAttr(attrPIDs)
+	}
+	return ok
+}
+
+type multiDecoder struct {
+	emptyDecoder
+	resource *go3mf.MultiPropertiesResource
+}
+
+func (d *multiDecoder) Attributes(attrs []xml.Attr) (ok bool) {
+	multi := go3mf.Multi{}
+	for _, a := range attrs {
+		if a.Name.Space == "" && a.Name.Local == attrPIndices {
+			for _, f := range strings.Fields(a.Value) {
+				var val uint32
+				if val, ok = d.file.parser.ParseUint32Required(attrValues, f); ok {
+					multi.ResourceIndices = append(multi.ResourceIndices, val)
+				} else {
+					break
+				}
+			}
+		}
+	}
+	if len(multi.ResourceIndices) == 0 {
+		ok = d.file.parser.MissingAttr(attrPIndices)
+	}
+	if ok {
+		d.resource.Multis = append(d.resource.Multis, multi)
 	}
 	return ok
 }

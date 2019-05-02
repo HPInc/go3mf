@@ -1,6 +1,8 @@
 package go3mf
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestTexture2DResource_Copy(t *testing.T) {
 	type args struct {
@@ -233,6 +235,28 @@ func TestClipMode_String(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.c.String(); got != tt.name {
 				t.Errorf("ClipMode.String() = %v, want %v", got, tt.name)
+			}
+		})
+	}
+}
+
+func TestMultiPropertiesResource_Identify(t *testing.T) {
+	tests := []struct {
+		name  string
+		c     *MultiPropertiesResource
+		want  string
+		want1 uint32
+	}{
+		{"base", &MultiPropertiesResource{ID: 1, ModelPath: "3d/3dmodel.model"}, "3d/3dmodel.model", 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := tt.c.Identify()
+			if got != tt.want {
+				t.Errorf("MultiPropertiesResource.Identify() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("MultiPropertiesResource.Identify() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}

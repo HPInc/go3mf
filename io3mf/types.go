@@ -116,6 +116,11 @@ const (
 	attrValues             = "values"
 	attrMatID              = "matid"
 	attrMatIndices         = "matindices"
+	attrMultiProps         = "multiproperties"
+	attrMulti              = "multi"
+	attrPIndices           = "pindices"
+	attrPIDs               = "pids"
+	attrBlendMethods       = "blendmethods"
 )
 
 // WarningLevel defines the level of a reader warning.
@@ -215,6 +220,14 @@ func newUnits(s string) (u go3mf.Units, ok bool) {
 		"inch":       go3mf.UnitInch,
 		"foot":       go3mf.UnitFoot,
 		"meter":      go3mf.UnitMeter,
+	}[s]
+	return
+}
+
+func newBlendMethod(s string) (b go3mf.BlendMethod, ok bool) {
+	b, ok = map[string]go3mf.BlendMethod{
+		"mix":      go3mf.BlendMix,
+		"multiply": go3mf.BlendMultiply,
 	}[s]
 	return
 }
