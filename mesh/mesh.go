@@ -72,13 +72,7 @@ func (m *Mesh) Merge(mesh *Mesh, matrix Matrix) {
 
 // CheckSanity checks if the mesh is well formated.
 func (m *Mesh) CheckSanity() bool {
-	if !m.nodeStructure.checkSanity() {
-		return false
-	}
-	if !m.faceStructure.checkSanity(uint32(len(m.Nodes))) {
-		return false
-	}
-	return m.beamLattice.checkSanity(uint32(len(m.Nodes)))
+	return m.faceStructure.checkSanity(uint32(len(m.Nodes))) && m.beamLattice.checkSanity(uint32(len(m.Nodes)))
 }
 
 // FaceNodes returns the three nodes of a face.

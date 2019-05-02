@@ -14,7 +14,6 @@ func Test_beamLattice_checkSanity(t *testing.T) {
 		args args
 		want bool
 	}{
-		{"max", &beamLattice{maxBeamCount: 1, Beams: []Beam{{}, {}}}, args{0}, false},
 		{"eq", &beamLattice{Beams: []Beam{{NodeIndices: [2]uint32{1, 1}}}}, args{0}, false},
 		{"high1", &beamLattice{Beams: []Beam{{NodeIndices: [2]uint32{2, 1}}}}, args{2}, false},
 		{"high2", &beamLattice{Beams: []Beam{{NodeIndices: [2]uint32{1, 2}}}}, args{2}, false},

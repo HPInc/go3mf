@@ -51,8 +51,6 @@ func (t *vectorTree) RemoveVector(vec Point3D) {
 	delete(t.entries, newvec3IFromVec3(vec))
 }
 
-const maxNodeCount = 2147483646
-
 // Point3D defines a node of a mesh as an array of 3 coordinates: x, y and z.
 type Point3D [3]float32
 
@@ -72,9 +70,8 @@ func (n Point3D) Z() float32 {
 }
 
 type nodeStructure struct {
-	Nodes        []Point3D
-	vectorTree   *vectorTree
-	maxNodeCount int
+	Nodes      []Point3D
+	vectorTree *vectorTree
 }
 
 // AddNode adds a node the the mesh at the target position.
@@ -92,10 +89,6 @@ func (n *nodeStructure) AddNode(node Point3D) uint32 {
 	return index
 }
 
-func (n *nodeStructure) checkSanity() bool {
-	return len(n.Nodes) <= n.getMaxNodeCount()
-}
-
 func (n *nodeStructure) merge(other *nodeStructure, matrix Matrix) []uint32 {
 	newNodes := make([]uint32, len(other.Nodes))
 	if len(other.Nodes) == 0 {
@@ -108,11 +101,4 @@ func (n *nodeStructure) merge(other *nodeStructure, matrix Matrix) []uint32 {
 		newNodes[i] = n.AddNode(Point3D(position))
 	}
 	return newNodes
-}
-
-func (n *nodeStructure) getMaxNodeCount() int {
-	if n.maxNodeCount == 0 {
-		return maxNodeCount
-	}
-	return n.maxNodeCount
 }

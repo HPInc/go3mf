@@ -1,7 +1,5 @@
 package mesh
 
-const maxBeamCount = 2147483646
-
 // BeamSet defines a set of beams.
 type BeamSet struct {
 	Refs       []uint32
@@ -42,13 +40,9 @@ type beamLattice struct {
 	BeamSets                 []BeamSet
 	MinLength, DefaultRadius float64
 	CapMode                  CapMode
-	maxBeamCount             int
 }
 
 func (b *beamLattice) checkSanity(nodeCount uint32) bool {
-	if len(b.Beams) > b.getMaxBeamCount() {
-		return false
-	}
 	for _, beam := range b.Beams {
 		i0, i1 := beam.NodeIndices[0], beam.NodeIndices[1]
 		if i0 == i1 {
@@ -74,11 +68,4 @@ func (b *beamLattice) merge(other *beamLattice, newNodes []uint32) {
 		})
 	}
 	return
-}
-
-func (b *beamLattice) getMaxBeamCount() int {
-	if b.maxBeamCount == 0 {
-		return maxBeamCount
-	}
-	return b.maxBeamCount
 }

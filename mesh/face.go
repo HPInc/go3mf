@@ -1,7 +1,5 @@
 package mesh
 
-const maxFaceCount = 2147483646
-
 // Face defines a triangle of a mesh.
 type Face struct {
 	NodeIndices     [3]uint32 // Coordinates of the three nodes that defines the face.
@@ -10,8 +8,7 @@ type Face struct {
 }
 
 type faceStructure struct {
-	Faces        []Face
-	maxFaceCount int
+	Faces []Face
 }
 
 // AddFace adds a face to the mesh that has the target nodes.
@@ -23,10 +20,6 @@ func (f *faceStructure) AddFace(node1, node2, node3 uint32) *Face {
 }
 
 func (f *faceStructure) checkSanity(nodeCount uint32) bool {
-	faceCount := len(f.Faces)
-	if faceCount > f.getMaxFaceCount() {
-		return false
-	}
 	for _, face := range f.Faces {
 		i0, i1, i2 := face.NodeIndices[0], face.NodeIndices[1], face.NodeIndices[2]
 		if i0 == i1 || i0 == i2 || i1 == i2 {
@@ -52,11 +45,4 @@ func (f *faceStructure) merge(other *faceStructure, newNodes []uint32) {
 		})
 	}
 	return
-}
-
-func (f *faceStructure) getMaxFaceCount() int {
-	if f.maxFaceCount == 0 {
-		return maxFaceCount
-	}
-	return f.maxFaceCount
 }

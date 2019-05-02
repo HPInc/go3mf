@@ -53,9 +53,8 @@ func TestMesh_CheckSanity(t *testing.T) {
 		want bool
 	}{
 		{"new", new(Mesh), true},
-		{"nodefail", &Mesh{nodeStructure: nodeStructure{maxNodeCount: 1, Nodes: make([]Point3D, 2)}}, false},
-		{"facefail", &Mesh{faceStructure: faceStructure{maxFaceCount: 1, Faces: make([]Face, 2)}}, false},
-		{"beamfail", &Mesh{beamLattice: beamLattice{maxBeamCount: 1, Beams: make([]Beam, 2)}}, false},
+		{"facefail", &Mesh{faceStructure: faceStructure{Faces: make([]Face, 2)}}, false},
+		{"beamfail", &Mesh{beamLattice: beamLattice{Beams: make([]Beam, 2)}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

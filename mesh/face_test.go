@@ -39,7 +39,6 @@ func Test_faceStructure_checkSanity(t *testing.T) {
 		args args
 		want bool
 	}{
-		{"max", &faceStructure{maxFaceCount: 1, Faces: make([]Face, 2)}, args{1}, false},
 		{"i0==i1", &faceStructure{Faces: []Face{{NodeIndices: [3]uint32{1, 1, 2}}}}, args{3}, false},
 		{"i0==i2", &faceStructure{Faces: []Face{{NodeIndices: [3]uint32{1, 2, 1}}}}, args{3}, false},
 		{"i1==i2", &faceStructure{Faces: []Face{{NodeIndices: [3]uint32{2, 1, 1}}}}, args{3}, false},

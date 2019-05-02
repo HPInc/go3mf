@@ -33,24 +33,6 @@ func Test_nodeStructure_AddNode(t *testing.T) {
 	}
 }
 
-func Test_nodeStructure_checkSanity(t *testing.T) {
-	tests := []struct {
-		name string
-		n    *nodeStructure
-		want bool
-	}{
-		{"max", &nodeStructure{maxNodeCount: 1, Nodes: []Point3D{{}, {}}}, false},
-		{"good", &nodeStructure{Nodes: []Point3D{{}, {}}}, true},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.n.checkSanity(); got != tt.want {
-				t.Errorf("nodeStructure.checkSanity() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func Test_nodeStructure_merge(t *testing.T) {
 	type args struct {
 		matrix Matrix
