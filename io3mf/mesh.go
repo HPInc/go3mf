@@ -64,11 +64,11 @@ func (d *vertexDecoder) Attributes(attrs []xml.Attr) bool {
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrX:
-			x, ok = d.file.parser.ParseFloat32Required(a.Name.Local, a.Value)
+			x, ok = d.file.parser.ParseFloat32Required(attrX, a.Value)
 		case attrY:
-			y, ok = d.file.parser.ParseFloat32Required(a.Name.Local, a.Value)
+			y, ok = d.file.parser.ParseFloat32Required(attrY, a.Value)
 		case attrZ:
-			z, ok = d.file.parser.ParseFloat32Required(a.Name.Local, a.Value)
+			z, ok = d.file.parser.ParseFloat32Required(attrZ, a.Value)
 		}
 		if !ok {
 			return false
@@ -111,22 +111,22 @@ func (d *triangleDecoder) Attributes(attrs []xml.Attr) bool {
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrV1:
-			v1, ok = d.file.parser.ParseUint32Required(a.Name.Local, a.Value)
+			v1, ok = d.file.parser.ParseUint32Required(attrV1, a.Value)
 		case attrV2:
-			v2, ok = d.file.parser.ParseUint32Required(a.Name.Local, a.Value)
+			v2, ok = d.file.parser.ParseUint32Required(attrV2, a.Value)
 		case attrV3:
-			v3, ok = d.file.parser.ParseUint32Required(a.Name.Local, a.Value)
+			v3, ok = d.file.parser.ParseUint32Required(attrV3, a.Value)
 		case attrPID:
-			pid = d.file.parser.ParseUint32Optional(a.Name.Local, a.Value)
+			pid = d.file.parser.ParseUint32Optional(attrPID, a.Value)
 			hasPID = true
 		case attrP1:
-			p1 = d.file.parser.ParseUint32Optional(a.Name.Local, a.Value)
+			p1 = d.file.parser.ParseUint32Optional(attrP1, a.Value)
 			hasP1 = true
 		case attrP2:
-			p2 = d.file.parser.ParseUint32Optional(a.Name.Local, a.Value)
+			p2 = d.file.parser.ParseUint32Optional(attrP2, a.Value)
 			hasP2 = true
 		case attrP3:
-			p3 = d.file.parser.ParseUint32Optional(a.Name.Local, a.Value)
+			p3 = d.file.parser.ParseUint32Optional(attrP3, a.Value)
 			hasP3 = true
 		}
 		if !ok {

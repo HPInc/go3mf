@@ -43,7 +43,7 @@ func (d *sliceStackDecoder) Attributes(attrs []xml.Attr) bool {
 		case attrID:
 			d.resource.ID, ok = d.file.parser.ParseResourceID(a.Value)
 		case attrZBottom:
-			d.resource.Stack.BottomZ = d.file.parser.ParseFloat32Optional(a.Name.Local, a.Value)
+			d.resource.Stack.BottomZ = d.file.parser.ParseFloat32Optional(attrZBottom, a.Value)
 		}
 	}
 	return ok
@@ -63,7 +63,7 @@ func (d *sliceRefDecoder) Attributes(attrs []xml.Attr) bool {
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrSliceRefID:
-			sliceStackID, ok = d.file.parser.ParseUint32Required(a.Name.Local, a.Value)
+			sliceStackID, ok = d.file.parser.ParseUint32Required(attrSliceRefID, a.Value)
 		case attrSlicePath:
 			path = a.Value
 		}
@@ -127,7 +127,7 @@ func (d *sliceDecoder) Attributes(attrs []xml.Attr) bool {
 	for _, a := range attrs {
 		if a.Name.Local == attrZTop {
 			hasTopZ = true
-			d.slice.TopZ, ok = d.file.parser.ParseFloat32Required(a.Name.Local, a.Value)
+			d.slice.TopZ, ok = d.file.parser.ParseFloat32Required(attrZTop, a.Value)
 			break
 		}
 	}
@@ -165,9 +165,9 @@ func (d *polygonVertexDecoder) Attributes(attrs []xml.Attr) bool {
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrX:
-			x, ok = d.file.parser.ParseFloat32Required(a.Name.Local, a.Value)
+			x, ok = d.file.parser.ParseFloat32Required(attrX, a.Value)
 		case attrY:
-			y, ok = d.file.parser.ParseFloat32Required(a.Name.Local, a.Value)
+			y, ok = d.file.parser.ParseFloat32Required(attrY, a.Value)
 		}
 		if !ok {
 			break
@@ -209,7 +209,7 @@ func (d *polygonDecoder) Attributes(attrs []xml.Attr) bool {
 	ok := true
 	for _, a := range attrs {
 		if a.Name.Local == attrStartV {
-			start, ok = d.file.parser.ParseUint32Required(a.Name.Local, a.Value)
+			start, ok = d.file.parser.ParseUint32Required(attrStartV, a.Value)
 			break
 		}
 	}
@@ -233,7 +233,7 @@ func (d *polygonSegmentDecoder) Attributes(attrs []xml.Attr) bool {
 	ok := true
 	for _, a := range attrs {
 		if a.Name.Local == attrV2 {
-			v2, ok = d.file.parser.ParseUint32Required(a.Name.Local, a.Value)
+			v2, ok = d.file.parser.ParseUint32Required(attrV2, a.Value)
 			break
 		}
 	}

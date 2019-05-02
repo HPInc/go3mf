@@ -21,7 +21,7 @@ func (d *beamLatticeDecoder) Attributes(attrs []xml.Attr) bool {
 		}
 		switch a.Name.Local {
 		case attrRadius:
-			d.resource.Mesh.DefaultRadius, ok = d.file.parser.ParseFloat64Required(a.Name.Local, a.Value)
+			d.resource.Mesh.DefaultRadius, ok = d.file.parser.ParseFloat64Required(attrRadius, a.Value)
 			hasRadius = true
 		case attrMinLength, attrPrecision: // lib3mf legacy
 			d.resource.Mesh.MinLength, ok = d.file.parser.ParseFloat64Required(a.Name.Local, a.Value)
@@ -29,9 +29,9 @@ func (d *beamLatticeDecoder) Attributes(attrs []xml.Attr) bool {
 		case attrClippingMode, attrClipping: // lib3mf legacy
 			d.resource.BeamLatticeAttributes.ClipMode, _ = newClipMode(a.Value)
 		case attrClippingMesh:
-			d.resource.BeamLatticeAttributes.ClippingMeshID = d.file.parser.ParseUint32Optional(a.Name.Local, a.Value)
+			d.resource.BeamLatticeAttributes.ClippingMeshID = d.file.parser.ParseUint32Optional(attrClippingMesh, a.Value)
 		case attrRepresentationMesh:
-			d.resource.BeamLatticeAttributes.RepresentationMeshID = d.file.parser.ParseUint32Optional(a.Name.Local, a.Value)
+			d.resource.BeamLatticeAttributes.RepresentationMeshID = d.file.parser.ParseUint32Optional(attrRepresentationMesh, a.Value)
 		case attrCap:
 			d.resource.Mesh.CapMode, _ = newCapMode(a.Value)
 		}
@@ -93,15 +93,15 @@ func (d *beamDecoder) Attributes(attrs []xml.Attr) bool {
 		}
 		switch a.Name.Local {
 		case attrV1:
-			beam.NodeIndices[0], ok = d.file.parser.ParseUint32Required(a.Name.Local, a.Value)
+			beam.NodeIndices[0], ok = d.file.parser.ParseUint32Required(attrV1, a.Value)
 			hasV1 = true
 		case attrV2:
-			beam.NodeIndices[1], ok = d.file.parser.ParseUint32Required(a.Name.Local, a.Value)
+			beam.NodeIndices[1], ok = d.file.parser.ParseUint32Required(attrV2, a.Value)
 			hasV2 = true
 		case attrR1:
-			beam.Radius[0] = d.file.parser.ParseFloat64Optional(a.Name.Local, a.Value)
+			beam.Radius[0] = d.file.parser.ParseFloat64Optional(attrR1, a.Value)
 		case attrR2:
-			beam.Radius[1] = d.file.parser.ParseFloat64Optional(a.Name.Local, a.Value)
+			beam.Radius[1] = d.file.parser.ParseFloat64Optional(attrR2, a.Value)
 		case attrCap1:
 			beam.CapMode[0], _ = newCapMode(a.Value)
 			hasCap1 = true
@@ -195,7 +195,7 @@ type beamRefDecoder struct {
 func (d *beamRefDecoder) Attributes(attrs []xml.Attr) bool {
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrIndex {
-			index, ok := d.file.parser.ParseUint32Required(a.Name.Local, a.Value)
+			index, ok := d.file.parser.ParseUint32Required(attrIndex, a.Value)
 			if ok {
 				d.beamSet.Refs = append(d.beamSet.Refs, uint32(index))
 				return true

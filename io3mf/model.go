@@ -48,7 +48,7 @@ func (d *modelDecoder) Attributes(attrs []xml.Attr) bool {
 				if d.file.isRoot {
 					var ok bool
 					if d.model.Units, ok = newUnits(a.Value); !ok {
-						d.file.parser.InvalidOptionalAttr(a.Name.Local, a.Value)
+						d.file.parser.InvalidOptionalAttr(attrUnit, a.Value)
 					}
 				}
 			case attrReqExt:

@@ -73,9 +73,9 @@ func (d *tex2DCoordDecoder) Attributes(attrs []xml.Attr) bool {
 		}
 		switch a.Name.Local {
 		case attrU:
-			u, ok = d.file.parser.ParseFloat32Required(a.Name.Local, a.Value)
+			u, ok = d.file.parser.ParseFloat32Required(attrU, a.Value)
 		case attrV:
-			v, ok = d.file.parser.ParseFloat32Required(a.Name.Local, a.Value)
+			v, ok = d.file.parser.ParseFloat32Required(attrV, a.Value)
 		}
 		if !ok {
 			break
@@ -118,7 +118,7 @@ func (d *tex2DGroupDecoder) Attributes(attrs []xml.Attr) bool {
 		case attrID:
 			d.resource.ID, ok = d.file.parser.ParseResourceID(a.Value)
 		case attrTexID:
-			d.resource.TextureID, ok = d.file.parser.ParseUint32Required(a.Name.Local, a.Value)
+			d.resource.TextureID, ok = d.file.parser.ParseUint32Required(attrTexID, a.Value)
 		}
 		if !ok {
 			break
