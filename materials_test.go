@@ -13,8 +13,8 @@ func TestTexture2DResource_Copy(t *testing.T) {
 		t    *Texture2DResource
 		args args
 	}{
-		{"equal", &Texture2DResource{Path: "/a.png", ContentType: PNGTexture}, args{&Texture2DResource{Path: "/a.png", ContentType: PNGTexture}}},
-		{"diff", &Texture2DResource{Path: "/b.png", ContentType: PNGTexture}, args{&Texture2DResource{Path: "/a.png", ContentType: JPEGTexture}}},
+		{"equal", &Texture2DResource{Path: "/a.png", ContentType: TextureTypePNG}, args{&Texture2DResource{Path: "/a.png", ContentType: TextureTypePNG}}},
+		{"diff", &Texture2DResource{Path: "/b.png", ContentType: TextureTypePNG}, args{&Texture2DResource{Path: "/a.png", ContentType: TextureTypeJPEG}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -156,8 +156,8 @@ func TestTexture2DType_String(t *testing.T) {
 		name string
 		t    Texture2DType
 	}{
-		{"image/png", PNGTexture},
-		{"image/jpeg", JPEGTexture},
+		{"image/png", TextureTypePNG},
+		{"image/jpeg", TextureTypeJPEG},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

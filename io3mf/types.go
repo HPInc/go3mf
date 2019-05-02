@@ -178,8 +178,8 @@ func newTileStyle(s string) (t go3mf.TileStyle, ok bool) {
 
 func newTexture2DType(s string) (t go3mf.Texture2DType, ok bool) {
 	t, ok = map[string]go3mf.Texture2DType{
-		"image/png":  go3mf.PNGTexture,
-		"image/jpeg": go3mf.JPEGTexture,
+		"image/png":  go3mf.TextureTypePNG,
+		"image/jpeg": go3mf.TextureTypeJPEG,
 	}[s]
 	return
 }

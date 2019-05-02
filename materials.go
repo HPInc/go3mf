@@ -6,16 +6,16 @@ import "image/color"
 type Texture2DType uint8
 
 const (
-	// PNGTexture defines a png texture type.
-	PNGTexture Texture2DType = iota + 1
-	// JPEGTexture defines a jpeg texture type.
-	JPEGTexture
+	// TextureTypePNG defines a png texture type.
+	TextureTypePNG Texture2DType = iota + 1
+	// TextureTypeJPEG defines a jpeg texture type.
+	TextureTypeJPEG
 )
 
 func (t Texture2DType) String() string {
 	return map[Texture2DType]string{
-		PNGTexture:  "image/png",
-		JPEGTexture: "image/jpeg",
+		TextureTypePNG:  "image/png",
+		TextureTypeJPEG: "image/jpeg",
 	}[t]
 }
 

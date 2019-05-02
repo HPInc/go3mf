@@ -69,8 +69,8 @@ func Test_newTexture2DType(t *testing.T) {
 		want  go3mf.Texture2DType
 		want1 bool
 	}{
-		{"image/png", go3mf.PNGTexture, true},
-		{"image/jpeg", go3mf.JPEGTexture, true},
+		{"image/png", go3mf.TextureTypePNG, true},
+		{"image/jpeg", go3mf.TextureTypeJPEG, true},
 		{"", go3mf.Texture2DType(0), false},
 	}
 	for _, tt := range tests {

@@ -254,7 +254,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 		{Name: "Blue PLA", Color: color.RGBA{0, 0, 85, 255}},
 		{Name: "Red ABS", Color: color.RGBA{85, 0, 0, 255}},
 	}}
-	baseTexture := &go3mf.Texture2DResource{ID: 6, ModelPath: "/3d/3dmodel.model", Path: "/3D/Texture/msLogo.png", ContentType: go3mf.PNGTexture, TileStyleU: go3mf.TileWrap, TileStyleV: go3mf.TileMirror, Filter: go3mf.TextureFilterAuto}
+	baseTexture := &go3mf.Texture2DResource{ID: 6, ModelPath: "/3d/3dmodel.model", Path: "/3D/Texture/msLogo.png", ContentType: go3mf.TextureTypePNG, TileStyleU: go3mf.TileWrap, TileStyleV: go3mf.TileMirror, Filter: go3mf.TextureFilterAuto}
 	otherSlices := go3mf.SliceStack{
 		BottomZ: 2,
 		Slices: []*geo.Slice{
@@ -641,7 +641,7 @@ func TestDecoder_processNonRootModels(t *testing.T) {
 					{Name: "Blue PLA", Color: color.RGBA{0, 0, 85, 255}},
 					{Name: "Red ABS", Color: color.RGBA{85, 0, 0, 255}},
 				}},
-				&go3mf.Texture2DResource{ID: 6, ModelPath: "3d/other.model", Path: "/3D/Texture/msLogo.png", ContentType: go3mf.PNGTexture, TileStyleU: go3mf.TileWrap, TileStyleV: go3mf.TileMirror, Filter: go3mf.TextureFilterAuto},
+				&go3mf.Texture2DResource{ID: 6, ModelPath: "3d/other.model", Path: "/3D/Texture/msLogo.png", ContentType: go3mf.TextureTypePNG, TileStyleU: go3mf.TileWrap, TileStyleV: go3mf.TileMirror, Filter: go3mf.TextureFilterAuto},
 			},
 		}},
 		{"noAtt", new(go3mf.Model), new(Decoder), false, new(go3mf.Model)},
