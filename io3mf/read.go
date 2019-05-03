@@ -486,8 +486,8 @@ func strToMatrix(s string) (geo.Matrix, error) {
 		}
 		t[i] = float32(val)
 	}
-	return geo.Matrix{t[0], t[3], t[6], t[9],
-		t[1], t[4], t[7], t[10],
-		t[2], t[5], t[8], t[11],
-		0.0, 0.0, 0.0, 1.0}, nil
+	return geo.Matrix{t[0], t[1], t[2], 0.0,
+		t[3], t[4], t[5], 0.0,
+		t[6], t[7], t[8], 0.0,
+		t[9], t[10], t[11], 1.0}, nil
 }

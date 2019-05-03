@@ -350,7 +350,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 			Metadata: []go3mf.Metadata{{Name: nsProductionSpec + ":CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: nsProductionSpec + ":CustomMetadata4", Type: "xs:boolean", Value: "2"}},
 		},
 		Components: []*go3mf.Component{{UUID: "cb828680-8895-4e08-a1fc-be63e033df16", Object: meshRes,
-			Transform: geo.Matrix{3, 0, 0, -66.4, 0, 1, 0, -87.1, 0, 0, 2, 8.8, 0, 0, 0, 1}}},
+			Transform: geo.Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
 	}
 
 	want := &go3mf.Model{Units: go3mf.UnitMillimeter, Language: "en-US", Path: "/3d/3dmodel.model", UUID: "e9e25302-6428-402e-8633-cc95528d0ed3"}
@@ -362,7 +362,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 	want.Resources = append(want.Resources, &go3mf.SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", Stack: otherSlices})
 	want.Resources = append(want.Resources, []go3mf.Resource{otherMesh, baseMaterials, baseTexture, colorGroup, texGroup, compositeGroup, sliceStack, sliceStackRef, multiGroup, meshRes, meshLattice, components}...)
 	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: components, PartNumber: "bob", UUID: "e9e25302-6428-402e-8633-cc95528d0ed2",
-		Transform: geo.Matrix{1, 0, 0, -66.4, 0, 2, 0, -87.1, 0, 0, 3, 8.8, 0, 0, 0, 1},
+		Transform: geo.Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
 	})
 	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: otherMesh, UUID: "e9e25302-6428-402e-8633-cc95528d0ed3", Metadata: []go3mf.Metadata{{Name: nsProductionSpec + ":CustomMetadata3", Type: "xs:boolean", Value: "1"}}})
 	want.Metadata = append(want.Metadata, []go3mf.Metadata{
@@ -556,8 +556,8 @@ func Test_strToMatrix(t *testing.T) {
 		{"11values", args{"1 1 1 1 1 1 1 1 1 1 1"}, geo.Matrix{}, true},
 		{"13values", args{"1 1 1 1 1 1 1 1 1 1 1 1 1"}, geo.Matrix{}, true},
 		{"char", args{"1 1 a 1 1 1 1 1 1 1 1 1"}, geo.Matrix{}, true},
-		{"base", args{"1 1 1 1 1 1 1 1 1 1 1 1"}, geo.Matrix{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1}, false},
-		{"other", args{"0 1 2 10 11 12 20 21 22 30 31 32"}, geo.Matrix{0, 10, 20, 30, 1, 11, 21, 31, 2, 12, 22, 32, 0, 0, 0, 1}, false},
+		{"base", args{"1 1 1 1 1 1 1 1 1 1 1 1"}, geo.Matrix{1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1}, false},
+		{"other", args{"0 1 2 10 11 12 20 21 22 30 31 32"}, geo.Matrix{0, 1, 2, 0, 10, 11, 12, 0, 20, 21, 22, 0, 30, 31, 32, 1}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
