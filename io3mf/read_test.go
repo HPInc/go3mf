@@ -251,8 +251,8 @@ func TestDecoder_processRootModel_Fail(t *testing.T) {
 
 func TestDecoder_processRootModel(t *testing.T) {
 	baseMaterials := &go3mf.BaseMaterialsResource{ID: 5, ModelPath: "/3d/3dmodel.model", Materials: []go3mf.BaseMaterial{
-		{Name: "Blue PLA", Color: color.RGBA{0, 0, 85, 255}},
-		{Name: "Red ABS", Color: color.RGBA{85, 0, 0, 255}},
+		{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
+		{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
 	}}
 	baseTexture := &go3mf.Texture2DResource{ID: 6, ModelPath: "/3d/3dmodel.model", Path: "/3D/Texture/msLogo.png", ContentType: go3mf.TextureTypePNG, TileStyleU: go3mf.TileWrap, TileStyleV: go3mf.TileMirror, Filter: go3mf.TextureFilterAuto}
 	otherSlices := go3mf.SliceStack{
@@ -355,7 +355,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 
 	want := &go3mf.Model{Units: go3mf.UnitMillimeter, Language: "en-US", Path: "/3d/3dmodel.model", UUID: "e9e25302-6428-402e-8633-cc95528d0ed3"}
 	otherMesh := &go3mf.MeshResource{ObjectResource: go3mf.ObjectResource{ID: 8, ModelPath: "/3d/other.model"}, Mesh: new(geo.Mesh)}
-	colorGroup := &go3mf.ColorGroupResource{ID: 1, ModelPath: "/3d/3dmodel.model", Colors: []color.RGBA{{R: 85, G: 85, B: 85, A: 255}, {R: 0, G: 0, B: 0, A: 255}, {R: 16, G: 21, B: 103, A: 255}, {R: 53, G: 4, B: 80, A: 255}}}
+	colorGroup := &go3mf.ColorGroupResource{ID: 1, ModelPath: "/3d/3dmodel.model", Colors: []color.RGBA{{R: 255, G: 255, B: 255, A: 255}, {R: 0, G: 0, B: 0, A: 255}, {R: 26, G: 181, B: 103, A: 255}, {R: 223, G: 4, B: 90, A: 255}}}
 	texGroup := &go3mf.Texture2DGroupResource{ID: 2, ModelPath: "/3d/3dmodel.model", TextureID: 6, Coords: []go3mf.TextureCoord{{0.3, 0.5}, {0.3, 0.8}, {0.5, 0.8}, {0.5, 0.5}}}
 	compositeGroup := &go3mf.CompositeMaterialsResource{ID: 4, ModelPath: "/3d/3dmodel.model", MaterialID: 5, Indices: []uint32{1, 2}, Composites: []go3mf.Composite{{Values: []float64{0.5, 0.5}}, {Values: []float64{0.2, 0.8}}}}
 	multiGroup := &go3mf.MultiPropertiesResource{ID: 9, ModelPath: "/3d/3dmodel.model", BlendMethods: []go3mf.BlendMethod{go3mf.BlendMultiply}, Resources: []uint32{5, 2}, Multis: []go3mf.Multi{{ResourceIndices: []uint32{0, 0}}, {ResourceIndices: []uint32{1, 0}}, {ResourceIndices: []uint32{2, 3}}}}
@@ -589,9 +589,9 @@ func Test_strToSRGB(t *testing.T) {
 		{"invalidChar", args{"#€0101010"}, color.RGBA{}, true},
 		{"invalidChar", args{"#T0101010"}, color.RGBA{0, 16, 16, 16}, true},
 		{"rgb", args{"#112233"}, color.RGBA{17, 34, 51, 255}, false},
-		{"rgb", args{"#000233"}, color.RGBA{0, 2, 51, 255}, false},
-		{"rgba", args{"#00023311"}, color.RGBA{0, 2, 51, 17}, false},
-		{"rgbaLetter", args{"#ff0233AB"}, color.RGBA{85, 2, 51, 1}, false},
+		{"rgb", args{"#ff0033"}, color.RGBA{255, 0, 51, 255}, false},
+		{"rgba", args{"#000233ff"}, color.RGBA{0, 2, 51, 255}, false},
+		{"rgbaLetter", args{"#ff0233AB"}, color.RGBA{255, 2, 51, 171}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -638,8 +638,8 @@ func TestDecoder_processNonRootModels(t *testing.T) {
 				{Path: "3d/other.model"},
 			}, Resources: []go3mf.Resource{
 				&go3mf.BaseMaterialsResource{ID: 5, ModelPath: "3d/new.model", Materials: []go3mf.BaseMaterial{
-					{Name: "Blue PLA", Color: color.RGBA{0, 0, 85, 255}},
-					{Name: "Red ABS", Color: color.RGBA{85, 0, 0, 255}},
+					{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
+					{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
 				}},
 				&go3mf.Texture2DResource{ID: 6, ModelPath: "3d/other.model", Path: "/3D/Texture/msLogo.png", ContentType: go3mf.TextureTypePNG, TileStyleU: go3mf.TileWrap, TileStyleV: go3mf.TileMirror, Filter: go3mf.TextureFilterAuto},
 			},

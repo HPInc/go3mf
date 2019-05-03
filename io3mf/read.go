@@ -447,9 +447,9 @@ func strToSRGB(s string) (c color.RGBA, err error) {
 		case b >= '0' && b <= '9':
 			return b - '0'
 		case b >= 'a' && b <= 'f':
-			return b - 'a'
+			return b - 'a' + 10
 		case b >= 'A' && b <= 'F':
-			return b - 'A'
+			return b - 'A' + 10
 		}
 		err = errInvalidFormat
 		return 0
