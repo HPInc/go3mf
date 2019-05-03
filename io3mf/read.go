@@ -369,7 +369,7 @@ func (d *Decoder) extractTexturesAttachments(rootFile packageFile, model *go3mf.
 			continue
 		}
 
-		if file, ok := rootFile.FindFileFromRel(rel.TargetURI()); ok {
+		if file, ok := rootFile.FindFileFromRel(rel.Type()); ok {
 			model.Attachments = d.addAttachment(model.Attachments, file, rel.Type())
 		}
 	}
