@@ -239,7 +239,7 @@ type BuildItem struct {
 
 // HasTransform returns true if the transform is different than the identity.
 func (b *BuildItem) HasTransform() bool {
-	return !mgl32.Mat4(b.Transform).ApproxEqual(mgl32.Ident4())
+	return b.Transform != geo.Matrix{} && !mgl32.Mat4(b.Transform).ApproxEqual(mgl32.Ident4())
 }
 
 // MergeToMesh merges the build object with the geo.
@@ -282,7 +282,7 @@ type Component struct {
 
 // HasTransform returns true if the transform is different than the identity.
 func (c *Component) HasTransform() bool {
-	return !mgl32.Mat4(c.Transform).ApproxEqual(mgl32.Ident4())
+	return c.Transform != geo.Matrix{} && !mgl32.Mat4(c.Transform).ApproxEqual(mgl32.Ident4())
 }
 
 // MergeToMesh merges a mesh with the component.

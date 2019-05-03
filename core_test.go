@@ -165,6 +165,7 @@ func TestBuildItem_HasTransform(t *testing.T) {
 		b    *BuildItem
 		want bool
 	}{
+		{"zero", &BuildItem{}, false},
 		{"identity", &BuildItem{Transform: geo.Identity()}, false},
 		{"base", &BuildItem{Transform: geo.Matrix{2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}}, true},
 	}
@@ -201,6 +202,7 @@ func TestComponent_HasTransform(t *testing.T) {
 		c    *Component
 		want bool
 	}{
+		{"zero", &Component{}, false},
 		{"identity", &Component{Transform: geo.Identity()}, false},
 		{"base", &Component{Transform: geo.Matrix{2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}}, true},
 	}
