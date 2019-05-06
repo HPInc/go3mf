@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/go-gl/mathgl/mgl32"
 	"github.com/qmuntal/go3mf/geo"
 )
 
@@ -80,18 +79,18 @@ func TestEncoder_Encode(t *testing.T) {
 
 func Test_faceNormal(t *testing.T) {
 	type args struct {
-		n1 mgl32.Vec3
-		n2 mgl32.Vec3
-		n3 mgl32.Vec3
+		n1 geo.Point3D
+		n2 geo.Point3D
+		n3 geo.Point3D
 	}
 	tests := []struct {
 		name string
 		args args
-		want mgl32.Vec3
+		want geo.Point3D
 	}{
-		{"X", args{mgl32.Vec3{0.0, 0.0, 0.0}, mgl32.Vec3{0.0, 20.0, -20.0}, mgl32.Vec3{0.0, 0.0019989014, 0.0019989014}}, mgl32.Vec3{1, 0, 0}},
-		{"-Y", args{mgl32.Vec3{0.0, 0.0, 0.0}, mgl32.Vec3{20.0, 0.0, -20.0}, mgl32.Vec3{0.0019989014, 0.0, 0.0019989014}}, mgl32.Vec3{0, -1, 0}},
-		{"Z", args{mgl32.Vec3{0.0, 0.0, 0.0}, mgl32.Vec3{20.0, -20.0, 0.0}, mgl32.Vec3{0.0019989014, 0.0019989014, 0.0}}, mgl32.Vec3{0, 0, 1}},
+		{"X", args{geo.Point3D{0.0, 0.0, 0.0}, geo.Point3D{0.0, 20.0, -20.0}, geo.Point3D{0.0, 0.0019989014, 0.0019989014}}, geo.Point3D{1, 0, 0}},
+		{"-Y", args{geo.Point3D{0.0, 0.0, 0.0}, geo.Point3D{20.0, 0.0, -20.0}, geo.Point3D{0.0019989014, 0.0, 0.0019989014}}, geo.Point3D{0, -1, 0}},
+		{"Z", args{geo.Point3D{0.0, 0.0, 0.0}, geo.Point3D{20.0, -20.0, 0.0}, geo.Point3D{0.0019989014, 0.0019989014, 0.0}}, geo.Point3D{0, 0, 1}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

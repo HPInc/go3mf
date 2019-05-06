@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-gl/mathgl/mgl32"
 	"github.com/qmuntal/go3mf/geo"
 )
 
@@ -66,7 +65,7 @@ const pstr = "solid\nfacet normal %f %f %f\nouter loop\nvertex %f %f %f\nvertex 
 func (e *asciiEncoder) encode(m *geo.Mesh) error {
 	for i := range m.Faces {
 		n1, n2, n3 := m.FaceNodes(uint32(i))
-		n := faceNormal(mgl32.Vec3(*n1), mgl32.Vec3(*n2), mgl32.Vec3(*n3))
+		n := faceNormal(*n1, *n2, *n3)
 		_, err := io.WriteString(e.w, fmt.Sprintf(pstr, n[0], n[1], n[2], n1[0], n1[1], n1[2], n2[0], n2[1], n2[2], n3[0], n3[1], n3[2]))
 
 		if err != nil {

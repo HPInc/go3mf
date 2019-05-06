@@ -3,7 +3,6 @@ package stl
 import (
 	"io"
 
-	"github.com/go-gl/mathgl/mgl32"
 	"github.com/qmuntal/go3mf/geo"
 )
 
@@ -51,6 +50,6 @@ func (e *Encoder) Encode(m *geo.Mesh) error {
 	}
 }
 
-func faceNormal(n1, n2, n3 mgl32.Vec3) mgl32.Vec3 {
+func faceNormal(n1, n2, n3 geo.Point3D) geo.Point3D {
 	return n2.Sub(n1).Cross(n3.Sub(n1)).Normalize()
 }

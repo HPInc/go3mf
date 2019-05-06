@@ -53,18 +53,50 @@ func (t *vectorTree) RemoveVector(vec Point3D) {
 type Point3D [3]float32
 
 // X returns the x coordinate.
-func (n Point3D) X() float32 {
-	return n[0]
+func (v1 Point3D) X() float32 {
+	return v1[0]
 }
 
 // Y returns the y coordinate.
-func (n Point3D) Y() float32 {
-	return n[1]
+func (v1 Point3D) Y() float32 {
+	return v1[1]
 }
 
 // Z returns the z coordinate.
-func (n Point3D) Z() float32 {
-	return n[2]
+func (v1 Point3D) Z() float32 {
+	return v1[2]
+}
+
+// Add performs element-wise addition between two vectors.
+func (v1 Point3D) Add(v2 Point3D) Point3D {
+	return Point3D{v1[0] + v2[0], v1[1] + v2[1], v1[2] + v2[2]}
+}
+
+// Sub performs element-wise subtraction between two vectors.
+func (v1 Point3D) Sub(v2 Point3D) Point3D {
+	return Point3D{v1[0] - v2[0], v1[1] - v2[1], v1[2] - v2[2]}
+}
+
+// Len returns the vector's length. Note that this is NOT the dimension of
+// the vector (len(v)), but the mathematical length.
+func (v1 Point3D) Len() float32 {
+	return float32(math.Sqrt(float64(v1[0]*v1[0] + v1[1]*v1[1] + v1[2]*v1[2])))
+
+}
+
+// Normalize normalizes the vector. Normalization is (1/|v|)*v,
+// making this equivalent to v.Scale(1/v.Len()). If the len is 0.0,
+// this function will return an infinite value for all elements due
+// to how floating point division works in Go (n/0.0 = math.Inf(Sign(n))).
+func (v1 Point3D) Normalize() Point3D {
+	l := 1.0 / v1.Len()
+	return Point3D{v1[0] * l, v1[1] * l, v1[2] * l}
+}
+
+// Cross product is most often used for finding surface normals. The cross product of vectors
+// will generate a vector that is perpendicular to the plane they form.
+func (v1 Point3D) Cross(v2 Point3D) Point3D {
+	return Point3D{v1[1]*v2[2] - v1[2]*v2[1], v1[2]*v2[0] - v1[0]*v2[2], v1[0]*v2[1] - v1[1]*v2[0]}
 }
 
 type nodeStructure struct {

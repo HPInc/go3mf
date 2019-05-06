@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 	"io"
 
-	"github.com/go-gl/mathgl/mgl32"
 	"github.com/qmuntal/go3mf/geo"
 )
 
@@ -81,7 +80,7 @@ func (e *binaryEncoder) encode(m *geo.Mesh) error {
 
 	for i := uint32(0); i < faceCount; i++ {
 		n1, n2, n3 := m.FaceNodes(i)
-		normal := faceNormal(mgl32.Vec3(*n1), mgl32.Vec3(*n2), mgl32.Vec3(*n3))
+		normal := faceNormal(*n1, *n2, *n3)
 		facet := binaryFace{
 			Normal:   [3]float32{normal[0], normal[1], normal[2]},
 			Vertices: [3][3]float32{{n1.X(), n1.Y(), n1.Z()}, {n2.X(), n2.Y(), n2.Z()}, {n3.X(), n3.Y(), n3.Z()}},
