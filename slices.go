@@ -3,7 +3,6 @@ package go3mf
 import (
 	"errors"
 
-	"github.com/go-gl/mathgl/mgl32"
 	"github.com/qmuntal/go3mf/geo"
 )
 
@@ -30,9 +29,8 @@ func (c *ComponentsResource) IsValidForSlices(transform geo.Matrix) bool {
 		return true
 	}
 
-	matrix := mgl32.Mat4(transform)
 	for _, comp := range c.Components {
-		if !comp.Object.IsValidForSlices(geo.Matrix(matrix.Mul4(mgl32.Mat4(comp.Transform)))) {
+		if !comp.Object.IsValidForSlices(transform.Mul(comp.Transform)) {
 			return false
 		}
 	}

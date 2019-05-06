@@ -243,3 +243,24 @@ func Test_newPairEntry(t *testing.T) {
 		})
 	}
 }
+
+func TestMatrix_Mul(t *testing.T) {
+	type args struct {
+		m2 Matrix
+	}
+	tests := []struct {
+		name string
+		m1   Matrix
+		args args
+		want Matrix
+	}{
+		{"base", Identity(), args{Identity()}, Identity()},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m1.Mul(tt.args.m2); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Matrix.Mul() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
