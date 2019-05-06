@@ -3,7 +3,6 @@ package io3mf
 import (
 	"encoding/xml"
 
-	"github.com/gofrs/uuid"
 	go3mf "github.com/qmuntal/go3mf"
 )
 
@@ -23,7 +22,7 @@ func (d *buildDecoder) Attributes(attrs []xml.Attr) bool {
 	ok := true
 	for _, a := range attrs {
 		if a.Name.Space == nsProductionSpec && a.Name.Local == attrProdUUID {
-			if _, err := uuid.FromString(a.Value); err != nil {
+			if err := validateUUID(a.Value); err != nil {
 				ok = d.file.parser.InvalidRequiredAttr(attrProdUUID, a.Value)
 			}
 			d.model.UUID = a.Value
@@ -80,7 +79,7 @@ func (d *buildItemDecoder) Attributes(attrs []xml.Attr) bool {
 		switch a.Name.Space {
 		case nsProductionSpec:
 			if a.Name.Local == attrProdUUID {
-				if _, err := uuid.FromString(a.Value); err != nil {
+				if err := validateUUID(a.Value); err != nil {
 					ok = d.file.parser.InvalidRequiredAttr(attrProdUUID, a.Value)
 				}
 				d.item.UUID = a.Value
