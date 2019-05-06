@@ -6,7 +6,6 @@ import (
 	"io"
 	"sort"
 
-	"github.com/go-gl/mathgl/mgl32"
 	"github.com/qmuntal/go3mf/geo"
 )
 
@@ -224,7 +223,7 @@ type BuildItem struct {
 
 // HasTransform returns true if the transform is different than the identity.
 func (b *BuildItem) HasTransform() bool {
-	return b.Transform != geo.Matrix{} && !mgl32.Mat4(b.Transform).ApproxEqual(mgl32.Ident4())
+	return b.Transform != geo.Matrix{} && b.Transform != geo.Identity()
 }
 
 // An ObjectResource is an in memory representation of the 3MF model object.
@@ -262,7 +261,7 @@ type Component struct {
 
 // HasTransform returns true if the transform is different than the identity.
 func (c *Component) HasTransform() bool {
-	return c.Transform != geo.Matrix{} && !mgl32.Mat4(c.Transform).ApproxEqual(mgl32.Ident4())
+	return c.Transform != geo.Matrix{} && c.Transform != geo.Identity()
 }
 
 // A ComponentsResource resource is an in memory representation of the 3MF component object.
