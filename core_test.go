@@ -31,11 +31,6 @@ func (o *MockObject) Type() ObjectType {
 	return ObjectTypeOther
 }
 
-func (o *MockObject) MergeToMesh(args0 *geo.Mesh, args1 geo.Matrix) {
-	o.Called(args0, args1)
-	return
-}
-
 func (o *MockObject) IsValid() bool {
 	args := o.Called()
 	return args.Bool(0)
@@ -63,23 +58,6 @@ func TestModel_SetThumbnail(t *testing.T) {
 			if got := tt.m.SetThumbnail(tt.args.r); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Model.SetThumbnail() = %v, want %v", got, tt.want)
 			}
-		})
-	}
-}
-func TestModel_MergeToMesh(t *testing.T) {
-	type args struct {
-		msh *geo.Mesh
-	}
-	tests := []struct {
-		name string
-		m    *Model
-		args args
-	}{
-		{"base", &Model{BuildItems: []*BuildItem{{Object: new(ComponentsResource)}}}, args{new(geo.Mesh)}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.m.MergeToMesh(tt.args.msh)
 		})
 	}
 }
@@ -135,30 +113,6 @@ func TestBaseMaterial_ColotString(t *testing.T) {
 	}
 }
 
-func TestBaseMaterialsResource_Merge(t *testing.T) {
-	type args struct {
-		other []BaseMaterial
-	}
-	tests := []struct {
-		name string
-		ms   *BaseMaterialsResource
-		args args
-	}{
-		{"base", &BaseMaterialsResource{Materials: []BaseMaterial{{Name: "1", Color: color.RGBA{200, 250, 60, 80}}}}, args{
-			[]BaseMaterial{{Name: "2", Color: color.RGBA{200, 250, 60, 80}}},
-		}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			want := append(tt.ms.Materials, tt.args.other...)
-			tt.ms.Merge(tt.args.other)
-			if !reflect.DeepEqual(tt.ms.Materials, want) {
-				t.Errorf("BaseMaterialsResource.Merge() = %v, want %v", tt.ms.Materials, want)
-			}
-		})
-	}
-}
-
 func TestBuildItem_HasTransform(t *testing.T) {
 	tests := []struct {
 		name string
@@ -174,24 +128,6 @@ func TestBuildItem_HasTransform(t *testing.T) {
 			if got := tt.b.HasTransform(); got != tt.want {
 				t.Errorf("BuildItem.HasTransform() = %v, want %v", got, tt.want)
 			}
-		})
-	}
-}
-
-func TestBuildItem_MergeToMesh(t *testing.T) {
-	type args struct {
-		m *geo.Mesh
-	}
-	tests := []struct {
-		name string
-		b    *BuildItem
-		args args
-	}{
-		{"base", &BuildItem{Object: new(ComponentsResource)}, args{new(geo.Mesh)}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.b.MergeToMesh(tt.args.m)
 		})
 	}
 }
@@ -234,26 +170,6 @@ func TestComponentsResource_IsValid(t *testing.T) {
 	}
 }
 
-func TestComponentsResource_MergeToMesh(t *testing.T) {
-	type args struct {
-		m         *geo.Mesh
-		transform geo.Matrix
-	}
-	tests := []struct {
-		name string
-		c    *ComponentsResource
-		args args
-	}{
-		{"empty", new(ComponentsResource), args{nil, geo.Identity()}},
-		{"base", &ComponentsResource{Components: []*Component{{Object: new(ComponentsResource)}}}, args{nil, geo.Identity()}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.c.MergeToMesh(tt.args.m, tt.args.transform)
-		})
-	}
-}
-
 func TestMeshResource_IsValid(t *testing.T) {
 	tests := []struct {
 		name string
@@ -272,25 +188,6 @@ func TestMeshResource_IsValid(t *testing.T) {
 			if got := tt.c.IsValid(); got != tt.want {
 				t.Errorf("MeshResource.IsValid() = %v, want %v", got, tt.want)
 			}
-		})
-	}
-}
-
-func TestMeshResource_MergeToMesh(t *testing.T) {
-	type args struct {
-		m         *geo.Mesh
-		transform geo.Matrix
-	}
-	tests := []struct {
-		name string
-		c    *MeshResource
-		args args
-	}{
-		{"base", &MeshResource{Mesh: new(geo.Mesh)}, args{new(geo.Mesh), geo.Identity()}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.c.MergeToMesh(tt.args.m, tt.args.transform)
 		})
 	}
 }

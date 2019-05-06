@@ -4,31 +4,6 @@ import (
 	"testing"
 )
 
-func TestTexture2DResource_Copy(t *testing.T) {
-	type args struct {
-		other *Texture2DResource
-	}
-	tests := []struct {
-		name string
-		t    *Texture2DResource
-		args args
-	}{
-		{"equal", &Texture2DResource{Path: "/a.png", ContentType: TextureTypePNG}, args{&Texture2DResource{Path: "/a.png", ContentType: TextureTypePNG}}},
-		{"diff", &Texture2DResource{Path: "/b.png", ContentType: TextureTypePNG}, args{&Texture2DResource{Path: "/a.png", ContentType: TextureTypeJPEG}}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.t.Copy(tt.args.other)
-			if tt.t.Path != tt.args.other.Path {
-				t.Errorf("Texture2DResource.Copy() gotPath = %v, want %v", tt.t.Path, tt.args.other.Path)
-			}
-			if tt.t.ContentType != tt.args.other.ContentType {
-				t.Errorf("Texture2DResource.Copy() gotContentType = %v, want %v", tt.t.ContentType, tt.args.other.ContentType)
-			}
-		})
-	}
-}
-
 func TestTexture2DResource_Identify(t *testing.T) {
 	tests := []struct {
 		name  string

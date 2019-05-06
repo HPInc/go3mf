@@ -54,18 +54,3 @@ func (b *beamLattice) checkSanity(nodeCount uint32) bool {
 	}
 	return true
 }
-
-func (b *beamLattice) merge(other *beamLattice, newNodes []uint32) {
-	if len(other.Beams) == 0 {
-		return
-	}
-	for _, beam := range other.Beams {
-		n1, n2 := newNodes[beam.NodeIndices[0]], newNodes[beam.NodeIndices[1]]
-		b.Beams = append(b.Beams, Beam{
-			NodeIndices: [2]uint32{n1, n2},
-			Radius:      [2]float64{beam.Radius[0], beam.Radius[1]},
-			CapMode:     [2]CapMode{beam.CapMode[0], beam.CapMode[1]},
-		})
-	}
-	return
-}

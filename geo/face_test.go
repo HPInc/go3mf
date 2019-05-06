@@ -55,28 +55,3 @@ func Test_faceStructure_checkSanity(t *testing.T) {
 		})
 	}
 }
-
-func Test_faceStructure_merge(t *testing.T) {
-	type args struct {
-		newNodes []uint32
-	}
-	tests := []struct {
-		name  string
-		f     *faceStructure
-		args  args
-		times int
-	}{
-		{"zero", new(faceStructure), args{make([]uint32, 0)}, 0},
-		{"merged", new(faceStructure), args{[]uint32{0, 1, 2}}, 2},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			face := Face{NodeIndices: [3]uint32{0, 1, 2}}
-			mockMesh := new(Mesh)
-			for i := 0; i < tt.times; i++ {
-				mockMesh.Faces = append(mockMesh.Faces, face)
-			}
-			tt.f.merge(&mockMesh.faceStructure, tt.args.newNodes)
-		})
-	}
-}

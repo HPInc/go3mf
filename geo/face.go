@@ -31,18 +31,3 @@ func (f *faceStructure) checkSanity(nodeCount uint32) bool {
 	}
 	return true
 }
-
-func (f *faceStructure) merge(other *faceStructure, newNodes []uint32) {
-	faceCount := len(other.Faces)
-	if faceCount == 0 {
-		return
-	}
-	for _, face := range other.Faces {
-		f.Faces = append(f.Faces, Face{
-			NodeIndices:     [3]uint32{face.NodeIndices[0], newNodes[face.NodeIndices[1]], newNodes[face.NodeIndices[2]]},
-			Resource:        face.Resource,
-			ResourceIndices: [3]uint32{face.ResourceIndices[0], newNodes[face.ResourceIndices[1]], newNodes[face.ResourceIndices[2]]},
-		})
-	}
-	return
-}

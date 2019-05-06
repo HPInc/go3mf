@@ -95,7 +95,6 @@ type Resource interface {
 // Object defines a composable object.
 type Object interface {
 	Identify() (string, uint32)
-	MergeToMesh(*geo.Mesh, geo.Matrix)
 	IsValid() bool
 	IsValidForSlices(geo.Matrix) bool
 	Type() ObjectType
@@ -174,13 +173,6 @@ func (m *Model) SetThumbnail(r io.Reader) *Attachment {
 	return m.Thumbnail
 }
 
-// MergeToMesh merges the build with the geo.
-func (m *Model) MergeToMesh(msh *geo.Mesh) {
-	for _, b := range m.BuildItems {
-		b.MergeToMesh(msh)
-	}
-}
-
 // FindResource returns the resource with the target unique ID.
 func (m *Model) FindResource(path string, id uint32) (r Resource, ok bool) {
 	if path == "" {
@@ -221,13 +213,6 @@ func (ms *BaseMaterialsResource) Identify() (string, uint32) {
 	return ms.ModelPath, ms.ID
 }
 
-// Merge appends all the other base materials.
-func (ms *BaseMaterialsResource) Merge(other []BaseMaterial) {
-	for _, m := range other {
-		ms.Materials = append(ms.Materials, BaseMaterial{m.Name, m.Color})
-	}
-}
-
 // A BuildItem is an in memory representation of the 3MF build item.
 type BuildItem struct {
 	Object     Object
@@ -240,11 +225,6 @@ type BuildItem struct {
 // HasTransform returns true if the transform is different than the identity.
 func (b *BuildItem) HasTransform() bool {
 	return b.Transform != geo.Matrix{} && !mgl32.Mat4(b.Transform).ApproxEqual(mgl32.Ident4())
-}
-
-// MergeToMesh merges the build object with the geo.
-func (b *BuildItem) MergeToMesh(m *geo.Mesh) {
-	b.Object.MergeToMesh(m, b.Transform)
 }
 
 // An ObjectResource is an in memory representation of the 3MF model object.
@@ -285,22 +265,10 @@ func (c *Component) HasTransform() bool {
 	return c.Transform != geo.Matrix{} && !mgl32.Mat4(c.Transform).ApproxEqual(mgl32.Ident4())
 }
 
-// MergeToMesh merges a mesh with the component.
-func (c *Component) MergeToMesh(m *geo.Mesh, transform geo.Matrix) {
-	c.Object.MergeToMesh(m, geo.Matrix(mgl32.Mat4(c.Transform).Mul4(mgl32.Mat4(transform))))
-}
-
 // A ComponentsResource resource is an in memory representation of the 3MF component object.
 type ComponentsResource struct {
 	ObjectResource
 	Components []*Component
-}
-
-// MergeToMesh merges the mesh with all the components.
-func (c *ComponentsResource) MergeToMesh(m *geo.Mesh, transform geo.Matrix) {
-	for _, comp := range c.Components {
-		comp.MergeToMesh(m, transform)
-	}
 }
 
 // IsValid checks if the component resource and all its child are valid.
@@ -322,11 +290,6 @@ type MeshResource struct {
 	ObjectResource
 	Mesh                  *geo.Mesh
 	BeamLatticeAttributes BeamLatticeAttributes
-}
-
-// MergeToMesh merges the resource with the geo.
-func (c *MeshResource) MergeToMesh(m *geo.Mesh, transform geo.Matrix) {
-	c.Mesh.Merge(m, transform)
 }
 
 // IsValid checks if the mesh resource are valid.

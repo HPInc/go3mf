@@ -46,19 +46,6 @@ func (m *Mesh) EndCreation() {
 	m.nodeStructure.vectorTree = nil
 }
 
-// Merge merges the mesh with another mesh. This includes the nodes, faces, beams and all the informations.
-func (m *Mesh) Merge(mesh *Mesh, matrix Matrix) {
-	m.StartCreation(CreationOptions{CalculateConnectivity: true})
-	defer m.EndCreation()
-
-	newNodes := m.nodeStructure.merge(&mesh.nodeStructure, matrix)
-	if len(newNodes) == 0 {
-		return
-	}
-	m.faceStructure.merge(&mesh.faceStructure, newNodes)
-	m.beamLattice.merge(&mesh.beamLattice, newNodes)
-}
-
 // CheckSanity checks if the mesh is well formated.
 func (m *Mesh) CheckSanity() bool {
 	return m.faceStructure.checkSanity(uint32(len(m.Nodes))) && m.beamLattice.checkSanity(uint32(len(m.Nodes)))

@@ -2,8 +2,6 @@ package geo
 
 import (
 	"math"
-
-	"github.com/go-gl/mathgl/mgl32"
 )
 
 // vec3I represents a 3D vector typed as int32
@@ -87,18 +85,4 @@ func (n *nodeStructure) AddNode(node Point3D) uint32 {
 		n.vectorTree.AddVector(node, index)
 	}
 	return index
-}
-
-func (n *nodeStructure) merge(other *nodeStructure, matrix Matrix) []uint32 {
-	newNodes := make([]uint32, len(other.Nodes))
-	if len(other.Nodes) == 0 {
-		return newNodes
-	}
-
-	m := mgl32.Mat4(matrix)
-	for i := range other.Nodes {
-		position := mgl32.TransformCoordinate(mgl32.Vec3(other.Nodes[i]), m)
-		newNodes[i] = n.AddNode(Point3D(position))
-	}
-	return newNodes
 }

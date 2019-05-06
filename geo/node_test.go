@@ -3,8 +3,6 @@ package geo
 import (
 	"reflect"
 	"testing"
-
-	"github.com/go-gl/mathgl/mgl32"
 )
 
 func Test_nodeStructure_AddNode(t *testing.T) {
@@ -28,36 +26,6 @@ func Test_nodeStructure_AddNode(t *testing.T) {
 			got := tt.n.AddNode(tt.args.position)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("nodeStructure.AddNode() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_nodeStructure_merge(t *testing.T) {
-	type args struct {
-		matrix Matrix
-	}
-	tests := []struct {
-		name  string
-		n     *nodeStructure
-		args  args
-		want  []uint32
-		times int
-	}{
-		{"zero", new(nodeStructure), args{Identity()}, make([]uint32, 0), 0},
-		{"merged", new(nodeStructure), args{Matrix(mgl32.Translate3D(1.0, 2.0, 3.0))}, []uint32{0, 1}, 2},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			node := Point3D{}
-			mockMesh := new(Mesh)
-			for i := 0; i < tt.times; i++ {
-				mockMesh.Nodes = append(mockMesh.Nodes, node)
-			}
-			got := tt.n.merge(&mockMesh.nodeStructure, tt.args.matrix)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("nodeStructure.merge() = %v, want %v", got, tt.want)
-				return
 			}
 		})
 	}

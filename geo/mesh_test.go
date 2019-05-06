@@ -5,27 +5,6 @@ import (
 	"testing"
 )
 
-func TestMesh_Merge(t *testing.T) {
-	type args struct {
-		mesh   *Mesh
-		matrix Matrix
-	}
-	tests := []struct {
-		name string
-		m    *Mesh
-		args args
-	}{
-		{"empty", new(Mesh), args{&Mesh{}, Identity()}},
-		{"error2", new(Mesh), args{&Mesh{nodeStructure: nodeStructure{Nodes: make([]Point3D, 1)}}, Identity()}},
-		{"base", new(Mesh), args{&Mesh{faceStructure: faceStructure{Faces: make([]Face, 1)}, nodeStructure: nodeStructure{Nodes: make([]Point3D, 1)}}, Identity()}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.m.Merge(tt.args.mesh, tt.args.matrix)
-		})
-	}
-}
-
 func TestMesh_CheckSanity(t *testing.T) {
 	tests := []struct {
 		name string

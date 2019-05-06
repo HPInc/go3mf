@@ -95,14 +95,6 @@ func (t *Texture2DResource) Identify() (string, uint32) {
 	return t.ModelPath, t.ID
 }
 
-// Copy copies the properties from another texture.
-func (t *Texture2DResource) Copy(other *Texture2DResource) {
-	t.Path = other.Path
-	t.ContentType = other.ContentType
-	t.TileStyleU = other.TileStyleU
-	t.TileStyleV = other.TileStyleV
-}
-
 // TextureCoord map a vertex of a triangle to a position in image space (U, V coordinates)
 type TextureCoord [2]float32
 
