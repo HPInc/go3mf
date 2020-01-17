@@ -9,7 +9,6 @@ import (
 
 type sliceStackDecoder struct {
 	emptyDecoder
-	progressCount int
 	resource      go3mf.SliceStackResource
 }
 

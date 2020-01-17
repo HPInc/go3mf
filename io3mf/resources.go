@@ -9,15 +9,13 @@ import (
 
 type resourceDecoder struct {
 	emptyDecoder
-	progressCount int
 }
 
 func (d *resourceDecoder) Child(name xml.Name) (child nodeDecoder) {
 	if name.Space == nsCoreSpec {
 		switch name.Local {
 		case attrObject:
-			d.progressCount++
-			child = &objectDecoder{progressCount: d.progressCount}
+			child = &objectDecoder{}
 		case attrBaseMaterials:
 			child = new(baseMaterialsDecoder)
 		}
@@ -35,8 +33,7 @@ func (d *resourceDecoder) Child(name xml.Name) (child nodeDecoder) {
 			child = new(multiPropertiesDecoder)
 		}
 	} else if name.Space == nsSliceSpec && name.Local == attrSliceStack {
-		d.progressCount++
-		child = &sliceStackDecoder{progressCount: d.progressCount}
+		child = &sliceStackDecoder{}
 	}
 	return
 }

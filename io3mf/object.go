@@ -8,8 +8,7 @@ import (
 
 type objectDecoder struct {
 	emptyDecoder
-	progressCount int
-	resource      go3mf.ObjectResource
+	resource go3mf.ObjectResource
 }
 
 func (d *objectDecoder) Open() {

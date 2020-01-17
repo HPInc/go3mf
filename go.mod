@@ -5,3 +5,5 @@ require (
 	github.com/qmuntal/opc v0.6.4
 	github.com/stretchr/testify v1.3.0
 )
+
+go 1.13
