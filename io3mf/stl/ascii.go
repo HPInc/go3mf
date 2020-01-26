@@ -37,7 +37,9 @@ func (d *asciiDecoder) decode(ctx context.Context, m *geo.Mesh) (err error) {
 
 			if position == 3 {
 				position = 0
-				m.AddFace(nodes[0], nodes[1], nodes[2])
+				m.Faces = append(m.Faces, geo.Face{
+					NodeIndices: [3]uint32{nodes[0], nodes[1], nodes[2]},
+				})
 				if len(m.Faces) > nextFaceCheck {
 					select {
 					case <-ctx.Done():

@@ -102,12 +102,14 @@ func createMeshTriangle() *geo.Mesh {
 	n4 := m.AddNode(geo.Point3D{-20.0, 20.0, 0.0})
 	n5 := m.AddNode(geo.Point3D{0.0, 0.0019989014, 39.998})
 	n6 := m.AddNode(geo.Point3D{20.0, 20.0, 0.0})
-	m.AddFace(n1, n2, n3)
-	m.AddFace(n4, n2, n1)
-	m.AddFace(n1, n5, n4)
-	m.AddFace(n2, n6, n3)
-	m.AddFace(n6, n4, n3)
-	m.AddFace(n6, n2, n4)
+	m.Faces = append(m.Faces,
+		geo.Face{NodeIndices: [3]uint32{n1, n2, n3}},
+		geo.Face{NodeIndices: [3]uint32{n4, n2, n1}},
+		geo.Face{NodeIndices: [3]uint32{n1, n5, n4}},
+		geo.Face{NodeIndices: [3]uint32{n2, n6, n3}},
+		geo.Face{NodeIndices: [3]uint32{n6, n4, n3}},
+		geo.Face{NodeIndices: [3]uint32{n6, n2, n4}},
+	)
 	return m
 }
 

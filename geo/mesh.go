@@ -23,7 +23,7 @@ type BeamSet struct {
 }
 
 // A CapMode is an enumerable for the different capping modes.
-type CapMode int
+type CapMode uint8
 
 const (
 	// CapModeSphere when the capping is an sphere.
@@ -61,7 +61,7 @@ type Mesh struct {
 	BeamSets                 []BeamSet
 	MinLength, DefaultRadius float64
 	CapMode                  CapMode
-	vectorTree               *vectorTree
+	vectorTree               vectorTree
 }
 
 // StartCreation can be called before populating the mesh.
@@ -69,21 +69,13 @@ type Mesh struct {
 // When the creationg process is finished EndCreation() must be called in order to clean temporary data.
 func (m *Mesh) StartCreation(opts CreationOptions) {
 	if opts.CalculateConnectivity {
-		m.vectorTree = newVectorTree()
+		m.vectorTree = vectorTree{}
 	}
 }
 
 // EndCreation cleans temporary data associated to creating a mesh.
 func (m *Mesh) EndCreation() {
 	m.vectorTree = nil
-}
-
-// AddFace adds a face to the mesh that has the target nodes.
-func (m *Mesh) AddFace(node1, node2, node3 uint32) *Face {
-	m.Faces = append(m.Faces, Face{
-		NodeIndices: [3]uint32{node1, node2, node3},
-	})
-	return &m.Faces[len(m.Faces)-1]
 }
 
 // AddNode adds a node the the mesh at the target position.

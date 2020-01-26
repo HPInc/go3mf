@@ -62,8 +62,9 @@ func (d *binaryDecoder) decodeFace(facet *binaryFace, m *geo.Mesh) {
 		pos := facet.Vertices[nVertex]
 		nodes[nVertex] = m.AddNode(geo.Point3D{pos[0], pos[1], pos[2]})
 	}
-
-	m.AddFace(nodes[0], nodes[1], nodes[2])
+	m.Faces = append(m.Faces, geo.Face{
+		NodeIndices: [3]uint32{nodes[0], nodes[1], nodes[2]},
+	})
 }
 
 type binaryEncoder struct {

@@ -60,31 +60,15 @@ func Test_newvec3IFromVec3(t *testing.T) {
 	}
 }
 
-func Test_newVectorTree(t *testing.T) {
-	tests := []struct {
-		name string
-		want *vectorTree
-	}{
-		{"new", &vectorTree{map[vec3I]uint32{}}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := newVectorTree(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("newVectorTree() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func Test_vectorTree_AddFindVector(t *testing.T) {
-	p := newVectorTree()
+	p := vectorTree{}
 	type args struct {
 		vec   Point3D
 		value uint32
 	}
 	tests := []struct {
 		name string
-		t    *vectorTree
+		t    vectorTree
 		args args
 	}{
 		{"new", p, args{Point3D{10000.3, 20000.2, 1}, 2}},
@@ -108,14 +92,14 @@ func Test_vectorTree_AddFindVector(t *testing.T) {
 }
 
 func Test_vectorTree_RemoveVector(t *testing.T) {
-	p := newVectorTree()
+	p := vectorTree{}
 	p.AddVector(Point3D{1, 2, 5.3}, 1)
 	type args struct {
 		vec Point3D
 	}
 	tests := []struct {
 		name string
-		t    *vectorTree
+		t    vectorTree
 		args args
 	}{
 		{"nil", p, args{Point3D{2, 3, 4}}},

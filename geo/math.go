@@ -23,30 +23,22 @@ func newvec3IFromVec3(vec Point3D) vec3I {
 }
 
 // vectorTree implements a n*log(n) lookup tree class to identify vectors by their position
-type vectorTree struct {
-	entries map[vec3I]uint32
-}
-
-func newVectorTree() *vectorTree {
-	return &vectorTree{
-		entries: make(map[vec3I]uint32),
-	}
-}
+type vectorTree map[vec3I]uint32
 
 // AddVector adds a vector to the dictionary.
-func (t *vectorTree) AddVector(vec Point3D, value uint32) {
-	t.entries[newvec3IFromVec3(vec)] = value
+func (t vectorTree) AddVector(vec Point3D, value uint32) {
+	t[newvec3IFromVec3(vec)] = value
 }
 
 // FindVector returns the identifier of the vector.
-func (t *vectorTree) FindVector(vec Point3D) (val uint32, ok bool) {
-	val, ok = t.entries[newvec3IFromVec3(vec)]
+func (t vectorTree) FindVector(vec Point3D) (val uint32, ok bool) {
+	val, ok = t[newvec3IFromVec3(vec)]
 	return
 }
 
 // RemoveVector removes the vector from the dictionary.
-func (t *vectorTree) RemoveVector(vec Point3D) {
-	delete(t.entries, newvec3IFromVec3(vec))
+func (t vectorTree) RemoveVector(vec Point3D) {
+	delete(t, newvec3IFromVec3(vec))
 }
 
 // Point2D defines a node of a slice as an array of 2 coordinates: x and y.

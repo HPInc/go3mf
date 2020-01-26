@@ -74,7 +74,9 @@ func TestMesh_FaceNodes(t *testing.T) {
 	n1 := m.AddNode(Point3D{0.0, 0.0, 0.0})
 	n2 := m.AddNode(Point3D{20.0, -20.0, 0.0})
 	n3 := m.AddNode(Point3D{0.0019989014, 0.0019989014, 0.0})
-	m.AddFace(n1, n2, n3)
+	m.Faces = append(m.Faces, Face{
+		NodeIndices: [3]uint32{n1, n2, n3},
+	})
 	type args struct {
 		i uint32
 	}
@@ -149,7 +151,7 @@ func TestMesh_IsManifoldAndOriented(t *testing.T) {
 
 func TestMesh_AddNode(t *testing.T) {
 	pos := Point3D{1.0, 2.0, 3.0}
-	existingStruct := &Mesh{vectorTree: newVectorTree()}
+	existingStruct := &Mesh{vectorTree: vectorTree{}}
 	existingStruct.AddNode(pos)
 	type args struct {
 		position Point3D
@@ -188,30 +190,6 @@ func TestMesh_checkBeamsSanity(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.m.checkBeamsSanity(); got != tt.want {
 				t.Errorf("Mesh.checkBeamsSanity() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestMesh_AddFace(t *testing.T) {
-	type args struct {
-		node1 uint32
-		node2 uint32
-		node3 uint32
-	}
-	tests := []struct {
-		name string
-		m    *Mesh
-		args args
-		want *Face
-	}{
-		{"base", &Mesh{Faces: []Face{{}}}, args{0, 1, 2}, &Face{NodeIndices: [3]uint32{0, 1, 2}}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := tt.m.AddFace(tt.args.node1, tt.args.node2, tt.args.node3)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Mesh.AddFace() = %v, want %v", got, tt.want)
 			}
 		})
 	}
