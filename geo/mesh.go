@@ -60,12 +60,6 @@ func (m *Mesh) CheckSanity() bool {
 	return m.checkFacesSanity() && m.checkBeamsSanity()
 }
 
-// FaceNodes returns the three nodes of a face.
-func (m *Mesh) FaceNodes(i uint32) (*Point3D, *Point3D, *Point3D) {
-	face := m.Faces[i]
-	return &m.Nodes[face.NodeIndices[0]], &m.Nodes[face.NodeIndices[1]], &m.Nodes[face.NodeIndices[2]]
-}
-
 // IsManifoldAndOriented returns true if the mesh is manifold and oriented.
 func (m *Mesh) IsManifoldAndOriented() bool {
 	if len(m.Nodes) < 3 || len(m.Faces) < 3 || !m.CheckSanity() {

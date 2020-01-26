@@ -24,44 +24,6 @@ func TestMesh_CheckSanity(t *testing.T) {
 	}
 }
 
-func TestMesh_FaceNodes(t *testing.T) {
-	m := new(Mesh)
-	mb := NewMeshBuilder(m)
-	n1 := mb.AddNode(Point3D{0.0, 0.0, 0.0})
-	n2 := mb.AddNode(Point3D{20.0, -20.0, 0.0})
-	n3 := mb.AddNode(Point3D{0.0019989014, 0.0019989014, 0.0})
-	m.Faces = append(m.Faces, Face{
-		NodeIndices: [3]uint32{n1, n2, n3},
-	})
-	type args struct {
-		i uint32
-	}
-	tests := []struct {
-		name  string
-		m     *Mesh
-		args  args
-		want  *Point3D
-		want1 *Point3D
-		want2 *Point3D
-	}{
-		{"base", m, args{0}, &m.Nodes[n1], &m.Nodes[n2], &m.Nodes[n3]},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1, got2 := tt.m.FaceNodes(tt.args.i)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Mesh.FaceNodes() got = %v, want %v", got, tt.want)
-			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("Mesh.FaceNodes() got1 = %v, want %v", got1, tt.want1)
-			}
-			if !reflect.DeepEqual(got2, tt.want2) {
-				t.Errorf("Mesh.FaceNodes() got2 = %v, want %v", got2, tt.want2)
-			}
-		})
-	}
-}
-
 func TestMesh_IsManifoldAndOriented(t *testing.T) {
 	tests := []struct {
 		name string

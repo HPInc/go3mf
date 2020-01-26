@@ -64,10 +64,15 @@ type asciiEncoder struct {
 const pstr = "solid\nfacet normal %f %f %f\nouter loop\nvertex %f %f %f\nvertex %f %f %f\nvertex %f %f %f\nendloop\nendfacet\nendsolid\n"
 
 func (e *asciiEncoder) encode(m *geo.Mesh) error {
-	for i := range m.Faces {
-		n1, n2, n3 := m.FaceNodes(uint32(i))
-		n := faceNormal(*n1, *n2, *n3)
-		_, err := io.WriteString(e.w, fmt.Sprintf(pstr, n[0], n[1], n[2], n1[0], n1[1], n1[2], n2[0], n2[1], n2[2], n3[0], n3[1], n3[2]))
+	for _, f := range m.Faces {
+		n1, n2, n3 := m.Nodes[f.NodeIndices[0]], m.Nodes[f.NodeIndices[1]], m.Nodes[f.NodeIndices[2]]
+		n := faceNormal(n1, n2, n3)
+		_, err := io.WriteString(e.w, fmt.Sprintf(pstr,
+			n.X(), n.Y(), n.Z(),
+			n1.X(), n1.Y(), n1.Z(),
+			n2.X(), n2.Y(), n2.Z(),
+			n3.X(), n3.Y(), n3.Z(),
+		))
 
 		if err != nil {
 			return err

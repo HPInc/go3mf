@@ -71,16 +71,15 @@ type binaryEncoder struct {
 }
 
 func (e *binaryEncoder) encode(m *geo.Mesh) error {
-	faceCount := uint32(len(m.Faces))
-	header := binaryHeader{FaceCount: faceCount}
+	header := binaryHeader{FaceCount: uint32(len(m.Faces))}
 	err := binary.Write(e.w, binary.LittleEndian, header)
 	if err != nil {
 		return err
 	}
 
-	for i := uint32(0); i < faceCount; i++ {
-		n1, n2, n3 := m.FaceNodes(i)
-		normal := faceNormal(*n1, *n2, *n3)
+	for _, f := range m.Faces {
+		n1, n2, n3 := m.Nodes[f.NodeIndices[0]], m.Nodes[f.NodeIndices[1]], m.Nodes[f.NodeIndices[2]]
+		normal := faceNormal(n1, n2, n3)
 		facet := binaryFace{
 			Normal:   [3]float32{normal[0], normal[1], normal[2]},
 			Vertices: [3][3]float32{{n1.X(), n1.Y(), n1.Z()}, {n2.X(), n2.Y(), n2.Z()}, {n3.X(), n3.Y(), n3.Z()}},
