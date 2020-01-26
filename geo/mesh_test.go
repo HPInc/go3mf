@@ -24,56 +24,12 @@ func TestMesh_CheckSanity(t *testing.T) {
 	}
 }
 
-func TestMesh_StartCreation(t *testing.T) {
-	type args struct {
-		opts CreationOptions
-	}
-	tests := []struct {
-		name string
-		m    *Mesh
-		args args
-	}{
-		{"default", new(Mesh), args{CreationOptions{CalculateConnectivity: false}}},
-		{"connectivity", new(Mesh), args{CreationOptions{CalculateConnectivity: true}}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.m.StartCreation(tt.args.opts)
-			if tt.args.opts.CalculateConnectivity && tt.m.vectorTree == nil {
-				t.Error("Mesh.StartCreation() should have created the vector tree")
-				return
-			}
-			if !tt.args.opts.CalculateConnectivity && tt.m.vectorTree != nil {
-				t.Error("Mesh.StartCreation() shouldn't have created the vector tree")
-				return
-			}
-		})
-	}
-}
-
-func TestMesh_EndCreation(t *testing.T) {
-	tests := []struct {
-		name string
-		m    *Mesh
-	}{
-		{"base", new(Mesh)},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.m.StartCreation(CreationOptions{CalculateConnectivity: true})
-			tt.m.EndCreation()
-			if tt.m.vectorTree != nil {
-				t.Error("Mesh.StartCreation() should have deleted the vector tree")
-			}
-		})
-	}
-}
-
 func TestMesh_FaceNodes(t *testing.T) {
 	m := new(Mesh)
-	n1 := m.AddNode(Point3D{0.0, 0.0, 0.0})
-	n2 := m.AddNode(Point3D{20.0, -20.0, 0.0})
-	n3 := m.AddNode(Point3D{0.0019989014, 0.0019989014, 0.0})
+	mb := NewMeshBuilder(m)
+	n1 := mb.AddNode(Point3D{0.0, 0.0, 0.0})
+	n2 := mb.AddNode(Point3D{20.0, -20.0, 0.0})
+	n3 := mb.AddNode(Point3D{0.0019989014, 0.0019989014, 0.0})
 	m.Faces = append(m.Faces, Face{
 		NodeIndices: [3]uint32{n1, n2, n3},
 	})
@@ -149,27 +105,27 @@ func TestMesh_IsManifoldAndOriented(t *testing.T) {
 	}
 }
 
-func TestMesh_AddNode(t *testing.T) {
+func TestMeshBuilder_AddNode(t *testing.T) {
 	pos := Point3D{1.0, 2.0, 3.0}
-	existingStruct := &Mesh{vectorTree: vectorTree{}}
+	existingStruct := NewMeshBuilder(new(Mesh))
 	existingStruct.AddNode(pos)
 	type args struct {
 		position Point3D
 	}
 	tests := []struct {
 		name string
-		m    *Mesh
+		m    *MeshBuilder
 		args args
 		want uint32
 	}{
 		{"existing", existingStruct, args{pos}, 0},
-		{"base", &Mesh{Nodes: []Point3D{{}}}, args{Point3D{1.0, 2.0, 3.0}}, 1},
+		{"base", &MeshBuilder{Mesh: &Mesh{Nodes: []Point3D{{}}}, CalculateConnectivity: false}, args{pos}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.m.AddNode(tt.args.position)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Mesh.AddNode() = %v, want %v", got, tt.want)
+				t.Errorf("MeshBuilder.AddNode() = %v, want %v", got, tt.want)
 			}
 		})
 	}

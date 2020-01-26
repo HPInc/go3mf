@@ -26,8 +26,7 @@ type binaryDecoder struct {
 
 // decode loads a binary stl from a io.Reader.
 func (d *binaryDecoder) decode(ctx context.Context, m *geo.Mesh) error {
-	m.StartCreation(geo.CreationOptions{CalculateConnectivity: true})
-	defer m.EndCreation()
+	mb := geo.NewMeshBuilder(m)
 	var header binaryHeader
 	err := binary.Read(d.r, binary.LittleEndian, &header)
 	if err != nil {
@@ -41,7 +40,7 @@ func (d *binaryDecoder) decode(ctx context.Context, m *geo.Mesh) error {
 		if err != nil {
 			break
 		}
-		d.decodeFace(&facet, m)
+		d.decodeFace(&facet, mb)
 		if len(m.Faces) > nextFaceCheck {
 			select {
 			case <-ctx.Done():
@@ -56,13 +55,13 @@ func (d *binaryDecoder) decode(ctx context.Context, m *geo.Mesh) error {
 	return err
 }
 
-func (d *binaryDecoder) decodeFace(facet *binaryFace, m *geo.Mesh) {
+func (d *binaryDecoder) decodeFace(facet *binaryFace, mb *geo.MeshBuilder) {
 	var nodes [3]uint32
 	for nVertex := 0; nVertex < 3; nVertex++ {
 		pos := facet.Vertices[nVertex]
-		nodes[nVertex] = m.AddNode(geo.Point3D{pos[0], pos[1], pos[2]})
+		nodes[nVertex] = mb.AddNode(geo.Point3D{pos[0], pos[1], pos[2]})
 	}
-	m.Faces = append(m.Faces, geo.Face{
+	mb.Mesh.Faces = append(mb.Mesh.Faces, geo.Face{
 		NodeIndices: [3]uint32{nodes[0], nodes[1], nodes[2]},
 	})
 }

@@ -18,8 +18,7 @@ type asciiDecoder struct {
 }
 
 func (d *asciiDecoder) decode(ctx context.Context, m *geo.Mesh) (err error) {
-	m.StartCreation(geo.CreationOptions{CalculateConnectivity: true})
-	defer m.EndCreation()
+	mb := geo.NewMeshBuilder(m)
 	position := 0
 	nextFaceCheck := checkEveryFaces
 	var nodes [3]uint32
@@ -32,7 +31,7 @@ func (d *asciiDecoder) decode(ctx context.Context, m *geo.Mesh) (err error) {
 			f[0], _ = strconv.ParseFloat(fields[1], 32)
 			f[1], _ = strconv.ParseFloat(fields[2], 32)
 			f[2], _ = strconv.ParseFloat(fields[3], 32)
-			nodes[position] = m.AddNode(geo.Point3D{float32(f[0]), float32(f[1]), float32(f[2])})
+			nodes[position] = mb.AddNode(geo.Point3D{float32(f[0]), float32(f[1]), float32(f[2])})
 			position++
 
 			if position == 3 {

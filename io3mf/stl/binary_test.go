@@ -96,12 +96,13 @@ func (w *errorWriter) Write(p []byte) (n int, err error) {
 
 func createMeshTriangle() *geo.Mesh {
 	m := new(geo.Mesh)
-	n1 := m.AddNode(geo.Point3D{-20.0, -20.0, 0.0})
-	n2 := m.AddNode(geo.Point3D{20.0, -20.0, 0.0})
-	n3 := m.AddNode(geo.Point3D{0.0019989014, 0.0019989014, 39.998})
-	n4 := m.AddNode(geo.Point3D{-20.0, 20.0, 0.0})
-	n5 := m.AddNode(geo.Point3D{0.0, 0.0019989014, 39.998})
-	n6 := m.AddNode(geo.Point3D{20.0, 20.0, 0.0})
+	mb := geo.NewMeshBuilder(m)
+	n1 := mb.AddNode(geo.Point3D{-20.0, -20.0, 0.0})
+	n2 := mb.AddNode(geo.Point3D{20.0, -20.0, 0.0})
+	n3 := mb.AddNode(geo.Point3D{0.0019989014, 0.0019989014, 39.998})
+	n4 := mb.AddNode(geo.Point3D{-20.0, 20.0, 0.0})
+	n5 := mb.AddNode(geo.Point3D{0.0, 0.0019989014, 39.998})
+	n6 := mb.AddNode(geo.Point3D{20.0, 20.0, 0.0})
 	m.Faces = append(m.Faces,
 		geo.Face{NodeIndices: [3]uint32{n1, n2, n3}},
 		geo.Face{NodeIndices: [3]uint32{n4, n2, n1}},

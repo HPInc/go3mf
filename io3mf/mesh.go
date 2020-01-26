@@ -14,11 +14,9 @@ type meshDecoder struct {
 
 func (d *meshDecoder) Open() {
 	d.resource.Mesh = new(geo.Mesh)
-	d.resource.Mesh.StartCreation(geo.CreationOptions{CalculateConnectivity: false})
 }
 
 func (d *meshDecoder) Close() bool {
-	d.resource.Mesh.EndCreation()
 	d.file.AddResource(&d.resource)
 	return true
 }
@@ -74,7 +72,7 @@ func (d *vertexDecoder) Attributes(attrs []xml.Attr) bool {
 			return false
 		}
 	}
-	d.resource.Mesh.AddNode(geo.Point3D{x, y, z})
+	d.resource.Mesh.Nodes = append(d.resource.Mesh.Nodes, geo.Point3D{x, y, z})
 	return true
 }
 

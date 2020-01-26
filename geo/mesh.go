@@ -1,13 +1,5 @@
 package geo
 
-// CreationOptions defines a set of options for helping in the mesh creation process
-type CreationOptions struct {
-	// True to automatically check if a node with the same coordinates already exists in the mesh
-	// when calling AddNode. If it exists, the return value will be the existing node and no node will be added.
-	// Using this option produces an speed penalty.
-	CalculateConnectivity bool
-}
-
 // Face defines a triangle of a mesh.
 type Face struct {
 	NodeIndices     [3]uint32 // Coordinates of the three nodes that defines the face.
@@ -61,36 +53,6 @@ type Mesh struct {
 	BeamSets                 []BeamSet
 	MinLength, DefaultRadius float64
 	CapMode                  CapMode
-	vectorTree               vectorTree
-}
-
-// StartCreation can be called before populating the mesh.
-// If so, the connectivity will be automatically calculated but producing and speed penalty.
-// When the creationg process is finished EndCreation() must be called in order to clean temporary data.
-func (m *Mesh) StartCreation(opts CreationOptions) {
-	if opts.CalculateConnectivity {
-		m.vectorTree = vectorTree{}
-	}
-}
-
-// EndCreation cleans temporary data associated to creating a mesh.
-func (m *Mesh) EndCreation() {
-	m.vectorTree = nil
-}
-
-// AddNode adds a node the the mesh at the target position.
-func (m *Mesh) AddNode(node Point3D) uint32 {
-	if m.vectorTree != nil {
-		if index, ok := m.vectorTree.FindVector(node); ok {
-			return index
-		}
-	}
-	m.Nodes = append(m.Nodes, node)
-	index := uint32(len(m.Nodes)) - 1
-	if m.vectorTree != nil {
-		m.vectorTree.AddVector(node, index)
-	}
-	return index
 }
 
 // CheckSanity checks if the mesh is well formated.
@@ -170,6 +132,41 @@ func (m *Mesh) checkFacesSanity() bool {
 		}
 	}
 	return true
+}
+
+// MeshBuilder is a helper that creates mesh following a configurable criteria.
+// It must be instantiated using NewMeshBuilder.
+type MeshBuilder struct {
+	// True to automatically check if a node with the same coordinates already exists in the mesh
+	// when calling AddNode. If it exists, the return value will be the existing node and no node will be added.
+	// Using this option produces an speed penalty.
+	CalculateConnectivity bool
+	// Do not modify the pointer to Mesh once the build process has started.
+	Mesh       *Mesh
+	vectorTree vectorTree
+}
+
+func NewMeshBuilder(m *Mesh) *MeshBuilder {
+	return &MeshBuilder{
+		Mesh:                  m,
+		CalculateConnectivity: true,
+		vectorTree:            vectorTree{},
+	}
+}
+
+// AddNode adds a node the the mesh at the target position.
+func (mb *MeshBuilder) AddNode(node Point3D) uint32 {
+	if mb.CalculateConnectivity {
+		if index, ok := mb.vectorTree.FindVector(node); ok {
+			return index
+		}
+	}
+	mb.Mesh.Nodes = append(mb.Mesh.Nodes, node)
+	index := uint32(len(mb.Mesh.Nodes)) - 1
+	if mb.CalculateConnectivity {
+		mb.vectorTree.AddVector(node, index)
+	}
+	return index
 }
 
 type pairEntry struct {
