@@ -122,37 +122,3 @@ func TestSlice_IsPolygonValid(t *testing.T) {
 		})
 	}
 }
-
-func TestNode2D_X(t *testing.T) {
-	tests := []struct {
-		name string
-		n    Point2D
-		want float32
-	}{
-		{"base", Point2D{1, 2}, 1},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.n.X(); got != tt.want {
-				t.Errorf("Point2D.X() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestNode2D_Y(t *testing.T) {
-	tests := []struct {
-		name string
-		n    Point2D
-		want float32
-	}{
-		{"base", Point2D{1, 2}, 2},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.n.Y(); got != tt.want {
-				t.Errorf("Point2D.Y() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}

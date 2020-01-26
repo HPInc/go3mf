@@ -4,19 +4,6 @@ import (
 	"errors"
 )
 
-// Point2D defines a node of a slice as an array of 2 coordinates: x and y.
-type Point2D [2]float32
-
-// X returns the x coordinate.
-func (n Point2D) X() float32 {
-	return n[0]
-}
-
-// Y returns the y coordinate.
-func (n Point2D) Y() float32 {
-	return n[1]
-}
-
 // Slice defines the resource object for slices.
 type Slice struct {
 	Vertices []Point2D

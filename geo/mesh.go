@@ -1,41 +1,5 @@
 package geo
 
-// Matrix is a 4x4 matrix in row major order.
-//
-// m[4*r + c] is the element in the r'th row and c'th column.
-type Matrix [16]float32
-
-// Identity returns the 4x4 identity matrix.
-// The identity matrix is a square matrix with the value 1 on its
-// diagonals. The characteristic property of the identity matrix is that
-// any matrix multiplied by it is itself. (MI = M; IN = N)
-func Identity() Matrix {
-	return Matrix{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}
-}
-
-// Mul performs a "matrix product" between this matrix
-// and another of the given dimension.
-func (m1 Matrix) Mul(m2 Matrix) Matrix {
-	return Matrix{
-		m1[0]*m2[0] + m1[4]*m2[1] + m1[8]*m2[2] + m1[12]*m2[3],
-		m1[1]*m2[0] + m1[5]*m2[1] + m1[9]*m2[2] + m1[13]*m2[3],
-		m1[2]*m2[0] + m1[6]*m2[1] + m1[10]*m2[2] + m1[14]*m2[3],
-		m1[3]*m2[0] + m1[7]*m2[1] + m1[11]*m2[2] + m1[15]*m2[3],
-		m1[0]*m2[4] + m1[4]*m2[5] + m1[8]*m2[6] + m1[12]*m2[7],
-		m1[1]*m2[4] + m1[5]*m2[5] + m1[9]*m2[6] + m1[13]*m2[7],
-		m1[2]*m2[4] + m1[6]*m2[5] + m1[10]*m2[6] + m1[14]*m2[7],
-		m1[3]*m2[4] + m1[7]*m2[5] + m1[11]*m2[6] + m1[15]*m2[7],
-		m1[0]*m2[8] + m1[4]*m2[9] + m1[8]*m2[10] + m1[12]*m2[11],
-		m1[1]*m2[8] + m1[5]*m2[9] + m1[9]*m2[10] + m1[13]*m2[11],
-		m1[2]*m2[8] + m1[6]*m2[9] + m1[10]*m2[10] + m1[14]*m2[11],
-		m1[3]*m2[8] + m1[7]*m2[9] + m1[11]*m2[10] + m1[15]*m2[11],
-		m1[0]*m2[12] + m1[4]*m2[13] + m1[8]*m2[14] + m1[12]*m2[15],
-		m1[1]*m2[12] + m1[5]*m2[13] + m1[9]*m2[14] + m1[13]*m2[15],
-		m1[2]*m2[12] + m1[6]*m2[13] + m1[10]*m2[14] + m1[14]*m2[15],
-		m1[3]*m2[12] + m1[7]*m2[13] + m1[11]*m2[14] + m1[15]*m2[15],
-	}
-}
-
 // CreationOptions defines a set of options for helping in the mesh creation process
 type CreationOptions struct {
 	// True to automatically check if a node with the same coordinates already exists in the mesh
@@ -44,15 +8,60 @@ type CreationOptions struct {
 	CalculateConnectivity bool
 }
 
+// Face defines a triangle of a mesh.
+type Face struct {
+	NodeIndices     [3]uint32 // Coordinates of the three nodes that defines the face.
+	Resource        uint32
+	ResourceIndices [3]uint32 // Resource subindex of the three nodes that defines the face.
+}
+
+// BeamSet defines a set of beams.
+type BeamSet struct {
+	Refs       []uint32
+	Name       string
+	Identifier string
+}
+
+// A CapMode is an enumerable for the different capping modes.
+type CapMode int
+
+const (
+	// CapModeSphere when the capping is an sphere.
+	CapModeSphere CapMode = iota
+	// CapModeHemisphere when the capping is an hemisphere.
+	CapModeHemisphere
+	// CapModeButt when the capping is an butt.
+	CapModeButt
+)
+
+func (b CapMode) String() string {
+	return map[CapMode]string{
+		CapModeSphere:     "sphere",
+		CapModeHemisphere: "hemisphere",
+		CapModeButt:       "butt",
+	}[b]
+}
+
+// Beam defines a single beam.
+type Beam struct {
+	NodeIndices [2]uint32  // Indices of the two nodes that defines the beam.
+	Radius      [2]float64 // Radius of both ends of the beam.
+	CapMode     [2]CapMode // Capping mode.
+}
+
 // Mesh is not really a mesh, since it lacks the component edges and the
 // topological information. It only holds the nodes and the faces (triangles).
 // Each node,  and face have a ID, which allows to identify them. Each face have an
 // orientation (i.e. the face can look up or look down) and have three nodes.
 // The orientation is defined by the order of its nodes.
 type Mesh struct {
-	nodeStructure
-	faceStructure
-	beamLattice
+	Nodes                    []Point3D
+	Faces                    []Face
+	Beams                    []Beam
+	BeamSets                 []BeamSet
+	MinLength, DefaultRadius float64
+	CapMode                  CapMode
+	vectorTree               *vectorTree
 }
 
 // StartCreation can be called before populating the mesh.
@@ -60,18 +69,41 @@ type Mesh struct {
 // When the creationg process is finished EndCreation() must be called in order to clean temporary data.
 func (m *Mesh) StartCreation(opts CreationOptions) {
 	if opts.CalculateConnectivity {
-		m.nodeStructure.vectorTree = newVectorTree()
+		m.vectorTree = newVectorTree()
 	}
 }
 
 // EndCreation cleans temporary data associated to creating a mesh.
 func (m *Mesh) EndCreation() {
-	m.nodeStructure.vectorTree = nil
+	m.vectorTree = nil
+}
+
+// AddFace adds a face to the mesh that has the target nodes.
+func (m *Mesh) AddFace(node1, node2, node3 uint32) *Face {
+	m.Faces = append(m.Faces, Face{
+		NodeIndices: [3]uint32{node1, node2, node3},
+	})
+	return &m.Faces[len(m.Faces)-1]
+}
+
+// AddNode adds a node the the mesh at the target position.
+func (m *Mesh) AddNode(node Point3D) uint32 {
+	if m.vectorTree != nil {
+		if index, ok := m.vectorTree.FindVector(node); ok {
+			return index
+		}
+	}
+	m.Nodes = append(m.Nodes, node)
+	index := uint32(len(m.Nodes)) - 1
+	if m.vectorTree != nil {
+		m.vectorTree.AddVector(node, index)
+	}
+	return index
 }
 
 // CheckSanity checks if the mesh is well formated.
 func (m *Mesh) CheckSanity() bool {
-	return m.faceStructure.checkSanity(uint32(len(m.Nodes))) && m.beamLattice.checkSanity(uint32(len(m.Nodes)))
+	return m.checkFacesSanity() && m.checkBeamsSanity()
 }
 
 // FaceNodes returns the three nodes of a face.
@@ -117,6 +149,34 @@ func (m *Mesh) IsManifoldAndOriented() bool {
 		}
 	}
 
+	return true
+}
+
+func (m *Mesh) checkBeamsSanity() bool {
+	nodeCount := uint32(len(m.Nodes))
+	for _, beam := range m.Beams {
+		i0, i1 := beam.NodeIndices[0], beam.NodeIndices[1]
+		if i0 == i1 {
+			return false
+		}
+		if i0 >= nodeCount || i1 >= nodeCount {
+			return false
+		}
+	}
+	return true
+}
+
+func (m *Mesh) checkFacesSanity() bool {
+	nodeCount := uint32(len(m.Nodes))
+	for _, face := range m.Faces {
+		i0, i1, i2 := face.NodeIndices[0], face.NodeIndices[1], face.NodeIndices[2]
+		if i0 == i1 || i0 == i2 || i1 == i2 {
+			return false
+		}
+		if i0 >= nodeCount || i1 >= nodeCount || i2 >= nodeCount {
+			return false
+		}
+	}
 	return true
 }
 

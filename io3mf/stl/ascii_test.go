@@ -10,6 +10,7 @@ import (
 )
 
 func Test_asciiDecoder_decode(t *testing.T) {
+	deep.FloatPrecision = 5
 	checkEveryFaces = 1
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
@@ -45,6 +46,7 @@ func Test_asciiDecoder_decode(t *testing.T) {
 }
 
 func Test_asciiEncoder_encode(t *testing.T) {
+	deep.FloatPrecision = 5
 	triangle := createMeshTriangle()
 	type args struct {
 		m *geo.Mesh

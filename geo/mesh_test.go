@@ -12,8 +12,8 @@ func TestMesh_CheckSanity(t *testing.T) {
 		want bool
 	}{
 		{"new", new(Mesh), true},
-		{"facefail", &Mesh{faceStructure: faceStructure{Faces: make([]Face, 2)}}, false},
-		{"beamfail", &Mesh{beamLattice: beamLattice{Beams: make([]Beam, 2)}}, false},
+		{"facefail", &Mesh{Faces: make([]Face, 2)}, false},
+		{"beamfail", &Mesh{Beams: make([]Beam, 2)}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -39,11 +39,11 @@ func TestMesh_StartCreation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.m.StartCreation(tt.args.opts)
-			if tt.args.opts.CalculateConnectivity && tt.m.nodeStructure.vectorTree == nil {
+			if tt.args.opts.CalculateConnectivity && tt.m.vectorTree == nil {
 				t.Error("Mesh.StartCreation() should have created the vector tree")
 				return
 			}
-			if !tt.args.opts.CalculateConnectivity && tt.m.nodeStructure.vectorTree != nil {
+			if !tt.args.opts.CalculateConnectivity && tt.m.vectorTree != nil {
 				t.Error("Mesh.StartCreation() shouldn't have created the vector tree")
 				return
 			}
@@ -62,7 +62,7 @@ func TestMesh_EndCreation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.m.StartCreation(CreationOptions{CalculateConnectivity: true})
 			tt.m.EndCreation()
-			if tt.m.nodeStructure.vectorTree != nil {
+			if tt.m.vectorTree != nil {
 				t.Error("Mesh.StartCreation() should have deleted the vector tree")
 			}
 		})
@@ -111,37 +111,148 @@ func TestMesh_IsManifoldAndOriented(t *testing.T) {
 		want bool
 	}{
 		{"valid", &Mesh{
-			nodeStructure: nodeStructure{Nodes: []Point3D{{}, {}, {}, {}}},
-			faceStructure: faceStructure{Faces: []Face{
+			Nodes: []Point3D{{}, {}, {}, {}},
+			Faces: []Face{
 				{NodeIndices: [3]uint32{0, 1, 2}},
 				{NodeIndices: [3]uint32{0, 3, 1}},
 				{NodeIndices: [3]uint32{0, 2, 3}},
 				{NodeIndices: [3]uint32{1, 3, 2}},
-			}},
+			},
 		}, true},
 		{"nonmanifold", &Mesh{
-			nodeStructure: nodeStructure{Nodes: []Point3D{{}, {}, {}, {}}},
-			faceStructure: faceStructure{Faces: []Face{
+			Nodes: []Point3D{{}, {}, {}, {}},
+			Faces: []Face{
 				{NodeIndices: [3]uint32{0, 1, 2}},
 				{NodeIndices: [3]uint32{0, 1, 3}},
 				{NodeIndices: [3]uint32{0, 2, 3}},
 				{NodeIndices: [3]uint32{1, 2, 3}},
-			}},
+			},
 		}, false},
 		{"empty", new(Mesh), false},
 		{"2nodes", &Mesh{
-			nodeStructure: nodeStructure{Nodes: make([]Point3D, 2)},
-			faceStructure: faceStructure{Faces: make([]Face, 3)},
+			Nodes: make([]Point3D, 2),
+			Faces: make([]Face, 3),
 		}, false},
 		{"2faces", &Mesh{
-			nodeStructure: nodeStructure{Nodes: make([]Point3D, 3)},
-			faceStructure: faceStructure{Faces: make([]Face, 2)},
+			Nodes: make([]Point3D, 3),
+			Faces: make([]Face, 2),
 		}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.m.IsManifoldAndOriented(); got != tt.want {
 				t.Errorf("Mesh.IsManifoldAndOriented() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMesh_AddNode(t *testing.T) {
+	pos := Point3D{1.0, 2.0, 3.0}
+	existingStruct := &Mesh{vectorTree: newVectorTree()}
+	existingStruct.AddNode(pos)
+	type args struct {
+		position Point3D
+	}
+	tests := []struct {
+		name string
+		m    *Mesh
+		args args
+		want uint32
+	}{
+		{"existing", existingStruct, args{pos}, 0},
+		{"base", &Mesh{Nodes: []Point3D{{}}}, args{Point3D{1.0, 2.0, 3.0}}, 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.m.AddNode(tt.args.position)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Mesh.AddNode() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMesh_checkBeamsSanity(t *testing.T) {
+	tests := []struct {
+		name string
+		m    *Mesh
+		want bool
+	}{
+		{"eq", &Mesh{Nodes: make([]Point3D, 0), Beams: []Beam{{NodeIndices: [2]uint32{1, 1}}}}, false},
+		{"high1", &Mesh{Nodes: make([]Point3D, 2), Beams: []Beam{{NodeIndices: [2]uint32{2, 1}}}}, false},
+		{"high2", &Mesh{Nodes: make([]Point3D, 2), Beams: []Beam{{NodeIndices: [2]uint32{1, 2}}}}, false},
+		{"good", &Mesh{Nodes: make([]Point3D, 3), Beams: []Beam{{NodeIndices: [2]uint32{1, 2}}}}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.checkBeamsSanity(); got != tt.want {
+				t.Errorf("Mesh.checkBeamsSanity() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMesh_AddFace(t *testing.T) {
+	type args struct {
+		node1 uint32
+		node2 uint32
+		node3 uint32
+	}
+	tests := []struct {
+		name string
+		m    *Mesh
+		args args
+		want *Face
+	}{
+		{"base", &Mesh{Faces: []Face{{}}}, args{0, 1, 2}, &Face{NodeIndices: [3]uint32{0, 1, 2}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.m.AddFace(tt.args.node1, tt.args.node2, tt.args.node3)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Mesh.AddFace() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMesh_checkFacesSanity(t *testing.T) {
+	tests := []struct {
+		name string
+		m    *Mesh
+		want bool
+	}{
+		{"i0==i1", &Mesh{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{1, 1, 2}}}}, false},
+		{"i0==i2", &Mesh{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{1, 2, 1}}}}, false},
+		{"i1==i2", &Mesh{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{2, 1, 1}}}}, false},
+		{"i0big", &Mesh{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{3, 1, 2}}}}, false},
+		{"i1big", &Mesh{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{0, 3, 2}}}}, false},
+		{"i2big", &Mesh{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{0, 1, 3}}}}, false},
+		{"good", &Mesh{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{0, 1, 2}}}}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.checkFacesSanity(); got != tt.want {
+				t.Errorf("Mesh.checkFacesSanity() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCapMode_String(t *testing.T) {
+	tests := []struct {
+		name string
+		b    CapMode
+	}{
+		{"sphere", CapModeSphere},
+		{"hemisphere", CapModeHemisphere},
+		{"butt", CapModeButt},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.b.String(); got != tt.name {
+				t.Errorf("CapMode.String() = %v, want %v", got, tt.name)
 			}
 		})
 	}
