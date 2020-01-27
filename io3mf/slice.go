@@ -9,20 +9,20 @@ import (
 
 type sliceStackDecoder struct {
 	emptyDecoder
-	resource      go3mf.SliceStackResource
+	resource go3mf.SliceStackResource
 }
 
 func (d *sliceStackDecoder) Open() {
-	d.resource.ModelPath = d.file.path
+	d.resource.ModelPath = d.scanner.ModelPath
 }
 
 func (d *sliceStackDecoder) Close() bool {
 	ok := true
 	if len(d.resource.Stack.Refs) > 0 && len(d.resource.Stack.Slices) > 0 {
-		ok = d.file.parser.GenericError(true, "slicestack contains slices and slicerefs")
+		ok = d.scanner.GenericError(true, "slicestack contains slices and slicerefs")
 	}
-	d.file.AddResource(&d.resource)
-	return d.file.parser.CloseResource() && ok
+	d.scanner.AddResource(&d.resource)
+	return d.scanner.CloseResource() && ok
 }
 func (d *sliceStackDecoder) Child(name xml.Name) (child nodeDecoder) {
 	if name.Space == nsSliceSpec {
@@ -40,9 +40,9 @@ func (d *sliceStackDecoder) Attributes(attrs []xml.Attr) bool {
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrID:
-			d.resource.ID, ok = d.file.parser.ParseResourceID(a.Value)
+			d.resource.ID, ok = d.scanner.ParseResourceID(a.Value)
 		case attrZBottom:
-			d.resource.Stack.BottomZ = d.file.parser.ParseFloat32Optional(attrZBottom, a.Value)
+			d.resource.Stack.BottomZ = d.scanner.ParseFloat32Optional(attrZBottom, a.Value)
 		}
 	}
 	return ok
@@ -62,7 +62,7 @@ func (d *sliceRefDecoder) Attributes(attrs []xml.Attr) bool {
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrSliceRefID:
-			sliceStackID, ok = d.file.parser.ParseUint32Required(attrSliceRefID, a.Value)
+			sliceStackID, ok = d.scanner.ParseUint32Required(attrSliceRefID, a.Value)
 		case attrSlicePath:
 			path = a.Value
 		}
@@ -74,17 +74,17 @@ func (d *sliceRefDecoder) Attributes(attrs []xml.Attr) bool {
 func (d *sliceRefDecoder) addSliceRef(sliceStackID uint32, path string) bool {
 	ok := true
 	if sliceStackID == 0 {
-		ok = d.file.parser.MissingAttr(attrSliceRefID)
+		ok = d.scanner.MissingAttr(attrSliceRefID)
 	}
 	if ok && path == d.resource.ModelPath {
-		ok = d.file.parser.GenericError(true, "a slicepath is invalid")
+		ok = d.scanner.GenericError(true, "a slicepath is invalid")
 	}
 	if ok {
-		resource, exist := d.file.FindResource(path, sliceStackID)
+		resource, exist := d.scanner.FindResource(path, sliceStackID)
 		if !exist {
-			ok = d.file.parser.GenericError(true, "non-existent referenced resource")
+			ok = d.scanner.GenericError(true, "non-existent referenced resource")
 		} else if _, isSlice := resource.(*go3mf.SliceStackResource); !isSlice {
-			ok = d.file.parser.GenericError(true, "non-slicestack referenced resource")
+			ok = d.scanner.GenericError(true, "non-slicestack referenced resource")
 		}
 		if ok {
 			d.resource.Stack.Refs = append(d.resource.Stack.Refs, go3mf.SliceRef{SliceStackID: sliceStackID, Path: path})
@@ -126,12 +126,12 @@ func (d *sliceDecoder) Attributes(attrs []xml.Attr) bool {
 	for _, a := range attrs {
 		if a.Name.Local == attrZTop {
 			hasTopZ = true
-			d.slice.TopZ, ok = d.file.parser.ParseFloat32Required(attrZTop, a.Value)
+			d.slice.TopZ, ok = d.scanner.ParseFloat32Required(attrZTop, a.Value)
 			break
 		}
 	}
 	if !hasTopZ {
-		ok = d.file.parser.MissingAttr(attrZTop)
+		ok = d.scanner.MissingAttr(attrZTop)
 	}
 	return ok
 }
@@ -164,9 +164,9 @@ func (d *polygonVertexDecoder) Attributes(attrs []xml.Attr) bool {
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrX:
-			x, ok = d.file.parser.ParseFloat32Required(attrX, a.Value)
+			x, ok = d.scanner.ParseFloat32Required(attrX, a.Value)
 		case attrY:
-			y, ok = d.file.parser.ParseFloat32Required(attrY, a.Value)
+			y, ok = d.scanner.ParseFloat32Required(attrY, a.Value)
 		}
 		if !ok {
 			break
@@ -191,7 +191,7 @@ func (d *polygonDecoder) Open() {
 
 func (d *polygonDecoder) Close() bool {
 	if !d.slice.IsPolygonValid(d.polygonIndex) {
-		return d.file.parser.GenericError(true, "a closed slice polygon is actually a line")
+		return d.scanner.GenericError(true, "a closed slice polygon is actually a line")
 	}
 	return true
 }
@@ -208,14 +208,14 @@ func (d *polygonDecoder) Attributes(attrs []xml.Attr) bool {
 	ok := true
 	for _, a := range attrs {
 		if a.Name.Local == attrStartV {
-			start, ok = d.file.parser.ParseUint32Required(attrStartV, a.Value)
+			start, ok = d.scanner.ParseUint32Required(attrStartV, a.Value)
 			break
 		}
 	}
 	if ok {
 		err := d.slice.AddPolygonIndex(d.polygonIndex, int(start))
 		if err != nil {
-			ok = d.file.parser.GenericError(true, err.Error())
+			ok = d.scanner.GenericError(true, err.Error())
 		}
 	}
 	return ok
@@ -232,14 +232,14 @@ func (d *polygonSegmentDecoder) Attributes(attrs []xml.Attr) bool {
 	ok := true
 	for _, a := range attrs {
 		if a.Name.Local == attrV2 {
-			v2, ok = d.file.parser.ParseUint32Required(attrV2, a.Value)
+			v2, ok = d.scanner.ParseUint32Required(attrV2, a.Value)
 			break
 		}
 	}
 	if ok {
 		err := d.slice.AddPolygonIndex(d.polygonIndex, int(v2))
 		if err != nil {
-			ok = d.file.parser.GenericError(true, err.Error())
+			ok = d.scanner.GenericError(true, err.Error())
 		}
 	}
 	return ok

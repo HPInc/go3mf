@@ -5,6 +5,7 @@ import (
 	"image/color"
 
 	go3mf "github.com/qmuntal/go3mf"
+	"github.com/qmuntal/go3mf/iohelper"
 )
 
 type resourceDecoder struct {
@@ -45,14 +46,14 @@ type baseMaterialsDecoder struct {
 }
 
 func (d *baseMaterialsDecoder) Open() {
-	d.resource.ModelPath = d.file.path
+	d.resource.ModelPath = d.scanner.ModelPath
 	d.baseMaterialDecoder.resource = &d.resource
 }
 
 func (d *baseMaterialsDecoder) Close() bool {
-	ok := d.file.parser.CloseResource()
+	ok := d.scanner.CloseResource()
 	if ok {
-		d.file.AddResource(&d.resource)
+		d.scanner.AddResource(&d.resource)
 	}
 	return ok
 }
@@ -68,7 +69,7 @@ func (d *baseMaterialsDecoder) Attributes(attrs []xml.Attr) bool {
 	ok := true
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrID {
-			d.resource.ID, ok = d.file.parser.ParseResourceID(a.Value)
+			d.resource.ID, ok = d.scanner.ParseResourceID(a.Value)
 			break
 		}
 	}
@@ -91,19 +92,19 @@ func (d *baseMaterialDecoder) Attributes(attrs []xml.Attr) bool {
 			name = a.Value
 		case attrBaseMaterialColor:
 			var err error
-			baseColor, err = strToSRGB(a.Value)
+			baseColor, err = iohelper.ReadRGB(a.Value)
 			withColor = true
 			if err != nil {
-				ok = d.file.parser.InvalidRequiredAttr(attrBaseMaterialColor, a.Value)
+				ok = d.scanner.InvalidRequiredAttr(attrBaseMaterialColor, a.Value)
 			}
 		}
 	}
 	if ok {
 		if name == "" {
-			ok = d.file.parser.MissingAttr(attrName)
+			ok = d.scanner.MissingAttr(attrName)
 		}
 		if !withColor {
-			ok = d.file.parser.MissingAttr(attrBaseMaterialColor)
+			ok = d.scanner.MissingAttr(attrBaseMaterialColor)
 		}
 		d.resource.Materials = append(d.resource.Materials, go3mf.BaseMaterial{Name: name, Color: baseColor})
 	}

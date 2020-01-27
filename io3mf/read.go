@@ -5,16 +5,13 @@ import (
 	"context"
 	"encoding/xml"
 	"errors"
-	"image/color"
 	"io"
 	"os"
 	"sort"
-	"strconv"
-	"strings"
 	"sync"
 
 	go3mf "github.com/qmuntal/go3mf"
-	"github.com/qmuntal/go3mf/geo"
+	"github.com/qmuntal/go3mf/iohelper"
 )
 
 // A XMLDecoder is anything that can decode a stream of XML tokens, including a Decoder.
@@ -75,24 +72,24 @@ type nodeDecoder interface {
 	Text([]byte) bool
 	Child(xml.Name) nodeDecoder
 	Close() bool
-	SetModelFile(f *modelFile)
+	SetScanner(*iohelper.Scanner)
 }
 
 type emptyDecoder struct {
-	file *modelFile
+	scanner *iohelper.Scanner
 }
 
-func (d *emptyDecoder) Open()                      { return }
-func (d *emptyDecoder) Attributes([]xml.Attr) bool { return true }
-func (d *emptyDecoder) Text([]byte) bool           { return true }
-func (d *emptyDecoder) Child(xml.Name) nodeDecoder { return nil }
-func (d *emptyDecoder) Close() bool                { return true }
-func (d *emptyDecoder) SetModelFile(f *modelFile)  { d.file = f }
+func (d *emptyDecoder) Open()                          { return }
+func (d *emptyDecoder) Attributes([]xml.Attr) bool     { return true }
+func (d *emptyDecoder) Text([]byte) bool               { return true }
+func (d *emptyDecoder) Child(xml.Name) nodeDecoder     { return nil }
+func (d *emptyDecoder) Close() bool                    { return true }
+func (d *emptyDecoder) SetScanner(s *iohelper.Scanner) { d.scanner = s }
 
 type topLevelDecoder struct {
 	emptyDecoder
-	isRoot bool
 	model  *go3mf.Model
+	isRoot bool
 }
 
 func (d *topLevelDecoder) Child(name xml.Name) (child nodeDecoder) {
@@ -103,50 +100,16 @@ func (d *topLevelDecoder) Child(name xml.Name) (child nodeDecoder) {
 	return
 }
 
-// modelFile cannot be reused between goroutines.
-type modelFile struct {
-	d            *Decoder
-	model        *go3mf.Model
-	strict       bool
-	path         string
-	isRoot       bool
-	resourcesMap map[uint32]go3mf.Resource
-	resources    []go3mf.Resource
-	namespaces   map[string]string
-	parser       parser
+// modelFileDecoder cannot be reused between goroutines.
+type modelFileDecoder struct {
+	scanner *iohelper.Scanner
 }
 
-func (d *modelFile) AddResource(r go3mf.Resource) {
-	_, id := r.Identify()
-	d.resourcesMap[id] = r
-	d.resources = append(d.resources, r)
-}
-
-func (d *modelFile) FindResource(path string, id uint32) (r go3mf.Resource, ok bool) {
-	if path == "" {
-		path = d.model.Path
-	}
-	if path == d.path {
-		r, ok = d.resourcesMap[id]
-	} else {
-		r, ok = d.model.FindResource(path, id)
-	}
-	return
-}
-
-func (d *modelFile) NamespaceRegistered(ns string) bool {
-	for _, space := range d.namespaces {
-		if ns == space {
-			return true
-		}
-	}
-	return false
-}
-
-func (d *modelFile) Decode(ctx context.Context, x XMLDecoder) (err error) {
-	d.parser = parser{Strict: d.strict, ModelPath: d.path}
-	d.namespaces = make(map[string]string)
-	d.resourcesMap = make(map[uint32]go3mf.Resource)
+func (d *modelFileDecoder) Decode(ctx context.Context, x XMLDecoder, model *go3mf.Model, path string, isRoot, strict bool) (err error) {
+	d.scanner = iohelper.NewScanner(model)
+	d.scanner.IsRoot = isRoot
+	d.scanner.Strict = strict
+	d.scanner.ModelPath = path
 	state := make([]nodeDecoder, 0, 10)
 	names := make([]xml.Name, 0, 10)
 
@@ -157,7 +120,8 @@ func (d *modelFile) Decode(ctx context.Context, x XMLDecoder) (err error) {
 		t              xml.Token
 	)
 	nextBytesCheck := checkEveryBytes
-	currentDecoder = &topLevelDecoder{isRoot: d.isRoot, model: d.model}
+	currentDecoder = &topLevelDecoder{isRoot: isRoot, model: model}
+	currentDecoder.SetScanner(d.scanner)
 
 	for {
 		t, err = x.Token()
@@ -168,31 +132,31 @@ func (d *modelFile) Decode(ctx context.Context, x XMLDecoder) (err error) {
 		case xml.StartElement:
 			tmpDecoder = currentDecoder.Child(tp.Name)
 			if tmpDecoder != nil {
-				tmpDecoder.SetModelFile(d)
+				tmpDecoder.SetScanner(d.scanner)
 				state = append(state, currentDecoder)
 				names = append(names, currentName)
 				currentName = tp.Name
-				d.parser.Element = tp.Name.Local
+				d.scanner.Element = tp.Name.Local
 				currentDecoder = tmpDecoder
 				currentDecoder.Open()
 				if !currentDecoder.Attributes(tp.Attr) {
-					err = d.parser.Err
+					err = d.scanner.Err
 				}
 			} else {
 				err = x.Skip()
 			}
 		case xml.CharData:
 			if !currentDecoder.Text(tp) {
-				err = d.parser.Err
+				err = d.scanner.Err
 			}
 		case xml.EndElement:
 			if currentName == tp.Name {
-				d.parser.Element = tp.Name.Local
+				d.scanner.Element = tp.Name.Local
 				if currentDecoder.Close() {
 					currentDecoder, state = state[len(state)-1], state[:len(state)-1]
 					currentName, names = names[len(names)-1], names[:len(names)-1]
 				} else {
-					err = d.parser.Err
+					err = d.scanner.Err
 				}
 			}
 			if x.InputOffset() > nextBytesCheck {
@@ -274,22 +238,26 @@ func (d *Decoder) processRootModel(ctx context.Context, rootFile packageFile, mo
 		return err
 	}
 	defer f.Close()
-	mf := modelFile{d: d, path: rootFile.Name(), isRoot: true, model: model, strict: d.Strict}
-	err = mf.Decode(ctx, d.tokenReader(f))
+	mf := modelFileDecoder{}
+	err = mf.Decode(ctx, d.tokenReader(f), model, rootFile.Name(), true, d.Strict)
 	select {
 	case <-ctx.Done():
 		err = ctx.Err()
 	default: // Default is must to avoid blocking
 	}
-	d.addModelFile(&mf, model)
+	d.addModelFile(mf.scanner, model)
 	return err
 }
 
-func (d *Decoder) addModelFile(f *modelFile, model *go3mf.Model) {
-	for _, res := range f.resources {
+func (d *Decoder) addModelFile(p *iohelper.Scanner, model *go3mf.Model) {
+	model.UUID = p.UUID
+	for _, bi := range p.BuildItems {
+		model.BuildItems = append(model.BuildItems, bi)
+	}
+	for _, res := range p.Resources {
 		model.Resources = append(model.Resources, res)
 	}
-	for _, res := range f.parser.Warnings {
+	for _, res := range p.Warnings {
 		d.Warnings = append(d.Warnings, res)
 	}
 }
@@ -329,7 +297,7 @@ func (d *Decoder) processNonRootModels(ctx context.Context, model *go3mf.Model) 
 	sort.Ints(indices)
 	for _, index := range indices {
 		f, _ := files.Load(index)
-		d.addModelFile(f.(*modelFile), model)
+		d.addModelFile(f.(*iohelper.Scanner), model)
 	}
 	return nil
 }
@@ -412,16 +380,16 @@ func (d *Decoder) addAttachment(attachments []*go3mf.Attachment, file packageFil
 	return attachments
 }
 
-func (d *Decoder) readProductionAttachmentModel(ctx context.Context, i int, model *go3mf.Model) (*modelFile, error) {
+func (d *Decoder) readProductionAttachmentModel(ctx context.Context, i int, model *go3mf.Model) (*iohelper.Scanner, error) {
 	attachment := model.ProductionAttachments[i]
 	file, err := d.productionModels[attachment.Path].Open()
 	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
-	mf := modelFile{d: d, path: attachment.Path, isRoot: false, model: model, strict: d.Strict}
-	err = mf.Decode(ctx, d.tokenReader(file))
-	return &mf, err
+	mf := modelFileDecoder{}
+	err = mf.Decode(ctx, d.tokenReader(file), model, attachment.Path, false, d.Strict)
+	return mf.scanner, err
 }
 
 func copyFile(file packageFile) (io.Reader, error) {
@@ -433,61 +401,4 @@ func copyFile(file packageFile) (io.Reader, error) {
 	_, err = io.Copy(buff, stream)
 	stream.Close()
 	return buff, err
-}
-
-func strToSRGB(s string) (c color.RGBA, err error) {
-	var errInvalidFormat = errors.New("gltf: invalid color format")
-
-	if len(s) == 0 || s[0] != '#' {
-		return c, errInvalidFormat
-	}
-
-	hexToByte := func(b byte) byte {
-		switch {
-		case b >= '0' && b <= '9':
-			return b - '0'
-		case b >= 'a' && b <= 'f':
-			return b - 'a' + 10
-		case b >= 'A' && b <= 'F':
-			return b - 'A' + 10
-		}
-		err = errInvalidFormat
-		return 0
-	}
-
-	switch len(s) {
-	case 9:
-		c.R = hexToByte(s[1])<<4 + hexToByte(s[2])
-		c.G = hexToByte(s[3])<<4 + hexToByte(s[4])
-		c.B = hexToByte(s[5])<<4 + hexToByte(s[6])
-		c.A = hexToByte(s[7])<<4 + hexToByte(s[8])
-	case 7:
-		c.R = hexToByte(s[1])<<4 + hexToByte(s[2])
-		c.G = hexToByte(s[3])<<4 + hexToByte(s[4])
-		c.B = hexToByte(s[5])<<4 + hexToByte(s[6])
-		c.A = 0xff
-	default:
-		err = errInvalidFormat
-	}
-	return
-}
-
-func strToMatrix(s string) (geo.Matrix, error) {
-	var matrix geo.Matrix
-	values := strings.Fields(s)
-	if len(values) != 12 {
-		return matrix, errors.New("go3mf: matrix string does not have 12 values")
-	}
-	var t [12]float32
-	for i := 0; i < 12; i++ {
-		val, err := strconv.ParseFloat(values[i], 32)
-		if err != nil {
-			return matrix, errors.New("go3mf: matrix string contain characters other than numbers")
-		}
-		t[i] = float32(val)
-	}
-	return geo.Matrix{t[0], t[1], t[2], 0.0,
-		t[3], t[4], t[5], 0.0,
-		t[6], t[7], t[8], 0.0,
-		t[9], t[10], t[11], 1.0}, nil
 }

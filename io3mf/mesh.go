@@ -17,7 +17,7 @@ func (d *meshDecoder) Open() {
 }
 
 func (d *meshDecoder) Close() bool {
-	d.file.AddResource(&d.resource)
+	d.scanner.AddResource(&d.resource)
 	return true
 }
 
@@ -62,11 +62,11 @@ func (d *vertexDecoder) Attributes(attrs []xml.Attr) bool {
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrX:
-			x, ok = d.file.parser.ParseFloat32Required(attrX, a.Value)
+			x, ok = d.scanner.ParseFloat32Required(attrX, a.Value)
 		case attrY:
-			y, ok = d.file.parser.ParseFloat32Required(attrY, a.Value)
+			y, ok = d.scanner.ParseFloat32Required(attrY, a.Value)
 		case attrZ:
-			z, ok = d.file.parser.ParseFloat32Required(attrZ, a.Value)
+			z, ok = d.scanner.ParseFloat32Required(attrZ, a.Value)
 		}
 		if !ok {
 			return false
@@ -109,22 +109,22 @@ func (d *triangleDecoder) Attributes(attrs []xml.Attr) bool {
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrV1:
-			v1, ok = d.file.parser.ParseUint32Required(attrV1, a.Value)
+			v1, ok = d.scanner.ParseUint32Required(attrV1, a.Value)
 		case attrV2:
-			v2, ok = d.file.parser.ParseUint32Required(attrV2, a.Value)
+			v2, ok = d.scanner.ParseUint32Required(attrV2, a.Value)
 		case attrV3:
-			v3, ok = d.file.parser.ParseUint32Required(attrV3, a.Value)
+			v3, ok = d.scanner.ParseUint32Required(attrV3, a.Value)
 		case attrPID:
-			pid = d.file.parser.ParseUint32Optional(attrPID, a.Value)
+			pid = d.scanner.ParseUint32Optional(attrPID, a.Value)
 			hasPID = true
 		case attrP1:
-			p1 = d.file.parser.ParseUint32Optional(attrP1, a.Value)
+			p1 = d.scanner.ParseUint32Optional(attrP1, a.Value)
 			hasP1 = true
 		case attrP2:
-			p2 = d.file.parser.ParseUint32Optional(attrP2, a.Value)
+			p2 = d.scanner.ParseUint32Optional(attrP2, a.Value)
 			hasP2 = true
 		case attrP3:
-			p3 = d.file.parser.ParseUint32Optional(attrP3, a.Value)
+			p3 = d.scanner.ParseUint32Optional(attrP3, a.Value)
 			hasP3 = true
 		}
 		if !ok {
@@ -142,11 +142,11 @@ func (d *triangleDecoder) Attributes(attrs []xml.Attr) bool {
 
 func (d *triangleDecoder) addTriangle(v1, v2, v3, pid, p1, p2, p3 uint32) bool {
 	if v1 == v2 || v1 == v3 || v2 == v3 {
-		return d.file.parser.GenericError(true, "duplicated triangle indices")
+		return d.scanner.GenericError(true, "duplicated triangle indices")
 	}
 	nodeCount := uint32(len(d.resource.Mesh.Nodes))
 	if v1 >= nodeCount || v2 >= nodeCount || v3 >= nodeCount {
-		return d.file.parser.GenericError(true, "triangle indices are out of range")
+		return d.scanner.GenericError(true, "triangle indices are out of range")
 	}
 	d.resource.Mesh.Faces = append(d.resource.Mesh.Faces, geo.Face{
 		NodeIndices:     [3]uint32{v1, v2, v3},

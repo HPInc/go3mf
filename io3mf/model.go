@@ -10,7 +10,7 @@ import (
 
 type modelDecoder struct {
 	emptyDecoder
-	model                *go3mf.Model
+	model *go3mf.Model
 	withinIgnoredElement bool
 }
 
@@ -21,14 +21,14 @@ func (d *modelDecoder) Child(name xml.Name) (child nodeDecoder) {
 			d.withinIgnoredElement = false
 			child = &resourceDecoder{}
 		case attrBuild:
-			if !d.file.isRoot {
+			if !d.scanner.IsRoot {
 				d.withinIgnoredElement = true
 			} else {
 				d.withinIgnoredElement = false
-				child = &buildDecoder{model: d.model}
+				child = &buildDecoder{}
 			}
 		case attrMetadata:
-			if !d.file.isRoot {
+			if !d.scanner.IsRoot {
 				d.withinIgnoredElement = true
 			} else {
 				d.withinIgnoredElement = true
@@ -45,10 +45,10 @@ func (d *modelDecoder) Attributes(attrs []xml.Attr) bool {
 		if a.Name.Space == "" {
 			switch a.Name.Local {
 			case attrUnit:
-				if d.file.isRoot {
+				if d.scanner.IsRoot {
 					var ok bool
 					if d.model.Units, ok = newUnits(a.Value); !ok {
-						d.file.parser.InvalidOptionalAttr(attrUnit, a.Value)
+						d.scanner.InvalidOptionalAttr(attrUnit, a.Value)
 					}
 				}
 			case attrReqExt:
@@ -64,9 +64,9 @@ func (d *modelDecoder) Attributes(attrs []xml.Attr) bool {
 
 func (d *modelDecoder) checkRequiredExt(requiredExts string) bool {
 	for _, ext := range strings.Fields(requiredExts) {
-		ext = d.file.namespaces[ext]
+		ext = d.scanner.Namespaces[ext]
 		if ext != nsCoreSpec && ext != nsMaterialSpec && ext != nsProductionSpec && ext != nsBeamLatticeSpec && ext != nsSliceSpec {
-			if !d.file.parser.GenericError(true, fmt.Sprintf("'%s' extension is not supported", ext)) {
+			if !d.scanner.GenericError(true, fmt.Sprintf("'%s' extension is not supported", ext)) {
 				return false
 			}
 		}
@@ -77,13 +77,13 @@ func (d *modelDecoder) checkRequiredExt(requiredExts string) bool {
 func (d *modelDecoder) noCoreAttribute(a xml.Attr) {
 	switch a.Name.Space {
 	case nsXML:
-		if d.file.isRoot {
+		if d.scanner.IsRoot {
 			if a.Name.Local == attrLang {
 				d.model.Language = a.Value
 			}
 		}
 	case attrXmlns:
-		d.file.namespaces[a.Name.Local] = a.Value
+		d.scanner.Namespaces[a.Name.Local] = a.Value
 	}
 }
 
@@ -117,10 +117,10 @@ func (d *metadataDecoder) Attributes(attrs []xml.Attr) bool {
 			var ns string
 			if i < 0 {
 				d.metadata.Name = a.Value
-			} else if ns, ok = d.file.namespaces[a.Value[0:i]]; ok {
+			} else if ns, ok = d.scanner.Namespaces[a.Value[0:i]]; ok {
 				d.metadata.Name = ns + ":" + a.Value[i+1:]
 			} else {
-				ok = d.file.parser.GenericError(true, "unregistered namespace")
+				ok = d.scanner.GenericError(true, "unregistered namespace")
 			}
 		case attrType:
 			d.metadata.Type = a.Value

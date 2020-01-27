@@ -519,94 +519,6 @@ func TestDecoder_processRootModel(t *testing.T) {
 	})
 }
 
-func Test_modelFile_NamespaceRegistered(t *testing.T) {
-	type args struct {
-		ns string
-	}
-	tests := []struct {
-		name string
-		r    *modelFile
-		args args
-		want bool
-	}{
-		{"empty", &modelFile{namespaces: map[string]string{"p": "http://xml.com"}}, args{""}, false},
-		{"exist", &modelFile{namespaces: map[string]string{"p": "http://xml.com"}}, args{"http://xml.com"}, true},
-		{"noexist", &modelFile{namespaces: map[string]string{"p": "http://xml.com"}}, args{"xmls"}, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.r.NamespaceRegistered(tt.args.ns); got != tt.want {
-				t.Errorf("modelFile.NamespaceRegistered() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_strToMatrix(t *testing.T) {
-	type args struct {
-		s string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    geo.Matrix
-		wantErr bool
-	}{
-		{"empty", args{""}, geo.Matrix{}, true},
-		{"11values", args{"1 1 1 1 1 1 1 1 1 1 1"}, geo.Matrix{}, true},
-		{"13values", args{"1 1 1 1 1 1 1 1 1 1 1 1 1"}, geo.Matrix{}, true},
-		{"char", args{"1 1 a 1 1 1 1 1 1 1 1 1"}, geo.Matrix{}, true},
-		{"base", args{"1 1 1 1 1 1 1 1 1 1 1 1"}, geo.Matrix{1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1}, false},
-		{"other", args{"0 1 2 10 11 12 20 21 22 30 31 32"}, geo.Matrix{0, 1, 2, 0, 10, 11, 12, 0, 20, 21, 22, 0, 30, 31, 32, 1}, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := strToMatrix(tt.args.s)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("strToMatrix() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("strToMatrix() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_strToSRGB(t *testing.T) {
-	type args struct {
-		s string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantC   color.RGBA
-		wantErr bool
-	}{
-		{"empty", args{""}, color.RGBA{}, true},
-		{"nohashrgb", args{"101010"}, color.RGBA{}, true},
-		{"nohashrgba", args{"10101010"}, color.RGBA{}, true},
-		{"invalidChar", args{"#€0101010"}, color.RGBA{}, true},
-		{"invalidChar", args{"#T0101010"}, color.RGBA{0, 16, 16, 16}, true},
-		{"rgb", args{"#112233"}, color.RGBA{17, 34, 51, 255}, false},
-		{"rgb", args{"#ff0033"}, color.RGBA{255, 0, 51, 255}, false},
-		{"rgba", args{"#000233ff"}, color.RGBA{0, 2, 51, 255}, false},
-		{"rgbaLetter", args{"#ff0233AB"}, color.RGBA{255, 2, 51, 171}, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotC, err := strToSRGB(tt.args.s)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("strToSRGB() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(gotC, tt.wantC) {
-				t.Errorf("strToSRGB() = %v, want %v", gotC, tt.wantC)
-			}
-		})
-	}
-}
-
 func TestDecoder_processNonRootModels(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -691,19 +603,19 @@ func Test_modelFile_Decode(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		d       *modelFile
+		d       *modelFileDecoder
 		args    args
 		wantErr bool
 	}{
-		{"nochild", new(modelFile), args{context.Background(), xml.NewDecoder(bytes.NewBufferString(`
+		{"nochild", new(modelFileDecoder), args{context.Background(), xml.NewDecoder(bytes.NewBufferString(`
 			<a></a>
 			<b></b>
 		`))}, false},
-		{"eof", new(modelFile), args{context.Background(), xml.NewDecoder(bytes.NewBufferString(`
+		{"eof", new(modelFileDecoder), args{context.Background(), xml.NewDecoder(bytes.NewBufferString(`
 			<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">
 				<build></build>
 		`))}, true},
-		{"canceled", new(modelFile), args{ctx, xml.NewDecoder(bytes.NewBufferString(`
+		{"canceled", new(modelFileDecoder), args{ctx, xml.NewDecoder(bytes.NewBufferString(`
 			<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">
 				<build></build>
 			</model>
@@ -711,7 +623,7 @@ func Test_modelFile_Decode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.d.Decode(tt.args.ctx, tt.args.x); (err != nil) != tt.wantErr {
+			if err := tt.d.Decode(tt.args.ctx, tt.args.x, new(go3mf.Model), "", true, false); (err != nil) != tt.wantErr {
 				t.Errorf("modelFile.Decode() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -741,61 +653,61 @@ func TestNewDecoder(t *testing.T) {
 
 func TestDecoder_processRootModel_warns(t *testing.T) {
 	want := []error{
-		ParsePropertyError{ResourceID: 0, Element: "base", Name: "displaycolor", Value: "0000FF", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
-		MissingPropertyError{ResourceID: 0, Element: "base", ModelPath: "/3d/3dmodel.model", Name: "name"},
-		MissingPropertyError{ResourceID: 0, Element: "base", ModelPath: "/3d/3dmodel.model", Name: "displaycolor"},
-		MissingPropertyError{ResourceID: 0, Element: "basematerials", ModelPath: "/3d/3dmodel.model", Name: "id"},
-		ParsePropertyError{ResourceID: 0, Element: "basematerials", Name: "id", Value: "a", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
-		MissingPropertyError{ResourceID: 0, Element: "basematerials", ModelPath: "/3d/3dmodel.model", Name: "id"},
-		ParsePropertyError{ResourceID: 0, Element: "texture2d", Name: "id", Value: "b", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
-		MissingPropertyError{ResourceID: 0, Element: "texture2d", ModelPath: "/3d/3dmodel.model", Name: "path"},
-		MissingPropertyError{ResourceID: 0, Element: "texture2d", ModelPath: "/3d/3dmodel.model", Name: "id"},
-		ParsePropertyError{ResourceID: 1, Element: "color", Name: "color", Value: "#FFFFF", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
-		ParsePropertyError{ResourceID: 2, Element: "tex2coord", Name: "u", Value: "b", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
-		ParsePropertyError{ResourceID: 2, Element: "tex2coord", Name: "v", Value: "c", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
-		MissingPropertyError{ResourceID: 4, Element: "compositematerials", ModelPath: "/3d/3dmodel.model", Name: "matid"},
-		MissingPropertyError{ResourceID: 4, Element: "compositematerials", ModelPath: "/3d/3dmodel.model", Name: "matindices"},
-		MissingPropertyError{ResourceID: 4, Element: "composite", ModelPath: "/3d/3dmodel.model", Name: "values"},
-		ParsePropertyError{ResourceID: 4, Element: "composite", Name: "values", Value: "a", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
-		MissingPropertyError{ResourceID: 3, Element: "slice", ModelPath: "/3d/3dmodel.model", Name: "ztop"},
-		ParsePropertyError{ResourceID: 3, Element: "vertex", Name: "x", Value: "a", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
-		ParsePropertyError{ResourceID: 3, Element: "vertex", Name: "y", Value: "b", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
-		GenericError{ResourceID: 3, Element: "polygon", ModelPath: "/3d/3dmodel.model", Message: "invalid slice segment index"},
-		GenericError{ResourceID: 3, Element: "segment", ModelPath: "/3d/3dmodel.model", Message: "invalid slice segment index"},
-		GenericError{ResourceID: 3, Element: "polygon", ModelPath: "/3d/3dmodel.model", Message: "a closed slice polygon is actually a line"},
-		GenericError{ResourceID: 3, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Message: "a slicepath is invalid"},
-		GenericError{ResourceID: 3, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced resource"},
-		GenericError{ResourceID: 3, Element: "slicestack", ModelPath: "/3d/3dmodel.model", Message: "slicestack contains slices and slicerefs"},
-		MissingPropertyError{ResourceID: 7, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Name: "slicestackid"},
-		GenericError{ResourceID: 7, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced resource"},
-		ParsePropertyError{ResourceID: 9, Element: "multiproperties", ModelPath: "/3d/3dmodel.model", Name: "pids", Value: "a", Type: PropertyRequired},
-		MissingPropertyError{ResourceID: 9, Element: "multi", ModelPath: "/3d/3dmodel.model", Name: "pindices"},
-		MissingPropertyError{ResourceID: 19, Element: "multiproperties", ModelPath: "/3d/3dmodel.model", Name: "pids"},
-		ParsePropertyError{ResourceID: 8, Element: "object", ModelPath: "/3d/3dmodel.model", Name: "meshresolution", Value: "invalid", Type: PropertyOptional},
-		GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3d/3dmodel.model", Message: "duplicated triangle indices"},
-		GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3d/3dmodel.model", Message: "triangle indices are out of range"},
-		MissingPropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3d/3dmodel.model", Name: "radius"},
-		MissingPropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3d/3dmodel.model", Name: "minlength"},
-		MissingPropertyError{ResourceID: 15, Element: "beam", ModelPath: "/3d/3dmodel.model", Name: "v1"},
-		MissingPropertyError{ResourceID: 15, Element: "beam", ModelPath: "/3d/3dmodel.model", Name: "v2"},
-		MissingPropertyError{ResourceID: 15, Element: "ref", ModelPath: "/3d/3dmodel.model", Name: "index"},
-		ParsePropertyError{ResourceID: 15, Element: "ref", Name: "index", Value: "a", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
-		ParsePropertyError{ResourceID: 22, Element: "object", ModelPath: "/3d/3dmodel.model", Name: "type", Value: "invalid", Type: PropertyOptional},
-		ParsePropertyError{ResourceID: 20, Element: "object", ModelPath: "/3d/3dmodel.model", Name: "UUID", Value: "cb8286808895-4e08-a1fc-be63e033df15", Type: PropertyRequired},
-		GenericError{ResourceID: 20, Element: "object", ModelPath: "/3d/3dmodel.model", Message: "default PID is not supported for component objects"},
-		ParsePropertyError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Name: "UUID", Value: "cb8286808895-4e08-a1fc-be63e033df16", Type: PropertyRequired},
-		ParsePropertyError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Name: "transform", Value: "0 0 0 1 0 0 0 2 -66.4 -87.1 8.8", Type: PropertyOptional},
-		MissingPropertyError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
-		GenericError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced object"},
-		GenericError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Message: "non-object referenced resource"},
-		MissingPropertyError{ResourceID: 0, Element: "build", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
-		ParsePropertyError{ResourceID: 20, Element: "item", Name: "transform", Value: "1 0 0 0 2 0 0 0 3 -66.4 -87.1", ModelPath: "/3d/3dmodel.model", Type: PropertyOptional},
-		GenericError{ResourceID: 20, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "referenced object cannot be have OTHER type"},
-		MissingPropertyError{ResourceID: 8, Element: "item", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
-		GenericError{ResourceID: 8, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced object"},
-		GenericError{ResourceID: 5, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "non-object referenced resource"},
-		ParsePropertyError{ResourceID: 15, Element: "item", Name: "UUID", Value: "e9e", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
-		ParsePropertyError{ResourceID: 0, Element: "build", Name: "UUID", Value: "e9e25302-6428-402e-8633ed2", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
+		go3mf.ParsePropertyError{ResourceID: 0, Element: "base", Name: "displaycolor", Value: "0000FF", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
+		go3mf.MissingPropertyError{ResourceID: 0, Element: "base", ModelPath: "/3d/3dmodel.model", Name: "name"},
+		go3mf.MissingPropertyError{ResourceID: 0, Element: "base", ModelPath: "/3d/3dmodel.model", Name: "displaycolor"},
+		go3mf.MissingPropertyError{ResourceID: 0, Element: "basematerials", ModelPath: "/3d/3dmodel.model", Name: "id"},
+		go3mf.ParsePropertyError{ResourceID: 0, Element: "basematerials", Name: "id", Value: "a", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
+		go3mf.MissingPropertyError{ResourceID: 0, Element: "basematerials", ModelPath: "/3d/3dmodel.model", Name: "id"},
+		go3mf.ParsePropertyError{ResourceID: 0, Element: "texture2d", Name: "id", Value: "b", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
+		go3mf.MissingPropertyError{ResourceID: 0, Element: "texture2d", ModelPath: "/3d/3dmodel.model", Name: "path"},
+		go3mf.MissingPropertyError{ResourceID: 0, Element: "texture2d", ModelPath: "/3d/3dmodel.model", Name: "id"},
+		go3mf.ParsePropertyError{ResourceID: 1, Element: "color", Name: "color", Value: "#FFFFF", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
+		go3mf.ParsePropertyError{ResourceID: 2, Element: "tex2coord", Name: "u", Value: "b", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
+		go3mf.ParsePropertyError{ResourceID: 2, Element: "tex2coord", Name: "v", Value: "c", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
+		go3mf.MissingPropertyError{ResourceID: 4, Element: "compositematerials", ModelPath: "/3d/3dmodel.model", Name: "matid"},
+		go3mf.MissingPropertyError{ResourceID: 4, Element: "compositematerials", ModelPath: "/3d/3dmodel.model", Name: "matindices"},
+		go3mf.MissingPropertyError{ResourceID: 4, Element: "composite", ModelPath: "/3d/3dmodel.model", Name: "values"},
+		go3mf.ParsePropertyError{ResourceID: 4, Element: "composite", Name: "values", Value: "a", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
+		go3mf.MissingPropertyError{ResourceID: 3, Element: "slice", ModelPath: "/3d/3dmodel.model", Name: "ztop"},
+		go3mf.ParsePropertyError{ResourceID: 3, Element: "vertex", Name: "x", Value: "a", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
+		go3mf.ParsePropertyError{ResourceID: 3, Element: "vertex", Name: "y", Value: "b", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
+		go3mf.GenericError{ResourceID: 3, Element: "polygon", ModelPath: "/3d/3dmodel.model", Message: "invalid slice segment index"},
+		go3mf.GenericError{ResourceID: 3, Element: "segment", ModelPath: "/3d/3dmodel.model", Message: "invalid slice segment index"},
+		go3mf.GenericError{ResourceID: 3, Element: "polygon", ModelPath: "/3d/3dmodel.model", Message: "a closed slice polygon is actually a line"},
+		go3mf.GenericError{ResourceID: 3, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Message: "a slicepath is invalid"},
+		go3mf.GenericError{ResourceID: 3, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced resource"},
+		go3mf.GenericError{ResourceID: 3, Element: "slicestack", ModelPath: "/3d/3dmodel.model", Message: "slicestack contains slices and slicerefs"},
+		go3mf.MissingPropertyError{ResourceID: 7, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Name: "slicestackid"},
+		go3mf.GenericError{ResourceID: 7, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced resource"},
+		go3mf.ParsePropertyError{ResourceID: 9, Element: "multiproperties", ModelPath: "/3d/3dmodel.model", Name: "pids", Value: "a", Type: go3mf.PropertyRequired},
+		go3mf.MissingPropertyError{ResourceID: 9, Element: "multi", ModelPath: "/3d/3dmodel.model", Name: "pindices"},
+		go3mf.MissingPropertyError{ResourceID: 19, Element: "multiproperties", ModelPath: "/3d/3dmodel.model", Name: "pids"},
+		go3mf.ParsePropertyError{ResourceID: 8, Element: "object", ModelPath: "/3d/3dmodel.model", Name: "meshresolution", Value: "invalid", Type: go3mf.PropertyOptional},
+		go3mf.GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3d/3dmodel.model", Message: "duplicated triangle indices"},
+		go3mf.GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3d/3dmodel.model", Message: "triangle indices are out of range"},
+		go3mf.MissingPropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3d/3dmodel.model", Name: "radius"},
+		go3mf.MissingPropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3d/3dmodel.model", Name: "minlength"},
+		go3mf.MissingPropertyError{ResourceID: 15, Element: "beam", ModelPath: "/3d/3dmodel.model", Name: "v1"},
+		go3mf.MissingPropertyError{ResourceID: 15, Element: "beam", ModelPath: "/3d/3dmodel.model", Name: "v2"},
+		go3mf.MissingPropertyError{ResourceID: 15, Element: "ref", ModelPath: "/3d/3dmodel.model", Name: "index"},
+		go3mf.ParsePropertyError{ResourceID: 15, Element: "ref", Name: "index", Value: "a", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
+		go3mf.ParsePropertyError{ResourceID: 22, Element: "object", ModelPath: "/3d/3dmodel.model", Name: "type", Value: "invalid", Type: go3mf.PropertyOptional},
+		go3mf.ParsePropertyError{ResourceID: 20, Element: "object", ModelPath: "/3d/3dmodel.model", Name: "UUID", Value: "cb8286808895-4e08-a1fc-be63e033df15", Type: go3mf.PropertyRequired},
+		go3mf.GenericError{ResourceID: 20, Element: "object", ModelPath: "/3d/3dmodel.model", Message: "default PID is not supported for component objects"},
+		go3mf.ParsePropertyError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Name: "UUID", Value: "cb8286808895-4e08-a1fc-be63e033df16", Type: go3mf.PropertyRequired},
+		go3mf.ParsePropertyError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Name: "transform", Value: "0 0 0 1 0 0 0 2 -66.4 -87.1 8.8", Type: go3mf.PropertyOptional},
+		go3mf.MissingPropertyError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
+		go3mf.GenericError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced object"},
+		go3mf.GenericError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Message: "non-object referenced resource"},
+		go3mf.MissingPropertyError{ResourceID: 0, Element: "build", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
+		go3mf.ParsePropertyError{ResourceID: 20, Element: "item", Name: "transform", Value: "1 0 0 0 2 0 0 0 3 -66.4 -87.1", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyOptional},
+		go3mf.GenericError{ResourceID: 20, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "referenced object cannot be have OTHER type"},
+		go3mf.MissingPropertyError{ResourceID: 8, Element: "item", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
+		go3mf.GenericError{ResourceID: 8, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced object"},
+		go3mf.GenericError{ResourceID: 5, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "non-object referenced resource"},
+		go3mf.ParsePropertyError{ResourceID: 15, Element: "item", Name: "UUID", Value: "e9e", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
+		go3mf.ParsePropertyError{ResourceID: 0, Element: "build", Name: "UUID", Value: "e9e25302-6428-402e-8633ed2", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
 	}
 	got := new(go3mf.Model)
 	got.Path = "/3d/3dmodel.model"
