@@ -10,7 +10,7 @@ import (
 )
 
 func TestDecode(t *testing.T) {
-	meshLattice := &go3mf.MeshResource{
+	meshLattice := &go3mf.Mesh{
 		ObjectResource: go3mf.ObjectResource{ID: 15, Name: "Box", ModelPath: "/3d/3dmodel.model"},
 		Extensions: map[string]interface{}{
 			ExtensionName: &BeamLattice{ClipMode: ClipInside, ClippingMeshID: 8, RepresentationMeshID: 8},

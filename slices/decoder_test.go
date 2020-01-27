@@ -36,7 +36,7 @@ func TestDecode(t *testing.T) {
 		},
 	}}
 	sliceStackRef := &SliceStackResource{ID: 7, ModelPath: "/3d/3dmodel.model", Stack: SliceStack{BottomZ: 1.1, Refs: []SliceRef{{SliceStackID: 10, Path: "/2D/2Dmodel.model"}}}}
-	meshRes := &go3mf.MeshResource{
+	meshRes := &go3mf.Mesh{
 		ObjectResource: go3mf.ObjectResource{
 			ID: 8, Name: "Box 1", ModelPath: "/3d/3dmodel.model",
 			Extensions: map[string]interface{}{ExtensionName: &ObjectAttr{SliceStackID: 3, SliceResolution: ResolutionLow}}},

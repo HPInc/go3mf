@@ -49,7 +49,7 @@ func (d *objectDecoder) Attributes(attrs []xml.Attr) bool {
 func (d *objectDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
 	if name.Space == nsCoreSpec {
 		if name.Local == attrMesh {
-			child = &meshDecoder{resource: go3mf.MeshResource{ObjectResource: d.resource}}
+			child = &meshDecoder{mesh: go3mf.Mesh{ObjectResource: d.resource}}
 		} else if name.Local == attrComponents {
 			if d.resource.DefaultPropertyID != 0 {
 				d.Scanner.GenericError(true, "default PID is not supported for component objects")

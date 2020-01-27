@@ -9,35 +9,35 @@ import (
 
 type meshDecoder struct {
 	iohelper.EmptyDecoder
-	resource go3mf.MeshResource
+	mesh go3mf.Mesh
 }
 
 func (d *meshDecoder) Close() bool {
-	d.Scanner.AddResource(&d.resource)
+	d.Scanner.AddResource(&d.mesh)
 	return true
 }
 
 func (d *meshDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
 	if name.Space == nsCoreSpec {
 		if name.Local == attrVertices {
-			child = &verticesDecoder{resource: &d.resource}
+			child = &verticesDecoder{mesh: &d.mesh}
 		} else if name.Local == attrTriangles {
-			child = &trianglesDecoder{resource: &d.resource}
+			child = &trianglesDecoder{mesh: &d.mesh}
 		}
 	} else if ext, ok := extensionDecoder[name.Space]; ok {
-		child = ext.NodeDecoder(&d.resource, name.Local)
+		child = ext.NodeDecoder(&d.mesh, name.Local)
 	}
 	return
 }
 
 type verticesDecoder struct {
 	iohelper.EmptyDecoder
-	resource      *go3mf.MeshResource
+	mesh          *go3mf.Mesh
 	vertexDecoder vertexDecoder
 }
 
 func (d *verticesDecoder) Open() {
-	d.vertexDecoder.resource = d.resource
+	d.vertexDecoder.mesh = d.mesh
 }
 
 func (d *verticesDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
@@ -49,7 +49,7 @@ func (d *verticesDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
 
 type vertexDecoder struct {
 	iohelper.EmptyDecoder
-	resource *go3mf.MeshResource
+	mesh *go3mf.Mesh
 }
 
 func (d *vertexDecoder) Attributes(attrs []xml.Attr) bool {
@@ -68,21 +68,21 @@ func (d *vertexDecoder) Attributes(attrs []xml.Attr) bool {
 			return false
 		}
 	}
-	d.resource.Nodes = append(d.resource.Nodes, go3mf.Point3D{x, y, z})
+	d.mesh.Nodes = append(d.mesh.Nodes, go3mf.Point3D{x, y, z})
 	return true
 }
 
 type trianglesDecoder struct {
 	iohelper.EmptyDecoder
-	resource        *go3mf.MeshResource
+	mesh            *go3mf.Mesh
 	triangleDecoder triangleDecoder
 }
 
 func (d *trianglesDecoder) Open() {
-	d.triangleDecoder.resource = d.resource
+	d.triangleDecoder.mesh = d.mesh
 
-	if len(d.resource.Faces) == 0 && len(d.resource.Nodes) > 0 {
-		d.resource.Faces = make([]go3mf.Face, 0, len(d.resource.Nodes)-1)
+	if len(d.mesh.Faces) == 0 && len(d.mesh.Nodes) > 0 {
+		d.mesh.Faces = make([]go3mf.Face, 0, len(d.mesh.Nodes)-1)
 	}
 }
 
@@ -95,7 +95,7 @@ func (d *trianglesDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
 
 type triangleDecoder struct {
 	iohelper.EmptyDecoder
-	resource *go3mf.MeshResource
+	mesh *go3mf.Mesh
 }
 
 func (d *triangleDecoder) Attributes(attrs []xml.Attr) bool {
@@ -128,10 +128,10 @@ func (d *triangleDecoder) Attributes(attrs []xml.Attr) bool {
 		}
 	}
 
-	p1 = applyDefault(p1, d.resource.DefaultPropertyIndex, hasP1)
+	p1 = applyDefault(p1, d.mesh.DefaultPropertyIndex, hasP1)
 	p2 = applyDefault(p2, p1, hasP2)
 	p3 = applyDefault(p3, p1, hasP3)
-	pid = applyDefault(pid, d.resource.DefaultPropertyID, hasPID)
+	pid = applyDefault(pid, d.mesh.DefaultPropertyID, hasPID)
 
 	return d.addTriangle(v1, v2, v3, pid, p1, p2, p3)
 }
@@ -140,11 +140,11 @@ func (d *triangleDecoder) addTriangle(v1, v2, v3, pid, p1, p2, p3 uint32) bool {
 	if v1 == v2 || v1 == v3 || v2 == v3 {
 		return d.Scanner.GenericError(true, "duplicated triangle indices")
 	}
-	nodeCount := uint32(len(d.resource.Nodes))
+	nodeCount := uint32(len(d.mesh.Nodes))
 	if v1 >= nodeCount || v2 >= nodeCount || v3 >= nodeCount {
 		return d.Scanner.GenericError(true, "triangle indices are out of range")
 	}
-	d.resource.Faces = append(d.resource.Faces, go3mf.Face{
+	d.mesh.Faces = append(d.mesh.Faces, go3mf.Face{
 		NodeIndices:     [3]uint32{v1, v2, v3},
 		Resource:        pid,
 		ResourceIndices: [3]uint32{p1, p2, p3},

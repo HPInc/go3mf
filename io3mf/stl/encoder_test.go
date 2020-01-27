@@ -57,7 +57,7 @@ func TestNewEncoderType(t *testing.T) {
 
 func TestEncoder_Encode(t *testing.T) {
 	type args struct {
-		m *go3mf.MeshResource
+		m *go3mf.Mesh
 	}
 	tests := []struct {
 		name    string
@@ -65,8 +65,8 @@ func TestEncoder_Encode(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"ascii", NewEncoderType(new(bytes.Buffer), ASCII), args{new(go3mf.MeshResource)}, false},
-		{"binary", NewEncoderType(new(bytes.Buffer), Binary), args{new(go3mf.MeshResource)}, false},
+		{"ascii", NewEncoderType(new(bytes.Buffer), ASCII), args{new(go3mf.Mesh)}, false},
+		{"binary", NewEncoderType(new(bytes.Buffer), Binary), args{new(go3mf.Mesh)}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

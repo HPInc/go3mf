@@ -39,7 +39,7 @@ func NewEncoderType(w io.Writer, encodingType EncodingType) *Encoder {
 }
 
 // Encode encodes a mesh to the writer.
-func (e *Encoder) Encode(m *go3mf.MeshResource) error {
+func (e *Encoder) Encode(m *go3mf.Mesh) error {
 	switch e.encodingType {
 	case ASCII:
 		encoder := asciiEncoder{w: e.w}

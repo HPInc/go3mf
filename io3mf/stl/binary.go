@@ -25,7 +25,7 @@ type binaryDecoder struct {
 }
 
 // decode loads a binary stl from a io.Reader.
-func (d *binaryDecoder) decode(ctx context.Context, m *go3mf.MeshResource) error {
+func (d *binaryDecoder) decode(ctx context.Context, m *go3mf.Mesh) error {
 	mb := go3mf.NewMeshBuilder(m)
 	var header binaryHeader
 	err := binary.Read(d.r, binary.LittleEndian, &header)
@@ -70,7 +70,7 @@ type binaryEncoder struct {
 	w io.Writer
 }
 
-func (e *binaryEncoder) encode(m *go3mf.MeshResource) error {
+func (e *binaryEncoder) encode(m *go3mf.Mesh) error {
 	header := binaryHeader{FaceCount: uint32(len(m.Faces))}
 	err := binary.Write(e.w, binary.LittleEndian, header)
 	if err != nil {

@@ -163,23 +163,23 @@ func TestComponentsResource_IsValid(t *testing.T) {
 	}
 }
 
-func TestMeshResource_IsValid(t *testing.T) {
+func TestMesh_IsValid(t *testing.T) {
 	tests := []struct {
 		name string
-		c    *MeshResource
+		c    *Mesh
 		want bool
 	}{
-		{"empty", new(MeshResource), false},
-		{"other", &MeshResource{ObjectResource: ObjectResource{ObjectType: ObjectTypeOther}}, false},
-		//{"surface", &MeshResource{ObjectResource: ObjectResource{ObjectType: ObjectTypeSurface}}, true},
-		//{"support", &MeshResource{ObjectResource: ObjectResource{ObjectType: ObjectTypeSupport}}, true},
-		{"solidsupport", &MeshResource{ObjectResource: ObjectResource{ObjectType: ObjectTypeSolidSupport}}, false},
-		{"model", &MeshResource{ObjectResource: ObjectResource{ObjectType: ObjectTypeModel}}, false},
+		{"empty", new(Mesh), false},
+		{"other", &Mesh{ObjectResource: ObjectResource{ObjectType: ObjectTypeOther}}, false},
+		//{"surface", &Mesh{ObjectResource: ObjectResource{ObjectType: ObjectTypeSurface}}, true},
+		//{"support", &Mesh{ObjectResource: ObjectResource{ObjectType: ObjectTypeSupport}}, true},
+		{"solidsupport", &Mesh{ObjectResource: ObjectResource{ObjectType: ObjectTypeSolidSupport}}, false},
+		{"model", &Mesh{ObjectResource: ObjectResource{ObjectType: ObjectTypeModel}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.c.IsValid(); got != tt.want {
-				t.Errorf("MeshResource.IsValid() = %v, want %v", got, tt.want)
+				t.Errorf("Mesh.IsValid() = %v, want %v", got, tt.want)
 			}
 		})
 	}

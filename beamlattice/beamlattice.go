@@ -100,9 +100,9 @@ type Beam struct {
 	CapMode     [2]CapMode // Capping mode.
 }
 
-// ExtensionBeamLattice extracts the BeamLattice attributes from an MeshResource.
+// ExtensionBeamLattice extracts the BeamLattice attributes from an Mesh.
 // If it does not exist a new one is added.
-func ExtensionBeamLattice(o *go3mf.MeshResource) *BeamLattice {
+func ExtensionBeamLattice(o *go3mf.Mesh) *BeamLattice {
 	if attr, ok := o.Extensions[ExtensionName]; ok {
 		return attr.(*BeamLattice)
 	}

@@ -260,11 +260,11 @@ type Face struct {
 	ResourceIndices [3]uint32 // Resource subindex of the three nodes that defines the face.
 }
 
-// A MeshResource is an in memory representation of the 3MF mesh object.
+// A Mesh is an in memory representation of the 3MF mesh object.
 // Each node,  and face have a ID, which allows to identify them. Each face have an
 // orientation (i.e. the face can look up or look down) and have three nodes.
 // The orientation is defined by the order of its nodes.
-type MeshResource struct {
+type Mesh struct {
 	ObjectResource
 	Nodes      []Point3D
 	Faces      []Face
@@ -272,7 +272,7 @@ type MeshResource struct {
 }
 
 // IsValid checks if the mesh resource are valid.
-func (c *MeshResource) IsValid() bool {
+func (c *Mesh) IsValid() bool {
 	switch c.ObjectType {
 	case ObjectTypeModel:
 		return c.IsManifoldAndOriented()

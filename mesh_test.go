@@ -5,19 +5,19 @@ import (
 	"testing"
 )
 
-func TestMeshResource_CheckSanity(t *testing.T) {
+func TestMesh_CheckSanity(t *testing.T) {
 	tests := []struct {
 		name string
-		m    *MeshResource
+		m    *Mesh
 		want bool
 	}{
-		{"new", new(MeshResource), true},
-		{"facefail", &MeshResource{Faces: make([]Face, 2)}, false},
+		{"new", new(Mesh), true},
+		{"facefail", &Mesh{Faces: make([]Face, 2)}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.m.CheckSanity(); got != tt.want {
-				t.Errorf("MeshResource.CheckSanity() = %v, want %v", got, tt.want)
+				t.Errorf("Mesh.CheckSanity() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -26,10 +26,10 @@ func TestMeshResource_CheckSanity(t *testing.T) {
 func TestMesh_IsManifoldAndOriented(t *testing.T) {
 	tests := []struct {
 		name string
-		m    *MeshResource
+		m    *Mesh
 		want bool
 	}{
-		{"valid", &MeshResource{
+		{"valid", &Mesh{
 			Nodes: []Point3D{{}, {}, {}, {}},
 			Faces: []Face{
 				{NodeIndices: [3]uint32{0, 1, 2}},
@@ -38,7 +38,7 @@ func TestMesh_IsManifoldAndOriented(t *testing.T) {
 				{NodeIndices: [3]uint32{1, 3, 2}},
 			},
 		}, true},
-		{"nonmanifold", &MeshResource{
+		{"nonmanifold", &Mesh{
 			Nodes: []Point3D{{}, {}, {}, {}},
 			Faces: []Face{
 				{NodeIndices: [3]uint32{0, 1, 2}},
@@ -47,12 +47,12 @@ func TestMesh_IsManifoldAndOriented(t *testing.T) {
 				{NodeIndices: [3]uint32{1, 2, 3}},
 			},
 		}, false},
-		{"empty", new(MeshResource), false},
-		{"2nodes", &MeshResource{
+		{"empty", new(Mesh), false},
+		{"2nodes", &Mesh{
 			Nodes: make([]Point3D, 2),
 			Faces: make([]Face, 3),
 		}, false},
-		{"2faces", &MeshResource{
+		{"2faces", &Mesh{
 			Nodes: make([]Point3D, 3),
 			Faces: make([]Face, 2),
 		}, false},
@@ -68,7 +68,7 @@ func TestMesh_IsManifoldAndOriented(t *testing.T) {
 
 func TestMeshBuilder_AddNode(t *testing.T) {
 	pos := Point3D{1.0, 2.0, 3.0}
-	existingStruct := NewMeshBuilder(new(MeshResource))
+	existingStruct := NewMeshBuilder(new(Mesh))
 	existingStruct.AddNode(pos)
 	type args struct {
 		position Point3D
@@ -80,7 +80,7 @@ func TestMeshBuilder_AddNode(t *testing.T) {
 		want uint32
 	}{
 		{"existing", existingStruct, args{pos}, 0},
-		{"base", &MeshBuilder{Mesh: &MeshResource{Nodes: []Point3D{{}}}, CalculateConnectivity: false}, args{pos}, 1},
+		{"base", &MeshBuilder{Mesh: &Mesh{Nodes: []Point3D{{}}}, CalculateConnectivity: false}, args{pos}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -95,21 +95,21 @@ func TestMeshBuilder_AddNode(t *testing.T) {
 func TestMesh_checkFacesSanity(t *testing.T) {
 	tests := []struct {
 		name string
-		m    *MeshResource
+		m    *Mesh
 		want bool
 	}{
-		{"i0==i1", &MeshResource{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{1, 1, 2}}}}, false},
-		{"i0==i2", &MeshResource{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{1, 2, 1}}}}, false},
-		{"i1==i2", &MeshResource{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{2, 1, 1}}}}, false},
-		{"i0big", &MeshResource{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{3, 1, 2}}}}, false},
-		{"i1big", &MeshResource{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{0, 3, 2}}}}, false},
-		{"i2big", &MeshResource{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{0, 1, 3}}}}, false},
-		{"good", &MeshResource{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{0, 1, 2}}}}, true},
+		{"i0==i1", &Mesh{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{1, 1, 2}}}}, false},
+		{"i0==i2", &Mesh{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{1, 2, 1}}}}, false},
+		{"i1==i2", &Mesh{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{2, 1, 1}}}}, false},
+		{"i0big", &Mesh{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{3, 1, 2}}}}, false},
+		{"i1big", &Mesh{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{0, 3, 2}}}}, false},
+		{"i2big", &Mesh{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{0, 1, 3}}}}, false},
+		{"good", &Mesh{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{0, 1, 2}}}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.m.checkFacesSanity(); got != tt.want {
-				t.Errorf("MeshResource.checkFacesSanity() = %v, want %v", got, tt.want)
+				t.Errorf("Mesh.checkFacesSanity() = %v, want %v", got, tt.want)
 			}
 		})
 	}

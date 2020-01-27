@@ -1,12 +1,12 @@
 package go3mf
 
 // CheckSanity checks if the mesh is well formated.
-func (m *MeshResource) CheckSanity() bool {
+func (m *Mesh) CheckSanity() bool {
 	return m.checkFacesSanity()
 }
 
 // IsManifoldAndOriented returns true if the mesh is manifold and oriented.
-func (m *MeshResource) IsManifoldAndOriented() bool {
+func (m *Mesh) IsManifoldAndOriented() bool {
 	if len(m.Nodes) < 3 || len(m.Faces) < 3 || !m.CheckSanity() {
 		return false
 	}
@@ -45,7 +45,7 @@ func (m *MeshResource) IsManifoldAndOriented() bool {
 	return true
 }
 
-func (m *MeshResource) checkFacesSanity() bool {
+func (m *Mesh) checkFacesSanity() bool {
 	nodeCount := uint32(len(m.Nodes))
 	for _, face := range m.Faces {
 		i0, i1, i2 := face.NodeIndices[0], face.NodeIndices[1], face.NodeIndices[2]
@@ -67,11 +67,11 @@ type MeshBuilder struct {
 	// Using this option produces an speed penalty.
 	CalculateConnectivity bool
 	// Do not modify the pointer to Mesh once the build process has started.
-	Mesh       *MeshResource
+	Mesh       *Mesh
 	vectorTree vectorTree
 }
 
-func NewMeshBuilder(m *MeshResource) *MeshBuilder {
+func NewMeshBuilder(m *Mesh) *MeshBuilder {
 	return &MeshBuilder{
 		Mesh:                  m,
 		CalculateConnectivity: true,

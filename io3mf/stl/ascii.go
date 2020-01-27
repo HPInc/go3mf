@@ -17,7 +17,7 @@ type asciiDecoder struct {
 	units float32
 }
 
-func (d *asciiDecoder) decode(ctx context.Context, m *go3mf.MeshResource) (err error) {
+func (d *asciiDecoder) decode(ctx context.Context, m *go3mf.Mesh) (err error) {
 	mb := go3mf.NewMeshBuilder(m)
 	position := 0
 	nextFaceCheck := checkEveryFaces
@@ -63,7 +63,7 @@ type asciiEncoder struct {
 
 const pstr = "solid\nfacet normal %f %f %f\nouter loop\nvertex %f %f %f\nvertex %f %f %f\nvertex %f %f %f\nendloop\nendfacet\nendsolid\n"
 
-func (e *asciiEncoder) encode(m *go3mf.MeshResource) error {
+func (e *asciiEncoder) encode(m *go3mf.Mesh) error {
 	for _, f := range m.Faces {
 		n1, n2, n3 := m.Nodes[f.NodeIndices[0]], m.Nodes[f.NodeIndices[1]], m.Nodes[f.NodeIndices[2]]
 		n := faceNormal(n1, n2, n3)

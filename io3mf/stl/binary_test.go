@@ -19,7 +19,7 @@ func Test_binaryDecoder_decode(t *testing.T) {
 		name    string
 		d       *binaryDecoder
 		ctx     context.Context
-		want    *go3mf.MeshResource
+		want    *go3mf.Mesh
 		wantErr bool
 	}{
 		{"base", &binaryDecoder{r: bytes.NewReader(triangle)}, context.Background(), createMeshTriangle(0), false},
@@ -30,7 +30,7 @@ func Test_binaryDecoder_decode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := new(go3mf.MeshResource)
+			got := new(go3mf.Mesh)
 			err := tt.d.decode(tt.ctx, got)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("binaryDecoder.decode() error = %v, wantErr %v", err, tt.wantErr)
@@ -49,7 +49,7 @@ func Test_binaryDecoder_decode(t *testing.T) {
 func Test_binaryEncoder_encode(t *testing.T) {
 	triangle := createMeshTriangle(0)
 	type args struct {
-		m *go3mf.MeshResource
+		m *go3mf.Mesh
 	}
 	tests := []struct {
 		name    string
@@ -70,7 +70,7 @@ func Test_binaryEncoder_encode(t *testing.T) {
 			if !tt.wantErr {
 				// We do decoder and then encoder again, and the result must be the same
 				decoder := &binaryDecoder{r: tt.e.w.(*bytes.Buffer)}
-				got := new(go3mf.MeshResource)
+				got := new(go3mf.Mesh)
 				decoder.decode(context.Background(), got)
 				if diff := deep.Equal(got, tt.args.m); diff != nil {
 					t.Errorf("binaryDecoder.encode() = %v", diff)
@@ -94,8 +94,8 @@ func (w *errorWriter) Write(p []byte) (n int, err error) {
 	return 0, nil
 }
 
-func createMeshTriangle(id uint32) *go3mf.MeshResource {
-	m := new(go3mf.MeshResource)
+func createMeshTriangle(id uint32) *go3mf.Mesh {
+	m := new(go3mf.Mesh)
 	m.ID = id
 	mb := go3mf.NewMeshBuilder(m)
 	n1 := mb.AddNode(go3mf.Point3D{-20.0, -20.0, 0.0})

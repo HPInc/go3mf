@@ -16,7 +16,7 @@ type extensionDecoder struct{}
 
 func (d *extensionDecoder) NodeDecoder(parentNode interface{}, nodeName string) iohelper.NodeDecoder {
 	if nodeName == attrBeamLattice {
-		return &beamLatticeDecoder{mesh: parentNode.(*go3mf.MeshResource)}
+		return &beamLatticeDecoder{mesh: parentNode.(*go3mf.Mesh)}
 	}
 	return nil
 }
@@ -27,7 +27,7 @@ func (d *extensionDecoder) DecodeAttribute(_ *iohelper.Scanner, _ interface{}, _
 
 type beamLatticeDecoder struct {
 	iohelper.EmptyDecoder
-	mesh *go3mf.MeshResource
+	mesh *go3mf.Mesh
 }
 
 func (d *beamLatticeDecoder) Attributes(attrs []xml.Attr) bool {
@@ -80,7 +80,7 @@ func (d *beamLatticeDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
 
 type beamsDecoder struct {
 	iohelper.EmptyDecoder
-	mesh        *go3mf.MeshResource
+	mesh        *go3mf.Mesh
 	beamDecoder beamDecoder
 }
 
@@ -97,7 +97,7 @@ func (d *beamsDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
 
 type beamDecoder struct {
 	iohelper.EmptyDecoder
-	mesh *go3mf.MeshResource
+	mesh *go3mf.Mesh
 }
 
 func (d *beamDecoder) Attributes(attrs []xml.Attr) bool {
@@ -159,7 +159,7 @@ func (d *beamDecoder) Attributes(attrs []xml.Attr) bool {
 
 type beamSetsDecoder struct {
 	iohelper.EmptyDecoder
-	mesh *go3mf.MeshResource
+	mesh *go3mf.Mesh
 }
 
 func (d *beamSetsDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
@@ -171,7 +171,7 @@ func (d *beamSetsDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
 
 type beamSetDecoder struct {
 	iohelper.EmptyDecoder
-	mesh           *go3mf.MeshResource
+	mesh           *go3mf.Mesh
 	beamSet        BeamSet
 	beamRefDecoder beamRefDecoder
 }
