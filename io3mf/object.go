@@ -54,7 +54,7 @@ func (d *objectDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
 			if d.resource.DefaultPropertyID != 0 {
 				d.Scanner.GenericError(true, "default PID is not supported for component objects")
 			}
-			child = &componentsDecoder{resource: go3mf.ComponentsResource{ObjectResource: d.resource}}
+			child = &componentsDecoder{resource: go3mf.Components{ObjectResource: d.resource}}
 		} else if name.Local == attrMetadataGroup {
 			child = &metadataGroupDecoder{metadatas: &d.resource.Metadata}
 		}
@@ -89,7 +89,7 @@ func (d *objectDecoder) parseCoreAttr(a xml.Attr) bool {
 
 type componentsDecoder struct {
 	iohelper.EmptyDecoder
-	resource         go3mf.ComponentsResource
+	resource         go3mf.Components
 	componentDecoder componentDecoder
 }
 
@@ -110,7 +110,7 @@ func (d *componentsDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
 
 type componentDecoder struct {
 	iohelper.EmptyDecoder
-	resource *go3mf.ComponentsResource
+	resource *go3mf.Components
 }
 
 func (d *componentDecoder) Attributes(attrs []xml.Attr) bool {

@@ -233,14 +233,14 @@ func (c *Component) HasTransform() bool {
 	return c.Transform != Matrix{} && c.Transform != Identity()
 }
 
-// A ComponentsResource resource is an in memory representation of the 3MF component object.
-type ComponentsResource struct {
+// A Components resource is an in memory representation of the 3MF component object.
+type Components struct {
 	ObjectResource
 	Components []*Component
 }
 
 // IsValid checks if the component resource and all its child are valid.
-func (c *ComponentsResource) IsValid() bool {
+func (c *Components) IsValid() bool {
 	if len(c.Components) == 0 {
 		return false
 	}
@@ -285,4 +285,98 @@ func (c *Mesh) IsValid() bool {
 	}
 
 	return false
+}
+
+// CheckSanity checks if the mesh is well formated.
+func (m *Mesh) CheckSanity() bool {
+	return m.checkFacesSanity()
+}
+
+// IsManifoldAndOriented returns true if the mesh is manifold and oriented.
+func (m *Mesh) IsManifoldAndOriented() bool {
+	if len(m.Nodes) < 3 || len(m.Faces) < 3 || !m.CheckSanity() {
+		return false
+	}
+
+	var edgeCounter uint32
+	pairMatching := newPairMatch()
+	for _, face := range m.Faces {
+		for j := uint32(0); j < 3; j++ {
+			n1, n2 := face.NodeIndices[j], face.NodeIndices[(j+1)%3]
+			if _, ok := pairMatching.CheckMatch(n1, n2); !ok {
+				pairMatching.AddMatch(n1, n2, edgeCounter)
+				edgeCounter++
+			}
+		}
+	}
+
+	positive, negative := make([]uint32, edgeCounter), make([]uint32, edgeCounter)
+	for _, face := range m.Faces {
+		for j := uint32(0); j < 3; j++ {
+			n1, n2 := face.NodeIndices[j], face.NodeIndices[(j+1)%3]
+			edgeIndex, _ := pairMatching.CheckMatch(n1, n2)
+			if n1 <= n2 {
+				positive[edgeIndex]++
+			} else {
+				negative[edgeIndex]++
+			}
+		}
+	}
+
+	for i := uint32(0); i < edgeCounter; i++ {
+		if positive[i] != 1 || negative[i] != 1 {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (m *Mesh) checkFacesSanity() bool {
+	nodeCount := uint32(len(m.Nodes))
+	for _, face := range m.Faces {
+		i0, i1, i2 := face.NodeIndices[0], face.NodeIndices[1], face.NodeIndices[2]
+		if i0 == i1 || i0 == i2 || i1 == i2 {
+			return false
+		}
+		if i0 >= nodeCount || i1 >= nodeCount || i2 >= nodeCount {
+			return false
+		}
+	}
+	return true
+}
+
+// MeshBuilder is a helper that creates mesh following a configurable criteria.
+// It must be instantiated using NewMeshBuilder.
+type MeshBuilder struct {
+	// True to automatically check if a node with the same coordinates already exists in the mesh
+	// when calling AddNode. If it exists, the return value will be the existing node and no node will be added.
+	// Using this option produces an speed penalty.
+	CalculateConnectivity bool
+	// Do not modify the pointer to Mesh once the build process has started.
+	Mesh       *Mesh
+	vectorTree vectorTree
+}
+
+func NewMeshBuilder(m *Mesh) *MeshBuilder {
+	return &MeshBuilder{
+		Mesh:                  m,
+		CalculateConnectivity: true,
+		vectorTree:            vectorTree{},
+	}
+}
+
+// AddNode adds a node the the mesh at the target position.
+func (mb *MeshBuilder) AddNode(node Point3D) uint32 {
+	if mb.CalculateConnectivity {
+		if index, ok := mb.vectorTree.FindVector(node); ok {
+			return index
+		}
+	}
+	mb.Mesh.Nodes = append(mb.Mesh.Nodes, node)
+	index := uint32(len(mb.Mesh.Nodes)) - 1
+	if mb.CalculateConnectivity {
+		mb.vectorTree.AddVector(node, index)
+	}
+	return index
 }

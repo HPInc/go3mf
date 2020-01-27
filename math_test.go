@@ -210,3 +210,122 @@ func TestPoint3D_Cross(t *testing.T) {
 		})
 	}
 }
+
+
+func Test_newPairMatch(t *testing.T) {
+	tests := []struct {
+		name string
+		want *pairMatch
+	}{
+		{"new", &pairMatch{map[pairEntry]uint32{}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := newPairMatch(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("newPairMatch() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_pairMatch_AddMatch(t *testing.T) {
+	p := newPairMatch()
+	type args struct {
+		data1 uint32
+		data2 uint32
+		param uint32
+	}
+	tests := []struct {
+		name string
+		t    *pairMatch
+		args args
+	}{
+		{"new", p, args{1, 1, 2}},
+		{"old", p, args{1, 1, 4}},
+		{"new2", p, args{2, 1, 5}},
+		{"old2", p, args{2, 1, 1}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.t.AddMatch(tt.args.data1, tt.args.data2, tt.args.param)
+			got, ok := p.CheckMatch(tt.args.data1, tt.args.data2)
+			if !ok {
+				t.Error("pairMatch.AddMatch() haven't added the match")
+				return
+			}
+			if got != tt.args.param {
+				t.Errorf("pairMatch.CheckMatch() = %v, want %v", got, tt.args.param)
+			}
+		})
+	}
+}
+
+func Test_pairMatch_DeleteMatch(t *testing.T) {
+	p := newPairMatch()
+	p.AddMatch(1, 2, 5)
+	type args struct {
+		data1 uint32
+		data2 uint32
+	}
+	tests := []struct {
+		name string
+		t    *pairMatch
+		args args
+	}{
+		{"nil", p, args{2, 3}},
+		{"old", p, args{1, 2}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.t.DeleteMatch(tt.args.data1, tt.args.data2)
+			_, ok := p.CheckMatch(tt.args.data1, tt.args.data2)
+			if ok {
+				t.Error("pairMatch.DeleteMatch() haven't deleted the match")
+			}
+		})
+	}
+}
+
+func Test_newPairEntry(t *testing.T) {
+	type args struct {
+		data1 uint32
+		data2 uint32
+	}
+	tests := []struct {
+		name string
+		args args
+		want pairEntry
+	}{
+		{"d1=d2", args{1, 1}, pairEntry{1, 1}},
+		{"d1>d2", args{2, 1}, pairEntry{1, 2}},
+		{"d1<d2", args{1, 2}, pairEntry{1, 2}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := newPairEntry(tt.args.data1, tt.args.data2); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("newPairEntry() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMatrix_Mul(t *testing.T) {
+	type args struct {
+		m2 Matrix
+	}
+	tests := []struct {
+		name string
+		m1   Matrix
+		args args
+		want Matrix
+	}{
+		{"base", Identity(), args{Identity()}, Identity()},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m1.Mul(tt.args.m2); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Matrix.Mul() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
