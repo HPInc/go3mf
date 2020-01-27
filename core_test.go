@@ -15,10 +15,9 @@ type MockObject struct {
 	mock.Mock
 }
 
-func NewMockObject(isValid, isValidForSlices bool) *MockObject {
+func NewMockObject(isValid bool) *MockObject {
 	o := new(MockObject)
 	o.On("IsValid").Return(isValid)
-	o.On("IsValidForSlices", mock.Anything).Return(isValidForSlices)
 	return o
 }
 
@@ -33,11 +32,6 @@ func (o *MockObject) Type() ObjectType {
 
 func (o *MockObject) IsValid() bool {
 	args := o.Called()
-	return args.Bool(0)
-}
-
-func (o *MockObject) IsValidForSlices(args0 geo.Matrix) bool {
-	args := o.Called(args0)
 	return args.Bool(0)
 }
 
@@ -158,8 +152,8 @@ func TestComponentsResource_IsValid(t *testing.T) {
 		want bool
 	}{
 		{"empty", new(ComponentsResource), false},
-		{"oneInvalid", &ComponentsResource{Components: []*Component{{Object: NewMockObject(true, true)}, {Object: NewMockObject(false, true)}}}, false},
-		{"valid", &ComponentsResource{Components: []*Component{{Object: NewMockObject(true, true)}, {Object: NewMockObject(true, true)}}}, true},
+		{"oneInvalid", &ComponentsResource{Components: []*Component{{Object: NewMockObject(true)}, {Object: NewMockObject(false)}}}, false},
+		{"valid", &ComponentsResource{Components: []*Component{{Object: NewMockObject(true)}, {Object: NewMockObject(true)}}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

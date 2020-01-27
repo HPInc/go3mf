@@ -6,6 +6,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"io"
+	"io/ioutil"
 	"os"
 	"sort"
 	"sync"
@@ -13,6 +14,18 @@ import (
 	go3mf "github.com/qmuntal/go3mf"
 	"github.com/qmuntal/go3mf/iohelper"
 )
+
+type ExtensionDecoder interface {
+	NodeDecoder(nodeName string) iohelper.NodeDecoder
+	DecodeAttribute(s *iohelper.Scanner, parentNode interface{}, attr xml.Attr) bool
+}
+
+var extensionDecoder = make(map[string]ExtensionDecoder)
+
+// RegisterExtensionDecoder registers a ExtensionDecoder.
+func RegisterExtensionDecoder(key string, e ExtensionDecoder) {
+	extensionDecoder[key] = e
+}
 
 // A XMLDecoder is anything that can decode a stream of XML tokens, including a Decoder.
 type XMLDecoder interface {
@@ -66,33 +79,13 @@ func (r *ReadCloser) Close() error {
 	return r.f.Close()
 }
 
-type nodeDecoder interface {
-	Open()
-	Attributes([]xml.Attr) bool
-	Text([]byte) bool
-	Child(xml.Name) nodeDecoder
-	Close() bool
-	SetScanner(*iohelper.Scanner)
-}
-
-type emptyDecoder struct {
-	scanner *iohelper.Scanner
-}
-
-func (d *emptyDecoder) Open()                          { return }
-func (d *emptyDecoder) Attributes([]xml.Attr) bool     { return true }
-func (d *emptyDecoder) Text([]byte) bool               { return true }
-func (d *emptyDecoder) Child(xml.Name) nodeDecoder     { return nil }
-func (d *emptyDecoder) Close() bool                    { return true }
-func (d *emptyDecoder) SetScanner(s *iohelper.Scanner) { d.scanner = s }
-
 type topLevelDecoder struct {
-	emptyDecoder
+	iohelper.EmptyDecoder
 	model  *go3mf.Model
 	isRoot bool
 }
 
-func (d *topLevelDecoder) Child(name xml.Name) (child nodeDecoder) {
+func (d *topLevelDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
 	modelName := xml.Name{Space: nsCoreSpec, Local: attrModel}
 	if name == modelName {
 		child = &modelDecoder{model: d.model}
@@ -102,26 +95,26 @@ func (d *topLevelDecoder) Child(name xml.Name) (child nodeDecoder) {
 
 // modelFileDecoder cannot be reused between goroutines.
 type modelFileDecoder struct {
-	scanner *iohelper.Scanner
+	Scanner *iohelper.Scanner
 }
 
 func (d *modelFileDecoder) Decode(ctx context.Context, x XMLDecoder, model *go3mf.Model, path string, isRoot, strict bool) (err error) {
-	d.scanner = iohelper.NewScanner(model)
-	d.scanner.IsRoot = isRoot
-	d.scanner.Strict = strict
-	d.scanner.ModelPath = path
-	state := make([]nodeDecoder, 0, 10)
+	d.Scanner = iohelper.NewScanner(model)
+	d.Scanner.IsRoot = isRoot
+	d.Scanner.Strict = strict
+	d.Scanner.ModelPath = path
+	state := make([]iohelper.NodeDecoder, 0, 10)
 	names := make([]xml.Name, 0, 10)
 
 	var (
-		currentDecoder nodeDecoder
-		tmpDecoder     nodeDecoder
+		currentDecoder iohelper.NodeDecoder
+		tmpDecoder     iohelper.NodeDecoder
 		currentName    xml.Name
 		t              xml.Token
 	)
 	nextBytesCheck := checkEveryBytes
 	currentDecoder = &topLevelDecoder{isRoot: isRoot, model: model}
-	currentDecoder.SetScanner(d.scanner)
+	currentDecoder.SetScanner(d.Scanner)
 
 	for {
 		t, err = x.Token()
@@ -132,31 +125,31 @@ func (d *modelFileDecoder) Decode(ctx context.Context, x XMLDecoder, model *go3m
 		case xml.StartElement:
 			tmpDecoder = currentDecoder.Child(tp.Name)
 			if tmpDecoder != nil {
-				tmpDecoder.SetScanner(d.scanner)
+				tmpDecoder.SetScanner(d.Scanner)
 				state = append(state, currentDecoder)
 				names = append(names, currentName)
 				currentName = tp.Name
-				d.scanner.Element = tp.Name.Local
+				d.Scanner.Element = tp.Name.Local
 				currentDecoder = tmpDecoder
 				currentDecoder.Open()
 				if !currentDecoder.Attributes(tp.Attr) {
-					err = d.scanner.Err
+					err = d.Scanner.Err
 				}
 			} else {
 				err = x.Skip()
 			}
 		case xml.CharData:
 			if !currentDecoder.Text(tp) {
-				err = d.scanner.Err
+				err = d.Scanner.Err
 			}
 		case xml.EndElement:
 			if currentName == tp.Name {
-				d.scanner.Element = tp.Name.Local
+				d.Scanner.Element = tp.Name.Local
 				if currentDecoder.Close() {
 					currentDecoder, state = state[len(state)-1], state[:len(state)-1]
 					currentName, names = names[len(names)-1], names[:len(names)-1]
 				} else {
-					err = d.scanner.Err
+					err = d.Scanner.Err
 				}
 			}
 			if x.InputOffset() > nextBytesCheck {
@@ -232,6 +225,11 @@ func (d *Decoder) tokenReader(r io.Reader) XMLDecoder {
 	return d.x(r)
 }
 
+// DecodeRawModel fills a model with the raw content of one model file.
+func (d *Decoder) DecodeRawModel(ctx context.Context, model *go3mf.Model, content string) error {
+	return d.processRootModel(ctx, &fakePackageFile{str: content}, model)
+}
+
 func (d *Decoder) processRootModel(ctx context.Context, rootFile packageFile, model *go3mf.Model) error {
 	f, err := rootFile.Open()
 	if err != nil {
@@ -245,7 +243,7 @@ func (d *Decoder) processRootModel(ctx context.Context, rootFile packageFile, mo
 		err = ctx.Err()
 	default: // Default is must to avoid blocking
 	}
-	d.addModelFile(mf.scanner, model)
+	d.addModelFile(mf.Scanner, model)
 	return err
 }
 
@@ -389,7 +387,7 @@ func (d *Decoder) readProductionAttachmentModel(ctx context.Context, i int, mode
 	defer file.Close()
 	mf := modelFileDecoder{}
 	err = mf.Decode(ctx, d.tokenReader(file), model, attachment.Path, false, d.Strict)
-	return mf.scanner, err
+	return mf.Scanner, err
 }
 
 func copyFile(file packageFile) (io.Reader, error) {
@@ -401,4 +399,15 @@ func copyFile(file packageFile) (io.Reader, error) {
 	_, err = io.Copy(buff, stream)
 	stream.Close()
 	return buff, err
+}
+
+type fakePackageFile struct {
+	str string
+}
+
+func (f *fakePackageFile) Name() string                               { return "/3d/3dmodel.model" }
+func (f *fakePackageFile) FindFileFromRel(string) (packageFile, bool) { return nil, false }
+func (f *fakePackageFile) Relationships() []relationship              { return nil }
+func (f *fakePackageFile) Open() (io.ReadCloser, error) {
+	return ioutil.NopCloser(bytes.NewBufferString(f.str)), nil
 }

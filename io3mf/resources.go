@@ -4,15 +4,15 @@ import (
 	"encoding/xml"
 	"image/color"
 
-	go3mf "github.com/qmuntal/go3mf"
+	"github.com/qmuntal/go3mf"
 	"github.com/qmuntal/go3mf/iohelper"
 )
 
 type resourceDecoder struct {
-	emptyDecoder
+	iohelper.EmptyDecoder
 }
 
-func (d *resourceDecoder) Child(name xml.Name) (child nodeDecoder) {
+func (d *resourceDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
 	if name.Space == nsCoreSpec {
 		switch name.Local {
 		case attrObject:
@@ -33,32 +33,33 @@ func (d *resourceDecoder) Child(name xml.Name) (child nodeDecoder) {
 		case attrMultiProps:
 			child = new(multiPropertiesDecoder)
 		}
-	} else if name.Space == nsSliceSpec && name.Local == attrSliceStack {
-		child = &sliceStackDecoder{}
+	}
+	if ext, ok := extensionDecoder[name.Space]; ok {
+		child = ext.NodeDecoder(name.Local)
 	}
 	return
 }
 
 type baseMaterialsDecoder struct {
-	emptyDecoder
+	iohelper.EmptyDecoder
 	resource            go3mf.BaseMaterialsResource
 	baseMaterialDecoder baseMaterialDecoder
 }
 
 func (d *baseMaterialsDecoder) Open() {
-	d.resource.ModelPath = d.scanner.ModelPath
+	d.resource.ModelPath = d.Scanner.ModelPath
 	d.baseMaterialDecoder.resource = &d.resource
 }
 
 func (d *baseMaterialsDecoder) Close() bool {
-	ok := d.scanner.CloseResource()
+	ok := d.Scanner.CloseResource()
 	if ok {
-		d.scanner.AddResource(&d.resource)
+		d.Scanner.AddResource(&d.resource)
 	}
 	return ok
 }
 
-func (d *baseMaterialsDecoder) Child(name xml.Name) (child nodeDecoder) {
+func (d *baseMaterialsDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
 	if name.Space == nsCoreSpec && name.Local == attrBase {
 		child = &d.baseMaterialDecoder
 	}
@@ -69,7 +70,7 @@ func (d *baseMaterialsDecoder) Attributes(attrs []xml.Attr) bool {
 	ok := true
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrID {
-			d.resource.ID, ok = d.scanner.ParseResourceID(a.Value)
+			d.resource.ID, ok = d.Scanner.ParseResourceID(a.Value)
 			break
 		}
 	}
@@ -77,7 +78,7 @@ func (d *baseMaterialsDecoder) Attributes(attrs []xml.Attr) bool {
 }
 
 type baseMaterialDecoder struct {
-	emptyDecoder
+	iohelper.EmptyDecoder
 	resource *go3mf.BaseMaterialsResource
 }
 
@@ -95,16 +96,16 @@ func (d *baseMaterialDecoder) Attributes(attrs []xml.Attr) bool {
 			baseColor, err = iohelper.ReadRGB(a.Value)
 			withColor = true
 			if err != nil {
-				ok = d.scanner.InvalidRequiredAttr(attrBaseMaterialColor, a.Value)
+				ok = d.Scanner.InvalidRequiredAttr(attrBaseMaterialColor, a.Value)
 			}
 		}
 	}
 	if ok {
 		if name == "" {
-			ok = d.scanner.MissingAttr(attrName)
+			ok = d.Scanner.MissingAttr(attrName)
 		}
 		if !withColor {
-			ok = d.scanner.MissingAttr(attrBaseMaterialColor)
+			ok = d.Scanner.MissingAttr(attrBaseMaterialColor)
 		}
 		d.resource.Materials = append(d.resource.Materials, go3mf.BaseMaterial{Name: name, Color: baseColor})
 	}

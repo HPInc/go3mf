@@ -1,6 +1,7 @@
 package iohelper
 
 import (
+	"encoding/xml"
 	"errors"
 	"image/color"
 	"strconv"
@@ -10,7 +11,40 @@ import (
 	"github.com/qmuntal/go3mf/geo"
 )
 
-// A scanner is a 3mf model file scanning state machine.
+// NodeDecoder defines the minimum contract to decode a 3MF node.
+type NodeDecoder interface {
+	Open()
+	Attributes([]xml.Attr) bool
+	Text([]byte) bool
+	Child(xml.Name) NodeDecoder
+	Close() bool
+	SetScanner(*Scanner)
+}
+
+// EmptyDecoder defines a base class for all decoders.
+type EmptyDecoder struct {
+	Scanner *Scanner
+}
+
+// Open do nothing.
+func (d *EmptyDecoder) Open() { return }
+
+// Attributes returns true.
+func (d *EmptyDecoder) Attributes([]xml.Attr) bool { return true }
+
+// Text returns true.
+func (d *EmptyDecoder) Text([]byte) bool { return true }
+
+// Child returns nil.
+func (d *EmptyDecoder) Child(xml.Name) NodeDecoder { return nil }
+
+// Close returns true.
+func (d *EmptyDecoder) Close() bool { return true }
+
+// SetScanner sets the scanner.
+func (d *EmptyDecoder) SetScanner(s *Scanner) { d.Scanner = s }
+
+// A Scanner is a 3mf model file scanning state machine.
 type Scanner struct {
 	Resources    []go3mf.Resource
 	BuildItems   []*go3mf.BuildItem

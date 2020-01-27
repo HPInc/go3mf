@@ -3,7 +3,7 @@ package io3mf
 import (
 	"errors"
 
-	go3mf "github.com/qmuntal/go3mf"
+	"github.com/qmuntal/go3mf"
 	"github.com/qmuntal/go3mf/geo"
 )
 
@@ -16,7 +16,6 @@ const (
 	nsMaterialSpec    = "http://schemas.microsoft.com/3dmanufacturing/material/2015/02"
 	nsProductionSpec  = "http://schemas.microsoft.com/3dmanufacturing/production/2015/06"
 	nsBeamLatticeSpec = "http://schemas.microsoft.com/3dmanufacturing/beamlattice/2017/02"
-	nsSliceSpec       = "http://schemas.microsoft.com/3dmanufacturing/slice/2015/07"
 )
 
 const (
@@ -57,25 +56,14 @@ const (
 	attrTileStyleV         = "tilestylev"
 	attrFilter             = "filter"
 	attrTexture2D          = "texture2d"
-	attrZBottom            = "zbottom"
-	attrSlice              = "slice"
-	attrSliceRef           = "sliceref"
-	attrZTop               = "ztop"
 	attrVertices           = "vertices"
 	attrVertex             = "vertex"
-	attrPolygon            = "polygon"
-	attrSliceStack         = "slicestack"
 	attrX                  = "x"
 	attrY                  = "y"
 	attrZ                  = "z"
-	attrSegment            = "segment"
 	attrV1                 = "v1"
 	attrV2                 = "v2"
 	attrV3                 = "v3"
-	attrStartV             = "startv"
-	attrSliceRefID         = "slicestackid"
-	attrSlicePath          = "slicepath"
-	attrMeshRes            = "meshresolution"
 	attrType               = "type"
 	attrThumbnail          = "thumbnail"
 	attrPID                = "pid"
@@ -191,14 +179,6 @@ func newObjectType(s string) (o go3mf.ObjectType, ok bool) {
 		"support":      go3mf.ObjectTypeSupport,
 		"solidsupport": go3mf.ObjectTypeSolidSupport,
 		"surface":      go3mf.ObjectTypeSurface,
-	}[s]
-	return
-}
-
-func newSliceResolution(s string) (r go3mf.SliceResolution, ok bool) {
-	r, ok = map[string]go3mf.SliceResolution{
-		"fullres": go3mf.ResolutionFull,
-		"lowres":  go3mf.ResolutionLow,
 	}[s]
 	return
 }

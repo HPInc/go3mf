@@ -5,10 +5,11 @@ import (
 
 	"github.com/qmuntal/go3mf"
 	"github.com/qmuntal/go3mf/geo"
+	"github.com/qmuntal/go3mf/iohelper"
 )
 
 type meshDecoder struct {
-	emptyDecoder
+	iohelper.EmptyDecoder
 	resource go3mf.MeshResource
 }
 
@@ -17,11 +18,11 @@ func (d *meshDecoder) Open() {
 }
 
 func (d *meshDecoder) Close() bool {
-	d.scanner.AddResource(&d.resource)
+	d.Scanner.AddResource(&d.resource)
 	return true
 }
 
-func (d *meshDecoder) Child(name xml.Name) (child nodeDecoder) {
+func (d *meshDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
 	if name.Space == nsCoreSpec {
 		if name.Local == attrVertices {
 			child = &verticesDecoder{resource: &d.resource}
@@ -35,7 +36,7 @@ func (d *meshDecoder) Child(name xml.Name) (child nodeDecoder) {
 }
 
 type verticesDecoder struct {
-	emptyDecoder
+	iohelper.EmptyDecoder
 	resource      *go3mf.MeshResource
 	vertexDecoder vertexDecoder
 }
@@ -44,7 +45,7 @@ func (d *verticesDecoder) Open() {
 	d.vertexDecoder.resource = d.resource
 }
 
-func (d *verticesDecoder) Child(name xml.Name) (child nodeDecoder) {
+func (d *verticesDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
 	if name.Space == nsCoreSpec && name.Local == attrVertex {
 		child = &d.vertexDecoder
 	}
@@ -52,7 +53,7 @@ func (d *verticesDecoder) Child(name xml.Name) (child nodeDecoder) {
 }
 
 type vertexDecoder struct {
-	emptyDecoder
+	iohelper.EmptyDecoder
 	resource *go3mf.MeshResource
 }
 
@@ -62,11 +63,11 @@ func (d *vertexDecoder) Attributes(attrs []xml.Attr) bool {
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrX:
-			x, ok = d.scanner.ParseFloat32Required(attrX, a.Value)
+			x, ok = d.Scanner.ParseFloat32Required(attrX, a.Value)
 		case attrY:
-			y, ok = d.scanner.ParseFloat32Required(attrY, a.Value)
+			y, ok = d.Scanner.ParseFloat32Required(attrY, a.Value)
 		case attrZ:
-			z, ok = d.scanner.ParseFloat32Required(attrZ, a.Value)
+			z, ok = d.Scanner.ParseFloat32Required(attrZ, a.Value)
 		}
 		if !ok {
 			return false
@@ -77,7 +78,7 @@ func (d *vertexDecoder) Attributes(attrs []xml.Attr) bool {
 }
 
 type trianglesDecoder struct {
-	emptyDecoder
+	iohelper.EmptyDecoder
 	resource        *go3mf.MeshResource
 	triangleDecoder triangleDecoder
 }
@@ -90,7 +91,7 @@ func (d *trianglesDecoder) Open() {
 	}
 }
 
-func (d *trianglesDecoder) Child(name xml.Name) (child nodeDecoder) {
+func (d *trianglesDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
 	if name.Space == nsCoreSpec && name.Local == attrTriangle {
 		child = &d.triangleDecoder
 	}
@@ -98,7 +99,7 @@ func (d *trianglesDecoder) Child(name xml.Name) (child nodeDecoder) {
 }
 
 type triangleDecoder struct {
-	emptyDecoder
+	iohelper.EmptyDecoder
 	resource *go3mf.MeshResource
 }
 
@@ -109,22 +110,22 @@ func (d *triangleDecoder) Attributes(attrs []xml.Attr) bool {
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrV1:
-			v1, ok = d.scanner.ParseUint32Required(attrV1, a.Value)
+			v1, ok = d.Scanner.ParseUint32Required(attrV1, a.Value)
 		case attrV2:
-			v2, ok = d.scanner.ParseUint32Required(attrV2, a.Value)
+			v2, ok = d.Scanner.ParseUint32Required(attrV2, a.Value)
 		case attrV3:
-			v3, ok = d.scanner.ParseUint32Required(attrV3, a.Value)
+			v3, ok = d.Scanner.ParseUint32Required(attrV3, a.Value)
 		case attrPID:
-			pid = d.scanner.ParseUint32Optional(attrPID, a.Value)
+			pid = d.Scanner.ParseUint32Optional(attrPID, a.Value)
 			hasPID = true
 		case attrP1:
-			p1 = d.scanner.ParseUint32Optional(attrP1, a.Value)
+			p1 = d.Scanner.ParseUint32Optional(attrP1, a.Value)
 			hasP1 = true
 		case attrP2:
-			p2 = d.scanner.ParseUint32Optional(attrP2, a.Value)
+			p2 = d.Scanner.ParseUint32Optional(attrP2, a.Value)
 			hasP2 = true
 		case attrP3:
-			p3 = d.scanner.ParseUint32Optional(attrP3, a.Value)
+			p3 = d.Scanner.ParseUint32Optional(attrP3, a.Value)
 			hasP3 = true
 		}
 		if !ok {
@@ -142,11 +143,11 @@ func (d *triangleDecoder) Attributes(attrs []xml.Attr) bool {
 
 func (d *triangleDecoder) addTriangle(v1, v2, v3, pid, p1, p2, p3 uint32) bool {
 	if v1 == v2 || v1 == v3 || v2 == v3 {
-		return d.scanner.GenericError(true, "duplicated triangle indices")
+		return d.Scanner.GenericError(true, "duplicated triangle indices")
 	}
 	nodeCount := uint32(len(d.resource.Mesh.Nodes))
 	if v1 >= nodeCount || v2 >= nodeCount || v3 >= nodeCount {
-		return d.scanner.GenericError(true, "triangle indices are out of range")
+		return d.Scanner.GenericError(true, "triangle indices are out of range")
 	}
 	d.resource.Mesh.Faces = append(d.resource.Mesh.Faces, geo.Face{
 		NodeIndices:     [3]uint32{v1, v2, v3},

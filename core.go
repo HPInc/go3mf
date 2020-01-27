@@ -95,7 +95,6 @@ type Resource interface {
 type Object interface {
 	Identify() (string, uint32)
 	IsValid() bool
-	IsValidForSlices(geo.Matrix) bool
 	Type() ObjectType
 }
 
@@ -233,13 +232,12 @@ type ObjectResource struct {
 	UUID                 string
 	Name                 string
 	PartNumber           string
-	SliceStackID         uint32
-	SliceResoultion      SliceResolution
 	Thumbnail            string
 	DefaultPropertyID    uint32
 	DefaultPropertyIndex uint32
 	ObjectType           ObjectType
 	Metadata             []Metadata
+	Attr                 map[string]interface{}
 }
 
 // Identify returns the unique ID of the resource.

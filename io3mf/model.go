@@ -5,30 +5,31 @@ import (
 	"fmt"
 	"strings"
 
-	go3mf "github.com/qmuntal/go3mf"
+	"github.com/qmuntal/go3mf"
+	"github.com/qmuntal/go3mf/iohelper"
 )
 
 type modelDecoder struct {
-	emptyDecoder
-	model *go3mf.Model
+	iohelper.EmptyDecoder
+	model                *go3mf.Model
 	withinIgnoredElement bool
 }
 
-func (d *modelDecoder) Child(name xml.Name) (child nodeDecoder) {
+func (d *modelDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
 	if name.Space == nsCoreSpec {
 		switch name.Local {
 		case attrResources:
 			d.withinIgnoredElement = false
 			child = &resourceDecoder{}
 		case attrBuild:
-			if !d.scanner.IsRoot {
+			if !d.Scanner.IsRoot {
 				d.withinIgnoredElement = true
 			} else {
 				d.withinIgnoredElement = false
 				child = &buildDecoder{}
 			}
 		case attrMetadata:
-			if !d.scanner.IsRoot {
+			if !d.Scanner.IsRoot {
 				d.withinIgnoredElement = true
 			} else {
 				d.withinIgnoredElement = true
@@ -45,10 +46,10 @@ func (d *modelDecoder) Attributes(attrs []xml.Attr) bool {
 		if a.Name.Space == "" {
 			switch a.Name.Local {
 			case attrUnit:
-				if d.scanner.IsRoot {
+				if d.Scanner.IsRoot {
 					var ok bool
 					if d.model.Units, ok = newUnits(a.Value); !ok {
-						d.scanner.InvalidOptionalAttr(attrUnit, a.Value)
+						d.Scanner.InvalidOptionalAttr(attrUnit, a.Value)
 					}
 				}
 			case attrReqExt:
@@ -64,10 +65,12 @@ func (d *modelDecoder) Attributes(attrs []xml.Attr) bool {
 
 func (d *modelDecoder) checkRequiredExt(requiredExts string) bool {
 	for _, ext := range strings.Fields(requiredExts) {
-		ext = d.scanner.Namespaces[ext]
-		if ext != nsCoreSpec && ext != nsMaterialSpec && ext != nsProductionSpec && ext != nsBeamLatticeSpec && ext != nsSliceSpec {
-			if !d.scanner.GenericError(true, fmt.Sprintf("'%s' extension is not supported", ext)) {
-				return false
+		ext = d.Scanner.Namespaces[ext]
+		if ext != nsCoreSpec && ext != nsMaterialSpec && ext != nsProductionSpec && ext != nsBeamLatticeSpec {
+			if _, ok := extensionDecoder[ext]; !ok {
+				if !d.Scanner.GenericError(true, fmt.Sprintf("'%s' extension is not supported", ext)) {
+					return false
+				}
 			}
 		}
 	}
@@ -77,22 +80,22 @@ func (d *modelDecoder) checkRequiredExt(requiredExts string) bool {
 func (d *modelDecoder) noCoreAttribute(a xml.Attr) {
 	switch a.Name.Space {
 	case nsXML:
-		if d.scanner.IsRoot {
+		if d.Scanner.IsRoot {
 			if a.Name.Local == attrLang {
 				d.model.Language = a.Value
 			}
 		}
 	case attrXmlns:
-		d.scanner.Namespaces[a.Name.Local] = a.Value
+		d.Scanner.Namespaces[a.Name.Local] = a.Value
 	}
 }
 
 type metadataGroupDecoder struct {
-	emptyDecoder
+	iohelper.EmptyDecoder
 	metadatas *[]go3mf.Metadata
 }
 
-func (d *metadataGroupDecoder) Child(name xml.Name) (child nodeDecoder) {
+func (d *metadataGroupDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
 	if name.Space == nsCoreSpec && name.Local == attrMetadata {
 		child = &metadataDecoder{metadatas: d.metadatas}
 	}
@@ -100,7 +103,7 @@ func (d *metadataGroupDecoder) Child(name xml.Name) (child nodeDecoder) {
 }
 
 type metadataDecoder struct {
-	emptyDecoder
+	iohelper.EmptyDecoder
 	metadatas *[]go3mf.Metadata
 	metadata  go3mf.Metadata
 }
@@ -117,10 +120,10 @@ func (d *metadataDecoder) Attributes(attrs []xml.Attr) bool {
 			var ns string
 			if i < 0 {
 				d.metadata.Name = a.Value
-			} else if ns, ok = d.scanner.Namespaces[a.Value[0:i]]; ok {
+			} else if ns, ok = d.Scanner.Namespaces[a.Value[0:i]]; ok {
 				d.metadata.Name = ns + ":" + a.Value[i+1:]
 			} else {
-				ok = d.scanner.GenericError(true, "unregistered namespace")
+				ok = d.Scanner.GenericError(true, "unregistered namespace")
 			}
 		case attrType:
 			d.metadata.Type = a.Value

@@ -111,28 +111,6 @@ func Test_newObjectType(t *testing.T) {
 	}
 }
 
-func Test_newSliceResolution(t *testing.T) {
-	tests := []struct {
-		name   string
-		wantR  go3mf.SliceResolution
-		wantOk bool
-	}{
-		{"fullres", go3mf.ResolutionFull, true},
-		{"lowres", go3mf.ResolutionLow, true},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotR, gotOk := newSliceResolution(tt.name)
-			if !reflect.DeepEqual(gotR, tt.wantR) {
-				t.Errorf("newSliceResolution() gotR = %v, want %v", gotR, tt.wantR)
-			}
-			if gotOk != tt.wantOk {
-				t.Errorf("newSliceResolution() gotOk = %v, want %v", gotOk, tt.wantOk)
-			}
-		})
-	}
-}
-
 func Test_newClipMode(t *testing.T) {
 	tests := []struct {
 		name   string

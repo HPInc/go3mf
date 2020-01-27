@@ -1,9 +1,12 @@
-package geo
+package slices
 
 import (
 	"reflect"
 	"testing"
+	"github.com/qmuntal/go3mf/geo"
 )
+
+
 
 func TestSlice_BeginPolygon(t *testing.T) {
 	s := new(Slice)
@@ -47,7 +50,7 @@ func TestSlice_AddVertex(t *testing.T) {
 				t.Errorf("Slice.AddVertex() = %v, want %v", got, tt.want)
 				return
 			}
-			want := Point2D{tt.args.x, tt.args.y}
+			want := geo.Point2D{tt.args.x, tt.args.y}
 			if !reflect.DeepEqual(tt.s.Vertices[tt.want], want) {
 				t.Errorf("Slice.AddVertex() = %v, want %v", tt.s.Vertices[tt.want], want)
 			}
@@ -68,8 +71,8 @@ func TestSlice_AddPolygonIndex(t *testing.T) {
 	}{
 		{"emptyPolygon", new(Slice), args{0, 0}, true},
 		{"emptyVertices", &Slice{Polygons: [][]int{{}}}, args{0, 0}, true},
-		{"duplicated", &Slice{Polygons: [][]int{{0}}, Vertices: []Point2D{{}}}, args{0, 0}, true},
-		{"base", &Slice{Polygons: [][]int{{}}, Vertices: []Point2D{{}}}, args{0, 0}, false},
+		{"duplicated", &Slice{Polygons: [][]int{{0}}, Vertices: []geo.Point2D{{}}}, args{0, 0}, true},
+		{"base", &Slice{Polygons: [][]int{{}}, Vertices: []geo.Point2D{{}}}, args{0, 0}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -118,6 +121,75 @@ func TestSlice_IsPolygonValid(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.s.IsPolygonValid(tt.args.index); got != tt.want {
 				t.Errorf("Slice.IsPolygonValid() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+
+func TestSliceStack_AddSlice(t *testing.T) {
+	type args struct {
+		slice *Slice
+	}
+	tests := []struct {
+		name    string
+		s       *SliceStack
+		args    args
+		want    int
+		wantErr bool
+	}{
+		{"lower", &SliceStack{BottomZ: 1}, args{&Slice{TopZ: 0.5}}, 0, true},
+		{"top", &SliceStack{Slices: []*Slice{{TopZ: 1.0}}}, args{&Slice{TopZ: 0.5}}, 0, true},
+		{"ok", &SliceStack{BottomZ: 1, Slices: []*Slice{{TopZ: 1.0}}}, args{&Slice{TopZ: 2.0}}, 1, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.s.AddSlice(tt.args.slice)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("SliceStack.AddSlice() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("SliceStack.AddSlice() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSliceStackResource_Identify(t *testing.T) {
+	tests := []struct {
+		name  string
+		s     *SliceStackResource
+		want  string
+		want1 uint32
+	}{
+		{"base", &SliceStackResource{ID: 1, ModelPath: "3d/3dmodel.model"}, "3d/3dmodel.model", 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := tt.s.Identify()
+			if got != tt.want {
+				t.Errorf("SliceStackResource.Identify() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("SliceStackResource.Identify() got = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+
+func TestSliceResolution_String(t *testing.T) {
+	tests := []struct {
+		name string
+		c    SliceResolution
+	}{
+		{"fullres", ResolutionFull},
+		{"lowres", ResolutionLow},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.c.String(); got != tt.name {
+				t.Errorf("SliceResolution.String() = %v, want %v", got, tt.name)
 			}
 		})
 	}

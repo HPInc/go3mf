@@ -4,13 +4,14 @@ import (
 	"encoding/xml"
 
 	go3mf "github.com/qmuntal/go3mf"
+	"github.com/qmuntal/go3mf/iohelper"
 )
 
 type buildDecoder struct {
-	emptyDecoder
+	iohelper.EmptyDecoder
 }
 
-func (d *buildDecoder) Child(name xml.Name) (child nodeDecoder) {
+func (d *buildDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
 	if name.Space == nsCoreSpec && name.Local == attrItem {
 		child = &buildItemDecoder{}
 	}
@@ -22,31 +23,31 @@ func (d *buildDecoder) Attributes(attrs []xml.Attr) bool {
 	for _, a := range attrs {
 		if a.Name.Space == nsProductionSpec && a.Name.Local == attrProdUUID {
 			if err := validateUUID(a.Value); err != nil {
-				ok = d.scanner.InvalidRequiredAttr(attrProdUUID, a.Value)
+				ok = d.Scanner.InvalidRequiredAttr(attrProdUUID, a.Value)
 			}
-			d.scanner.UUID = a.Value
+			d.Scanner.UUID = a.Value
 			break
 		}
 	}
 
-	if ok && d.scanner.UUID == "" && d.scanner.NamespaceRegistered(nsProductionSpec) {
-		ok = d.scanner.MissingAttr(attrProdUUID)
+	if ok && d.Scanner.UUID == "" && d.Scanner.NamespaceRegistered(nsProductionSpec) {
+		ok = d.Scanner.MissingAttr(attrProdUUID)
 	}
 	return ok
 }
 
 type buildItemDecoder struct {
-	emptyDecoder
+	iohelper.EmptyDecoder
 	item       go3mf.BuildItem
 	objectID   uint32
 	objectPath string
 }
 
 func (d *buildItemDecoder) Close() bool {
-	return d.processItem() && d.scanner.CloseResource()
+	return d.processItem() && d.Scanner.CloseResource()
 }
 
-func (d *buildItemDecoder) Child(name xml.Name) (child nodeDecoder) {
+func (d *buildItemDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
 	if name.Space == nsCoreSpec && name.Local == attrMetadataGroup {
 		child = &metadataGroupDecoder{metadatas: &d.item.Metadata}
 	}
@@ -54,19 +55,19 @@ func (d *buildItemDecoder) Child(name xml.Name) (child nodeDecoder) {
 }
 
 func (d *buildItemDecoder) processItem() bool {
-	resource, ok := d.scanner.FindResource(d.objectPath, uint32(d.objectID))
+	resource, ok := d.Scanner.FindResource(d.objectPath, uint32(d.objectID))
 	if !ok {
-		ok = d.scanner.GenericError(true, "non-existent referenced object")
+		ok = d.Scanner.GenericError(true, "non-existent referenced object")
 	} else if d.item.Object, ok = resource.(go3mf.Object); !ok {
-		ok = d.scanner.GenericError(true, "non-object referenced resource")
+		ok = d.Scanner.GenericError(true, "non-object referenced resource")
 	}
 	if ok {
 		if d.item.Object != nil && d.item.Object.Type() == go3mf.ObjectTypeOther {
-			ok = d.scanner.GenericError(true, "referenced object cannot be have OTHER type")
+			ok = d.Scanner.GenericError(true, "referenced object cannot be have OTHER type")
 		}
 	}
 	if ok {
-		d.scanner.BuildItems = append(d.scanner.BuildItems, &d.item)
+		d.Scanner.BuildItems = append(d.Scanner.BuildItems, &d.item)
 	}
 	return ok
 }
@@ -78,7 +79,7 @@ func (d *buildItemDecoder) Attributes(attrs []xml.Attr) bool {
 		case nsProductionSpec:
 			if a.Name.Local == attrProdUUID {
 				if err := validateUUID(a.Value); err != nil {
-					ok = d.scanner.InvalidRequiredAttr(attrProdUUID, a.Value)
+					ok = d.Scanner.InvalidRequiredAttr(attrProdUUID, a.Value)
 				}
 				d.item.UUID = a.Value
 			} else if a.Name.Local == attrPath {
@@ -92,8 +93,8 @@ func (d *buildItemDecoder) Attributes(attrs []xml.Attr) bool {
 		}
 	}
 
-	if d.item.UUID == "" && d.scanner.NamespaceRegistered(nsProductionSpec) {
-		ok = d.scanner.MissingAttr(attrProdUUID)
+	if d.item.UUID == "" && d.Scanner.NamespaceRegistered(nsProductionSpec) {
+		ok = d.Scanner.MissingAttr(attrProdUUID)
 	}
 	return ok
 }
@@ -102,11 +103,11 @@ func (d *buildItemDecoder) parseCoreAttr(a xml.Attr) bool {
 	ok := true
 	switch a.Name.Local {
 	case attrObjectID:
-		d.objectID, ok = d.scanner.ParseResourceID(a.Value)
+		d.objectID, ok = d.Scanner.ParseResourceID(a.Value)
 	case attrPartNumber:
 		d.item.PartNumber = a.Value
 	case attrTransform:
-		d.item.Transform = d.scanner.ParseToMatrixOptional(attrTransform, a.Value)
+		d.item.Transform = d.Scanner.ParseToMatrixOptional(attrTransform, a.Value)
 	}
 	return ok
 }
