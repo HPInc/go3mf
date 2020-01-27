@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/qmuntal/go3mf"
-	"github.com/qmuntal/go3mf/geo"
 )
 
 var checkEveryBytes = int64(4 * 1024 * 1024)
@@ -15,7 +14,6 @@ const (
 	nsCoreSpec        = "http://schemas.microsoft.com/3dmanufacturing/core/2015/02"
 	nsMaterialSpec    = "http://schemas.microsoft.com/3dmanufacturing/material/2015/02"
 	nsProductionSpec  = "http://schemas.microsoft.com/3dmanufacturing/production/2015/06"
-	nsBeamLatticeSpec = "http://schemas.microsoft.com/3dmanufacturing/beamlattice/2017/02"
 )
 
 const (
@@ -76,26 +74,6 @@ const (
 	attrP1                 = "p1"
 	attrP2                 = "p2"
 	attrP3                 = "p3"
-	attrBeamLattice        = "beamlattice"
-	attrRadius             = "radius"
-	attrMinLength          = "minlength"
-	attrPrecision          = "precision"
-	attrClippingMode       = "clippingmode"
-	attrClipping           = "clipping"
-	attrClippingMesh       = "clippingmesh"
-	attrRepresentationMesh = "representationmesh"
-	attrCap                = "cap"
-	attrBeams              = "beams"
-	attrBeam               = "beam"
-	attrBeamSets           = "beamsets"
-	attrBeamSet            = "beamset"
-	attrR1                 = "r1"
-	attrR2                 = "r2"
-	attrCap1               = "cap1"
-	attrCap2               = "cap2"
-	attrIdentifier         = "identifier"
-	attrRef                = "ref"
-	attrIndex              = "index"
 	attrPreserve           = "preserve"
 	attrMetadata           = "metadata"
 	attrMetadataGroup      = "metadatagroup"
@@ -136,15 +114,6 @@ func (e *ReadError) Error() string {
 	return e.Message
 }
 
-func newCapMode(s string) (t geo.CapMode, ok bool) {
-	t, ok = map[string]geo.CapMode{
-		"sphere":     geo.CapModeSphere,
-		"hemisphere": geo.CapModeHemisphere,
-		"butt":       geo.CapModeButt,
-	}[s]
-	return
-}
-
 func newTextureFilter(s string) (t go3mf.TextureFilter, ok bool) {
 	t, ok = map[string]go3mf.TextureFilter{
 		"auto":    go3mf.TextureFilterAuto,
@@ -179,15 +148,6 @@ func newObjectType(s string) (o go3mf.ObjectType, ok bool) {
 		"support":      go3mf.ObjectTypeSupport,
 		"solidsupport": go3mf.ObjectTypeSolidSupport,
 		"surface":      go3mf.ObjectTypeSurface,
-	}[s]
-	return
-}
-
-func newClipMode(s string) (c go3mf.ClipMode, ok bool) {
-	c, ok = map[string]go3mf.ClipMode{
-		"none":    go3mf.ClipNone,
-		"inside":  go3mf.ClipInside,
-		"outside": go3mf.ClipOutside,
 	}[s]
 	return
 }

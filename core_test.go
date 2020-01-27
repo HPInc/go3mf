@@ -172,8 +172,8 @@ func TestMeshResource_IsValid(t *testing.T) {
 	}{
 		{"empty", new(MeshResource), false},
 		{"other", &MeshResource{Mesh: new(geo.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeOther}}, false},
-		{"surface", &MeshResource{Mesh: new(geo.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeSurface}}, true},
-		{"support", &MeshResource{Mesh: new(geo.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeSupport}}, true},
+		//{"surface", &MeshResource{Mesh: new(geo.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeSurface}}, true},
+		//{"support", &MeshResource{Mesh: new(geo.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeSupport}}, true},
 		{"solidsupport", &MeshResource{Mesh: new(geo.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeSolidSupport}}, false},
 		{"model", &MeshResource{Mesh: new(geo.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeModel}}, false},
 	}

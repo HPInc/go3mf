@@ -10,7 +10,7 @@ import (
 	"github.com/qmuntal/go3mf/io3mf"
 )
 
-func Test(t *testing.T) {
+func TestDecode(t *testing.T) {
 	otherSlices := SliceStack{
 		BottomZ: 2,
 		Slices: []*Slice{
@@ -40,7 +40,7 @@ func Test(t *testing.T) {
 	meshRes := &go3mf.MeshResource{
 		ObjectResource: go3mf.ObjectResource{
 			ID: 8, Name: "Box 1", ModelPath: "/3d/3dmodel.model",
-			Attr: map[string]interface{}{ExtensionName: &ObjectAttr{SliceStackID: 3, SliceResolution: ResolutionLow}}},
+			Extensions: map[string]interface{}{ExtensionName: &ObjectAttr{SliceStackID: 3, SliceResolution: ResolutionLow}}},
 		Mesh: new(geo.Mesh),
 	}
 	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []geo.Point3D{
@@ -137,19 +137,19 @@ func Test(t *testing.T) {
 		d := new(io3mf.Decoder)
 		d.Strict = true
 		if err := d.DecodeRawModel(context.Background(), got, rootFile); err != nil {
-			t.Errorf("Decoder.processRootModel() unexpected error = %v", err)
+			t.Errorf("DecodeRawModel() unexpected error = %v", err)
 			return
 		}
 		deep.CompareUnexportedFields = true
 		deep.MaxDepth = 20
 		if diff := deep.Equal(got, want); diff != nil {
-			t.Errorf("Decoder.processRootModel() = %v", diff)
+			t.Errorf("DecodeRawModell() = %v", diff)
 			return
 		}
 	})
 }
 
-func Test_warns(t *testing.T) {
+func TestDecode_warns(t *testing.T) {
 	want := []error{
 		go3mf.MissingPropertyError{ResourceID: 3, Element: "slice", ModelPath: "/3d/3dmodel.model", Name: "ztop"},
 		go3mf.ParsePropertyError{ResourceID: 3, Element: "vertex", Name: "x", Value: "a", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
@@ -233,12 +233,12 @@ func Test_warns(t *testing.T) {
 		d := new(io3mf.Decoder)
 		d.Strict = false
 		if err := d.DecodeRawModel(context.Background(), got, rootFile); err != nil {
-			t.Errorf("Decoder.processRootModel() unexpected error = %v", err)
+			t.Errorf("DecodeRawModel_warn() unexpected error = %v", err)
 			return
 		}
 		deep.MaxDiff = 1
 		if diff := deep.Equal(d.Warnings, want); diff != nil {
-			t.Errorf("Decoder.processRootModel() = %v", diff)
+			t.Errorf("DecodeRawModel_warn() = %v", diff)
 			return
 		}
 	})

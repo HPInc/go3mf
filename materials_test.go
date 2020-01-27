@@ -197,24 +197,6 @@ func TestTextureFilter_String(t *testing.T) {
 	}
 }
 
-func TestClipMode_String(t *testing.T) {
-	tests := []struct {
-		name string
-		c    ClipMode
-	}{
-		{"none", ClipNone},
-		{"inside", ClipInside},
-		{"outside", ClipOutside},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.c.String(); got != tt.name {
-				t.Errorf("ClipMode.String() = %v, want %v", got, tt.name)
-			}
-		})
-	}
-}
-
 func TestMultiPropertiesResource_Identify(t *testing.T) {
 	tests := []struct {
 		name  string

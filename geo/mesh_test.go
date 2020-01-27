@@ -13,7 +13,6 @@ func TestMesh_CheckSanity(t *testing.T) {
 	}{
 		{"new", new(Mesh), true},
 		{"facefail", &Mesh{Faces: make([]Face, 2)}, false},
-		{"beamfail", &Mesh{Beams: make([]Beam, 2)}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -93,26 +92,6 @@ func TestMeshBuilder_AddNode(t *testing.T) {
 	}
 }
 
-func TestMesh_checkBeamsSanity(t *testing.T) {
-	tests := []struct {
-		name string
-		m    *Mesh
-		want bool
-	}{
-		{"eq", &Mesh{Nodes: make([]Point3D, 0), Beams: []Beam{{NodeIndices: [2]uint32{1, 1}}}}, false},
-		{"high1", &Mesh{Nodes: make([]Point3D, 2), Beams: []Beam{{NodeIndices: [2]uint32{2, 1}}}}, false},
-		{"high2", &Mesh{Nodes: make([]Point3D, 2), Beams: []Beam{{NodeIndices: [2]uint32{1, 2}}}}, false},
-		{"good", &Mesh{Nodes: make([]Point3D, 3), Beams: []Beam{{NodeIndices: [2]uint32{1, 2}}}}, true},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.m.checkBeamsSanity(); got != tt.want {
-				t.Errorf("Mesh.checkBeamsSanity() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestMesh_checkFacesSanity(t *testing.T) {
 	tests := []struct {
 		name string
@@ -131,24 +110,6 @@ func TestMesh_checkFacesSanity(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.m.checkFacesSanity(); got != tt.want {
 				t.Errorf("Mesh.checkFacesSanity() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestCapMode_String(t *testing.T) {
-	tests := []struct {
-		name string
-		b    CapMode
-	}{
-		{"sphere", CapModeSphere},
-		{"hemisphere", CapModeHemisphere},
-		{"butt", CapModeButt},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.b.String(); got != tt.name {
-				t.Errorf("CapMode.String() = %v, want %v", got, tt.name)
 			}
 		})
 	}

@@ -33,9 +33,8 @@ func (d *resourceDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
 		case attrMultiProps:
 			child = new(multiPropertiesDecoder)
 		}
-	}
-	if ext, ok := extensionDecoder[name.Space]; ok {
-		child = ext.NodeDecoder(name.Local)
+	} else if ext, ok := extensionDecoder[name.Space]; ok {
+		child = ext.NodeDecoder(nil, name.Local)
 	}
 	return
 }

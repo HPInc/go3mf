@@ -29,8 +29,8 @@ func (d *meshDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
 		} else if name.Local == attrTriangles {
 			child = &trianglesDecoder{resource: &d.resource}
 		}
-	} else if name.Space == nsBeamLatticeSpec && name.Local == attrBeamLattice {
-		child = &beamLatticeDecoder{resource: &d.resource}
+	} else if ext, ok := extensionDecoder[name.Space]; ok {
+		child = ext.NodeDecoder(&d.resource, name.Local)
 	}
 	return
 }

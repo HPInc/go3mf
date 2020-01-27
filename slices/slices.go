@@ -76,6 +76,14 @@ const (
 	ResolutionLow
 )
 
+func newSliceResolution(s string) (r SliceResolution, ok bool) {
+	r, ok = map[string]SliceResolution{
+		"fullres": ResolutionFull,
+		"lowres":  ResolutionLow,
+	}[s]
+	return
+}
+
 func (c SliceResolution) String() string {
 	return map[SliceResolution]string{
 		ResolutionFull: "fullres",
@@ -125,13 +133,39 @@ type ObjectAttr struct {
 	SliceResolution SliceResolution
 }
 
-// ExtractObjectAttr extracts the ObjectAttr attributes from an ObjectResource.
+// ExtensionObjectResource extracts the ObjectAttr attributes from an ObjectResource.
 // If it does not exist a new one is added.
-func ExtractObjectAttr(o *go3mf.ObjectResource) *ObjectAttr {
-	if attr, ok := o.Attr[ExtensionName]; ok {
+func ExtensionObjectResource(o *go3mf.ObjectResource) *ObjectAttr {
+	if attr, ok := o.Extensions[ExtensionName]; ok {
 		return attr.(*ObjectAttr)
 	}
+	if o.Extensions == nil {
+		o.Extensions = make(map[string]interface{})
+	}
 	attr := &ObjectAttr{}
-	o.Attr[ExtensionName] = attr
+	o.Extensions[ExtensionName] = attr
 	return attr
 }
+
+const (
+	attrSliceStack = "slicestack"
+	attrID         = "id"
+	attrZBottom    = "zbottom"
+	attrSlice      = "slice"
+	attrSliceRef   = "sliceref"
+	attrZTop       = "ztop"
+	attrVertices   = "vertices"
+	attrVertex     = "vertex"
+	attrPolygon    = "polygon"
+	attrX          = "x"
+	attrY          = "y"
+	attrZ          = "z"
+	attrSegment    = "segment"
+	attrV1         = "v1"
+	attrV2         = "v2"
+	attrV3         = "v3"
+	attrStartV     = "startv"
+	attrSliceRefID = "slicestackid"
+	attrSlicePath  = "slicepath"
+	attrMeshRes    = "meshresolution"
+)

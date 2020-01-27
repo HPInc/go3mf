@@ -66,7 +66,7 @@ func (d *modelDecoder) Attributes(attrs []xml.Attr) bool {
 func (d *modelDecoder) checkRequiredExt(requiredExts string) bool {
 	for _, ext := range strings.Fields(requiredExts) {
 		ext = d.Scanner.Namespaces[ext]
-		if ext != nsCoreSpec && ext != nsMaterialSpec && ext != nsProductionSpec && ext != nsBeamLatticeSpec {
+		if ext != nsCoreSpec && ext != nsMaterialSpec && ext != nsProductionSpec {
 			if _, ok := extensionDecoder[ext]; !ok {
 				if !d.Scanner.GenericError(true, fmt.Sprintf("'%s' extension is not supported", ext)) {
 					return false

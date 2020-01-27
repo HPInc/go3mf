@@ -71,7 +71,7 @@ func (m *modelBuilder) withModel(unit string, lang string) *modelBuilder {
 	m.str.WriteString(`<model `)
 	m.addAttr("", "unit", unit).addAttr("xml", "lang", lang)
 	m.addAttr("", "xmlns", nsCoreSpec).addAttr("xmlns", "m", nsMaterialSpec).addAttr("xmlns", "p", nsProductionSpec)
-	m.addAttr("xmlns", "b", nsBeamLatticeSpec).addAttr("", "requiredextensions", "m p b")
+	m.addAttr("", "requiredextensions", "m p")
 	m.str.WriteString(">\n")
 	m.hasModel = true
 	return m
@@ -257,8 +257,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 	baseTexture := &go3mf.Texture2DResource{ID: 6, ModelPath: "/3d/3dmodel.model", Path: "/3D/Texture/msLogo.png", ContentType: go3mf.TextureTypePNG, TileStyleU: go3mf.TileWrap, TileStyleV: go3mf.TileMirror, Filter: go3mf.TextureFilterAuto}
 	meshRes := &go3mf.MeshResource{
 		ObjectResource: go3mf.ObjectResource{
-			ID: 8, Name: "Box 1", ModelPath: "/3d/3dmodel.model", Thumbnail: "/a.png", DefaultPropertyID: 5, PartNumber: "11111111-1111-1111-1111-111111111111",
-			Attr: map[string]interface{}{}},
+			ID: 8, Name: "Box 1", ModelPath: "/3d/3dmodel.model", Thumbnail: "/a.png", DefaultPropertyID: 5, PartNumber: "11111111-1111-1111-1111-111111111111"},
 		Mesh: new(geo.Mesh),
 	}
 	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []geo.Point3D{
@@ -286,43 +285,9 @@ func TestDecoder_processRootModel(t *testing.T) {
 		{NodeIndices: [3]uint32{4, 7, 3}, Resource: 5},
 	}...)
 
-	meshLattice := &go3mf.MeshResource{
-		ObjectResource:        go3mf.ObjectResource{ID: 15, Name: "Box", ModelPath: "/3d/3dmodel.model", PartNumber: "e1ef01d4-cbd4-4a62-86b6-9634e2ca198b", Attr: make(map[string]interface{})},
-		BeamLatticeAttributes: go3mf.BeamLatticeAttributes{ClipMode: go3mf.ClipInside, ClippingMeshID: 8, RepresentationMeshID: 8},
-		Mesh:                  new(geo.Mesh),
-	}
-	meshLattice.Mesh.MinLength = 0.0001
-	meshLattice.Mesh.CapMode = geo.CapModeHemisphere
-	meshLattice.Mesh.DefaultRadius = 1
-	meshLattice.Mesh.Nodes = append(meshLattice.Mesh.Nodes, []geo.Point3D{
-		{45, 55, 55},
-		{45, 45, 55},
-		{45, 55, 45},
-		{45, 45, 45},
-		{55, 55, 45},
-		{55, 55, 55},
-		{55, 45, 55},
-		{55, 45, 45},
-	}...)
-	meshLattice.Mesh.BeamSets = append(meshLattice.Mesh.BeamSets, geo.BeamSet{Name: "test", Identifier: "set_id", Refs: []uint32{1}})
-	meshLattice.Mesh.Beams = append(meshLattice.Mesh.Beams, []geo.Beam{
-		{NodeIndices: [2]uint32{0, 1}, Radius: [2]float64{1.5, 1.6}, CapMode: [2]geo.CapMode{geo.CapModeSphere, geo.CapModeButt}},
-		{NodeIndices: [2]uint32{2, 0}, Radius: [2]float64{3, 1.5}, CapMode: [2]geo.CapMode{geo.CapModeSphere, geo.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{1, 3}, Radius: [2]float64{1.6, 3}, CapMode: [2]geo.CapMode{geo.CapModeHemisphere, geo.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{3, 2}, Radius: [2]float64{1, 1}, CapMode: [2]geo.CapMode{geo.CapModeHemisphere, geo.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{2, 4}, Radius: [2]float64{3, 2}, CapMode: [2]geo.CapMode{geo.CapModeHemisphere, geo.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{4, 5}, Radius: [2]float64{2, 2}, CapMode: [2]geo.CapMode{geo.CapModeHemisphere, geo.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{5, 6}, Radius: [2]float64{2, 2}, CapMode: [2]geo.CapMode{geo.CapModeHemisphere, geo.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{7, 6}, Radius: [2]float64{2, 2}, CapMode: [2]geo.CapMode{geo.CapModeHemisphere, geo.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{1, 6}, Radius: [2]float64{1.6, 2}, CapMode: [2]geo.CapMode{geo.CapModeHemisphere, geo.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{7, 4}, Radius: [2]float64{2, 2}, CapMode: [2]geo.CapMode{geo.CapModeHemisphere, geo.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{7, 3}, Radius: [2]float64{2, 3}, CapMode: [2]geo.CapMode{geo.CapModeHemisphere, geo.CapModeHemisphere}},
-		{NodeIndices: [2]uint32{0, 5}, Radius: [2]float64{1.5, 2}, CapMode: [2]geo.CapMode{geo.CapModeHemisphere, geo.CapModeButt}},
-	}...)
-
 	components := &go3mf.ComponentsResource{
 		ObjectResource: go3mf.ObjectResource{
-			ID: 20, UUID: "cb828680-8895-4e08-a1fc-be63e033df15", ModelPath: "/3d/3dmodel.model", Attr: make(map[string]interface{}),
+			ID: 20, UUID: "cb828680-8895-4e08-a1fc-be63e033df15", ModelPath: "/3d/3dmodel.model",
 			Metadata: []go3mf.Metadata{{Name: nsProductionSpec + ":CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: nsProductionSpec + ":CustomMetadata4", Type: "xs:boolean", Value: "2"}},
 		},
 		Components: []*go3mf.Component{{UUID: "cb828680-8895-4e08-a1fc-be63e033df16", Object: meshRes,
@@ -330,12 +295,12 @@ func TestDecoder_processRootModel(t *testing.T) {
 	}
 
 	want := &go3mf.Model{Units: go3mf.UnitMillimeter, Language: "en-US", Path: "/3d/3dmodel.model", UUID: "e9e25302-6428-402e-8633-cc95528d0ed3"}
-	otherMesh := &go3mf.MeshResource{ObjectResource: go3mf.ObjectResource{ID: 8, ModelPath: "/3d/other.model", Attr: make(map[string]interface{})}, Mesh: new(geo.Mesh)}
+	otherMesh := &go3mf.MeshResource{ObjectResource: go3mf.ObjectResource{ID: 8, ModelPath: "/3d/other.model"}, Mesh: new(geo.Mesh)}
 	colorGroup := &go3mf.ColorGroupResource{ID: 1, ModelPath: "/3d/3dmodel.model", Colors: []color.RGBA{{R: 255, G: 255, B: 255, A: 255}, {R: 0, G: 0, B: 0, A: 255}, {R: 26, G: 181, B: 103, A: 255}, {R: 223, G: 4, B: 90, A: 255}}}
 	texGroup := &go3mf.Texture2DGroupResource{ID: 2, ModelPath: "/3d/3dmodel.model", TextureID: 6, Coords: []go3mf.TextureCoord{{0.3, 0.5}, {0.3, 0.8}, {0.5, 0.8}, {0.5, 0.5}}}
 	compositeGroup := &go3mf.CompositeMaterialsResource{ID: 4, ModelPath: "/3d/3dmodel.model", MaterialID: 5, Indices: []uint32{1, 2}, Composites: []go3mf.Composite{{Values: []float64{0.5, 0.5}}, {Values: []float64{0.2, 0.8}}}}
 	multiGroup := &go3mf.MultiPropertiesResource{ID: 9, ModelPath: "/3d/3dmodel.model", BlendMethods: []go3mf.BlendMethod{go3mf.BlendMultiply}, Resources: []uint32{5, 2}, Multis: []go3mf.Multi{{ResourceIndices: []uint32{0, 0}}, {ResourceIndices: []uint32{1, 0}}, {ResourceIndices: []uint32{2, 3}}}}
-	want.Resources = append(want.Resources, otherMesh, baseMaterials, baseTexture, colorGroup, texGroup, compositeGroup, multiGroup, meshRes, meshLattice, components)
+	want.Resources = append(want.Resources, otherMesh, baseMaterials, baseTexture, colorGroup, texGroup, compositeGroup, multiGroup, meshRes, components)
 	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: components, PartNumber: "bob", UUID: "e9e25302-6428-402e-8633-cc95528d0ed2",
 		Transform: geo.Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
 	})
@@ -395,41 +360,6 @@ func TestDecoder_processRootModel(t *testing.T) {
 						<triangle v1="3" v2="0" v3="4" />
 						<triangle v1="4" v2="7" v3="3" />
 					</triangles>
-				</mesh>
-			</object>
-			<object id="15" name="Box" partnumber="e1ef01d4-cbd4-4a62-86b6-9634e2ca198b" type="model">
-				<mesh>
-					<vertices>
-						<vertex x="45.00000" y="55.00000" z="55.00000"/>
-						<vertex x="45.00000" y="45.00000" z="55.00000"/>
-						<vertex x="45.00000" y="55.00000" z="45.00000"/>
-						<vertex x="45.00000" y="45.00000" z="45.00000"/>
-						<vertex x="55.00000" y="55.00000" z="45.00000"/>
-						<vertex x="55.00000" y="55.00000" z="55.00000"/>
-						<vertex x="55.00000" y="45.00000" z="55.00000"/>
-						<vertex x="55.00000" y="45.00000" z="45.00000"/>
-					</vertices>
-					<b:beamlattice radius="1" minlength="0.0001" cap="hemisphere" clippingmode="inside" clippingmesh="8" representationmesh="8">
-						<b:beams>
-							<b:beam v1="0" v2="1" r1="1.50000" r2="1.60000" cap1="sphere" cap2="butt"/>
-							<b:beam v1="2" v2="0" r1="3.00000" r2="1.50000" cap1="sphere"/>
-							<b:beam v1="1" v2="3" r1="1.60000" r2="3.00000"/>
-							<b:beam v1="3" v2="2" />
-							<b:beam v1="2" v2="4" r1="3.00000" r2="2.00000"/>
-							<b:beam v1="4" v2="5" r1="2.00000"/>
-							<b:beam v1="5" v2="6" r1="2.00000"/>
-							<b:beam v1="7" v2="6" r1="2.00000"/>
-							<b:beam v1="1" v2="6" r1="1.60000" r2="2.00000"/>
-							<b:beam v1="7" v2="4" r1="2.00000"/>
-							<b:beam v1="7" v2="3" r1="2.00000" r2="3.00000"/>
-							<b:beam v1="0" v2="5" r1="1.50000" r2="2.00000" cap2="butt"/>
-						</b:beams>
-						<b:beamsets>
-							<b:beamset name="test" identifier="set_id">
-								<b:ref index="1"/>
-							</b:beamset>
-						</b:beamsets>
-					</b:beamlattice>
 				</mesh>
 			</object>
 			<object id="20" p:UUID="cb828680-8895-4e08-a1fc-be63e033df15">
@@ -628,12 +558,6 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 		go3mf.MissingPropertyError{ResourceID: 19, Element: "multiproperties", ModelPath: "/3d/3dmodel.model", Name: "pids"},
 		go3mf.GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3d/3dmodel.model", Message: "duplicated triangle indices"},
 		go3mf.GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3d/3dmodel.model", Message: "triangle indices are out of range"},
-		go3mf.MissingPropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3d/3dmodel.model", Name: "radius"},
-		go3mf.MissingPropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3d/3dmodel.model", Name: "minlength"},
-		go3mf.MissingPropertyError{ResourceID: 15, Element: "beam", ModelPath: "/3d/3dmodel.model", Name: "v1"},
-		go3mf.MissingPropertyError{ResourceID: 15, Element: "beam", ModelPath: "/3d/3dmodel.model", Name: "v2"},
-		go3mf.MissingPropertyError{ResourceID: 15, Element: "ref", ModelPath: "/3d/3dmodel.model", Name: "index"},
-		go3mf.ParsePropertyError{ResourceID: 15, Element: "ref", Name: "index", Value: "a", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
 		go3mf.ParsePropertyError{ResourceID: 22, Element: "object", ModelPath: "/3d/3dmodel.model", Name: "type", Value: "invalid", Type: go3mf.PropertyOptional},
 		go3mf.ParsePropertyError{ResourceID: 20, Element: "object", ModelPath: "/3d/3dmodel.model", Name: "UUID", Value: "cb8286808895-4e08-a1fc-be63e033df15", Type: go3mf.PropertyRequired},
 		go3mf.GenericError{ResourceID: 20, Element: "object", ModelPath: "/3d/3dmodel.model", Message: "default PID is not supported for component objects"},
@@ -648,7 +572,6 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 		go3mf.MissingPropertyError{ResourceID: 8, Element: "item", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
 		go3mf.GenericError{ResourceID: 8, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced object"},
 		go3mf.GenericError{ResourceID: 5, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "non-object referenced resource"},
-		go3mf.ParsePropertyError{ResourceID: 15, Element: "item", Name: "UUID", Value: "e9e", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
 		go3mf.ParsePropertyError{ResourceID: 0, Element: "build", Name: "UUID", Value: "e9e25302-6428-402e-8633ed2", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
 	}
 	got := new(go3mf.Model)
@@ -710,45 +633,6 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 					</triangles>
 				</mesh>
 			</object>
-			<object id="15" name="Box" partnumber="e1ef01d4-cbd4-4a62-86b6-9634e2ca198b" type="model">
-				<mesh>
-					<vertices>
-						<vertex x="45.00000" y="55.00000" z="55.00000"/>
-						<vertex x="45.00000" y="45.00000" z="55.00000"/>
-						<vertex x="45.00000" y="55.00000" z="45.00000"/>
-						<vertex x="45.00000" y="45.00000" z="45.00000"/>
-						<vertex x="55.00000" y="55.00000" z="45.00000"/>
-						<vertex x="55.00000" y="55.00000" z="55.00000"/>
-						<vertex x="55.00000" y="45.00000" z="55.00000"/>
-						<vertex x="55.00000" y="45.00000" z="45.00000"/>
-					</vertices>
-					<b:beamlattice />
-					<b:beamlattice qm:mq="other" radius="1" minlength="0.0001" cap="hemisphere" clippingmode="inside" clippingmesh="8" representationmesh="8">
-						<b:beams>
-							<b:beam qm:mq="other" v1="0" v2="1" r1="1.50000" r2="1.60000" cap1="sphere" cap2="butt"/>
-							<b:beam v1="2" v2="0" r1="3.00000" r2="1.50000" cap1="sphere"/>
-							<b:beam v1="1" v2="3" r1="1.60000" r2="3.00000"/>
-							<b:beam v1="3" v2="2" />
-							<b:beam />
-							<b:beam v1="2" v2="4" r1="3.00000" r2="2.00000"/>
-							<b:beam v1="4" v2="5" r1="2.00000"/>
-							<b:beam v1="5" v2="6" r1="2.00000"/>
-							<b:beam v1="7" v2="6" r1="2.00000"/>
-							<b:beam v1="1" v2="6" r1="1.60000" r2="2.00000"/>
-							<b:beam v1="7" v2="4" r1="2.00000"/>
-							<b:beam v1="7" v2="3" r1="2.00000" r2="3.00000"/>
-							<b:beam v1="0" v2="5" r1="1.50000" r2="2.00000" cap2="butt"/>
-						</b:beams>
-						<b:beamsets>
-							<b:beamset qm:mq="other" name="test" identifier="set_id">
-								<b:ref index="1"/>
-								<b:ref />
-								<b:ref index="a"/>
-							</b:beamset>
-						</b:beamsets>
-					</b:beamlattice>
-				</mesh>
-			</object>
 			<object id="22" p:UUID="cb828680-8895-4e08-a1fc-be63e033df15" type="invalid" />
 			<object id="20" pid="3" p:UUID="cb8286808895-4e08-a1fc-be63e033df15" type="other">
 				<components>
@@ -761,7 +645,6 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 			<item partnumber="bob" objectid="20" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed2" transform="1 0 0 0 2 0 0 0 3 -66.4 -87.1" />
 			<item objectid="8" p:path="/3d/other.model"/>
 			<item objectid="5" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed4"/>
-			<item objectid="15" p:UUID="e9e"/>
 		</build>
 		<build p:UUID="e9e25302-6428-402e-8633ed2"/>
 		<metadata name="Application">go3mf app</metadata>

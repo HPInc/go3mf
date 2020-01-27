@@ -7,40 +7,6 @@ type Face struct {
 	ResourceIndices [3]uint32 // Resource subindex of the three nodes that defines the face.
 }
 
-// BeamSet defines a set of beams.
-type BeamSet struct {
-	Refs       []uint32
-	Name       string
-	Identifier string
-}
-
-// A CapMode is an enumerable for the different capping modes.
-type CapMode uint8
-
-const (
-	// CapModeSphere when the capping is an sphere.
-	CapModeSphere CapMode = iota
-	// CapModeHemisphere when the capping is an hemisphere.
-	CapModeHemisphere
-	// CapModeButt when the capping is an butt.
-	CapModeButt
-)
-
-func (b CapMode) String() string {
-	return map[CapMode]string{
-		CapModeSphere:     "sphere",
-		CapModeHemisphere: "hemisphere",
-		CapModeButt:       "butt",
-	}[b]
-}
-
-// Beam defines a single beam.
-type Beam struct {
-	NodeIndices [2]uint32  // Indices of the two nodes that defines the beam.
-	Radius      [2]float64 // Radius of both ends of the beam.
-	CapMode     [2]CapMode // Capping mode.
-}
-
 // Mesh is not really a mesh, since it lacks the component edges and the
 // topological information. It only holds the nodes and the faces (triangles).
 // Each node,  and face have a ID, which allows to identify them. Each face have an
@@ -49,15 +15,11 @@ type Beam struct {
 type Mesh struct {
 	Nodes                    []Point3D
 	Faces                    []Face
-	Beams                    []Beam
-	BeamSets                 []BeamSet
-	MinLength, DefaultRadius float64
-	CapMode                  CapMode
 }
 
 // CheckSanity checks if the mesh is well formated.
 func (m *Mesh) CheckSanity() bool {
-	return m.checkFacesSanity() && m.checkBeamsSanity()
+	return m.checkFacesSanity()
 }
 
 // IsManifoldAndOriented returns true if the mesh is manifold and oriented.
@@ -97,20 +59,6 @@ func (m *Mesh) IsManifoldAndOriented() bool {
 		}
 	}
 
-	return true
-}
-
-func (m *Mesh) checkBeamsSanity() bool {
-	nodeCount := uint32(len(m.Nodes))
-	for _, beam := range m.Beams {
-		i0, i1 := beam.NodeIndices[0], beam.NodeIndices[1]
-		if i0 == i1 {
-			return false
-		}
-		if i0 >= nodeCount || i1 >= nodeCount {
-			return false
-		}
-	}
 	return true
 }
 

@@ -14,7 +14,7 @@ func init() {
 
 type extensionDecoder struct{}
 
-func (d *extensionDecoder) NodeDecoder(nodeName string) iohelper.NodeDecoder {
+func (d *extensionDecoder) NodeDecoder(_ interface{}, nodeName string) iohelper.NodeDecoder {
 	if nodeName == attrSliceStack {
 		return &sliceStackDecoder{}
 	}
@@ -34,9 +34,9 @@ func objectAttrDecoder(scanner *iohelper.Scanner, o *go3mf.ObjectResource, attr 
 	ok := true
 	switch attr.Name.Local {
 	case attrSliceRefID:
-		ExtractObjectAttr(o).SliceStackID, ok = scanner.ParseUint32Required(attrSliceRefID, attr.Value)
+		ExtensionObjectResource(o).SliceStackID, ok = scanner.ParseUint32Required(attrSliceRefID, attr.Value)
 	case attrMeshRes:
-		ExtractObjectAttr(o).SliceResolution, ok = newSliceResolution(attr.Value)
+		ExtensionObjectResource(o).SliceResolution, ok = newSliceResolution(attr.Value)
 		if !ok {
 			ok = true
 			scanner.InvalidOptionalAttr(attrMeshRes, attr.Value)

@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	go3mf "github.com/qmuntal/go3mf"
-	"github.com/qmuntal/go3mf/geo"
 )
 
 func Test_newTextureFilter(t *testing.T) {
@@ -111,30 +110,6 @@ func Test_newObjectType(t *testing.T) {
 	}
 }
 
-func Test_newClipMode(t *testing.T) {
-	tests := []struct {
-		name   string
-		wantC  go3mf.ClipMode
-		wantOk bool
-	}{
-		{"none", go3mf.ClipNone, true},
-		{"inside", go3mf.ClipInside, true},
-		{"outside", go3mf.ClipOutside, true},
-		{"empty", go3mf.ClipNone, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotC, gotOk := newClipMode(tt.name)
-			if !reflect.DeepEqual(gotC, tt.wantC) {
-				t.Errorf("newClipMode() gotC = %v, want %v", gotC, tt.wantC)
-			}
-			if gotOk != tt.wantOk {
-				t.Errorf("newClipMode() gotOk = %v, want %v", gotOk, tt.wantOk)
-			}
-		})
-	}
-}
-
 func Test_newUnits(t *testing.T) {
 	tests := []struct {
 		name  string
@@ -158,30 +133,6 @@ func Test_newUnits(t *testing.T) {
 			}
 			if got1 != tt.want1 {
 				t.Errorf("newUnits() got1 = %v, want %v", got1, tt.want1)
-			}
-		})
-	}
-}
-
-func Test_newCapMode(t *testing.T) {
-	tests := []struct {
-		name   string
-		wantT  geo.CapMode
-		wantOk bool
-	}{
-		{"sphere", geo.CapModeSphere, true},
-		{"hemisphere", geo.CapModeHemisphere, true},
-		{"butt", geo.CapModeButt, true},
-		{"empty", geo.CapModeSphere, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotT, gotOk := newCapMode(tt.name)
-			if !reflect.DeepEqual(gotT, tt.wantT) {
-				t.Errorf("newCapMode() gotT = %v, want %v", gotT, tt.wantT)
-			}
-			if gotOk != tt.wantOk {
-				t.Errorf("newCapMode() gotOk = %v, want %v", gotOk, tt.wantOk)
 			}
 		})
 	}

@@ -16,7 +16,7 @@ import (
 )
 
 type ExtensionDecoder interface {
-	NodeDecoder(nodeName string) iohelper.NodeDecoder
+	NodeDecoder(parentNode interface{}, nodeName string) iohelper.NodeDecoder
 	DecodeAttribute(s *iohelper.Scanner, parentNode interface{}, attr xml.Attr) bool
 }
 

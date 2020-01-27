@@ -40,26 +40,6 @@ func (u Units) String() string {
 	}[u]
 }
 
-// ClipMode defines the clipping modes for the beam lattices.
-type ClipMode uint8
-
-const (
-	// ClipNone defines a beam lattice without clipping.
-	ClipNone ClipMode = iota
-	// ClipInside defines a beam lattice with clipping inside.
-	ClipInside
-	// ClipOutside defines a beam lattice with clipping outside.
-	ClipOutside
-)
-
-func (c ClipMode) String() string {
-	return map[ClipMode]string{
-		ClipNone:    "none",
-		ClipInside:  "inside",
-		ClipOutside: "outside",
-	}[c]
-}
-
 // ObjectType defines the allowed object types.
 type ObjectType int8
 
@@ -118,13 +98,6 @@ type Attachment struct {
 type ProductionAttachment struct {
 	RelationshipType string
 	Path             string
-}
-
-// BeamLatticeAttributes defines the Model Mesh BeamLattice Attributes class and is part of the BeamLattice extension to 3MF.
-type BeamLatticeAttributes struct {
-	ClipMode             ClipMode
-	ClippingMeshID       uint32
-	RepresentationMeshID uint32
 }
 
 // A Model is an in memory representation of the 3MF file.
@@ -237,7 +210,7 @@ type ObjectResource struct {
 	DefaultPropertyIndex uint32
 	ObjectType           ObjectType
 	Metadata             []Metadata
-	Attr                 map[string]interface{}
+	Extensions                 map[string]interface{}
 }
 
 // Identify returns the unique ID of the resource.
@@ -286,7 +259,7 @@ func (c *ComponentsResource) IsValid() bool {
 type MeshResource struct {
 	ObjectResource
 	Mesh                  *geo.Mesh
-	BeamLatticeAttributes BeamLatticeAttributes
+	Extensions 			map[string]interface{}
 }
 
 // IsValid checks if the mesh resource are valid.
@@ -297,12 +270,12 @@ func (c *MeshResource) IsValid() bool {
 	switch c.ObjectType {
 	case ObjectTypeModel:
 		return c.Mesh.IsManifoldAndOriented()
-	case ObjectTypeSupport:
-		return len(c.Mesh.Beams) == 0
 	case ObjectTypeSolidSupport:
 		return c.Mesh.IsManifoldAndOriented()
-	case ObjectTypeSurface:
-		return len(c.Mesh.Beams) == 0
+	//case ObjectTypeSupport:
+	//	return len(c.Mesh.Beams) == 0
+	//case ObjectTypeSurface:
+	//	return len(c.Mesh.Beams) == 0
 	}
 
 	return false

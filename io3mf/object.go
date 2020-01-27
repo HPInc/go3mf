@@ -13,7 +13,6 @@ type objectDecoder struct {
 }
 
 func (d *objectDecoder) Open() {
-	d.resource.Attr = make(map[string]interface{})
 	d.resource.ModelPath = d.Scanner.ModelPath
 }
 
@@ -35,10 +34,11 @@ func (d *objectDecoder) Attributes(attrs []xml.Attr) bool {
 			}
 		case "":
 			ok = d.parseCoreAttr(a)
-		}
-		if ext, ok := extensionDecoder[a.Name.Space]; ok {
-			ok = ext.DecodeAttribute(d.Scanner, &d.resource, a)
-		}
+		default:
+			if ext, ok := extensionDecoder[a.Name.Space]; ok {
+				ok = ext.DecodeAttribute(d.Scanner, &d.resource, a)
+			}
+		}		
 		if !ok {
 			break
 		}
