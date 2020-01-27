@@ -208,7 +208,7 @@ type ObjectResource struct {
 	DefaultPropertyIndex uint32
 	ObjectType           ObjectType
 	Metadata             []Metadata
-	Extensions                 map[string]interface{}
+	Extensions           map[string]interface{}
 }
 
 // Identify returns the unique ID of the resource.
@@ -266,9 +266,9 @@ type Face struct {
 // The orientation is defined by the order of its nodes.
 type MeshResource struct {
 	ObjectResource
-	Nodes                    []Point3D
-	Faces                    []Face
-	Extensions 			map[string]interface{}
+	Nodes      []Point3D
+	Faces      []Face
+	Extensions map[string]interface{}
 }
 
 // IsValid checks if the mesh resource are valid.
@@ -278,10 +278,10 @@ func (c *MeshResource) IsValid() bool {
 		return c.IsManifoldAndOriented()
 	case ObjectTypeSolidSupport:
 		return c.IsManifoldAndOriented()
-	//case ObjectTypeSupport:
-	//	return len(c.Mesh.Beams) == 0
-	//case ObjectTypeSurface:
-	//	return len(c.Mesh.Beams) == 0
+		//case ObjectTypeSupport:
+		//	return len(c.Mesh.Beams) == 0
+		//case ObjectTypeSurface:
+		//	return len(c.Mesh.Beams) == 0
 	}
 
 	return false

@@ -11,7 +11,7 @@ type vec3I struct {
 	Z int32 // Z coordinate
 }
 
-const micronsAccuracy = 1E-6
+const micronsAccuracy = 1e-6
 
 func newvec3IFromVec3(vec Point3D) vec3I {
 	a := vec3I{

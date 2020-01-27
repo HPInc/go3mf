@@ -33,7 +33,6 @@ func (c ClipMode) String() string {
 	}[c]
 }
 
-
 // A CapMode is an enumerable for the different capping modes.
 type CapMode uint8
 
@@ -65,9 +64,9 @@ func (b CapMode) String() string {
 
 // BeamLattice defines the Model Mesh BeamLattice Attributes class and is part of the BeamLattice extension to 3MF.
 type BeamLattice struct {
-	ClipMode             ClipMode
-	ClippingMeshID       uint32
-	RepresentationMeshID uint32
+	ClipMode                 ClipMode
+	ClippingMeshID           uint32
+	RepresentationMeshID     uint32
 	Beams                    []Beam
 	BeamSets                 []BeamSet
 	MinLength, DefaultRadius float64
@@ -86,7 +85,6 @@ func (m *BeamLattice) checkSanity(nodeCount uint32) bool {
 	}
 	return true
 }
-
 
 // BeamSet defines a set of beams.
 type BeamSet struct {
@@ -115,7 +113,6 @@ func ExtensionBeamLattice(o *go3mf.MeshResource) *BeamLattice {
 	o.Extensions[ExtensionName] = attr
 	return attr
 }
-
 
 const (
 	attrBeamLattice        = "beamlattice"

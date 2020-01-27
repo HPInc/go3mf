@@ -38,7 +38,7 @@ func (d *objectDecoder) Attributes(attrs []xml.Attr) bool {
 			if ext, ok := extensionDecoder[a.Name.Space]; ok {
 				ok = ext.DecodeAttribute(d.Scanner, &d.resource, a)
 			}
-		}		
+		}
 		if !ok {
 			break
 		}

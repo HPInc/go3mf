@@ -1,12 +1,10 @@
 package slices
 
 import (
+	"github.com/qmuntal/go3mf"
 	"reflect"
 	"testing"
-	"github.com/qmuntal/go3mf"
 )
-
-
 
 func TestSlice_BeginPolygon(t *testing.T) {
 	s := new(Slice)
@@ -125,7 +123,6 @@ func TestSlice_IsPolygonValid(t *testing.T) {
 		})
 	}
 }
-
 
 func TestSliceStack_AddSlice(t *testing.T) {
 	type args struct {
