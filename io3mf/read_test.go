@@ -69,8 +69,8 @@ func (m *modelBuilder) withDefaultModel() *modelBuilder {
 func (m *modelBuilder) withModel(unit string, lang string) *modelBuilder {
 	m.str.WriteString(`<model `)
 	m.addAttr("", "unit", unit).addAttr("xml", "lang", lang)
-	m.addAttr("", "xmlns", nsCoreSpec).addAttr("xmlns", "m", nsMaterialSpec).addAttr("xmlns", "p", nsProductionSpec)
-	m.addAttr("", "requiredextensions", "m p")
+	m.addAttr("", "xmlns", nsCoreSpec).addAttr("xmlns", "p", nsProductionSpec)
+	m.addAttr("", "requiredextensions", "p")
 	m.str.WriteString(">\n")
 	m.hasModel = true
 	return m
@@ -253,7 +253,6 @@ func TestDecoder_processRootModel(t *testing.T) {
 		{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 		{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
 	}}
-	baseTexture := &go3mf.Texture2DResource{ID: 6, ModelPath: "/3d/3dmodel.model", Path: "/3D/Texture/msLogo.png", ContentType: go3mf.TextureTypePNG, TileStyleU: go3mf.TileWrap, TileStyleV: go3mf.TileMirror, Filter: go3mf.TextureFilterAuto}
 	meshRes := &go3mf.Mesh{
 		ObjectResource: go3mf.ObjectResource{
 			ID: 8, Name: "Box 1", ModelPath: "/3d/3dmodel.model", Thumbnail: "/a.png", DefaultPropertyID: 5, PartNumber: "11111111-1111-1111-1111-111111111111"},
@@ -294,11 +293,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 
 	want := &go3mf.Model{Units: go3mf.UnitMillimeter, Language: "en-US", Path: "/3d/3dmodel.model", UUID: "e9e25302-6428-402e-8633-cc95528d0ed3"}
 	otherMesh := &go3mf.Mesh{ObjectResource: go3mf.ObjectResource{ID: 8, ModelPath: "/3d/other.model"}}
-	colorGroup := &go3mf.ColorGroupResource{ID: 1, ModelPath: "/3d/3dmodel.model", Colors: []color.RGBA{{R: 255, G: 255, B: 255, A: 255}, {R: 0, G: 0, B: 0, A: 255}, {R: 26, G: 181, B: 103, A: 255}, {R: 223, G: 4, B: 90, A: 255}}}
-	texGroup := &go3mf.Texture2DGroupResource{ID: 2, ModelPath: "/3d/3dmodel.model", TextureID: 6, Coords: []go3mf.TextureCoord{{0.3, 0.5}, {0.3, 0.8}, {0.5, 0.8}, {0.5, 0.5}}}
-	compositeGroup := &go3mf.CompositeMaterialsResource{ID: 4, ModelPath: "/3d/3dmodel.model", MaterialID: 5, Indices: []uint32{1, 2}, Composites: []go3mf.Composite{{Values: []float64{0.5, 0.5}}, {Values: []float64{0.2, 0.8}}}}
-	multiGroup := &go3mf.MultiPropertiesResource{ID: 9, ModelPath: "/3d/3dmodel.model", BlendMethods: []go3mf.BlendMethod{go3mf.BlendMultiply}, Resources: []uint32{5, 2}, Multis: []go3mf.Multi{{ResourceIndices: []uint32{0, 0}}, {ResourceIndices: []uint32{1, 0}}, {ResourceIndices: []uint32{2, 3}}}}
-	want.Resources = append(want.Resources, otherMesh, baseMaterials, baseTexture, colorGroup, texGroup, compositeGroup, multiGroup, meshRes, components)
+	want.Resources = append(want.Resources, otherMesh, baseMaterials, meshRes, components)
 	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: components, PartNumber: "bob", UUID: "e9e25302-6428-402e-8633-cc95528d0ed2",
 		Transform: go3mf.Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
 	})
@@ -316,22 +311,6 @@ func TestDecoder_processRootModel(t *testing.T) {
 				<base name="Blue PLA" displaycolor="#0000FF" />
 				<base name="Red ABS" displaycolor="#FF0000" />
 			</basematerials>
-			<m:texture2d id="6" path="/3D/Texture/msLogo.png" contenttype="image/png" tilestyleu="wrap" tilestylev="mirror" filter="auto" />
-			<m:colorgroup id="1">
-				<m:color color="#FFFFFF" /> <m:color color="#000000" /> <m:color color="#1AB567" /> <m:color color="#DF045A" />
-			</m:colorgroup>
-			<m:texture2dgroup id="2" texid="6">
-				<m:tex2coord u="0.3" v="0.5" /> <m:tex2coord u="0.3" v="0.8" />	<m:tex2coord u="0.5" v="0.8" />	<m:tex2coord u="0.5" v="0.5" />
-			</m:texture2dgroup>
-			<m:compositematerials id="4" matid="5" matindices="1 2">
-				<m:composite values="0.5 0.5"/>
-				<m:composite values="0.2 0.8"/>
-			</m:compositematerials>
-			<m:multiproperties id="9" pids="5 2" blendmethods="multiply">
-				<m:multi pindices="0 0" />
-				<m:multi pindices="1 0" />
-				<m:multi pindices="2 3" />
-			</m:multiproperties>
 			<object id="8" name="Box 1" pid="5" pindex="0" thumbnail="/a.png" partnumber="11111111-1111-1111-1111-111111111111" type="model">
 				<mesh>
 					<vertices>
@@ -423,7 +402,7 @@ func TestDecoder_processNonRootModels(t *testing.T) {
 			`).build(),
 			"3d/other.model": new(modelBuilder).withDefaultModel().withElement(`
 				<resources>
-					<m:texture2d id="6" path="/3D/Texture/msLogo.png" contenttype="image/png" tilestyleu="wrap" tilestylev="mirror" filter="auto" />
+					<basematerials id="6" />
 				</resources>
 			`).build(),
 		}}, false, &go3mf.Model{
@@ -435,7 +414,7 @@ func TestDecoder_processNonRootModels(t *testing.T) {
 					{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 					{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
 				}},
-				&go3mf.Texture2DResource{ID: 6, ModelPath: "3d/other.model", Path: "/3D/Texture/msLogo.png", ContentType: go3mf.TextureTypePNG, TileStyleU: go3mf.TileWrap, TileStyleV: go3mf.TileMirror, Filter: go3mf.TextureFilterAuto},
+				&go3mf.BaseMaterialsResource{ID: 6, ModelPath: "3d/other.model"},
 			},
 		}},
 		{"noAtt", new(go3mf.Model), new(Decoder), false, new(go3mf.Model)},
@@ -541,19 +520,6 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 		go3mf.MissingPropertyError{ResourceID: 0, Element: "basematerials", ModelPath: "/3d/3dmodel.model", Name: "id"},
 		go3mf.ParsePropertyError{ResourceID: 0, Element: "basematerials", Name: "id", Value: "a", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
 		go3mf.MissingPropertyError{ResourceID: 0, Element: "basematerials", ModelPath: "/3d/3dmodel.model", Name: "id"},
-		go3mf.ParsePropertyError{ResourceID: 0, Element: "texture2d", Name: "id", Value: "b", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
-		go3mf.MissingPropertyError{ResourceID: 0, Element: "texture2d", ModelPath: "/3d/3dmodel.model", Name: "path"},
-		go3mf.MissingPropertyError{ResourceID: 0, Element: "texture2d", ModelPath: "/3d/3dmodel.model", Name: "id"},
-		go3mf.ParsePropertyError{ResourceID: 1, Element: "color", Name: "color", Value: "#FFFFF", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
-		go3mf.ParsePropertyError{ResourceID: 2, Element: "tex2coord", Name: "u", Value: "b", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
-		go3mf.ParsePropertyError{ResourceID: 2, Element: "tex2coord", Name: "v", Value: "c", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
-		go3mf.MissingPropertyError{ResourceID: 4, Element: "compositematerials", ModelPath: "/3d/3dmodel.model", Name: "matid"},
-		go3mf.MissingPropertyError{ResourceID: 4, Element: "compositematerials", ModelPath: "/3d/3dmodel.model", Name: "matindices"},
-		go3mf.MissingPropertyError{ResourceID: 4, Element: "composite", ModelPath: "/3d/3dmodel.model", Name: "values"},
-		go3mf.ParsePropertyError{ResourceID: 4, Element: "composite", Name: "values", Value: "a", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
-		go3mf.ParsePropertyError{ResourceID: 9, Element: "multiproperties", ModelPath: "/3d/3dmodel.model", Name: "pids", Value: "a", Type: go3mf.PropertyRequired},
-		go3mf.MissingPropertyError{ResourceID: 9, Element: "multi", ModelPath: "/3d/3dmodel.model", Name: "pindices"},
-		go3mf.MissingPropertyError{ResourceID: 19, Element: "multiproperties", ModelPath: "/3d/3dmodel.model", Name: "pids"},
 		go3mf.GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3d/3dmodel.model", Message: "duplicated triangle indices"},
 		go3mf.GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3d/3dmodel.model", Message: "triangle indices are out of range"},
 		go3mf.ParsePropertyError{ResourceID: 22, Element: "object", ModelPath: "/3d/3dmodel.model", Name: "type", Value: "invalid", Type: go3mf.PropertyOptional},
@@ -585,22 +551,6 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 				<base name="Blue PLA" displaycolor="#0000FF" />
 				<base name="Red ABS" displaycolor="#FF0000" />
 			</basematerials>			
-			<m:texture2d id="6" qm:mq="other" path="/3D/Texture/msLogo.png" contenttype="image/png" tilestyleu="wrap" tilestylev="mirror" filter="auto" />
-			<m:texture2d id="b" contenttype="image/png" tilestyleu="wrap" tilestylev="mirror" filter="auto" />
-			<m:colorgroup id="1">
-				<m:color color="#FFFFF" /> <m:color color="#000000" /> <m:color color="#1AB567" /> <m:color color="#DF045A" />
-			</m:colorgroup>
-			<m:texture2dgroup qm:mq="other" id="2" texid="6">
-				<m:tex2coord qm:mq="other" u="b" v="0.5" /> <m:tex2coord u="0.3" v="c" />	<m:tex2coord u="0.5" v="0.8" />	<m:tex2coord u="0.5" v="0.5" />
-			</m:texture2dgroup>
-			<m:compositematerials id="4" qm:mq="other">
-				<m:composite/>
-				<m:composite values="a 0.8"/>
-			</m:compositematerials>
-			<m:multiproperties id="9" qm:mq="other" pids="a 2">
-				<m:multi />
-			</m:multiproperties>
-			<m:multiproperties id="19" />
 			<object id="8" name="Box 1" pid="5" pindex="0" partnumber="11111111-1111-1111-1111-111111111111" type="model">
 				<mesh>
 					<vertices>
@@ -635,7 +585,7 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 			<object id="20" pid="3" p:UUID="cb8286808895-4e08-a1fc-be63e033df15" type="other">
 				<components>
 					<component objectid="8" p:path="/2d/2d.model" p:UUID="cb8286808895-4e08-a1fc-be63e033df16" transform="0 0 0 1 0 0 0 2 -66.4 -87.1 8.8"/>
-					<component objectid="9" p:UUID="cb828680-8895-4e08-a1fc-be63e033df16"/>
+					<component objectid="5" p:UUID="cb828680-8895-4e08-a1fc-be63e033df16"/>
 				</components>
 			</object>
 		</resources>

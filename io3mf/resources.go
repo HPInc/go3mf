@@ -20,19 +20,6 @@ func (d *resourceDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
 		case attrBaseMaterials:
 			child = new(baseMaterialsDecoder)
 		}
-	} else if name.Space == nsMaterialSpec {
-		switch name.Local {
-		case attrColorGroup:
-			child = new(colorGroupDecoder)
-		case attrTexture2DGroup:
-			child = new(tex2DGroupDecoder)
-		case attrTexture2D:
-			child = new(texture2DDecoder)
-		case attrCompositematerials:
-			child = new(compositeMaterialsDecoder)
-		case attrMultiProps:
-			child = new(multiPropertiesDecoder)
-		}
 	} else if ext, ok := extensionDecoder[name.Space]; ok {
 		child = ext.NodeDecoder(nil, name.Local)
 	}

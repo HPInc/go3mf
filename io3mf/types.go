@@ -12,7 +12,6 @@ const (
 	nsXML            = "http://www.w3.org/XML/1998/namespace"
 	nsXMLNs          = "http://www.w3.org/2000/xmlns/"
 	nsCoreSpec       = "http://schemas.microsoft.com/3dmanufacturing/core/2015/02"
-	nsMaterialSpec   = "http://schemas.microsoft.com/3dmanufacturing/material/2015/02"
 	nsProductionSpec = "http://schemas.microsoft.com/3dmanufacturing/production/2015/06"
 )
 
@@ -42,18 +41,6 @@ const (
 	attrPartNumber         = "partnumber"
 	attrItem               = "item"
 	attrModel              = "model"
-	attrColorGroup         = "colorgroup"
-	attrColor              = "color"
-	attrTexture2DGroup     = "texture2dgroup"
-	attrTex2DCoord         = "tex2coord"
-	attrTexID              = "texid"
-	attrU                  = "u"
-	attrV                  = "v"
-	attrContentType        = "contenttype"
-	attrTileStyleU         = "tilestyleu"
-	attrTileStyleV         = "tilestylev"
-	attrFilter             = "filter"
-	attrTexture2D          = "texture2d"
 	attrVertices           = "vertices"
 	attrVertex             = "vertex"
 	attrX                  = "x"
@@ -77,16 +64,6 @@ const (
 	attrPreserve           = "preserve"
 	attrMetadata           = "metadata"
 	attrMetadataGroup      = "metadatagroup"
-	attrComposite          = "composite"
-	attrCompositematerials = "compositematerials"
-	attrValues             = "values"
-	attrMatID              = "matid"
-	attrMatIndices         = "matindices"
-	attrMultiProps         = "multiproperties"
-	attrMulti              = "multi"
-	attrPIndices           = "pindices"
-	attrPIDs               = "pids"
-	attrBlendMethods       = "blendmethods"
 )
 
 // WarningLevel defines the level of a reader warning.
@@ -114,33 +91,6 @@ func (e *ReadError) Error() string {
 	return e.Message
 }
 
-func newTextureFilter(s string) (t go3mf.TextureFilter, ok bool) {
-	t, ok = map[string]go3mf.TextureFilter{
-		"auto":    go3mf.TextureFilterAuto,
-		"linear":  go3mf.TextureFilterLinear,
-		"nearest": go3mf.TextureFilterNearest,
-	}[s]
-	return
-}
-
-func newTileStyle(s string) (t go3mf.TileStyle, ok bool) {
-	t, ok = map[string]go3mf.TileStyle{
-		"wrap":   go3mf.TileWrap,
-		"mirror": go3mf.TileMirror,
-		"clamp":  go3mf.TileClamp,
-		"none":   go3mf.TileNone,
-	}[s]
-	return
-}
-
-func newTexture2DType(s string) (t go3mf.Texture2DType, ok bool) {
-	t, ok = map[string]go3mf.Texture2DType{
-		"image/png":  go3mf.TextureTypePNG,
-		"image/jpeg": go3mf.TextureTypeJPEG,
-	}[s]
-	return
-}
-
 func newObjectType(s string) (o go3mf.ObjectType, ok bool) {
 	o, ok = map[string]go3mf.ObjectType{
 		"model":        go3mf.ObjectTypeModel,
@@ -164,10 +114,3 @@ func newUnits(s string) (u go3mf.Units, ok bool) {
 	return
 }
 
-func newBlendMethod(s string) (b go3mf.BlendMethod, ok bool) {
-	b, ok = map[string]go3mf.BlendMethod{
-		"mix":      go3mf.BlendMix,
-		"multiply": go3mf.BlendMultiply,
-	}[s]
-	return
-}

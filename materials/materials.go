@@ -1,6 +1,8 @@
-package go3mf
+package materials
 
 import "image/color"
+
+const ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/material/2015/02"
 
 // Texture2DType defines the allowed texture 2D types.
 type Texture2DType uint8
@@ -171,3 +173,65 @@ type MultiPropertiesResource struct {
 func (c *MultiPropertiesResource) Identify() (string, uint32) {
 	return c.ModelPath, c.ID
 }
+
+func newTexture2DType(s string) (t Texture2DType, ok bool) {
+	t, ok = map[string]Texture2DType{
+		"image/png":  TextureTypePNG,
+		"image/jpeg": TextureTypeJPEG,
+	}[s]
+	return
+}
+
+func newTextureFilter(s string) (t TextureFilter, ok bool) {
+	t, ok = map[string]TextureFilter{
+		"auto":    TextureFilterAuto,
+		"linear":  TextureFilterLinear,
+		"nearest": TextureFilterNearest,
+	}[s]
+	return
+}
+
+func newTileStyle(s string) (t TileStyle, ok bool) {
+	t, ok = map[string]TileStyle{
+		"wrap":   TileWrap,
+		"mirror": TileMirror,
+		"clamp":  TileClamp,
+		"none":   TileNone,
+	}[s]
+	return
+}
+
+func newBlendMethod(s string) (b BlendMethod, ok bool) {
+	b, ok = map[string]BlendMethod{
+		"mix":      BlendMix,
+		"multiply": BlendMultiply,
+	}[s]
+	return
+}
+
+const (	
+	attrPath               = "path"
+	attrID                 = "id"
+	attrColorGroup         = "colorgroup"
+	attrColor              = "color"
+	attrTexture2DGroup     = "texture2dgroup"
+	attrTex2DCoord         = "tex2coord"
+	attrTexID              = "texid"
+	attrU                  = "u"
+	attrV                  = "v"
+	attrContentType        = "contenttype"
+	attrTileStyleU         = "tilestyleu"
+	attrTileStyleV         = "tilestylev"
+	attrFilter             = "filter"
+	attrTexture2D          = "texture2d"
+	attrComposite          = "composite"
+	attrCompositematerials = "compositematerials"
+	attrValues             = "values"
+	attrMatID              = "matid"
+	attrMatIndices         = "matindices"
+	attrMultiProps         = "multiproperties"
+	attrMulti              = "multi"
+	attrPIndices           = "pindices"
+	attrPIDs               = "pids"
+	attrBlendMethods       = "blendmethods"
+)

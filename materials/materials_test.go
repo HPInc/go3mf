@@ -1,6 +1,7 @@
-package go3mf
+package materials
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -214,6 +215,107 @@ func TestMultiPropertiesResource_Identify(t *testing.T) {
 			}
 			if got1 != tt.want1 {
 				t.Errorf("MultiPropertiesResource.Identify() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+
+func Test_newBlendMethod(t *testing.T) {
+	tests := []struct {
+		name   string
+		wantB  BlendMethod
+		wantOk bool
+	}{
+		{"mix", BlendMix, true},
+		{"multiply", BlendMultiply, true},
+		{"empty", BlendMix, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotB, gotOk := newBlendMethod(tt.name)
+			if !reflect.DeepEqual(gotB, tt.wantB) {
+				t.Errorf("newBlendMethod() gotB = %v, want %v", gotB, tt.wantB)
+			}
+			if gotOk != tt.wantOk {
+				t.Errorf("newBlendMethod() gotOk = %v, want %v", gotOk, tt.wantOk)
+			}
+		})
+	}
+}
+
+func Test_newTextureFilter(t *testing.T) {
+	type args struct {
+		s string
+	}
+	tests := []struct {
+		name   string
+		want   TextureFilter
+		wantOk bool
+	}{
+		{"auto", TextureFilterAuto, true},
+		{"linear", TextureFilterLinear, true},
+		{"nearest", TextureFilterNearest, true},
+		{"empty", TextureFilterAuto, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := newTextureFilter(tt.name)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("newTextureFilter() got = %v, want %v", got, tt.want)
+			}
+			if got != tt.want {
+				t.Errorf("newTextureFilter() got1 = %v, want %v", got1, tt.want)
+			}
+		})
+	}
+}
+
+func Test_newTileStyle(t *testing.T) {
+	type args struct {
+		s string
+	}
+	tests := []struct {
+		name  string
+		want  TileStyle
+		want1 bool
+	}{
+		{"wrap", TileWrap, true},
+		{"mirror", TileMirror, true},
+		{"clamp", TileClamp, true},
+		{"none", TileNone, true},
+		{"empty", TileWrap, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := newTileStyle(tt.name)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("newTileStyle() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("newTileStyle() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+
+func Test_newTexture2DType(t *testing.T) {
+	tests := []struct {
+		name  string
+		want  Texture2DType
+		want1 bool
+	}{
+		{"image/png", TextureTypePNG, true},
+		{"image/jpeg", TextureTypeJPEG, true},
+		{"", Texture2DType(0), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := newTexture2DType(tt.name)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("newTexture2DType() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("newTexture2DType() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}

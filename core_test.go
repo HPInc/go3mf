@@ -253,10 +253,10 @@ func TestModel_UnusedID(t *testing.T) {
 		want uint32
 	}{
 		{"empty", new(Model), 1},
-		{"one", &Model{Resources: []Resource{&ColorGroupResource{ID: 2}}}, 1},
-		{"two", &Model{Resources: []Resource{&ColorGroupResource{ID: 1}}}, 2},
-		{"sequence", &Model{Resources: []Resource{&ColorGroupResource{ID: 1}, &ColorGroupResource{ID: 2}}}, 3},
-		{"sparce", &Model{Resources: []Resource{&ColorGroupResource{ID: 1}, &ColorGroupResource{ID: 3}}}, 2},
+		{"one", &Model{Resources: []Resource{&ObjectResource{ID: 2}}}, 1},
+		{"two", &Model{Resources: []Resource{&ObjectResource{ID: 1}}}, 2},
+		{"sequence", &Model{Resources: []Resource{&ObjectResource{ID: 1}, &ObjectResource{ID: 2}}}, 3},
+		{"sparce", &Model{Resources: []Resource{&ObjectResource{ID: 1}, &ObjectResource{ID: 3}}}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
