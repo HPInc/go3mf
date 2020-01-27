@@ -1,0 +1,659 @@
+package go3mf
+
+import (
+	"encoding/xml"
+	"fmt"
+	"image/color"
+	"strings"
+)
+
+type modelDecoder struct {
+	EmptyDecoder
+	model                *Model
+	withinIgnoredElement bool
+}
+
+func (d *modelDecoder) Child(name xml.Name) (child NodeDecoder) {
+	if name.Space == ExtensionName {
+		switch name.Local {
+		case attrResources:
+			d.withinIgnoredElement = false
+			child = &resourceDecoder{}
+		case attrBuild:
+			if !d.Scanner.IsRoot {
+				d.withinIgnoredElement = true
+			} else {
+				d.withinIgnoredElement = false
+				child = &buildDecoder{}
+			}
+		case attrMetadata:
+			if !d.Scanner.IsRoot {
+				d.withinIgnoredElement = true
+			} else {
+				d.withinIgnoredElement = true
+				child = &metadataDecoder{metadatas: &d.model.Metadata}
+			}
+		}
+	}
+	return
+}
+
+func (d *modelDecoder) Attributes(attrs []xml.Attr) bool {
+	var requiredExts string
+	for _, a := range attrs {
+		if a.Name.Space == "" {
+			switch a.Name.Local {
+			case attrUnit:
+				if d.Scanner.IsRoot {
+					var ok bool
+					if d.model.Units, ok = newUnits(a.Value); !ok {
+						d.Scanner.InvalidOptionalAttr(attrUnit, a.Value)
+					}
+				}
+			case attrReqExt:
+				requiredExts = a.Value
+			}
+		} else {
+			d.noCoreAttribute(a)
+		}
+	}
+
+	return d.checkRequiredExt(requiredExts)
+}
+
+func (d *modelDecoder) checkRequiredExt(requiredExts string) bool {
+	for _, ext := range strings.Fields(requiredExts) {
+		ext = d.Scanner.Namespaces[ext]
+		if ext != ExtensionName && ext != nsProductionSpec {
+			if _, ok := extensionDecoder[ext]; !ok {
+				if !d.Scanner.GenericError(true, fmt.Sprintf("'%s' extension is not supported", ext)) {
+					return false
+				}
+			}
+		}
+	}
+	return true
+}
+
+func (d *modelDecoder) noCoreAttribute(a xml.Attr) {
+	switch a.Name.Space {
+	case nsXML:
+		if d.Scanner.IsRoot {
+			if a.Name.Local == attrLang {
+				d.model.Language = a.Value
+			}
+		}
+	case attrXmlns:
+		d.Scanner.Namespaces[a.Name.Local] = a.Value
+	}
+}
+
+type metadataGroupDecoder struct {
+	EmptyDecoder
+	metadatas *[]Metadata
+}
+
+func (d *metadataGroupDecoder) Child(name xml.Name) (child NodeDecoder) {
+	if name.Space == ExtensionName && name.Local == attrMetadata {
+		child = &metadataDecoder{metadatas: d.metadatas}
+	}
+	return
+}
+
+type metadataDecoder struct {
+	EmptyDecoder
+	metadatas *[]Metadata
+	metadata  Metadata
+}
+
+func (d *metadataDecoder) Attributes(attrs []xml.Attr) bool {
+	ok := true
+	for _, a := range attrs {
+		if a.Name.Space != "" {
+			continue
+		}
+		switch a.Name.Local {
+		case attrName:
+			i := strings.IndexByte(a.Value, ':')
+			var ns string
+			if i < 0 {
+				d.metadata.Name = a.Value
+			} else if ns, ok = d.Scanner.Namespaces[a.Value[0:i]]; ok {
+				d.metadata.Name = ns + ":" + a.Value[i+1:]
+			} else {
+				ok = d.Scanner.GenericError(true, "unregistered namespace")
+			}
+		case attrType:
+			d.metadata.Type = a.Value
+		case attrPreserve:
+			if a.Value != "0" {
+				d.metadata.Preserve = true
+			}
+		}
+		if !ok {
+			break
+		}
+	}
+	return ok
+}
+
+func (d *metadataDecoder) Text(txt []byte) bool {
+	d.metadata.Value = string(txt)
+	return true
+}
+
+func (d *metadataDecoder) Close() bool {
+	*d.metadatas = append(*d.metadatas, d.metadata)
+	return true
+}
+
+type buildDecoder struct {
+	EmptyDecoder
+}
+
+func (d *buildDecoder) Child(name xml.Name) (child NodeDecoder) {
+	if name.Space == ExtensionName && name.Local == attrItem {
+		child = &buildItemDecoder{}
+	}
+	return
+}
+
+func (d *buildDecoder) Attributes(attrs []xml.Attr) bool {
+	ok := true
+	for _, a := range attrs {
+		if a.Name.Space == nsProductionSpec && a.Name.Local == attrProdUUID {
+			if err := validateUUID(a.Value); err != nil {
+				ok = d.Scanner.InvalidRequiredAttr(attrProdUUID, a.Value)
+			}
+			d.Scanner.UUID = a.Value
+			break
+		}
+	}
+
+	if ok && d.Scanner.UUID == "" && d.Scanner.NamespaceRegistered(nsProductionSpec) {
+		ok = d.Scanner.MissingAttr(attrProdUUID)
+	}
+	return ok
+}
+
+type buildItemDecoder struct {
+	EmptyDecoder
+	item       BuildItem
+	objectID   uint32
+	objectPath string
+}
+
+func (d *buildItemDecoder) Close() bool {
+	return d.processItem() && d.Scanner.CloseResource()
+}
+
+func (d *buildItemDecoder) Child(name xml.Name) (child NodeDecoder) {
+	if name.Space == ExtensionName && name.Local == attrMetadataGroup {
+		child = &metadataGroupDecoder{metadatas: &d.item.Metadata}
+	}
+	return
+}
+
+func (d *buildItemDecoder) processItem() bool {
+	resource, ok := d.Scanner.FindResource(d.objectPath, uint32(d.objectID))
+	if !ok {
+		ok = d.Scanner.GenericError(true, "non-existent referenced object")
+	} else if d.item.Object, ok = resource.(Object); !ok {
+		ok = d.Scanner.GenericError(true, "non-object referenced resource")
+	}
+	if ok {
+		if d.item.Object != nil && d.item.Object.Type() == ObjectTypeOther {
+			ok = d.Scanner.GenericError(true, "referenced object cannot be have OTHER type")
+		}
+	}
+	if ok {
+		d.Scanner.BuildItems = append(d.Scanner.BuildItems, &d.item)
+	}
+	return ok
+}
+
+func (d *buildItemDecoder) Attributes(attrs []xml.Attr) bool {
+	ok := true
+	for _, a := range attrs {
+		switch a.Name.Space {
+		case nsProductionSpec:
+			if a.Name.Local == attrProdUUID {
+				if err := validateUUID(a.Value); err != nil {
+					ok = d.Scanner.InvalidRequiredAttr(attrProdUUID, a.Value)
+				}
+				d.item.UUID = a.Value
+			} else if a.Name.Local == attrPath {
+				d.objectPath = a.Value
+			}
+		case "":
+			ok = d.parseCoreAttr(a)
+		}
+		if !ok {
+			return false
+		}
+	}
+
+	if d.item.UUID == "" && d.Scanner.NamespaceRegistered(nsProductionSpec) {
+		ok = d.Scanner.MissingAttr(attrProdUUID)
+	}
+	return ok
+}
+
+func (d *buildItemDecoder) parseCoreAttr(a xml.Attr) bool {
+	ok := true
+	switch a.Name.Local {
+	case attrObjectID:
+		d.objectID, ok = d.Scanner.ParseResourceID(a.Value)
+	case attrPartNumber:
+		d.item.PartNumber = a.Value
+	case attrTransform:
+		d.item.Transform = d.Scanner.ParseToMatrixOptional(attrTransform, a.Value)
+	}
+	return ok
+}
+
+type resourceDecoder struct {
+	EmptyDecoder
+}
+
+func (d *resourceDecoder) Child(name xml.Name) (child NodeDecoder) {
+	if name.Space == ExtensionName {
+		switch name.Local {
+		case attrObject:
+			child = &objectDecoder{}
+		case attrBaseMaterials:
+			child = new(baseMaterialsDecoder)
+		}
+	} else if ext, ok := extensionDecoder[name.Space]; ok {
+		child = ext.NodeDecoder(nil, name.Local)
+	}
+	return
+}
+
+type baseMaterialsDecoder struct {
+	EmptyDecoder
+	resource            BaseMaterialsResource
+	baseMaterialDecoder baseMaterialDecoder
+}
+
+func (d *baseMaterialsDecoder) Open() {
+	d.resource.ModelPath = d.Scanner.ModelPath
+	d.baseMaterialDecoder.resource = &d.resource
+}
+
+func (d *baseMaterialsDecoder) Close() bool {
+	ok := d.Scanner.CloseResource()
+	if ok {
+		d.Scanner.AddResource(&d.resource)
+	}
+	return ok
+}
+
+func (d *baseMaterialsDecoder) Child(name xml.Name) (child NodeDecoder) {
+	if name.Space == ExtensionName && name.Local == attrBase {
+		child = &d.baseMaterialDecoder
+	}
+	return
+}
+
+func (d *baseMaterialsDecoder) Attributes(attrs []xml.Attr) bool {
+	ok := true
+	for _, a := range attrs {
+		if a.Name.Space == "" && a.Name.Local == attrID {
+			d.resource.ID, ok = d.Scanner.ParseResourceID(a.Value)
+			break
+		}
+	}
+	return ok
+}
+
+type baseMaterialDecoder struct {
+	EmptyDecoder
+	resource *BaseMaterialsResource
+}
+
+func (d *baseMaterialDecoder) Attributes(attrs []xml.Attr) bool {
+	var name string
+	var withColor bool
+	baseColor := color.RGBA{}
+	ok := true
+	for _, a := range attrs {
+		switch a.Name.Local {
+		case attrName:
+			name = a.Value
+		case attrBaseMaterialColor:
+			var err error
+			baseColor, err = ReadRGB(a.Value)
+			withColor = true
+			if err != nil {
+				ok = d.Scanner.InvalidRequiredAttr(attrBaseMaterialColor, a.Value)
+			}
+		}
+	}
+	if ok {
+		if name == "" {
+			ok = d.Scanner.MissingAttr(attrName)
+		}
+		if !withColor {
+			ok = d.Scanner.MissingAttr(attrBaseMaterialColor)
+		}
+		d.resource.Materials = append(d.resource.Materials, BaseMaterial{Name: name, Color: baseColor})
+	}
+	return ok
+}
+
+
+type meshDecoder struct {
+	EmptyDecoder
+	mesh Mesh
+}
+
+func (d *meshDecoder) Close() bool {
+	d.Scanner.AddResource(&d.mesh)
+	return true
+}
+
+func (d *meshDecoder) Child(name xml.Name) (child NodeDecoder) {
+	if name.Space == ExtensionName {
+		if name.Local == attrVertices {
+			child = &verticesDecoder{mesh: &d.mesh}
+		} else if name.Local == attrTriangles {
+			child = &trianglesDecoder{mesh: &d.mesh}
+		}
+	} else if ext, ok := extensionDecoder[name.Space]; ok {
+		child = ext.NodeDecoder(&d.mesh, name.Local)
+	}
+	return
+}
+
+type verticesDecoder struct {
+	EmptyDecoder
+	mesh          *Mesh
+	vertexDecoder vertexDecoder
+}
+
+func (d *verticesDecoder) Open() {
+	d.vertexDecoder.mesh = d.mesh
+}
+
+func (d *verticesDecoder) Child(name xml.Name) (child NodeDecoder) {
+	if name.Space == ExtensionName && name.Local == attrVertex {
+		child = &d.vertexDecoder
+	}
+	return
+}
+
+type vertexDecoder struct {
+	EmptyDecoder
+	mesh *Mesh
+}
+
+func (d *vertexDecoder) Attributes(attrs []xml.Attr) bool {
+	var x, y, z float32
+	ok := true
+	for _, a := range attrs {
+		switch a.Name.Local {
+		case attrX:
+			x, ok = d.Scanner.ParseFloat32Required(attrX, a.Value)
+		case attrY:
+			y, ok = d.Scanner.ParseFloat32Required(attrY, a.Value)
+		case attrZ:
+			z, ok = d.Scanner.ParseFloat32Required(attrZ, a.Value)
+		}
+		if !ok {
+			return false
+		}
+	}
+	d.mesh.Nodes = append(d.mesh.Nodes, Point3D{x, y, z})
+	return true
+}
+
+type trianglesDecoder struct {
+	EmptyDecoder
+	mesh            *Mesh
+	triangleDecoder triangleDecoder
+}
+
+func (d *trianglesDecoder) Open() {
+	d.triangleDecoder.mesh = d.mesh
+
+	if len(d.mesh.Faces) == 0 && len(d.mesh.Nodes) > 0 {
+		d.mesh.Faces = make([]Face, 0, len(d.mesh.Nodes)-1)
+	}
+}
+
+func (d *trianglesDecoder) Child(name xml.Name) (child NodeDecoder) {
+	if name.Space == ExtensionName && name.Local == attrTriangle {
+		child = &d.triangleDecoder
+	}
+	return
+}
+
+type triangleDecoder struct {
+	EmptyDecoder
+	mesh *Mesh
+}
+
+func (d *triangleDecoder) Attributes(attrs []xml.Attr) bool {
+	var v1, v2, v3, pid, p1, p2, p3 uint32
+	var hasPID, hasP1, hasP2, hasP3 bool
+	ok := true
+	for _, a := range attrs {
+		switch a.Name.Local {
+		case attrV1:
+			v1, ok = d.Scanner.ParseUint32Required(attrV1, a.Value)
+		case attrV2:
+			v2, ok = d.Scanner.ParseUint32Required(attrV2, a.Value)
+		case attrV3:
+			v3, ok = d.Scanner.ParseUint32Required(attrV3, a.Value)
+		case attrPID:
+			pid = d.Scanner.ParseUint32Optional(attrPID, a.Value)
+			hasPID = true
+		case attrP1:
+			p1 = d.Scanner.ParseUint32Optional(attrP1, a.Value)
+			hasP1 = true
+		case attrP2:
+			p2 = d.Scanner.ParseUint32Optional(attrP2, a.Value)
+			hasP2 = true
+		case attrP3:
+			p3 = d.Scanner.ParseUint32Optional(attrP3, a.Value)
+			hasP3 = true
+		}
+		if !ok {
+			return false
+		}
+	}
+
+	p1 = applyDefault(p1, d.mesh.DefaultPropertyIndex, hasP1)
+	p2 = applyDefault(p2, p1, hasP2)
+	p3 = applyDefault(p3, p1, hasP3)
+	pid = applyDefault(pid, d.mesh.DefaultPropertyID, hasPID)
+
+	return d.addTriangle(v1, v2, v3, pid, p1, p2, p3)
+}
+
+func (d *triangleDecoder) addTriangle(v1, v2, v3, pid, p1, p2, p3 uint32) bool {
+	if v1 == v2 || v1 == v3 || v2 == v3 {
+		return d.Scanner.GenericError(true, "duplicated triangle indices")
+	}
+	nodeCount := uint32(len(d.mesh.Nodes))
+	if v1 >= nodeCount || v2 >= nodeCount || v3 >= nodeCount {
+		return d.Scanner.GenericError(true, "triangle indices are out of range")
+	}
+	d.mesh.Faces = append(d.mesh.Faces, Face{
+		NodeIndices:     [3]uint32{v1, v2, v3},
+		Resource:        pid,
+		ResourceIndices: [3]uint32{p1, p2, p3},
+	})
+	return true
+}
+
+func applyDefault(val, defVal uint32, noDef bool) uint32 {
+	if noDef {
+		return val
+	}
+	return defVal
+}
+
+type objectDecoder struct {
+	EmptyDecoder
+	resource ObjectResource
+}
+
+func (d *objectDecoder) Open() {
+	d.resource.ModelPath = d.Scanner.ModelPath
+}
+
+func (d *objectDecoder) Close() bool {
+	return d.Scanner.CloseResource()
+}
+
+func (d *objectDecoder) Attributes(attrs []xml.Attr) bool {
+	ok := true
+	for _, a := range attrs {
+		switch a.Name.Space {
+		case nsProductionSpec:
+			if a.Name.Local == attrProdUUID {
+				if err := validateUUID(a.Value); err != nil {
+					ok = d.Scanner.InvalidRequiredAttr(attrProdUUID, a.Value)
+				} else {
+					d.resource.UUID = a.Value
+				}
+			}
+		case "":
+			ok = d.parseCoreAttr(a)
+		default:
+			if ext, ok := extensionDecoder[a.Name.Space]; ok {
+				ok = ext.DecodeAttribute(d.Scanner, &d.resource, a)
+			}
+		}
+		if !ok {
+			break
+		}
+	}
+	return ok
+}
+
+func (d *objectDecoder) Child(name xml.Name) (child NodeDecoder) {
+	if name.Space == ExtensionName {
+		if name.Local == attrMesh {
+			child = &meshDecoder{mesh: Mesh{ObjectResource: d.resource}}
+		} else if name.Local == attrComponents {
+			if d.resource.DefaultPropertyID != 0 {
+				d.Scanner.GenericError(true, "default PID is not supported for component objects")
+			}
+			child = &componentsDecoder{resource: Components{ObjectResource: d.resource}}
+		} else if name.Local == attrMetadataGroup {
+			child = &metadataGroupDecoder{metadatas: &d.resource.Metadata}
+		}
+	}
+	return
+}
+
+func (d *objectDecoder) parseCoreAttr(a xml.Attr) bool {
+	ok := true
+	switch a.Name.Local {
+	case attrID:
+		d.resource.ID, ok = d.Scanner.ParseResourceID(a.Value)
+	case attrType:
+		d.resource.ObjectType, ok = newObjectType(a.Value)
+		if !ok {
+			ok = true
+			d.Scanner.InvalidOptionalAttr(attrType, a.Value)
+		}
+	case attrThumbnail:
+		d.resource.Thumbnail = a.Value
+	case attrName:
+		d.resource.Name = a.Value
+	case attrPartNumber:
+		d.resource.PartNumber = a.Value
+	case attrPID:
+		d.resource.DefaultPropertyID = d.Scanner.ParseUint32Optional(attrPID, a.Value)
+	case attrPIndex:
+		d.resource.DefaultPropertyIndex = d.Scanner.ParseUint32Optional(attrPIndex, a.Value)
+	}
+	return ok
+}
+
+type componentsDecoder struct {
+	EmptyDecoder
+	resource         Components
+	componentDecoder componentDecoder
+}
+
+func (d *componentsDecoder) Open() {
+	d.componentDecoder.resource = &d.resource
+}
+func (d *componentsDecoder) Close() bool {
+	d.Scanner.AddResource(&d.resource)
+	return true
+}
+
+func (d *componentsDecoder) Child(name xml.Name) (child NodeDecoder) {
+	if name.Space == ExtensionName && name.Local == attrComponent {
+		child = &d.componentDecoder
+	}
+	return
+}
+
+type componentDecoder struct {
+	EmptyDecoder
+	resource *Components
+}
+
+func (d *componentDecoder) Attributes(attrs []xml.Attr) bool {
+	var (
+		component Component
+		path      string
+		objectID  uint32
+	)
+	ok := true
+	for _, a := range attrs {
+		switch a.Name.Space {
+		case nsProductionSpec:
+			if a.Name.Local == attrProdUUID {
+				if err := validateUUID(a.Value); err != nil {
+					ok = d.Scanner.InvalidRequiredAttr(attrProdUUID, a.Value)
+				} else {
+					component.UUID = a.Value
+				}
+			} else if a.Name.Local == attrPath {
+				path = a.Value
+			}
+		case "":
+			if a.Name.Local == attrObjectID {
+				objectID, ok = d.Scanner.ParseUint32Required(attrObjectID, a.Value)
+			} else if a.Name.Local == attrTransform {
+				component.Transform = d.Scanner.ParseToMatrixOptional(attrTransform, a.Value)
+			}
+		}
+		if !ok {
+			return false
+		}
+	}
+	return ok && d.addComponent(&component, path, objectID)
+}
+
+func (d *componentDecoder) addComponent(component *Component, path string, objectID uint32) bool {
+	ok := true
+	if component.UUID == "" && d.Scanner.NamespaceRegistered(nsProductionSpec) {
+		ok = d.Scanner.MissingAttr(attrProdUUID)
+	}
+	if ok && path != "" && !d.Scanner.IsRoot {
+		ok = d.Scanner.GenericError(true, "path attribute in a non-root file is not supported")
+	}
+	if !ok {
+		return false
+	}
+
+	resource, ok := d.Scanner.FindResource(path, uint32(objectID))
+	if !ok {
+		ok = d.Scanner.GenericError(true, "non-existent referenced object")
+	} else if component.Object, ok = resource.(Object); !ok {
+		ok = d.Scanner.GenericError(true, "non-object referenced resource")
+	}
+	if ok {
+		d.resource.Components = append(d.resource.Components, component)
+	}
+	return ok
+}

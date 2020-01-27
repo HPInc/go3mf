@@ -1,11 +1,9 @@
-package iohelper
+package go3mf
 
 import (
 	"image/color"
 	"reflect"
 	"testing"
-
-	"github.com/qmuntal/go3mf"
 )
 
 func TestParser_NamespaceRegistered(t *testing.T) {
@@ -38,14 +36,14 @@ func TestScanner_ParseToMatrixOptional(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want go3mf.Matrix
+		want Matrix
 	}{
-		{"empty", args{""}, go3mf.Matrix{}},
-		{"11values", args{"1 1 1 1 1 1 1 1 1 1 1"}, go3mf.Matrix{}},
-		{"13values", args{"1 1 1 1 1 1 1 1 1 1 1 1 1"}, go3mf.Matrix{}},
-		{"char", args{"1 1 a 1 1 1 1 1 1 1 1 1"}, go3mf.Matrix{}},
-		{"base", args{"1 1 1 1 1 1 1 1 1 1 1 1"}, go3mf.Matrix{1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1}},
-		{"other", args{"0 1 2 10 11 12 20 21 22 30 31 32"}, go3mf.Matrix{0, 1, 2, 0, 10, 11, 12, 0, 20, 21, 22, 0, 30, 31, 32, 1}},
+		{"empty", args{""}, Matrix{}},
+		{"11values", args{"1 1 1 1 1 1 1 1 1 1 1"}, Matrix{}},
+		{"13values", args{"1 1 1 1 1 1 1 1 1 1 1 1 1"}, Matrix{}},
+		{"char", args{"1 1 a 1 1 1 1 1 1 1 1 1"}, Matrix{}},
+		{"base", args{"1 1 1 1 1 1 1 1 1 1 1 1"}, Matrix{1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1}},
+		{"other", args{"0 1 2 10 11 12 20 21 22 30 31 32"}, Matrix{0, 1, 2, 0, 10, 11, 12, 0, 20, 21, 22, 0, 30, 31, 32, 1}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

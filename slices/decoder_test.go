@@ -6,7 +6,6 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/qmuntal/go3mf"
-	"github.com/qmuntal/go3mf/io3mf"
 )
 
 func TestDecode(t *testing.T) {
@@ -132,7 +131,7 @@ func TestDecode(t *testing.T) {
 	</model>`
 
 	t.Run("base", func(t *testing.T) {
-		d := new(io3mf.Decoder)
+		d := new(go3mf.Decoder)
 		d.Strict = true
 		if err := d.DecodeRawModel(context.Background(), got, rootFile); err != nil {
 			t.Errorf("DecodeRawModel() unexpected error = %v", err)
@@ -228,7 +227,7 @@ func TestDecode_warns(t *testing.T) {
 		`
 
 	t.Run("base", func(t *testing.T) {
-		d := new(io3mf.Decoder)
+		d := new(go3mf.Decoder)
 		d.Strict = false
 		if err := d.DecodeRawModel(context.Background(), got, rootFile); err != nil {
 			t.Errorf("DecodeRawModel_warn() unexpected error = %v", err)

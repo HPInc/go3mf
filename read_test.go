@@ -1,4 +1,4 @@
-package io3mf
+package go3mf
 
 import (
 	"bytes"
@@ -15,7 +15,6 @@ import (
 	"testing"
 
 	"github.com/go-test/deep"
-	"github.com/qmuntal/go3mf"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -69,7 +68,7 @@ func (m *modelBuilder) withDefaultModel() *modelBuilder {
 func (m *modelBuilder) withModel(unit string, lang string) *modelBuilder {
 	m.str.WriteString(`<model `)
 	m.addAttr("", "unit", unit).addAttr("xml", "lang", lang)
-	m.addAttr("", "xmlns", nsCoreSpec).addAttr("xmlns", "p", nsProductionSpec)
+	m.addAttr("", "xmlns", ExtensionName).addAttr("xmlns", "p", nsProductionSpec)
 	m.addAttr("", "requiredextensions", "p")
 	m.str.WriteString(">\n")
 	m.hasModel = true
@@ -157,64 +156,46 @@ func (m *mockPackage) FindFileFromRel(args0 string) (packageFile, bool) {
 	return args.Get(0).(packageFile), args.Bool(1)
 }
 
-func TestReadError_Error(t *testing.T) {
-	tests := []struct {
-		name string
-		e    *ReadError
-		want string
-	}{
-		{"new", new(ReadError), ""},
-		{"generic", &ReadError{Message: "generic error"}, "generic error"},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.Error(); got != tt.want {
-				t.Errorf("ReadError.Error() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestDecoder_processOPC(t *testing.T) {
 	thumbFile := newMockFile("/a.png", nil, nil, nil, false)
 	thumbErr := newMockFile("/a.png", nil, nil, nil, true)
 	tests := []struct {
 		name    string
 		d       *Decoder
-		want    *go3mf.Model
+		want    *Model
 		wantErr bool
 	}{
-		{"noRoot", &Decoder{p: newMockPackage(nil)}, &go3mf.Model{}, true},
-		{"noRels", &Decoder{p: newMockPackage(newMockFile("/a.model", nil, nil, nil, false))}, &go3mf.Model{Path: "/a.model"}, false},
+		{"noRoot", &Decoder{p: newMockPackage(nil)}, &Model{}, true},
+		{"noRels", &Decoder{p: newMockPackage(newMockFile("/a.model", nil, nil, nil, false))}, &Model{Path: "/a.model"}, false},
 		{"withThumb", &Decoder{
 			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeThumbnail, "/a.png")}, thumbFile, thumbFile, false)),
-		}, &go3mf.Model{
+		}, &Model{
 			Path:        "/a.model",
-			Thumbnail:   &go3mf.Attachment{RelationshipType: relTypeThumbnail, Path: "/Metadata/thumbnail.png", Stream: new(bytes.Buffer)},
-			Attachments: []*go3mf.Attachment{{RelationshipType: relTypeThumbnail, Path: "/a.png", Stream: new(bytes.Buffer)}},
+			Thumbnail:   &Attachment{RelationshipType: relTypeThumbnail, Path: "/Metadata/thumbnail.png", Stream: new(bytes.Buffer)},
+			Attachments: []*Attachment{{RelationshipType: relTypeThumbnail, Path: "/a.png", Stream: new(bytes.Buffer)}},
 		}, false},
 		{"withThumbErr", &Decoder{
 			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeThumbnail, "/a.png")}, thumbErr, thumbErr, false)),
-		}, &go3mf.Model{Path: "/a.model"}, false},
+		}, &Model{Path: "/a.model"}, false},
 		{"withOtherRel", &Decoder{
 			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship("other", "/a.png")}, nil, nil, false)),
-		}, &go3mf.Model{Path: "/a.model"}, false},
+		}, &Model{Path: "/a.model"}, false},
 		{"withModelAttachment", &Decoder{
 			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeModel3D, "/a.model")}, nil, newMockFile("/a.model", nil, nil, nil, false), false)),
-		}, &go3mf.Model{
+		}, &Model{
 			Path:                  "/a.model",
-			ProductionAttachments: []*go3mf.ProductionAttachment{{RelationshipType: relTypeModel3D, Path: "/a.model"}},
+			ProductionAttachments: []*ProductionAttachment{{RelationshipType: relTypeModel3D, Path: "/a.model"}},
 		}, false},
 		{"withAttRel", &Decoder{AttachmentRelations: []string{"b"},
 			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship("b", "/a.xml")}, nil, newMockFile("/a.xml", nil, nil, nil, false), false)),
-		}, &go3mf.Model{
+		}, &Model{
 			Path:        "/a.model",
-			Attachments: []*go3mf.Attachment{{RelationshipType: "b", Path: "/a.xml", Stream: new(bytes.Buffer)}},
+			Attachments: []*Attachment{{RelationshipType: "b", Path: "/a.xml", Stream: new(bytes.Buffer)}},
 		}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			model := new(go3mf.Model)
+			model := new(Model)
 			_, err := tt.d.processOPC(model)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Decoder.processOPC() error = %v, wantErr %v", err, tt.wantErr)
@@ -240,7 +221,7 @@ func TestDecoder_processRootModel_Fail(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := new(Decoder).processRootModel(context.Background(), tt.f, new(go3mf.Model)); (err != nil) != tt.wantErr {
+			if err := new(Decoder).processRootModel(context.Background(), tt.f, new(Model)); (err != nil) != tt.wantErr {
 				t.Errorf("Decoder.processRootModel() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
@@ -249,15 +230,15 @@ func TestDecoder_processRootModel_Fail(t *testing.T) {
 }
 
 func TestDecoder_processRootModel(t *testing.T) {
-	baseMaterials := &go3mf.BaseMaterialsResource{ID: 5, ModelPath: "/3d/3dmodel.model", Materials: []go3mf.BaseMaterial{
+	baseMaterials := &BaseMaterialsResource{ID: 5, ModelPath: "/3d/3dmodel.model", Materials: []BaseMaterial{
 		{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 		{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
 	}}
-	meshRes := &go3mf.Mesh{
-		ObjectResource: go3mf.ObjectResource{
+	meshRes := &Mesh{
+		ObjectResource: ObjectResource{
 			ID: 8, Name: "Box 1", ModelPath: "/3d/3dmodel.model", Thumbnail: "/a.png", DefaultPropertyID: 5, PartNumber: "11111111-1111-1111-1111-111111111111"},
 	}
-	meshRes.Nodes = append(meshRes.Nodes, []go3mf.Point3D{
+	meshRes.Nodes = append(meshRes.Nodes, []Point3D{
 		{0, 0, 0},
 		{100, 0, 0},
 		{100, 100, 0},
@@ -267,7 +248,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 		{100, 100, 100},
 		{0, 100, 100},
 	}...)
-	meshRes.Faces = append(meshRes.Faces, []go3mf.Face{
+	meshRes.Faces = append(meshRes.Faces, []Face{
 		{NodeIndices: [3]uint32{3, 2, 1}, Resource: 5},
 		{NodeIndices: [3]uint32{1, 0, 3}, Resource: 5},
 		{NodeIndices: [3]uint32{4, 5, 6}, Resource: 5, ResourceIndices: [3]uint32{1, 1, 1}},
@@ -282,27 +263,27 @@ func TestDecoder_processRootModel(t *testing.T) {
 		{NodeIndices: [3]uint32{4, 7, 3}, Resource: 5},
 	}...)
 
-	components := &go3mf.Components{
-		ObjectResource: go3mf.ObjectResource{
+	components := &Components{
+		ObjectResource: ObjectResource{
 			ID: 20, UUID: "cb828680-8895-4e08-a1fc-be63e033df15", ModelPath: "/3d/3dmodel.model",
-			Metadata: []go3mf.Metadata{{Name: nsProductionSpec + ":CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: nsProductionSpec + ":CustomMetadata4", Type: "xs:boolean", Value: "2"}},
+			Metadata: []Metadata{{Name: nsProductionSpec + ":CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: nsProductionSpec + ":CustomMetadata4", Type: "xs:boolean", Value: "2"}},
 		},
-		Components: []*go3mf.Component{{UUID: "cb828680-8895-4e08-a1fc-be63e033df16", Object: meshRes,
-			Transform: go3mf.Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
+		Components: []*Component{{UUID: "cb828680-8895-4e08-a1fc-be63e033df16", Object: meshRes,
+			Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
 	}
 
-	want := &go3mf.Model{Units: go3mf.UnitMillimeter, Language: "en-US", Path: "/3d/3dmodel.model", UUID: "e9e25302-6428-402e-8633-cc95528d0ed3"}
-	otherMesh := &go3mf.Mesh{ObjectResource: go3mf.ObjectResource{ID: 8, ModelPath: "/3d/other.model"}}
+	want := &Model{Units: UnitMillimeter, Language: "en-US", Path: "/3d/3dmodel.model", UUID: "e9e25302-6428-402e-8633-cc95528d0ed3"}
+	otherMesh := &Mesh{ObjectResource: ObjectResource{ID: 8, ModelPath: "/3d/other.model"}}
 	want.Resources = append(want.Resources, otherMesh, baseMaterials, meshRes, components)
-	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: components, PartNumber: "bob", UUID: "e9e25302-6428-402e-8633-cc95528d0ed2",
-		Transform: go3mf.Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
+	want.BuildItems = append(want.BuildItems, &BuildItem{Object: components, PartNumber: "bob", UUID: "e9e25302-6428-402e-8633-cc95528d0ed2",
+		Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
 	})
-	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: otherMesh, UUID: "e9e25302-6428-402e-8633-cc95528d0ed3", Metadata: []go3mf.Metadata{{Name: nsProductionSpec + ":CustomMetadata3", Type: "xs:boolean", Value: "1"}}})
-	want.Metadata = append(want.Metadata, []go3mf.Metadata{
+	want.BuildItems = append(want.BuildItems, &BuildItem{Object: otherMesh, UUID: "e9e25302-6428-402e-8633-cc95528d0ed3", Metadata: []Metadata{{Name: nsProductionSpec + ":CustomMetadata3", Type: "xs:boolean", Value: "1"}}})
+	want.Metadata = append(want.Metadata, []Metadata{
 		{Name: "Application", Value: "go3mf app"},
 		{Name: nsProductionSpec + ":CustomMetadata1", Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},
 	}...)
-	got := new(go3mf.Model)
+	got := new(Model)
 	got.Path = "/3d/3dmodel.model"
 	got.Resources = append(got.Resources, otherMesh)
 	rootFile := new(modelBuilder).withDefaultModel().withElement(`
@@ -383,12 +364,12 @@ func TestDecoder_processRootModel(t *testing.T) {
 func TestDecoder_processNonRootModels(t *testing.T) {
 	tests := []struct {
 		name    string
-		model   *go3mf.Model
+		model   *Model
 		d       *Decoder
 		wantErr bool
-		want    *go3mf.Model
+		want    *Model
 	}{
-		{"base", &go3mf.Model{ProductionAttachments: []*go3mf.ProductionAttachment{
+		{"base", &Model{ProductionAttachments: []*ProductionAttachment{
 			{Path: "3d/new.model"},
 			{Path: "3d/other.model"},
 		}}, &Decoder{productionModels: map[string]packageFile{
@@ -405,19 +386,19 @@ func TestDecoder_processNonRootModels(t *testing.T) {
 					<basematerials id="6" />
 				</resources>
 			`).build(),
-		}}, false, &go3mf.Model{
-			ProductionAttachments: []*go3mf.ProductionAttachment{
+		}}, false, &Model{
+			ProductionAttachments: []*ProductionAttachment{
 				{Path: "3d/new.model"},
 				{Path: "3d/other.model"},
-			}, Resources: []go3mf.Resource{
-				&go3mf.BaseMaterialsResource{ID: 5, ModelPath: "3d/new.model", Materials: []go3mf.BaseMaterial{
+			}, Resources: []Resource{
+				&BaseMaterialsResource{ID: 5, ModelPath: "3d/new.model", Materials: []BaseMaterial{
 					{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 					{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
 				}},
-				&go3mf.BaseMaterialsResource{ID: 6, ModelPath: "3d/other.model"},
+				&BaseMaterialsResource{ID: 6, ModelPath: "3d/other.model"},
 			},
 		}},
-		{"noAtt", new(go3mf.Model), new(Decoder), false, new(go3mf.Model)},
+		{"noAtt", new(Model), new(Decoder), false, new(Model)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -447,7 +428,7 @@ func TestDecoder_Decode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.d.Decode(new(go3mf.Model)); (err != nil) != tt.wantErr {
+			if err := tt.d.Decode(new(Model)); (err != nil) != tt.wantErr {
 				t.Errorf("Decoder.Decode() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -484,7 +465,7 @@ func Test_modelFile_Decode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.d.Decode(tt.args.ctx, tt.args.x, new(go3mf.Model), "", true, false); (err != nil) != tt.wantErr {
+			if err := tt.d.Decode(tt.args.ctx, tt.args.x, new(Model), "", true, false); (err != nil) != tt.wantErr {
 				t.Errorf("modelFile.Decode() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -514,31 +495,31 @@ func TestNewDecoder(t *testing.T) {
 
 func TestDecoder_processRootModel_warns(t *testing.T) {
 	want := []error{
-		go3mf.ParsePropertyError{ResourceID: 0, Element: "base", Name: "displaycolor", Value: "0000FF", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
-		go3mf.MissingPropertyError{ResourceID: 0, Element: "base", ModelPath: "/3d/3dmodel.model", Name: "name"},
-		go3mf.MissingPropertyError{ResourceID: 0, Element: "base", ModelPath: "/3d/3dmodel.model", Name: "displaycolor"},
-		go3mf.MissingPropertyError{ResourceID: 0, Element: "basematerials", ModelPath: "/3d/3dmodel.model", Name: "id"},
-		go3mf.ParsePropertyError{ResourceID: 0, Element: "basematerials", Name: "id", Value: "a", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
-		go3mf.MissingPropertyError{ResourceID: 0, Element: "basematerials", ModelPath: "/3d/3dmodel.model", Name: "id"},
-		go3mf.GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3d/3dmodel.model", Message: "duplicated triangle indices"},
-		go3mf.GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3d/3dmodel.model", Message: "triangle indices are out of range"},
-		go3mf.ParsePropertyError{ResourceID: 22, Element: "object", ModelPath: "/3d/3dmodel.model", Name: "type", Value: "invalid", Type: go3mf.PropertyOptional},
-		go3mf.ParsePropertyError{ResourceID: 20, Element: "object", ModelPath: "/3d/3dmodel.model", Name: "UUID", Value: "cb8286808895-4e08-a1fc-be63e033df15", Type: go3mf.PropertyRequired},
-		go3mf.GenericError{ResourceID: 20, Element: "object", ModelPath: "/3d/3dmodel.model", Message: "default PID is not supported for component objects"},
-		go3mf.ParsePropertyError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Name: "UUID", Value: "cb8286808895-4e08-a1fc-be63e033df16", Type: go3mf.PropertyRequired},
-		go3mf.ParsePropertyError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Name: "transform", Value: "0 0 0 1 0 0 0 2 -66.4 -87.1 8.8", Type: go3mf.PropertyOptional},
-		go3mf.MissingPropertyError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
-		go3mf.GenericError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced object"},
-		go3mf.GenericError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Message: "non-object referenced resource"},
-		go3mf.MissingPropertyError{ResourceID: 0, Element: "build", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
-		go3mf.ParsePropertyError{ResourceID: 20, Element: "item", Name: "transform", Value: "1 0 0 0 2 0 0 0 3 -66.4 -87.1", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyOptional},
-		go3mf.GenericError{ResourceID: 20, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "referenced object cannot be have OTHER type"},
-		go3mf.MissingPropertyError{ResourceID: 8, Element: "item", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
-		go3mf.GenericError{ResourceID: 8, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced object"},
-		go3mf.GenericError{ResourceID: 5, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "non-object referenced resource"},
-		go3mf.ParsePropertyError{ResourceID: 0, Element: "build", Name: "UUID", Value: "e9e25302-6428-402e-8633ed2", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
+		ParsePropertyError{ResourceID: 0, Element: "base", Name: "displaycolor", Value: "0000FF", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
+		MissingPropertyError{ResourceID: 0, Element: "base", ModelPath: "/3d/3dmodel.model", Name: "name"},
+		MissingPropertyError{ResourceID: 0, Element: "base", ModelPath: "/3d/3dmodel.model", Name: "displaycolor"},
+		MissingPropertyError{ResourceID: 0, Element: "basematerials", ModelPath: "/3d/3dmodel.model", Name: "id"},
+		ParsePropertyError{ResourceID: 0, Element: "basematerials", Name: "id", Value: "a", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
+		MissingPropertyError{ResourceID: 0, Element: "basematerials", ModelPath: "/3d/3dmodel.model", Name: "id"},
+		GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3d/3dmodel.model", Message: "duplicated triangle indices"},
+		GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3d/3dmodel.model", Message: "triangle indices are out of range"},
+		ParsePropertyError{ResourceID: 22, Element: "object", ModelPath: "/3d/3dmodel.model", Name: "type", Value: "invalid", Type: PropertyOptional},
+		ParsePropertyError{ResourceID: 20, Element: "object", ModelPath: "/3d/3dmodel.model", Name: "UUID", Value: "cb8286808895-4e08-a1fc-be63e033df15", Type: PropertyRequired},
+		GenericError{ResourceID: 20, Element: "object", ModelPath: "/3d/3dmodel.model", Message: "default PID is not supported for component objects"},
+		ParsePropertyError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Name: "UUID", Value: "cb8286808895-4e08-a1fc-be63e033df16", Type: PropertyRequired},
+		ParsePropertyError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Name: "transform", Value: "0 0 0 1 0 0 0 2 -66.4 -87.1 8.8", Type: PropertyOptional},
+		MissingPropertyError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
+		GenericError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced object"},
+		GenericError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Message: "non-object referenced resource"},
+		MissingPropertyError{ResourceID: 0, Element: "build", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
+		ParsePropertyError{ResourceID: 20, Element: "item", Name: "transform", Value: "1 0 0 0 2 0 0 0 3 -66.4 -87.1", ModelPath: "/3d/3dmodel.model", Type: PropertyOptional},
+		GenericError{ResourceID: 20, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "referenced object cannot be have OTHER type"},
+		MissingPropertyError{ResourceID: 8, Element: "item", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
+		GenericError{ResourceID: 8, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced object"},
+		GenericError{ResourceID: 5, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "non-object referenced resource"},
+		ParsePropertyError{ResourceID: 0, Element: "build", Name: "UUID", Value: "e9e25302-6428-402e-8633ed2", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
 	}
-	got := new(go3mf.Model)
+	got := new(Model)
 	got.Path = "/3d/3dmodel.model"
 	rootFile := new(modelBuilder).withDefaultModel().withElement(`
 		<resources>

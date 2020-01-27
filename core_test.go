@@ -417,3 +417,57 @@ func TestMesh_checkFacesSanity(t *testing.T) {
 		})
 	}
 }
+
+
+func Test_newObjectType(t *testing.T) {
+	tests := []struct {
+		name   string
+		wantO  ObjectType
+		wantOk bool
+	}{
+		{"model", ObjectTypeModel, true},
+		{"other", ObjectTypeOther, true},
+		{"support", ObjectTypeSupport, true},
+		{"solidsupport", ObjectTypeSolidSupport, true},
+		{"surface", ObjectTypeSurface, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotO, gotOk := newObjectType(tt.name)
+			if !reflect.DeepEqual(gotO, tt.wantO) {
+				t.Errorf("newObjectType() gotO = %v, want %v", gotO, tt.wantO)
+			}
+			if gotOk != tt.wantOk {
+				t.Errorf("newObjectType() gotOk = %v, want %v", gotOk, tt.wantOk)
+			}
+		})
+	}
+}
+
+func Test_newUnits(t *testing.T) {
+	tests := []struct {
+		name  string
+		want  Units
+		want1 bool
+	}{
+		{"micron", UnitMicrometer, true},
+		{"millimeter", UnitMillimeter, true},
+		{"centimeter", UnitCentimeter, true},
+		{"inch", UnitInch, true},
+		{"foot", UnitFoot, true},
+		{"meter", UnitMeter, true},
+		{"", UnitMillimeter, false},
+		{"other", UnitMillimeter, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := newUnits(tt.name)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("newUnits() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("newUnits() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}

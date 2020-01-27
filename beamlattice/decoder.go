@@ -4,29 +4,27 @@ import (
 	"encoding/xml"
 
 	"github.com/qmuntal/go3mf"
-	"github.com/qmuntal/go3mf/io3mf"
-	"github.com/qmuntal/go3mf/iohelper"
 )
 
 func init() {
-	io3mf.RegisterExtensionDecoder(ExtensionName, &extensionDecoder{})
+	go3mf.RegisterExtensionDecoder(ExtensionName, &extensionDecoder{})
 }
 
 type extensionDecoder struct{}
 
-func (d *extensionDecoder) NodeDecoder(parentNode interface{}, nodeName string) iohelper.NodeDecoder {
+func (d *extensionDecoder) NodeDecoder(parentNode interface{}, nodeName string) go3mf.NodeDecoder {
 	if nodeName == attrBeamLattice {
 		return &beamLatticeDecoder{mesh: parentNode.(*go3mf.Mesh)}
 	}
 	return nil
 }
 
-func (d *extensionDecoder) DecodeAttribute(_ *iohelper.Scanner, _ interface{}, _ xml.Attr) bool {
+func (d *extensionDecoder) DecodeAttribute(_ *go3mf.Scanner, _ interface{}, _ xml.Attr) bool {
 	return true
 }
 
 type beamLatticeDecoder struct {
-	iohelper.EmptyDecoder
+	go3mf.EmptyDecoder
 	mesh *go3mf.Mesh
 }
 
@@ -67,7 +65,7 @@ func (d *beamLatticeDecoder) Attributes(attrs []xml.Attr) bool {
 	return ok
 }
 
-func (d *beamLatticeDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
+func (d *beamLatticeDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	if name.Space == ExtensionName {
 		if name.Local == attrBeams {
 			child = &beamsDecoder{mesh: d.mesh}
@@ -79,7 +77,7 @@ func (d *beamLatticeDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
 }
 
 type beamsDecoder struct {
-	iohelper.EmptyDecoder
+	go3mf.EmptyDecoder
 	mesh        *go3mf.Mesh
 	beamDecoder beamDecoder
 }
@@ -88,7 +86,7 @@ func (d *beamsDecoder) Open() {
 	d.beamDecoder.mesh = d.mesh
 }
 
-func (d *beamsDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
+func (d *beamsDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	if name.Space == ExtensionName && name.Local == attrBeam {
 		child = &d.beamDecoder
 	}
@@ -96,7 +94,7 @@ func (d *beamsDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
 }
 
 type beamDecoder struct {
-	iohelper.EmptyDecoder
+	go3mf.EmptyDecoder
 	mesh *go3mf.Mesh
 }
 
@@ -158,11 +156,11 @@ func (d *beamDecoder) Attributes(attrs []xml.Attr) bool {
 }
 
 type beamSetsDecoder struct {
-	iohelper.EmptyDecoder
+	go3mf.EmptyDecoder
 	mesh *go3mf.Mesh
 }
 
-func (d *beamSetsDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
+func (d *beamSetsDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	if name.Space == ExtensionName && name.Local == attrBeamSet {
 		child = &beamSetDecoder{mesh: d.mesh}
 	}
@@ -170,7 +168,7 @@ func (d *beamSetsDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
 }
 
 type beamSetDecoder struct {
-	iohelper.EmptyDecoder
+	go3mf.EmptyDecoder
 	mesh           *go3mf.Mesh
 	beamSet        BeamSet
 	beamRefDecoder beamRefDecoder
@@ -201,7 +199,7 @@ func (d *beamSetDecoder) Attributes(attrs []xml.Attr) bool {
 	return true
 }
 
-func (d *beamSetDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
+func (d *beamSetDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	if name.Space == ExtensionName && name.Local == attrRef {
 		child = &d.beamRefDecoder
 	}
@@ -209,7 +207,7 @@ func (d *beamSetDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
 }
 
 type beamRefDecoder struct {
-	iohelper.EmptyDecoder
+	go3mf.EmptyDecoder
 	beamSet *BeamSet
 }
 

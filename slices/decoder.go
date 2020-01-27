@@ -4,24 +4,22 @@ import (
 	"encoding/xml"
 
 	"github.com/qmuntal/go3mf"
-	"github.com/qmuntal/go3mf/io3mf"
-	"github.com/qmuntal/go3mf/iohelper"
 )
 
 func init() {
-	io3mf.RegisterExtensionDecoder(ExtensionName, &extensionDecoder{})
+	go3mf.RegisterExtensionDecoder(ExtensionName, &extensionDecoder{})
 }
 
 type extensionDecoder struct{}
 
-func (d *extensionDecoder) NodeDecoder(_ interface{}, nodeName string) iohelper.NodeDecoder {
+func (d *extensionDecoder) NodeDecoder(_ interface{}, nodeName string) go3mf.NodeDecoder {
 	if nodeName == attrSliceStack {
 		return &sliceStackDecoder{}
 	}
 	return nil
 }
 
-func (d *extensionDecoder) DecodeAttribute(s *iohelper.Scanner, parentNode interface{}, attr xml.Attr) bool {
+func (d *extensionDecoder) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) bool {
 	switch t := parentNode.(type) {
 	case *go3mf.ObjectResource:
 		return objectAttrDecoder(s, t, attr)
@@ -30,7 +28,7 @@ func (d *extensionDecoder) DecodeAttribute(s *iohelper.Scanner, parentNode inter
 }
 
 // objectAttrDecoder decodes the slice attributes of an ObjectReosurce.
-func objectAttrDecoder(scanner *iohelper.Scanner, o *go3mf.ObjectResource, attr xml.Attr) bool {
+func objectAttrDecoder(scanner *go3mf.Scanner, o *go3mf.ObjectResource, attr xml.Attr) bool {
 	ok := true
 	switch attr.Name.Local {
 	case attrSliceRefID:
@@ -46,7 +44,7 @@ func objectAttrDecoder(scanner *iohelper.Scanner, o *go3mf.ObjectResource, attr 
 }
 
 type sliceStackDecoder struct {
-	iohelper.EmptyDecoder
+	go3mf.EmptyDecoder
 	resource SliceStackResource
 }
 
@@ -63,7 +61,7 @@ func (d *sliceStackDecoder) Close() bool {
 	return d.Scanner.CloseResource() && ok
 }
 
-func (d *sliceStackDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
+func (d *sliceStackDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	if name.Space == ExtensionName {
 		if name.Local == attrSlice {
 			child = &sliceDecoder{resource: &d.resource}
@@ -88,7 +86,7 @@ func (d *sliceStackDecoder) Attributes(attrs []xml.Attr) bool {
 }
 
 type sliceRefDecoder struct {
-	iohelper.EmptyDecoder
+	go3mf.EmptyDecoder
 	resource *SliceStackResource
 }
 
@@ -133,7 +131,7 @@ func (d *sliceRefDecoder) addSliceRef(sliceStackID uint32, path string) bool {
 }
 
 type sliceDecoder struct {
-	iohelper.EmptyDecoder
+	go3mf.EmptyDecoder
 	resource               *SliceStackResource
 	slice                  Slice
 	polygonDecoder         polygonDecoder
@@ -148,7 +146,7 @@ func (d *sliceDecoder) Close() bool {
 	d.resource.Stack.Slices = append(d.resource.Stack.Slices, &d.slice)
 	return true
 }
-func (d *sliceDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
+func (d *sliceDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	if name.Space == ExtensionName {
 		if name.Local == attrVertices {
 			child = &d.polygonVerticesDecoder
@@ -176,7 +174,7 @@ func (d *sliceDecoder) Attributes(attrs []xml.Attr) bool {
 }
 
 type polygonVerticesDecoder struct {
-	iohelper.EmptyDecoder
+	go3mf.EmptyDecoder
 	slice                *Slice
 	polygonVertexDecoder polygonVertexDecoder
 }
@@ -185,7 +183,7 @@ func (d *polygonVerticesDecoder) Open() {
 	d.polygonVertexDecoder.slice = d.slice
 }
 
-func (d *polygonVerticesDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
+func (d *polygonVerticesDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	if name.Space == ExtensionName && name.Local == attrVertex {
 		child = &d.polygonVertexDecoder
 	}
@@ -193,7 +191,7 @@ func (d *polygonVerticesDecoder) Child(name xml.Name) (child iohelper.NodeDecode
 }
 
 type polygonVertexDecoder struct {
-	iohelper.EmptyDecoder
+	go3mf.EmptyDecoder
 	slice *Slice
 }
 
@@ -216,7 +214,7 @@ func (d *polygonVertexDecoder) Attributes(attrs []xml.Attr) bool {
 }
 
 type polygonDecoder struct {
-	iohelper.EmptyDecoder
+	go3mf.EmptyDecoder
 	slice                 *Slice
 	polygonIndex          int
 	polygonSegmentDecoder polygonSegmentDecoder
@@ -235,7 +233,7 @@ func (d *polygonDecoder) Close() bool {
 	return true
 }
 
-func (d *polygonDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
+func (d *polygonDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	if name.Space == ExtensionName && name.Local == attrSegment {
 		child = &d.polygonSegmentDecoder
 	}
@@ -261,7 +259,7 @@ func (d *polygonDecoder) Attributes(attrs []xml.Attr) bool {
 }
 
 type polygonSegmentDecoder struct {
-	iohelper.EmptyDecoder
+	go3mf.EmptyDecoder
 	slice        *Slice
 	polygonIndex int
 }

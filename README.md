@@ -37,12 +37,11 @@ import (
 	"fmt"
 
 	"github.com/qmuntal/go3mf"
-	"github.com/qmuntal/go3mf/io3mf"
 )
 
 func main() {
 	model := new(go3mf.Model)
-	r, _ := io3mf.OpenReader("/testdata/cube.3mf")
+	r, _ := go3mf.OpenReader("/testdata/cube.3mf")
 	r.Decode(model)
 	fmt.Println(model)
 }
@@ -58,7 +57,6 @@ import (
     "io/ioutil"
     "net/http"
     "github.com/qmuntal/go3mf"
-    "github.com/qmuntal/go3mf/io3mf"
 )
 
 func main() {
@@ -67,7 +65,7 @@ func main() {
     body, _ := ioutil.ReadAll(resp.Body)
     
     model := new(go3mf.Model)
-    r, _ := io3mf.NewDecoder(bytes.NewReader(body), int64(len(body)))
+    r, _ := go3mf.NewDecoder(bytes.NewReader(body), int64(len(body)))
     r.Decode(model)
     fmt.Println(model)
 }

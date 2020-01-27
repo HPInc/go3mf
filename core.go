@@ -7,6 +7,8 @@ import (
 	"sort"
 )
 
+const ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/core/2015/02"
+
 const thumbnailPath = "/Metadata/thumbnail.png"
 
 // Units define the allowed model units.
@@ -379,4 +381,27 @@ func (mb *MeshBuilder) AddNode(node Point3D) uint32 {
 		mb.vectorTree.AddVector(node, index)
 	}
 	return index
+}
+
+func newObjectType(s string) (o ObjectType, ok bool) {
+	o, ok = map[string]ObjectType{
+		"model":        ObjectTypeModel,
+		"other":        ObjectTypeOther,
+		"support":      ObjectTypeSupport,
+		"solidsupport": ObjectTypeSolidSupport,
+		"surface":      ObjectTypeSurface,
+	}[s]
+	return
+}
+
+func newUnits(s string) (u Units, ok bool) {
+	u, ok = map[string]Units{
+		"millimeter": UnitMillimeter,
+		"micron":     UnitMicrometer,
+		"centimeter": UnitCentimeter,
+		"inch":       UnitInch,
+		"foot":       UnitFoot,
+		"meter":      UnitMeter,
+	}[s]
+	return
 }

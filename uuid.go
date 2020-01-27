@@ -1,4 +1,4 @@
-package io3mf
+package go3mf
 
 import (
 	"errors"

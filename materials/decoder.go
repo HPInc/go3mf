@@ -4,17 +4,16 @@ import (
 	"encoding/xml"
 	"strings"
 
-	"github.com/qmuntal/go3mf/io3mf"
-	"github.com/qmuntal/go3mf/iohelper"
+	"github.com/qmuntal/go3mf"
 )
 
 func init() {
-	io3mf.RegisterExtensionDecoder(ExtensionName, &extensionDecoder{})
+	go3mf.RegisterExtensionDecoder(ExtensionName, &extensionDecoder{})
 }
 
 type extensionDecoder struct{}
 
-func (d *extensionDecoder) NodeDecoder(_ interface{}, nodeName string) (child iohelper.NodeDecoder) {
+func (d *extensionDecoder) NodeDecoder(_ interface{}, nodeName string) (child go3mf.NodeDecoder) {
 	switch nodeName {
 	case attrColorGroup:
 		child = new(colorGroupDecoder)
@@ -30,12 +29,12 @@ func (d *extensionDecoder) NodeDecoder(_ interface{}, nodeName string) (child io
 	return
 }
 
-func (d *extensionDecoder) DecodeAttribute(s *iohelper.Scanner, parentNode interface{}, attr xml.Attr) bool {
+func (d *extensionDecoder) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) bool {
 	return true
 }
 
 type colorGroupDecoder struct {
-	iohelper.EmptyDecoder
+	go3mf.EmptyDecoder
 	resource     ColorGroupResource
 	colorDecoder colorDecoder
 }
@@ -50,7 +49,7 @@ func (d *colorGroupDecoder) Close() bool {
 	return d.Scanner.CloseResource()
 }
 
-func (d *colorGroupDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
+func (d *colorGroupDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	if name.Space == ExtensionName && name.Local == attrColor {
 		child = &d.colorDecoder
 	}
@@ -69,14 +68,14 @@ func (d *colorGroupDecoder) Attributes(attrs []xml.Attr) bool {
 }
 
 type colorDecoder struct {
-	iohelper.EmptyDecoder
+	go3mf.EmptyDecoder
 	resource *ColorGroupResource
 }
 
 func (d *colorDecoder) Attributes(attrs []xml.Attr) bool {
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrColor {
-			c, err := iohelper.ReadRGB(a.Value)
+			c, err := go3mf.ReadRGB(a.Value)
 			if err != nil {
 				return d.Scanner.InvalidRequiredAttr(attrColor, a.Value)
 			}
@@ -87,7 +86,7 @@ func (d *colorDecoder) Attributes(attrs []xml.Attr) bool {
 }
 
 type tex2DCoordDecoder struct {
-	iohelper.EmptyDecoder
+	go3mf.EmptyDecoder
 	resource *Texture2DGroupResource
 }
 
@@ -113,7 +112,7 @@ func (d *tex2DCoordDecoder) Attributes(attrs []xml.Attr) bool {
 }
 
 type tex2DGroupDecoder struct {
-	iohelper.EmptyDecoder
+	go3mf.EmptyDecoder
 	resource          Texture2DGroupResource
 	tex2DCoordDecoder tex2DCoordDecoder
 }
@@ -128,7 +127,7 @@ func (d *tex2DGroupDecoder) Close() bool {
 	return d.Scanner.CloseResource()
 }
 
-func (d *tex2DGroupDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
+func (d *tex2DGroupDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	if name.Space == ExtensionName && name.Local == attrTex2DCoord {
 		child = &d.tex2DCoordDecoder
 	}
@@ -155,7 +154,7 @@ func (d *tex2DGroupDecoder) Attributes(attrs []xml.Attr) bool {
 }
 
 type texture2DDecoder struct {
-	iohelper.EmptyDecoder
+	go3mf.EmptyDecoder
 	resource Texture2DResource
 }
 
@@ -199,7 +198,7 @@ func (d *texture2DDecoder) Attributes(attrs []xml.Attr) bool {
 }
 
 type compositeMaterialsDecoder struct {
-	iohelper.EmptyDecoder
+	go3mf.EmptyDecoder
 	resource         CompositeMaterialsResource
 	compositeDecoder compositeDecoder
 }
@@ -214,7 +213,7 @@ func (d *compositeMaterialsDecoder) Close() bool {
 	return d.Scanner.CloseResource()
 }
 
-func (d *compositeMaterialsDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
+func (d *compositeMaterialsDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	if name.Space == ExtensionName && name.Local == attrComposite {
 		child = &d.compositeDecoder
 	}
@@ -256,7 +255,7 @@ func (d *compositeMaterialsDecoder) Attributes(attrs []xml.Attr) bool {
 }
 
 type compositeDecoder struct {
-	iohelper.EmptyDecoder
+	go3mf.EmptyDecoder
 	resource *CompositeMaterialsResource
 }
 
@@ -284,7 +283,7 @@ func (d *compositeDecoder) Attributes(attrs []xml.Attr) (ok bool) {
 }
 
 type multiPropertiesDecoder struct {
-	iohelper.EmptyDecoder
+	go3mf.EmptyDecoder
 	resource     MultiPropertiesResource
 	multiDecoder multiDecoder
 }
@@ -299,7 +298,7 @@ func (d *multiPropertiesDecoder) Close() bool {
 	return d.Scanner.CloseResource()
 }
 
-func (d *multiPropertiesDecoder) Child(name xml.Name) (child iohelper.NodeDecoder) {
+func (d *multiPropertiesDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	if name.Space == ExtensionName && name.Local == attrMulti {
 		child = &d.multiDecoder
 	}
@@ -341,7 +340,7 @@ func (d *multiPropertiesDecoder) Attributes(attrs []xml.Attr) bool {
 }
 
 type multiDecoder struct {
-	iohelper.EmptyDecoder
+	go3mf.EmptyDecoder
 	resource *MultiPropertiesResource
 }
 

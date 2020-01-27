@@ -1,13 +1,12 @@
-package iohelper
+package go3mf
 
 import (
 	"encoding/xml"
 	"errors"
+	"fmt"
 	"image/color"
 	"strconv"
 	"strings"
-
-	"github.com/qmuntal/go3mf"
 )
 
 // NodeDecoder defines the minimum contract to decode a 3MF node.
@@ -43,10 +42,64 @@ func (d *EmptyDecoder) Close() bool { return true }
 // SetScanner sets the scanner.
 func (d *EmptyDecoder) SetScanner(s *Scanner) { d.Scanner = s }
 
+// A MissingPropertyError represents a missing required property error.
+// If MissingPropertyError is 0 means that the error took place while parsing the resource property before the ID appeared.
+// When Element is 'item' the ResourceID is the objectID property of a build item.
+type MissingPropertyError struct {
+	ResourceID uint32
+	ModelPath  string
+	Element    string
+	Name       string
+}
+
+func (e MissingPropertyError) Error() string {
+	return fmt.Sprintf("go3mf: missing required property '%s' of element '%s' in resource '%s:%d'", e.Name, e.Element, e.ModelPath, e.ResourceID)
+}
+
+// PropertyType defines the possible property types.
+type PropertyType string
+
+const (
+	// PropertyRequired is mandatory.
+	PropertyRequired PropertyType = "required"
+	// PropertyOptional is optional.
+	PropertyOptional = "optional"
+)
+
+// A ParsePropertyError represents an error while decoding a required or an optional property.
+// If ResourceID is 0 means that the error took place while parsing the resource property before the ID appeared.
+// When Element is 'item' the ResourceID is the objectID property of a build item.
+type ParsePropertyError struct {
+	ResourceID uint32
+	ModelPath  string
+	Element    string
+	Name       string
+	Value      string
+	Type       PropertyType
+}
+
+func (e ParsePropertyError) Error() string {
+	return fmt.Sprintf("go3mf: [%s] error parsing property '%s = %s' of element '%s' in resource '%s:%d'", e.Type, e.Name, e.Value, e.Element, e.ModelPath, e.ResourceID)
+}
+
+// A GenericError represents a generic error.
+// If ResourceID is 0 means that the error took place while parsing the resource property before the ID appeared.
+// When Element is 'item' the ResourceID is the objectID property of a build item.
+type GenericError struct {
+	ResourceID uint32
+	ModelPath  string
+	Element    string
+	Message    string
+}
+
+func (e GenericError) Error() string {
+	return fmt.Sprintf("go3mf: error at element '%s' in resource '%s:%d' with messages '%s'", e.Element, e.ModelPath, e.ResourceID, e.Message)
+}
+
 // A Scanner is a 3mf model file scanning state machine.
 type Scanner struct {
-	Resources    []go3mf.Resource
-	BuildItems   []*go3mf.BuildItem
+	Resources    []Resource
+	BuildItems   []*BuildItem
 	UUID         string
 	Strict       bool
 	ModelPath    string
@@ -56,28 +109,28 @@ type Scanner struct {
 	Err          error
 	Warnings     []error
 	Namespaces   map[string]string
-	model        *go3mf.Model
-	resourcesMap map[uint32]go3mf.Resource
+	model        *Model
+	resourcesMap map[uint32]Resource
 }
 
 // NewScanner returns an initialized scanner.
-func NewScanner(model *go3mf.Model) *Scanner {
+func NewScanner(model *Model) *Scanner {
 	return &Scanner{
 		model:        model,
 		Namespaces:   make(map[string]string),
-		resourcesMap: make(map[uint32]go3mf.Resource),
+		resourcesMap: make(map[uint32]Resource),
 	}
 }
 
 // AddResource adds a new resource to the resource cache.
-func (p *Scanner) AddResource(r go3mf.Resource) {
+func (p *Scanner) AddResource(r Resource) {
 	_, id := r.Identify()
 	p.resourcesMap[id] = r
 	p.Resources = append(p.Resources, r)
 }
 
 // FindResource returns the resource with the target unique ID.
-func (p *Scanner) FindResource(path string, id uint32) (r go3mf.Resource, ok bool) {
+func (p *Scanner) FindResource(path string, id uint32) (r Resource, ok bool) {
 	if path == "" {
 		path = p.model.Path
 	}
@@ -110,7 +163,7 @@ func (p *Scanner) strictError(err error) bool {
 // GenericError adds the error to the warnings.
 // Returns false if scanning cannot continue.
 func (p *Scanner) GenericError(strict bool, msg string) bool {
-	err := go3mf.GenericError{ResourceID: p.ResourceID, Element: p.Element, ModelPath: p.ModelPath, Message: msg}
+	err := GenericError{ResourceID: p.ResourceID, Element: p.Element, ModelPath: p.ModelPath, Message: msg}
 	p.Warnings = append(p.Warnings, err)
 	if strict && p.Strict {
 		p.Err = err
@@ -122,18 +175,18 @@ func (p *Scanner) GenericError(strict bool, msg string) bool {
 // InvalidRequiredAttr adds the error to the warnings.
 // Returns false if scanning cannot continue.
 func (p *Scanner) InvalidRequiredAttr(attr string, val string) bool {
-	return p.strictError(go3mf.ParsePropertyError{ResourceID: p.ResourceID, Element: p.Element, Name: attr, Value: val, ModelPath: p.ModelPath, Type: go3mf.PropertyRequired})
+	return p.strictError(ParsePropertyError{ResourceID: p.ResourceID, Element: p.Element, Name: attr, Value: val, ModelPath: p.ModelPath, Type: PropertyRequired})
 }
 
 // InvalidOptionalAttr adds the error to the warnings.
 func (p *Scanner) InvalidOptionalAttr(attr string, val string) {
-	p.Warnings = append(p.Warnings, go3mf.ParsePropertyError{ResourceID: p.ResourceID, Element: p.Element, Name: attr, Value: val, ModelPath: p.ModelPath, Type: go3mf.PropertyOptional})
+	p.Warnings = append(p.Warnings, ParsePropertyError{ResourceID: p.ResourceID, Element: p.Element, Name: attr, Value: val, ModelPath: p.ModelPath, Type: PropertyOptional})
 }
 
 // MissingAttr adds the error to the warnings.
 // Returns false if scanning cannot continue.
 func (p *Scanner) MissingAttr(attr string) bool {
-	return p.strictError(go3mf.MissingPropertyError{ResourceID: p.ResourceID, Element: p.Element, Name: attr, ModelPath: p.ModelPath})
+	return p.strictError(MissingPropertyError{ResourceID: p.ResourceID, Element: p.Element, Name: attr, ModelPath: p.ModelPath})
 }
 
 // ParseResourceID parses the ID as a uint32.
@@ -222,11 +275,11 @@ func (p *Scanner) ParseFloat64Optional(attr string, s string) float64 {
 	return n
 }
 
-// ParseToMatrixRequired parses s as a go3mf.Matrix.
+// ParseToMatrixRequired parses s as a Matrix.
 // If it cannot be parsed a ParsePropertyError is added to the warnings.
 // Returns false if scanning cannot continue.
-func (p *Scanner) ParseToMatrixRequired(attr string, s string) (go3mf.Matrix, bool) {
-	var matrix go3mf.Matrix
+func (p *Scanner) ParseToMatrixRequired(attr string, s string) (Matrix, bool) {
+	var matrix Matrix
 	values := strings.Fields(s)
 	if len(values) != 12 {
 		return matrix, p.InvalidRequiredAttr(attr, s)
@@ -239,30 +292,30 @@ func (p *Scanner) ParseToMatrixRequired(attr string, s string) (go3mf.Matrix, bo
 		}
 		t[i] = float32(val)
 	}
-	return go3mf.Matrix{t[0], t[1], t[2], 0.0,
+	return Matrix{t[0], t[1], t[2], 0.0,
 		t[3], t[4], t[5], 0.0,
 		t[6], t[7], t[8], 0.0,
 		t[9], t[10], t[11], 1.0}, true
 }
 
-// ParseToMatrixOptional parses s as a go3mf.Matrix.
+// ParseToMatrixOptional parses s as a Matrix.
 // If it cannot be parsed a ParsePropertyError is added to the warnings.
-func (p *Scanner) ParseToMatrixOptional(attr string, s string) go3mf.Matrix {
+func (p *Scanner) ParseToMatrixOptional(attr string, s string) Matrix {
 	values := strings.Fields(s)
 	if len(values) != 12 {
 		p.InvalidOptionalAttr(attr, s)
-		return go3mf.Matrix{}
+		return Matrix{}
 	}
 	var t [12]float32
 	for i := 0; i < 12; i++ {
 		val, err := strconv.ParseFloat(values[i], 32)
 		if err != nil {
 			p.InvalidOptionalAttr(attr, s)
-			return go3mf.Matrix{}
+			return Matrix{}
 		}
 		t[i] = float32(val)
 	}
-	return go3mf.Matrix{t[0], t[1], t[2], 0.0,
+	return Matrix{t[0], t[1], t[2], 0.0,
 		t[3], t[4], t[5], 0.0,
 		t[6], t[7], t[8], 0.0,
 		t[9], t[10], t[11], 1.0}
