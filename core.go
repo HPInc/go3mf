@@ -5,8 +5,6 @@ import (
 	"image/color"
 	"io"
 	"sort"
-
-	"github.com/qmuntal/go3mf/geo"
 )
 
 const thumbnailPath = "/Metadata/thumbnail.png"
@@ -187,7 +185,7 @@ func (ms *BaseMaterialsResource) Identify() (string, uint32) {
 // A BuildItem is an in memory representation of the 3MF build item.
 type BuildItem struct {
 	Object     Object
-	Transform  geo.Matrix
+	Transform  Matrix
 	PartNumber string
 	UUID       string
 	Metadata   []Metadata
@@ -195,7 +193,7 @@ type BuildItem struct {
 
 // HasTransform returns true if the transform is different than the identity.
 func (b *BuildItem) HasTransform() bool {
-	return b.Transform != geo.Matrix{} && b.Transform != geo.Identity()
+	return b.Transform != Matrix{} && b.Transform != Identity()
 }
 
 // An ObjectResource is an in memory representation of the 3MF model object.
@@ -226,13 +224,13 @@ func (o *ObjectResource) Type() ObjectType {
 // A Component is an in memory representation of the 3MF component.
 type Component struct {
 	Object    Object
-	Transform geo.Matrix
+	Transform Matrix
 	UUID      string
 }
 
 // HasTransform returns true if the transform is different than the identity.
 func (c *Component) HasTransform() bool {
-	return c.Transform != geo.Matrix{} && c.Transform != geo.Identity()
+	return c.Transform != Matrix{} && c.Transform != Identity()
 }
 
 // A ComponentsResource resource is an in memory representation of the 3MF component object.
@@ -255,23 +253,31 @@ func (c *ComponentsResource) IsValid() bool {
 	return true
 }
 
+// Face defines a triangle of a mesh.
+type Face struct {
+	NodeIndices     [3]uint32 // Coordinates of the three nodes that defines the face.
+	Resource        uint32
+	ResourceIndices [3]uint32 // Resource subindex of the three nodes that defines the face.
+}
+
 // A MeshResource is an in memory representation of the 3MF mesh object.
+// Each node,  and face have a ID, which allows to identify them. Each face have an
+// orientation (i.e. the face can look up or look down) and have three nodes.
+// The orientation is defined by the order of its nodes.
 type MeshResource struct {
 	ObjectResource
-	Mesh                  *geo.Mesh
+	Nodes                    []Point3D
+	Faces                    []Face
 	Extensions 			map[string]interface{}
 }
 
 // IsValid checks if the mesh resource are valid.
 func (c *MeshResource) IsValid() bool {
-	if c.Mesh == nil {
-		return false
-	}
 	switch c.ObjectType {
 	case ObjectTypeModel:
-		return c.Mesh.IsManifoldAndOriented()
+		return c.IsManifoldAndOriented()
 	case ObjectTypeSolidSupport:
-		return c.Mesh.IsManifoldAndOriented()
+		return c.IsManifoldAndOriented()
 	//case ObjectTypeSupport:
 	//	return len(c.Mesh.Beams) == 0
 	//case ObjectTypeSurface:

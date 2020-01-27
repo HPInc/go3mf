@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/go-test/deep"
-	"github.com/qmuntal/go3mf/geo"
+	"github.com/qmuntal/go3mf"
 )
 
 func Test_asciiDecoder_decode(t *testing.T) {
@@ -20,16 +20,16 @@ func Test_asciiDecoder_decode(t *testing.T) {
 		name    string
 		d       *asciiDecoder
 		ctx     context.Context
-		want    *geo.Mesh
+		want    *go3mf.MeshResource
 		wantErr bool
 	}{
-		{"eof", &asciiDecoder{r: bytes.NewReader(make([]byte, 0))}, context.Background(), new(geo.Mesh), false},
-		{"base", &asciiDecoder{r: bytes.NewBufferString(triangle)}, context.Background(), createMeshTriangle(), false},
-		{"cancel", &asciiDecoder{r: bytes.NewBufferString(triangle)}, ctx, createMeshTriangle(), true},
+		{"eof", &asciiDecoder{r: bytes.NewReader(make([]byte, 0))}, context.Background(), new(go3mf.MeshResource), false},
+		{"base", &asciiDecoder{r: bytes.NewBufferString(triangle)}, context.Background(), createMeshTriangle(0), false},
+		{"cancel", &asciiDecoder{r: bytes.NewBufferString(triangle)}, ctx, createMeshTriangle(0), true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := new(geo.Mesh)
+			got := new(go3mf.MeshResource)
 			err := tt.d.decode(tt.ctx, got)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("asciiDecoder.decode() error = %v, wantErr %v", err, tt.wantErr)
@@ -47,9 +47,9 @@ func Test_asciiDecoder_decode(t *testing.T) {
 
 func Test_asciiEncoder_encode(t *testing.T) {
 	deep.FloatPrecision = 5
-	triangle := createMeshTriangle()
+	triangle := createMeshTriangle(0)
 	type args struct {
-		m *geo.Mesh
+		m *go3mf.MeshResource
 	}
 	tests := []struct {
 		name    string
@@ -69,7 +69,7 @@ func Test_asciiEncoder_encode(t *testing.T) {
 			if !tt.wantErr {
 				// We do decoder and then encoder again, and the result must be the same
 				decoder := &asciiDecoder{r: tt.e.w.(*bytes.Buffer)}
-				got := new(geo.Mesh)
+				got := new(go3mf.MeshResource)
 				decoder.decode(context.Background(), got)
 				if diff := deep.Equal(got, tt.args.m); diff != nil {
 					t.Errorf("asciiDecoder.encode() = %v", diff)

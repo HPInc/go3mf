@@ -1,29 +1,12 @@
-package geo
-
-// Face defines a triangle of a mesh.
-type Face struct {
-	NodeIndices     [3]uint32 // Coordinates of the three nodes that defines the face.
-	Resource        uint32
-	ResourceIndices [3]uint32 // Resource subindex of the three nodes that defines the face.
-}
-
-// Mesh is not really a mesh, since it lacks the component edges and the
-// topological information. It only holds the nodes and the faces (triangles).
-// Each node,  and face have a ID, which allows to identify them. Each face have an
-// orientation (i.e. the face can look up or look down) and have three nodes.
-// The orientation is defined by the order of its nodes.
-type Mesh struct {
-	Nodes                    []Point3D
-	Faces                    []Face
-}
+package go3mf
 
 // CheckSanity checks if the mesh is well formated.
-func (m *Mesh) CheckSanity() bool {
+func (m *MeshResource) CheckSanity() bool {
 	return m.checkFacesSanity()
 }
 
 // IsManifoldAndOriented returns true if the mesh is manifold and oriented.
-func (m *Mesh) IsManifoldAndOriented() bool {
+func (m *MeshResource) IsManifoldAndOriented() bool {
 	if len(m.Nodes) < 3 || len(m.Faces) < 3 || !m.CheckSanity() {
 		return false
 	}
@@ -62,7 +45,7 @@ func (m *Mesh) IsManifoldAndOriented() bool {
 	return true
 }
 
-func (m *Mesh) checkFacesSanity() bool {
+func (m *MeshResource) checkFacesSanity() bool {
 	nodeCount := uint32(len(m.Nodes))
 	for _, face := range m.Faces {
 		i0, i1, i2 := face.NodeIndices[0], face.NodeIndices[1], face.NodeIndices[2]
@@ -84,11 +67,11 @@ type MeshBuilder struct {
 	// Using this option produces an speed penalty.
 	CalculateConnectivity bool
 	// Do not modify the pointer to Mesh once the build process has started.
-	Mesh       *Mesh
+	Mesh       *MeshResource
 	vectorTree vectorTree
 }
 
-func NewMeshBuilder(m *Mesh) *MeshBuilder {
+func NewMeshBuilder(m *MeshResource) *MeshBuilder {
 	return &MeshBuilder{
 		Mesh:                  m,
 		CalculateConnectivity: true,

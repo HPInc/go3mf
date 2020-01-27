@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/qmuntal/go3mf/geo"
+	"github.com/qmuntal/go3mf"
 )
 
 // asciiDecoder can create a Model from a Read stream that is feeded with a ASCII STL.
@@ -17,8 +17,8 @@ type asciiDecoder struct {
 	units float32
 }
 
-func (d *asciiDecoder) decode(ctx context.Context, m *geo.Mesh) (err error) {
-	mb := geo.NewMeshBuilder(m)
+func (d *asciiDecoder) decode(ctx context.Context, m *go3mf.MeshResource) (err error) {
+	mb := go3mf.NewMeshBuilder(m)
 	position := 0
 	nextFaceCheck := checkEveryFaces
 	var nodes [3]uint32
@@ -31,12 +31,12 @@ func (d *asciiDecoder) decode(ctx context.Context, m *geo.Mesh) (err error) {
 			f[0], _ = strconv.ParseFloat(fields[1], 32)
 			f[1], _ = strconv.ParseFloat(fields[2], 32)
 			f[2], _ = strconv.ParseFloat(fields[3], 32)
-			nodes[position] = mb.AddNode(geo.Point3D{float32(f[0]), float32(f[1]), float32(f[2])})
+			nodes[position] = mb.AddNode(go3mf.Point3D{float32(f[0]), float32(f[1]), float32(f[2])})
 			position++
 
 			if position == 3 {
 				position = 0
-				m.Faces = append(m.Faces, geo.Face{
+				m.Faces = append(m.Faces, go3mf.Face{
 					NodeIndices: [3]uint32{nodes[0], nodes[1], nodes[2]},
 				})
 				if len(m.Faces) > nextFaceCheck {
@@ -63,7 +63,7 @@ type asciiEncoder struct {
 
 const pstr = "solid\nfacet normal %f %f %f\nouter loop\nvertex %f %f %f\nvertex %f %f %f\nvertex %f %f %f\nendloop\nendfacet\nendsolid\n"
 
-func (e *asciiEncoder) encode(m *geo.Mesh) error {
+func (e *asciiEncoder) encode(m *go3mf.MeshResource) error {
 	for _, f := range m.Faces {
 		n1, n2, n3 := m.Nodes[f.NodeIndices[0]], m.Nodes[f.NodeIndices[1]], m.Nodes[f.NodeIndices[2]]
 		n := faceNormal(n1, n2, n3)

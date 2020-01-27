@@ -16,7 +16,6 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/qmuntal/go3mf"
-	"github.com/qmuntal/go3mf/geo"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -258,9 +257,8 @@ func TestDecoder_processRootModel(t *testing.T) {
 	meshRes := &go3mf.MeshResource{
 		ObjectResource: go3mf.ObjectResource{
 			ID: 8, Name: "Box 1", ModelPath: "/3d/3dmodel.model", Thumbnail: "/a.png", DefaultPropertyID: 5, PartNumber: "11111111-1111-1111-1111-111111111111"},
-		Mesh: new(geo.Mesh),
 	}
-	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []geo.Point3D{
+	meshRes.Nodes = append(meshRes.Nodes, []go3mf.Point3D{
 		{0, 0, 0},
 		{100, 0, 0},
 		{100, 100, 0},
@@ -270,7 +268,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 		{100, 100, 100},
 		{0, 100, 100},
 	}...)
-	meshRes.Mesh.Faces = append(meshRes.Mesh.Faces, []geo.Face{
+	meshRes.Faces = append(meshRes.Faces, []go3mf.Face{
 		{NodeIndices: [3]uint32{3, 2, 1}, Resource: 5},
 		{NodeIndices: [3]uint32{1, 0, 3}, Resource: 5},
 		{NodeIndices: [3]uint32{4, 5, 6}, Resource: 5, ResourceIndices: [3]uint32{1, 1, 1}},
@@ -291,18 +289,18 @@ func TestDecoder_processRootModel(t *testing.T) {
 			Metadata: []go3mf.Metadata{{Name: nsProductionSpec + ":CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: nsProductionSpec + ":CustomMetadata4", Type: "xs:boolean", Value: "2"}},
 		},
 		Components: []*go3mf.Component{{UUID: "cb828680-8895-4e08-a1fc-be63e033df16", Object: meshRes,
-			Transform: geo.Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
+			Transform: go3mf.Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
 	}
 
 	want := &go3mf.Model{Units: go3mf.UnitMillimeter, Language: "en-US", Path: "/3d/3dmodel.model", UUID: "e9e25302-6428-402e-8633-cc95528d0ed3"}
-	otherMesh := &go3mf.MeshResource{ObjectResource: go3mf.ObjectResource{ID: 8, ModelPath: "/3d/other.model"}, Mesh: new(geo.Mesh)}
+	otherMesh := &go3mf.MeshResource{ObjectResource: go3mf.ObjectResource{ID: 8, ModelPath: "/3d/other.model"}}
 	colorGroup := &go3mf.ColorGroupResource{ID: 1, ModelPath: "/3d/3dmodel.model", Colors: []color.RGBA{{R: 255, G: 255, B: 255, A: 255}, {R: 0, G: 0, B: 0, A: 255}, {R: 26, G: 181, B: 103, A: 255}, {R: 223, G: 4, B: 90, A: 255}}}
 	texGroup := &go3mf.Texture2DGroupResource{ID: 2, ModelPath: "/3d/3dmodel.model", TextureID: 6, Coords: []go3mf.TextureCoord{{0.3, 0.5}, {0.3, 0.8}, {0.5, 0.8}, {0.5, 0.5}}}
 	compositeGroup := &go3mf.CompositeMaterialsResource{ID: 4, ModelPath: "/3d/3dmodel.model", MaterialID: 5, Indices: []uint32{1, 2}, Composites: []go3mf.Composite{{Values: []float64{0.5, 0.5}}, {Values: []float64{0.2, 0.8}}}}
 	multiGroup := &go3mf.MultiPropertiesResource{ID: 9, ModelPath: "/3d/3dmodel.model", BlendMethods: []go3mf.BlendMethod{go3mf.BlendMultiply}, Resources: []uint32{5, 2}, Multis: []go3mf.Multi{{ResourceIndices: []uint32{0, 0}}, {ResourceIndices: []uint32{1, 0}}, {ResourceIndices: []uint32{2, 3}}}}
 	want.Resources = append(want.Resources, otherMesh, baseMaterials, baseTexture, colorGroup, texGroup, compositeGroup, multiGroup, meshRes, components)
 	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: components, PartNumber: "bob", UUID: "e9e25302-6428-402e-8633-cc95528d0ed2",
-		Transform: geo.Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
+		Transform: go3mf.Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
 	})
 	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: otherMesh, UUID: "e9e25302-6428-402e-8633-cc95528d0ed3", Metadata: []go3mf.Metadata{{Name: nsProductionSpec + ":CustomMetadata3", Type: "xs:boolean", Value: "1"}}})
 	want.Metadata = append(want.Metadata, []go3mf.Metadata{

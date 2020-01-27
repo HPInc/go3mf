@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/qmuntal/go3mf/geo"
+	"github.com/qmuntal/go3mf"
 )
 
 func TestNewEncoder(t *testing.T) {
@@ -57,7 +57,7 @@ func TestNewEncoderType(t *testing.T) {
 
 func TestEncoder_Encode(t *testing.T) {
 	type args struct {
-		m *geo.Mesh
+		m *go3mf.MeshResource
 	}
 	tests := []struct {
 		name    string
@@ -65,8 +65,8 @@ func TestEncoder_Encode(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"ascii", NewEncoderType(new(bytes.Buffer), ASCII), args{new(geo.Mesh)}, false},
-		{"binary", NewEncoderType(new(bytes.Buffer), Binary), args{new(geo.Mesh)}, false},
+		{"ascii", NewEncoderType(new(bytes.Buffer), ASCII), args{new(go3mf.MeshResource)}, false},
+		{"binary", NewEncoderType(new(bytes.Buffer), Binary), args{new(go3mf.MeshResource)}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -79,18 +79,18 @@ func TestEncoder_Encode(t *testing.T) {
 
 func Test_faceNormal(t *testing.T) {
 	type args struct {
-		n1 geo.Point3D
-		n2 geo.Point3D
-		n3 geo.Point3D
+		n1 go3mf.Point3D
+		n2 go3mf.Point3D
+		n3 go3mf.Point3D
 	}
 	tests := []struct {
 		name string
 		args args
-		want geo.Point3D
+		want go3mf.Point3D
 	}{
-		{"X", args{geo.Point3D{0.0, 0.0, 0.0}, geo.Point3D{0.0, 20.0, -20.0}, geo.Point3D{0.0, 0.0019989014, 0.0019989014}}, geo.Point3D{1, 0, 0}},
-		{"-Y", args{geo.Point3D{0.0, 0.0, 0.0}, geo.Point3D{20.0, 0.0, -20.0}, geo.Point3D{0.0019989014, 0.0, 0.0019989014}}, geo.Point3D{0, -1, 0}},
-		{"Z", args{geo.Point3D{0.0, 0.0, 0.0}, geo.Point3D{20.0, -20.0, 0.0}, geo.Point3D{0.0019989014, 0.0019989014, 0.0}}, geo.Point3D{0, 0, 1}},
+		{"X", args{go3mf.Point3D{0.0, 0.0, 0.0}, go3mf.Point3D{0.0, 20.0, -20.0}, go3mf.Point3D{0.0, 0.0019989014, 0.0019989014}}, go3mf.Point3D{1, 0, 0}},
+		{"-Y", args{go3mf.Point3D{0.0, 0.0, 0.0}, go3mf.Point3D{20.0, 0.0, -20.0}, go3mf.Point3D{0.0019989014, 0.0, 0.0019989014}}, go3mf.Point3D{0, -1, 0}},
+		{"Z", args{go3mf.Point3D{0.0, 0.0, 0.0}, go3mf.Point3D{20.0, -20.0, 0.0}, go3mf.Point3D{0.0019989014, 0.0019989014, 0.0}}, go3mf.Point3D{0, 0, 1}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

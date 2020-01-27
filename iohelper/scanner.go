@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/qmuntal/go3mf"
-	"github.com/qmuntal/go3mf/geo"
 )
 
 // NodeDecoder defines the minimum contract to decode a 3MF node.
@@ -223,11 +222,11 @@ func (p *Scanner) ParseFloat64Optional(attr string, s string) float64 {
 	return n
 }
 
-// ParseToMatrixRequired parses s as a geo.Matrix.
+// ParseToMatrixRequired parses s as a go3mf.Matrix.
 // If it cannot be parsed a ParsePropertyError is added to the warnings.
 // Returns false if scanning cannot continue.
-func (p *Scanner) ParseToMatrixRequired(attr string, s string) (geo.Matrix, bool) {
-	var matrix geo.Matrix
+func (p *Scanner) ParseToMatrixRequired(attr string, s string) (go3mf.Matrix, bool) {
+	var matrix go3mf.Matrix
 	values := strings.Fields(s)
 	if len(values) != 12 {
 		return matrix, p.InvalidRequiredAttr(attr, s)
@@ -240,30 +239,30 @@ func (p *Scanner) ParseToMatrixRequired(attr string, s string) (geo.Matrix, bool
 		}
 		t[i] = float32(val)
 	}
-	return geo.Matrix{t[0], t[1], t[2], 0.0,
+	return go3mf.Matrix{t[0], t[1], t[2], 0.0,
 		t[3], t[4], t[5], 0.0,
 		t[6], t[7], t[8], 0.0,
 		t[9], t[10], t[11], 1.0}, true
 }
 
-// ParseToMatrixOptional parses s as a geo.Matrix.
+// ParseToMatrixOptional parses s as a go3mf.Matrix.
 // If it cannot be parsed a ParsePropertyError is added to the warnings.
-func (p *Scanner) ParseToMatrixOptional(attr string, s string) geo.Matrix {
+func (p *Scanner) ParseToMatrixOptional(attr string, s string) go3mf.Matrix {
 	values := strings.Fields(s)
 	if len(values) != 12 {
 		p.InvalidOptionalAttr(attr, s)
-		return geo.Matrix{}
+		return go3mf.Matrix{}
 	}
 	var t [12]float32
 	for i := 0; i < 12; i++ {
 		val, err := strconv.ParseFloat(values[i], 32)
 		if err != nil {
 			p.InvalidOptionalAttr(attr, s)
-			return geo.Matrix{}
+			return go3mf.Matrix{}
 		}
 		t[i] = float32(val)
 	}
-	return geo.Matrix{t[0], t[1], t[2], 0.0,
+	return go3mf.Matrix{t[0], t[1], t[2], 0.0,
 		t[3], t[4], t[5], 0.0,
 		t[6], t[7], t[8], 0.0,
 		t[9], t[10], t[11], 1.0}

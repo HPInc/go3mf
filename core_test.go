@@ -6,7 +6,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/qmuntal/go3mf/geo"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -114,8 +113,8 @@ func TestBuildItem_HasTransform(t *testing.T) {
 		want bool
 	}{
 		{"zero", &BuildItem{}, false},
-		{"identity", &BuildItem{Transform: geo.Identity()}, false},
-		{"base", &BuildItem{Transform: geo.Matrix{2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}}, true},
+		{"identity", &BuildItem{Transform: Identity()}, false},
+		{"base", &BuildItem{Transform: Matrix{2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -133,8 +132,8 @@ func TestComponent_HasTransform(t *testing.T) {
 		want bool
 	}{
 		{"zero", &Component{}, false},
-		{"identity", &Component{Transform: geo.Identity()}, false},
-		{"base", &Component{Transform: geo.Matrix{2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}}, true},
+		{"identity", &Component{Transform: Identity()}, false},
+		{"base", &Component{Transform: Matrix{2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -171,11 +170,11 @@ func TestMeshResource_IsValid(t *testing.T) {
 		want bool
 	}{
 		{"empty", new(MeshResource), false},
-		{"other", &MeshResource{Mesh: new(geo.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeOther}}, false},
-		//{"surface", &MeshResource{Mesh: new(geo.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeSurface}}, true},
-		//{"support", &MeshResource{Mesh: new(geo.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeSupport}}, true},
-		{"solidsupport", &MeshResource{Mesh: new(geo.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeSolidSupport}}, false},
-		{"model", &MeshResource{Mesh: new(geo.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeModel}}, false},
+		{"other", &MeshResource{ObjectResource: ObjectResource{ObjectType: ObjectTypeOther}}, false},
+		//{"surface", &MeshResource{ObjectResource: ObjectResource{ObjectType: ObjectTypeSurface}}, true},
+		//{"support", &MeshResource{ObjectResource: ObjectResource{ObjectType: ObjectTypeSupport}}, true},
+		{"solidsupport", &MeshResource{ObjectResource: ObjectResource{ObjectType: ObjectTypeSolidSupport}}, false},
+		{"model", &MeshResource{ObjectResource: ObjectResource{ObjectType: ObjectTypeModel}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

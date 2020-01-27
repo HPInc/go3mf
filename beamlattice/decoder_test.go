@@ -6,14 +6,12 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/qmuntal/go3mf"
-	"github.com/qmuntal/go3mf/geo"
 	"github.com/qmuntal/go3mf/io3mf"
 )
 
 func TestDecode(t *testing.T) {
 	meshLattice := &go3mf.MeshResource{
 		ObjectResource:        go3mf.ObjectResource{ID: 15, Name: "Box", ModelPath: "/3d/3dmodel.model"},
-		Mesh:                  new(geo.Mesh),
 		Extensions: map[string]interface{}{
 			ExtensionName: &BeamLattice{ClipMode: ClipInside, ClippingMeshID: 8, RepresentationMeshID: 8},
 		},
@@ -22,7 +20,7 @@ func TestDecode(t *testing.T) {
 	beamLattice.MinLength = 0.0001
 	beamLattice.CapMode = CapModeHemisphere
 	beamLattice.DefaultRadius = 1
-	meshLattice.Mesh.Nodes = append(meshLattice.Mesh.Nodes, []geo.Point3D{
+	meshLattice.Nodes = append(meshLattice.Nodes, []go3mf.Point3D{
 		{45, 55, 55},
 		{45, 45, 55},
 		{45, 55, 45},

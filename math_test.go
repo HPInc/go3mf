@@ -1,4 +1,4 @@
-package geo
+package go3mf
 
 import (
 	"math"

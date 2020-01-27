@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/go-test/deep"
-	"github.com/qmuntal/go3mf/geo"
+	"github.com/qmuntal/go3mf"
 )
 
 func Test_binaryDecoder_decode(t *testing.T) {
@@ -19,18 +19,18 @@ func Test_binaryDecoder_decode(t *testing.T) {
 		name    string
 		d       *binaryDecoder
 		ctx     context.Context
-		want    *geo.Mesh
+		want    *go3mf.MeshResource
 		wantErr bool
 	}{
-		{"base", &binaryDecoder{r: bytes.NewReader(triangle)}, context.Background(), createMeshTriangle(), false},
-		{"cancel", &binaryDecoder{r: bytes.NewReader(triangle)}, ctx, createMeshTriangle(), true},
+		{"base", &binaryDecoder{r: bytes.NewReader(triangle)}, context.Background(), createMeshTriangle(0), false},
+		{"cancel", &binaryDecoder{r: bytes.NewReader(triangle)}, ctx, createMeshTriangle(0), true},
 		{"eof", &binaryDecoder{r: bytes.NewReader(make([]byte, 0))}, context.Background(), nil, true},
 		{"onlyheader", &binaryDecoder{r: bytes.NewReader(make([]byte, 80))}, context.Background(), nil, true},
 		{"invalidface", &binaryDecoder{r: bytes.NewReader(triangle[:100])}, context.Background(), nil, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := new(geo.Mesh)
+			got := new(go3mf.MeshResource)
 			err := tt.d.decode(tt.ctx, got)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("binaryDecoder.decode() error = %v, wantErr %v", err, tt.wantErr)
@@ -47,9 +47,9 @@ func Test_binaryDecoder_decode(t *testing.T) {
 }
 
 func Test_binaryEncoder_encode(t *testing.T) {
-	triangle := createMeshTriangle()
+	triangle := createMeshTriangle(0)
 	type args struct {
-		m *geo.Mesh
+		m *go3mf.MeshResource
 	}
 	tests := []struct {
 		name    string
@@ -70,7 +70,7 @@ func Test_binaryEncoder_encode(t *testing.T) {
 			if !tt.wantErr {
 				// We do decoder and then encoder again, and the result must be the same
 				decoder := &binaryDecoder{r: tt.e.w.(*bytes.Buffer)}
-				got := new(geo.Mesh)
+				got := new(go3mf.MeshResource)
 				decoder.decode(context.Background(), got)
 				if diff := deep.Equal(got, tt.args.m); diff != nil {
 					t.Errorf("binaryDecoder.encode() = %v", diff)
@@ -94,22 +94,23 @@ func (w *errorWriter) Write(p []byte) (n int, err error) {
 	return 0, nil
 }
 
-func createMeshTriangle() *geo.Mesh {
-	m := new(geo.Mesh)
-	mb := geo.NewMeshBuilder(m)
-	n1 := mb.AddNode(geo.Point3D{-20.0, -20.0, 0.0})
-	n2 := mb.AddNode(geo.Point3D{20.0, -20.0, 0.0})
-	n3 := mb.AddNode(geo.Point3D{0.0019989014, 0.0019989014, 39.998})
-	n4 := mb.AddNode(geo.Point3D{-20.0, 20.0, 0.0})
-	n5 := mb.AddNode(geo.Point3D{0.0, 0.0019989014, 39.998})
-	n6 := mb.AddNode(geo.Point3D{20.0, 20.0, 0.0})
+func createMeshTriangle(id uint32) *go3mf.MeshResource {
+	m := new(go3mf.MeshResource)
+	m.ID = id
+	mb := go3mf.NewMeshBuilder(m)
+	n1 := mb.AddNode(go3mf.Point3D{-20.0, -20.0, 0.0})
+	n2 := mb.AddNode(go3mf.Point3D{20.0, -20.0, 0.0})
+	n3 := mb.AddNode(go3mf.Point3D{0.0019989014, 0.0019989014, 39.998})
+	n4 := mb.AddNode(go3mf.Point3D{-20.0, 20.0, 0.0})
+	n5 := mb.AddNode(go3mf.Point3D{0.0, 0.0019989014, 39.998})
+	n6 := mb.AddNode(go3mf.Point3D{20.0, 20.0, 0.0})
 	m.Faces = append(m.Faces,
-		geo.Face{NodeIndices: [3]uint32{n1, n2, n3}},
-		geo.Face{NodeIndices: [3]uint32{n4, n2, n1}},
-		geo.Face{NodeIndices: [3]uint32{n1, n5, n4}},
-		geo.Face{NodeIndices: [3]uint32{n2, n6, n3}},
-		geo.Face{NodeIndices: [3]uint32{n6, n4, n3}},
-		geo.Face{NodeIndices: [3]uint32{n6, n2, n4}},
+		go3mf.Face{NodeIndices: [3]uint32{n1, n2, n3}},
+		go3mf.Face{NodeIndices: [3]uint32{n4, n2, n1}},
+		go3mf.Face{NodeIndices: [3]uint32{n1, n5, n4}},
+		go3mf.Face{NodeIndices: [3]uint32{n2, n6, n3}},
+		go3mf.Face{NodeIndices: [3]uint32{n6, n4, n3}},
+		go3mf.Face{NodeIndices: [3]uint32{n6, n2, n4}},
 	)
 	return m
 }

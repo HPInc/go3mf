@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/qmuntal/go3mf"
-	"github.com/qmuntal/go3mf/geo"
 )
 
 // ExtensionName is the name of the extension.
@@ -12,7 +11,7 @@ const ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/slice/2015/0
 
 // Slice defines the resource object for slices.
 type Slice struct {
-	Vertices []geo.Point2D
+	Vertices []go3mf.Point2D
 	Polygons [][]int
 	TopZ     float32
 }
@@ -25,7 +24,7 @@ func (s *Slice) BeginPolygon() int {
 
 // AddVertex adds a new vertex to the slice and returns its index.
 func (s *Slice) AddVertex(x, y float32) int {
-	s.Vertices = append(s.Vertices, geo.Point2D{x, y})
+	s.Vertices = append(s.Vertices, go3mf.Point2D{x, y})
 	return len(s.Vertices) - 1
 }
 

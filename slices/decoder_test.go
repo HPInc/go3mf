@@ -6,7 +6,6 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/qmuntal/go3mf"
-	"github.com/qmuntal/go3mf/geo"
 	"github.com/qmuntal/go3mf/io3mf"
 )
 
@@ -16,7 +15,7 @@ func TestDecode(t *testing.T) {
 		Slices: []*Slice{
 			{
 				TopZ:     1.2,
-				Vertices: []geo.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
+				Vertices: []go3mf.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
 				Polygons: [][]int{{0, 1, 2, 3, 0}},
 			},
 		},
@@ -26,12 +25,12 @@ func TestDecode(t *testing.T) {
 		Slices: []*Slice{
 			{
 				TopZ:     0,
-				Vertices: []geo.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
+				Vertices: []go3mf.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
 				Polygons: [][]int{{0, 1, 2, 3, 0}},
 			},
 			{
 				TopZ:     0.1,
-				Vertices: []geo.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
+				Vertices: []go3mf.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
 				Polygons: [][]int{{0, 2, 1, 3, 0}},
 			},
 		},
@@ -41,9 +40,8 @@ func TestDecode(t *testing.T) {
 		ObjectResource: go3mf.ObjectResource{
 			ID: 8, Name: "Box 1", ModelPath: "/3d/3dmodel.model",
 			Extensions: map[string]interface{}{ExtensionName: &ObjectAttr{SliceStackID: 3, SliceResolution: ResolutionLow}}},
-		Mesh: new(geo.Mesh),
 	}
-	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []geo.Point3D{
+	meshRes.Nodes = append(meshRes.Nodes, []go3mf.Point3D{
 		{0, 0, 0},
 		{100, 0, 0},
 		{100, 100, 0},
@@ -53,7 +51,7 @@ func TestDecode(t *testing.T) {
 		{100, 100, 100},
 		{0, 100, 100},
 	}...)
-	meshRes.Mesh.Faces = append(meshRes.Mesh.Faces, []geo.Face{
+	meshRes.Faces = append(meshRes.Faces, []go3mf.Face{
 		{NodeIndices: [3]uint32{3, 2, 1}},
 		{NodeIndices: [3]uint32{1, 0, 3}},
 		{NodeIndices: [3]uint32{4, 5, 6}},

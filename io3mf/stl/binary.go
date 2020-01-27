@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"io"
 
-	"github.com/qmuntal/go3mf/geo"
+	"github.com/qmuntal/go3mf"
 )
 
 type binaryHeader struct {
@@ -25,8 +25,8 @@ type binaryDecoder struct {
 }
 
 // decode loads a binary stl from a io.Reader.
-func (d *binaryDecoder) decode(ctx context.Context, m *geo.Mesh) error {
-	mb := geo.NewMeshBuilder(m)
+func (d *binaryDecoder) decode(ctx context.Context, m *go3mf.MeshResource) error {
+	mb := go3mf.NewMeshBuilder(m)
 	var header binaryHeader
 	err := binary.Read(d.r, binary.LittleEndian, &header)
 	if err != nil {
@@ -55,13 +55,13 @@ func (d *binaryDecoder) decode(ctx context.Context, m *geo.Mesh) error {
 	return err
 }
 
-func (d *binaryDecoder) decodeFace(facet *binaryFace, mb *geo.MeshBuilder) {
+func (d *binaryDecoder) decodeFace(facet *binaryFace, mb *go3mf.MeshBuilder) {
 	var nodes [3]uint32
 	for nVertex := 0; nVertex < 3; nVertex++ {
 		pos := facet.Vertices[nVertex]
-		nodes[nVertex] = mb.AddNode(geo.Point3D{pos[0], pos[1], pos[2]})
+		nodes[nVertex] = mb.AddNode(go3mf.Point3D{pos[0], pos[1], pos[2]})
 	}
-	mb.Mesh.Faces = append(mb.Mesh.Faces, geo.Face{
+	mb.Mesh.Faces = append(mb.Mesh.Faces, go3mf.Face{
 		NodeIndices: [3]uint32{nodes[0], nodes[1], nodes[2]},
 	})
 }
@@ -70,7 +70,7 @@ type binaryEncoder struct {
 	w io.Writer
 }
 
-func (e *binaryEncoder) encode(m *geo.Mesh) error {
+func (e *binaryEncoder) encode(m *go3mf.MeshResource) error {
 	header := binaryHeader{FaceCount: uint32(len(m.Faces))}
 	err := binary.Write(e.w, binary.LittleEndian, header)
 	if err != nil {

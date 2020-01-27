@@ -3,7 +3,7 @@ package stl
 import (
 	"io"
 
-	"github.com/qmuntal/go3mf/geo"
+	"github.com/qmuntal/go3mf"
 )
 
 // EncodingType is the type of encoding used in the file.
@@ -39,7 +39,7 @@ func NewEncoderType(w io.Writer, encodingType EncodingType) *Encoder {
 }
 
 // Encode encodes a mesh to the writer.
-func (e *Encoder) Encode(m *geo.Mesh) error {
+func (e *Encoder) Encode(m *go3mf.MeshResource) error {
 	switch e.encodingType {
 	case ASCII:
 		encoder := asciiEncoder{w: e.w}
@@ -50,6 +50,6 @@ func (e *Encoder) Encode(m *geo.Mesh) error {
 	}
 }
 
-func faceNormal(n1, n2, n3 geo.Point3D) geo.Point3D {
+func faceNormal(n1, n2, n3 go3mf.Point3D) go3mf.Point3D {
 	return n2.Sub(n1).Cross(n3.Sub(n1)).Normalize()
 }

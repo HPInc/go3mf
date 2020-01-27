@@ -3,7 +3,7 @@ package slices
 import (
 	"reflect"
 	"testing"
-	"github.com/qmuntal/go3mf/geo"
+	"github.com/qmuntal/go3mf"
 )
 
 
@@ -50,7 +50,7 @@ func TestSlice_AddVertex(t *testing.T) {
 				t.Errorf("Slice.AddVertex() = %v, want %v", got, tt.want)
 				return
 			}
-			want := geo.Point2D{tt.args.x, tt.args.y}
+			want := go3mf.Point2D{tt.args.x, tt.args.y}
 			if !reflect.DeepEqual(tt.s.Vertices[tt.want], want) {
 				t.Errorf("Slice.AddVertex() = %v, want %v", tt.s.Vertices[tt.want], want)
 			}
@@ -71,8 +71,8 @@ func TestSlice_AddPolygonIndex(t *testing.T) {
 	}{
 		{"emptyPolygon", new(Slice), args{0, 0}, true},
 		{"emptyVertices", &Slice{Polygons: [][]int{{}}}, args{0, 0}, true},
-		{"duplicated", &Slice{Polygons: [][]int{{0}}, Vertices: []geo.Point2D{{}}}, args{0, 0}, true},
-		{"base", &Slice{Polygons: [][]int{{}}, Vertices: []geo.Point2D{{}}}, args{0, 0}, false},
+		{"duplicated", &Slice{Polygons: [][]int{{0}}, Vertices: []go3mf.Point2D{{}}}, args{0, 0}, true},
+		{"base", &Slice{Polygons: [][]int{{}}, Vertices: []go3mf.Point2D{{}}}, args{0, 0}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
