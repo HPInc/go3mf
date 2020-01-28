@@ -234,7 +234,8 @@ func TestDecoder_processRootModel_Fail(t *testing.T) {
 }
 
 func TestDecoder_processRootModel(t *testing.T) {
-	extensionDecoder = map[string]ExtensionDecoder{"fake_ext": nil}
+	RegisterNewNodeDecoder("fake_ext", nil)
+	RegisterDecodeAttribute("fake_ext", nil)
 	baseMaterials := &BaseMaterialsResource{ID: 5, ModelPath: "/3d/3dmodel.model", Materials: []BaseMaterial{
 		{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 		{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
@@ -496,7 +497,8 @@ func TestNewDecoder(t *testing.T) {
 }
 
 func TestDecoder_processRootModel_warns(t *testing.T) {
-	extensionDecoder = map[string]ExtensionDecoder{"fake_ext": nil}
+	RegisterNewNodeDecoder("fake_ext", nil)
+	RegisterDecodeAttribute("fake_ext", nil)
 	want := []error{
 		ParsePropertyError{ResourceID: 0, Element: "base", Name: "displaycolor", Value: "0000FF", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
 		MissingPropertyError{ResourceID: 0, Element: "base", ModelPath: "/3d/3dmodel.model", Name: "name"},

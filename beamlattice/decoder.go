@@ -7,19 +7,14 @@ import (
 )
 
 func init() {
-	go3mf.RegisterExtensionDecoder(ExtensionName, &extensionDecoder{})
+	go3mf.RegisterNewNodeDecoder(ExtensionName, nodeDecoder)
 }
 
-type extensionDecoder struct{}
-
-func (d *extensionDecoder) NodeDecoder(parentNode interface{}, nodeName string) go3mf.NodeDecoder {
+func nodeDecoder(parentNode interface{}, nodeName string) go3mf.NodeDecoder {
 	if nodeName == attrBeamLattice {
 		return &beamLatticeDecoder{mesh: parentNode.(*go3mf.Mesh)}
 	}
 	return nil
-}
-
-func (d *extensionDecoder) DecodeAttribute(_ *go3mf.Scanner, _ interface{}, _ xml.Attr) {
 }
 
 type beamLatticeDecoder struct {

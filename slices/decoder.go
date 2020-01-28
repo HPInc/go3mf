@@ -7,19 +7,18 @@ import (
 )
 
 func init() {
-	go3mf.RegisterExtensionDecoder(ExtensionName, &extensionDecoder{})
+	go3mf.RegisterNewNodeDecoder(ExtensionName, nodeDecoder)
+	go3mf.RegisterDecodeAttribute(ExtensionName, decodeAttribute)
 }
 
-type extensionDecoder struct{}
-
-func (d *extensionDecoder) NodeDecoder(_ interface{}, nodeName string) go3mf.NodeDecoder {
+func nodeDecoder(_ interface{}, nodeName string) go3mf.NodeDecoder {
 	if nodeName == attrSliceStack {
 		return &sliceStackDecoder{}
 	}
 	return nil
 }
 
-func (d *extensionDecoder) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
+func decodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
 	switch t := parentNode.(type) {
 	case *go3mf.ObjectResource:
 		objectAttrDecoder(s, t, attr)

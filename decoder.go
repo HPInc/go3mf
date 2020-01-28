@@ -230,7 +230,7 @@ func (d *resourceDecoder) Child(name xml.Name) (child NodeDecoder) {
 			child = new(baseMaterialsDecoder)
 		}
 	} else if ext, ok := extensionDecoder[name.Space]; ok {
-		child = ext.NodeDecoder(nil, name.Local)
+		child = ext.NewNodeDecoder(nil, name.Local)
 	}
 	return
 }
@@ -316,7 +316,7 @@ func (d *meshDecoder) Child(name xml.Name) (child NodeDecoder) {
 			child = &trianglesDecoder{mesh: &d.mesh}
 		}
 	} else if ext, ok := extensionDecoder[name.Space]; ok {
-		child = ext.NodeDecoder(&d.mesh, name.Local)
+		child = ext.NewNodeDecoder(&d.mesh, name.Local)
 	}
 	return
 }

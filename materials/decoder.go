@@ -8,12 +8,10 @@ import (
 )
 
 func init() {
-	go3mf.RegisterExtensionDecoder(ExtensionName, &extensionDecoder{})
+	go3mf.RegisterNewNodeDecoder(ExtensionName, nodeDecoder)
 }
 
-type extensionDecoder struct{}
-
-func (d *extensionDecoder) NodeDecoder(_ interface{}, nodeName string) (child go3mf.NodeDecoder) {
+func nodeDecoder(_ interface{}, nodeName string) (child go3mf.NodeDecoder) {
 	switch nodeName {
 	case attrColorGroup:
 		child = new(colorGroupDecoder)
@@ -27,9 +25,6 @@ func (d *extensionDecoder) NodeDecoder(_ interface{}, nodeName string) (child go
 		child = new(multiPropertiesDecoder)
 	}
 	return
-}
-
-func (d *extensionDecoder) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
 }
 
 type colorGroupDecoder struct {

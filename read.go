@@ -15,17 +15,47 @@ import (
 // ExtensionDecoder is the contract that should be implemented
 // in order to enable automatic extension decoding.
 // NodeDecoder should return a NodeDecoder that will do the real decoding.
+type NewNodeDecoderFunc func (parentNode interface{}, nodeName string) NodeDecoder
+
 // DecodeAttribute should parse the attribute and update the parentNode.
-type ExtensionDecoder interface {
-	NodeDecoder(parentNode interface{}, nodeName string) NodeDecoder
-	DecodeAttribute(s *Scanner, parentNode interface{}, attr xml.Attr)
+type DecodeAttributeFunc func (s *Scanner, parentNode interface{}, attr xml.Attr)
+
+type extensionDecoderWrapper struct {
+	newNodeDecoder NewNodeDecoderFunc
+	decodeAttribute DecodeAttributeFunc
 }
 
-var extensionDecoder = make(map[string]ExtensionDecoder)
+func (e *extensionDecoderWrapper) NewNodeDecoder (parentNode interface{}, nodeName string) NodeDecoder {
+	if e.newNodeDecoder == nil {
+		return nil
+	}
+	return e.newNodeDecoder(parentNode, nodeName)
+}
 
-// RegisterExtensionDecoder registers a ExtensionDecoder.
-func RegisterExtensionDecoder(key string, e ExtensionDecoder) {
-	extensionDecoder[key] = e
+func (e *extensionDecoderWrapper) DecodeAttribute  (s *Scanner, parentNode interface{}, attr xml.Attr) {
+	if e.decodeAttribute != nil {
+		e.decodeAttribute(s, parentNode, attr)
+	}
+}
+
+var extensionDecoder = make(map[string]*extensionDecoderWrapper)
+
+// RegisterExtensionDecoder registers a NewNodeDecoderFunc.
+func RegisterNewNodeDecoder(key string, f NewNodeDecoderFunc) {
+	if e, ok := extensionDecoder[key]; ok {
+		e.newNodeDecoder = f
+	} else {
+		extensionDecoder[key] = &extensionDecoderWrapper{newNodeDecoder: f}
+	}
+}
+
+// RegisterExtensionDecoder registers a DecodeAttributeFunc.
+func RegisterDecodeAttribute(key string, f DecodeAttributeFunc) {
+	if e, ok := extensionDecoder[key]; ok {
+		e.decodeAttribute = f
+	} else {
+		extensionDecoder[key] = &extensionDecoderWrapper{decodeAttribute: f}
+	}
 }
 
 // A XMLDecoder is anything that can decode a stream of XML tokens, including a Decoder.
