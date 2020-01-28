@@ -44,7 +44,7 @@ func objectAttrDecoder(scanner *go3mf.Scanner, o *go3mf.ObjectResource, attr xml
 }
 
 type sliceStackDecoder struct {
-	go3mf.EmptyDecoder
+	go3mf.BaseDecoder
 	resource SliceStackResource
 }
 
@@ -86,7 +86,7 @@ func (d *sliceStackDecoder) Attributes(attrs []xml.Attr) bool {
 }
 
 type sliceRefDecoder struct {
-	go3mf.EmptyDecoder
+	go3mf.BaseDecoder
 	resource *SliceStackResource
 }
 
@@ -131,7 +131,7 @@ func (d *sliceRefDecoder) addSliceRef(sliceStackID uint32, path string) bool {
 }
 
 type sliceDecoder struct {
-	go3mf.EmptyDecoder
+	go3mf.BaseDecoder
 	resource               *SliceStackResource
 	slice                  Slice
 	polygonDecoder         polygonDecoder
@@ -174,7 +174,7 @@ func (d *sliceDecoder) Attributes(attrs []xml.Attr) bool {
 }
 
 type polygonVerticesDecoder struct {
-	go3mf.EmptyDecoder
+	go3mf.BaseDecoder
 	slice                *Slice
 	polygonVertexDecoder polygonVertexDecoder
 }
@@ -191,7 +191,7 @@ func (d *polygonVerticesDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) 
 }
 
 type polygonVertexDecoder struct {
-	go3mf.EmptyDecoder
+	go3mf.BaseDecoder
 	slice *Slice
 }
 
@@ -214,7 +214,7 @@ func (d *polygonVertexDecoder) Attributes(attrs []xml.Attr) bool {
 }
 
 type polygonDecoder struct {
-	go3mf.EmptyDecoder
+	go3mf.BaseDecoder
 	slice                 *Slice
 	polygonIndex          int
 	polygonSegmentDecoder polygonSegmentDecoder
@@ -259,7 +259,7 @@ func (d *polygonDecoder) Attributes(attrs []xml.Attr) bool {
 }
 
 type polygonSegmentDecoder struct {
-	go3mf.EmptyDecoder
+	go3mf.BaseDecoder
 	slice        *Slice
 	polygonIndex int
 }

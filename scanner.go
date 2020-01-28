@@ -19,28 +19,31 @@ type NodeDecoder interface {
 	SetScanner(*Scanner)
 }
 
-// EmptyDecoder defines a base class for all decoders.
-type EmptyDecoder struct {
+// BaseDecoder defines a base class for all decoders.
+// It is not mandatory for a Decoder to embed this struct,
+// but if embedded any struct automatically fulfills the NodeDecoder interface.
+// It is typically used when creating extension decoders.
+type BaseDecoder struct {
 	Scanner *Scanner
 }
 
 // Open do nothing.
-func (d *EmptyDecoder) Open() { return }
+func (d *BaseDecoder) Open() { return }
 
 // Attributes returns true.
-func (d *EmptyDecoder) Attributes([]xml.Attr) bool { return true }
+func (d *BaseDecoder) Attributes([]xml.Attr) bool { return true }
 
 // Text returns true.
-func (d *EmptyDecoder) Text([]byte) bool { return true }
+func (d *BaseDecoder) Text([]byte) bool { return true }
 
 // Child returns nil.
-func (d *EmptyDecoder) Child(xml.Name) NodeDecoder { return nil }
+func (d *BaseDecoder) Child(xml.Name) NodeDecoder { return nil }
 
 // Close returns true.
-func (d *EmptyDecoder) Close() bool { return true }
+func (d *BaseDecoder) Close() bool { return true }
 
 // SetScanner sets the scanner.
-func (d *EmptyDecoder) SetScanner(s *Scanner) { d.Scanner = s }
+func (d *BaseDecoder) SetScanner(s *Scanner) { d.Scanner = s }
 
 // A MissingPropertyError represents a missing required property error.
 // If MissingPropertyError is 0 means that the error took place while parsing the resource property before the ID appeared.

@@ -77,7 +77,7 @@ func (r *ReadCloser) Close() error {
 }
 
 type topLevelDecoder struct {
-	EmptyDecoder
+	BaseDecoder
 	model  *Model
 	isRoot bool
 }

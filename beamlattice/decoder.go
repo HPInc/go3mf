@@ -24,7 +24,7 @@ func (d *extensionDecoder) DecodeAttribute(_ *go3mf.Scanner, _ interface{}, _ xm
 }
 
 type beamLatticeDecoder struct {
-	go3mf.EmptyDecoder
+	go3mf.BaseDecoder
 	mesh *go3mf.Mesh
 }
 
@@ -77,7 +77,7 @@ func (d *beamLatticeDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 }
 
 type beamsDecoder struct {
-	go3mf.EmptyDecoder
+	go3mf.BaseDecoder
 	mesh        *go3mf.Mesh
 	beamDecoder beamDecoder
 }
@@ -94,7 +94,7 @@ func (d *beamsDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 }
 
 type beamDecoder struct {
-	go3mf.EmptyDecoder
+	go3mf.BaseDecoder
 	mesh *go3mf.Mesh
 }
 
@@ -156,7 +156,7 @@ func (d *beamDecoder) Attributes(attrs []xml.Attr) bool {
 }
 
 type beamSetsDecoder struct {
-	go3mf.EmptyDecoder
+	go3mf.BaseDecoder
 	mesh *go3mf.Mesh
 }
 
@@ -168,7 +168,7 @@ func (d *beamSetsDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 }
 
 type beamSetDecoder struct {
-	go3mf.EmptyDecoder
+	go3mf.BaseDecoder
 	mesh           *go3mf.Mesh
 	beamSet        BeamSet
 	beamRefDecoder beamRefDecoder
@@ -207,7 +207,7 @@ func (d *beamSetDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 }
 
 type beamRefDecoder struct {
-	go3mf.EmptyDecoder
+	go3mf.BaseDecoder
 	beamSet *BeamSet
 }
 

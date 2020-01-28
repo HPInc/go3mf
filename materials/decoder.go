@@ -34,7 +34,7 @@ func (d *extensionDecoder) DecodeAttribute(s *go3mf.Scanner, parentNode interfac
 }
 
 type colorGroupDecoder struct {
-	go3mf.EmptyDecoder
+	go3mf.BaseDecoder
 	resource     ColorGroupResource
 	colorDecoder colorDecoder
 }
@@ -68,7 +68,7 @@ func (d *colorGroupDecoder) Attributes(attrs []xml.Attr) bool {
 }
 
 type colorDecoder struct {
-	go3mf.EmptyDecoder
+	go3mf.BaseDecoder
 	resource *ColorGroupResource
 }
 
@@ -86,7 +86,7 @@ func (d *colorDecoder) Attributes(attrs []xml.Attr) bool {
 }
 
 type tex2DCoordDecoder struct {
-	go3mf.EmptyDecoder
+	go3mf.BaseDecoder
 	resource *Texture2DGroupResource
 }
 
@@ -112,7 +112,7 @@ func (d *tex2DCoordDecoder) Attributes(attrs []xml.Attr) bool {
 }
 
 type tex2DGroupDecoder struct {
-	go3mf.EmptyDecoder
+	go3mf.BaseDecoder
 	resource          Texture2DGroupResource
 	tex2DCoordDecoder tex2DCoordDecoder
 }
@@ -154,7 +154,7 @@ func (d *tex2DGroupDecoder) Attributes(attrs []xml.Attr) bool {
 }
 
 type texture2DDecoder struct {
-	go3mf.EmptyDecoder
+	go3mf.BaseDecoder
 	resource Texture2DResource
 }
 
@@ -198,7 +198,7 @@ func (d *texture2DDecoder) Attributes(attrs []xml.Attr) bool {
 }
 
 type compositeMaterialsDecoder struct {
-	go3mf.EmptyDecoder
+	go3mf.BaseDecoder
 	resource         CompositeMaterialsResource
 	compositeDecoder compositeDecoder
 }
@@ -255,7 +255,7 @@ func (d *compositeMaterialsDecoder) Attributes(attrs []xml.Attr) bool {
 }
 
 type compositeDecoder struct {
-	go3mf.EmptyDecoder
+	go3mf.BaseDecoder
 	resource *CompositeMaterialsResource
 }
 
@@ -283,7 +283,7 @@ func (d *compositeDecoder) Attributes(attrs []xml.Attr) (ok bool) {
 }
 
 type multiPropertiesDecoder struct {
-	go3mf.EmptyDecoder
+	go3mf.BaseDecoder
 	resource     MultiPropertiesResource
 	multiDecoder multiDecoder
 }
@@ -340,7 +340,7 @@ func (d *multiPropertiesDecoder) Attributes(attrs []xml.Attr) bool {
 }
 
 type multiDecoder struct {
-	go3mf.EmptyDecoder
+	go3mf.BaseDecoder
 	resource *MultiPropertiesResource
 }
 
