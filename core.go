@@ -145,7 +145,7 @@ func (m *Model) UnusedID() uint32 {
 
 // SetThumbnail sets the package thumbnail.
 func (m *Model) SetThumbnail(r io.Reader) *Attachment {
-	m.Thumbnail = &Attachment{Stream: r, Path: thumbnailPath, RelationshipType: "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail"}
+	m.Thumbnail = &Attachment{Stream: r, Path: thumbnailPath, RelationshipType: relTypeThumbnail}
 	return m.Thumbnail
 }
 
