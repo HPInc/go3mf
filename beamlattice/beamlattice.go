@@ -2,6 +2,7 @@ package beamlattice
 
 import "github.com/qmuntal/go3mf"
 
+// ExtensionName is the canonical name of this extension.
 const ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/beamlattice/2017/02"
 
 // ClipMode defines the clipping modes for the beam lattices.

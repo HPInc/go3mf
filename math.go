@@ -140,7 +140,6 @@ func (m1 Matrix) Mul(m2 Matrix) Matrix {
 	}
 }
 
-
 type pairEntry struct {
 	a, b uint32
 }

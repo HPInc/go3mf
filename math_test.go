@@ -211,7 +211,6 @@ func TestPoint3D_Cross(t *testing.T) {
 	}
 }
 
-
 func Test_newPairMatch(t *testing.T) {
 	tests := []struct {
 		name string

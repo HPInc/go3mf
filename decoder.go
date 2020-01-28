@@ -342,7 +342,6 @@ func (d *baseMaterialDecoder) Attributes(attrs []xml.Attr) bool {
 	return ok
 }
 
-
 type meshDecoder struct {
 	BaseDecoder
 	mesh Mesh

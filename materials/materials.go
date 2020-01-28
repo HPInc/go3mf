@@ -2,6 +2,7 @@ package materials
 
 import "image/color"
 
+// ExtensionName is the canonical name of this extension.
 const ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/material/2015/02"
 
 // Texture2DType defines the allowed texture 2D types.
@@ -209,7 +210,7 @@ func newBlendMethod(s string) (b BlendMethod, ok bool) {
 	return
 }
 
-const (	
+const (
 	attrPath               = "path"
 	attrID                 = "id"
 	attrColorGroup         = "colorgroup"

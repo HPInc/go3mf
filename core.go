@@ -7,6 +7,7 @@ import (
 	"sort"
 )
 
+// ExtensionName is the canonical name of this extension.
 const ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/core/2015/02"
 
 const thumbnailPath = "/Metadata/thumbnail.png"
@@ -274,12 +275,12 @@ type Mesh struct {
 }
 
 // IsValid checks if the mesh resource are valid.
-func (c *Mesh) IsValid() bool {
-	switch c.ObjectType {
+func (m *Mesh) IsValid() bool {
+	switch m.ObjectType {
 	case ObjectTypeModel:
-		return c.IsManifoldAndOriented()
+		return m.IsManifoldAndOriented()
 	case ObjectTypeSolidSupport:
-		return c.IsManifoldAndOriented()
+		return m.IsManifoldAndOriented()
 		//case ObjectTypeSupport:
 		//	return len(c.Mesh.Beams) == 0
 		//case ObjectTypeSurface:
@@ -360,6 +361,7 @@ type MeshBuilder struct {
 	vectorTree vectorTree
 }
 
+// NewMeshBuilder returns a new MeshBuilder.
 func NewMeshBuilder(m *Mesh) *MeshBuilder {
 	return &MeshBuilder{
 		Mesh:                  m,

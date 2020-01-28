@@ -6,7 +6,7 @@ import (
 	"github.com/qmuntal/go3mf"
 )
 
-// ExtensionName is the name of the extension.
+// ExtensionName is the canonical name of this extension.
 const ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/slice/2015/07"
 
 // Slice defines the resource object for slices.

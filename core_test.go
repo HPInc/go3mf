@@ -307,7 +307,6 @@ func TestUnits_String(t *testing.T) {
 	}
 }
 
-
 func TestMesh_CheckSanity(t *testing.T) {
 	tests := []struct {
 		name string
@@ -417,7 +416,6 @@ func TestMesh_checkFacesSanity(t *testing.T) {
 		})
 	}
 }
-
 
 func Test_newObjectType(t *testing.T) {
 	tests := []struct {

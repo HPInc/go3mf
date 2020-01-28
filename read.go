@@ -12,6 +12,10 @@ import (
 	"sync"
 )
 
+// ExtensionDecoder is the contract that should be implemented
+// in order to enable automatic extension decoding.
+// NodeDecoder should return a NodeDecoder that will do the real decoding.
+// DecodeAttribute should parse the attribute and update the parentNode.
 type ExtensionDecoder interface {
 	NodeDecoder(parentNode interface{}, nodeName string) NodeDecoder
 	DecodeAttribute(s *Scanner, parentNode interface{}, attr xml.Attr) bool
