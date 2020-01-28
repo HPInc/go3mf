@@ -117,9 +117,9 @@ func (d *beamDecoder) Attributes(attrs []xml.Attr) bool {
 			beam.NodeIndices[1], ok = d.Scanner.ParseUint32Required(attrV2, a.Value)
 			hasV2 = true
 		case attrR1:
-			beam.Radius[0] = d.Scanner.ParseFloat64Optional(attrR1, a.Value)
+			beam.Radius[0] = d.Scanner.ParseFloat32Optional(attrR1, a.Value)
 		case attrR2:
-			beam.Radius[1] = d.Scanner.ParseFloat64Optional(attrR2, a.Value)
+			beam.Radius[1] = d.Scanner.ParseFloat32Optional(attrR2, a.Value)
 		case attrCap1:
 			beam.CapMode[0], _ = newCapMode(a.Value)
 			hasCap1 = true
