@@ -101,16 +101,22 @@ type ProductionAttachment struct {
 	Path             string
 }
 
+// Build contains one or more items to manufacture as part of processing the job.
+type Build struct {
+	UUID       string
+	Items      []*Item
+	Extensions map[string]interface{}
+}
+
 // A Model is an in memory representation of the 3MF file.
 type Model struct {
 	Path                  string
 	Language              string
-	UUID                  string
 	Units                 Units
 	Thumbnail             *Attachment
 	Metadata              []Metadata
 	Resources             []Resource
-	BuildItems            []*BuildItem
+	Build                 Build
 	Attachments           []*Attachment
 	ProductionAttachments []*ProductionAttachment
 }
@@ -185,8 +191,8 @@ func (ms *BaseMaterialsResource) Identify() (string, uint32) {
 	return ms.ModelPath, ms.ID
 }
 
-// A BuildItem is an in memory representation of the 3MF build item.
-type BuildItem struct {
+// A Item is an in memory representation of the 3MF build item.
+type Item struct {
 	Object     Object
 	Transform  Matrix
 	PartNumber string
@@ -195,7 +201,7 @@ type BuildItem struct {
 }
 
 // HasTransform returns true if the transform is different than the identity.
-func (b *BuildItem) HasTransform() bool {
+func (b *Item) HasTransform() bool {
 	return b.Transform != Matrix{} && b.Transform != Identity()
 }
 

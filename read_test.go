@@ -272,13 +272,14 @@ func TestDecoder_processRootModel(t *testing.T) {
 			Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
 	}
 
-	want := &Model{Units: UnitMillimeter, Language: "en-US", Path: "/3d/3dmodel.model", UUID: "e9e25302-6428-402e-8633-cc95528d0ed3"}
+	want := &Model{Units: UnitMillimeter, Language: "en-US", Path: "/3d/3dmodel.model"}
 	otherMesh := &Mesh{ObjectResource: ObjectResource{ID: 8, ModelPath: "/3d/other.model"}}
 	want.Resources = append(want.Resources, otherMesh, baseMaterials, meshRes, components)
-	want.BuildItems = append(want.BuildItems, &BuildItem{Object: components, PartNumber: "bob", UUID: "e9e25302-6428-402e-8633-cc95528d0ed2",
+	want.Build.UUID = "e9e25302-6428-402e-8633-cc95528d0ed3"
+	want.Build.Items = append(want.Build.Items, &Item{Object: components, PartNumber: "bob", UUID: "e9e25302-6428-402e-8633-cc95528d0ed2",
 		Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
 	})
-	want.BuildItems = append(want.BuildItems, &BuildItem{Object: otherMesh, UUID: "e9e25302-6428-402e-8633-cc95528d0ed3", Metadata: []Metadata{{Name: nsProductionSpec + ":CustomMetadata3", Type: "xs:boolean", Value: "1"}}})
+	want.Build.Items = append(want.Build.Items, &Item{Object: otherMesh, UUID: "e9e25302-6428-402e-8633-cc95528d0ed3", Metadata: []Metadata{{Name: nsProductionSpec + ":CustomMetadata3", Type: "xs:boolean", Value: "1"}}})
 	want.Metadata = append(want.Metadata, []Metadata{
 		{Name: "Application", Value: "go3mf app"},
 		{Name: nsProductionSpec + ":CustomMetadata1", Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},

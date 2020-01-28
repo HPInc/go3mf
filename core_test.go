@@ -109,17 +109,17 @@ func TestBaseMaterial_ColotString(t *testing.T) {
 func TestBuildItem_HasTransform(t *testing.T) {
 	tests := []struct {
 		name string
-		b    *BuildItem
+		b    *Item
 		want bool
 	}{
-		{"zero", &BuildItem{}, false},
-		{"identity", &BuildItem{Transform: Identity()}, false},
-		{"base", &BuildItem{Transform: Matrix{2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}}, true},
+		{"zero", &Item{}, false},
+		{"identity", &Item{Transform: Identity()}, false},
+		{"base", &Item{Transform: Matrix{2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.b.HasTransform(); got != tt.want {
-				t.Errorf("BuildItem.HasTransform() = %v, want %v", got, tt.want)
+				t.Errorf("Item.HasTransform() = %v, want %v", got, tt.want)
 			}
 		})
 	}

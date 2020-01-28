@@ -102,8 +102,7 @@ func (e GenericError) Error() string {
 // A Scanner is a 3mf model file scanning state machine.
 type Scanner struct {
 	Resources    []Resource
-	BuildItems   []*BuildItem
-	UUID         string
+	BuildItems   []*Item
 	Strict       bool
 	ModelPath    string
 	IsRoot       bool

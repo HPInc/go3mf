@@ -242,9 +242,8 @@ func (d *Decoder) processRootModel(ctx context.Context, rootFile packageFile, mo
 }
 
 func (d *Decoder) addModelFile(p *Scanner, model *Model) {
-	model.UUID = p.UUID
 	for _, bi := range p.BuildItems {
-		model.BuildItems = append(model.BuildItems, bi)
+		model.Build.Items = append(model.Build.Items, bi)
 	}
 	for _, res := range p.Resources {
 		model.Resources = append(model.Resources, res)

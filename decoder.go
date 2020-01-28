@@ -24,7 +24,7 @@ func (d *modelDecoder) Child(name xml.Name) (child NodeDecoder) {
 				d.withinIgnoredElement = true
 			} else {
 				d.withinIgnoredElement = false
-				child = &buildDecoder{}
+				child = &buildDecoder{build: &d.model.Build}
 			}
 		case attrMetadata:
 			if !d.Scanner.IsRoot {
@@ -138,6 +138,7 @@ func (d *metadataDecoder) Close() {
 
 type buildDecoder struct {
 	BaseDecoder
+	build *Build
 }
 
 func (d *buildDecoder) Child(name xml.Name) (child NodeDecoder) {
@@ -153,19 +154,19 @@ func (d *buildDecoder) Attributes(attrs []xml.Attr) {
 			if err := validateUUID(a.Value); err != nil {
 				d.Scanner.InvalidRequiredAttr(attrProdUUID, a.Value)
 			}
-			d.Scanner.UUID = a.Value
+			d.build.UUID = a.Value
 			break
 		}
 	}
 
-	if d.Scanner.UUID == "" && d.Scanner.NamespaceRegistered(nsProductionSpec) {
+	if d.build.UUID == "" && d.Scanner.NamespaceRegistered(nsProductionSpec) {
 		d.Scanner.MissingAttr(attrProdUUID)
 	}
 }
 
 type buildItemDecoder struct {
 	BaseDecoder
-	item       BuildItem
+	item       Item
 	objectID   uint32
 	objectPath string
 }
