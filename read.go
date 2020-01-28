@@ -15,7 +15,7 @@ import (
 type extensionDecoderWrapper struct {
 	newNodeDecoder func(interface{}, string) NodeDecoder
 	decodeAttribute func(*Scanner, interface{}, xml.Attr)
-	fileFilter func(string) bool
+	fileFilter func(string, bool) bool
 }
 
 func (e *extensionDecoderWrapper) NewNodeDecoder(parentNode interface{}, nodeName string) NodeDecoder {
@@ -31,9 +31,9 @@ func (e *extensionDecoderWrapper) DecodeAttribute(s *Scanner, parentNode interfa
 	}
 }
 
-func (e *extensionDecoderWrapper) FileFilter(relType string) bool {
+func (e *extensionDecoderWrapper) FileFilter(relType string, isRootModel bool) bool {
 	if e.fileFilter != nil {
-		return e.fileFilter(relType)
+		return e.fileFilter(relType, isRootModel)
 	}
 	return false
 }
@@ -65,7 +65,7 @@ func RegisterDecodeAttribute(key string, f func(s *Scanner, parentNode interface
 // should be preserved as an attachment or not. If the file is accepted and it is a 3dmodel
 // it will processed decoded. It can happen that a file is preserved even if this method is
 // not called or it is discarded as other packages could accept it.
-func RegisterFileFilter(key string, f func(relType string) bool) {
+func RegisterFileFilter(key string, f func(relType string, isRootModel bool) bool) {
 	if e, ok := extensionDecoder[key]; ok {
 		e.fileFilter = f
 	} else {
@@ -218,7 +218,7 @@ type Decoder struct {
 	p                packageReader
 	x                func(r io.Reader) XMLDecoder
 	flate            func(r io.Reader) io.ReadCloser
-	productionModels map[string]packageFile
+	nonRootModels    []packageFile
 	ctx              context.Context
 }
 
@@ -303,9 +303,9 @@ func (d *Decoder) processNonRootModels(ctx context.Context, model *Model) (err e
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	var files sync.Map
-	prodAttCount := len(model.ProductionAttachments)
-	wg.Add(prodAttCount)
-	for i := 0; i < prodAttCount; i++ {
+	nonRootModelsCount := len(d.nonRootModels)
+	wg.Add(nonRootModelsCount)
+	for i := 0; i < nonRootModelsCount; i++ {
 		go func(i int) {
 			defer wg.Done()
 			f, err1 := d.readProductionAttachmentModel(ctx, i, model)
@@ -325,7 +325,7 @@ func (d *Decoder) processNonRootModels(ctx context.Context, model *Model) (err e
 	if err != nil {
 		return err
 	}
-	indices := make([]int, 0, prodAttCount)
+	indices := make([]int, 0, nonRootModelsCount)
 	files.Range(func(key, value interface{}) bool {
 		indices = append(indices, key.(int))
 		return true
@@ -349,48 +349,34 @@ func (d *Decoder) processOPC(model *Model) (packageFile, error) {
 	}
 
 	model.Path = rootFile.Name()
-	d.extractCoreAttachments(rootFile, model)
-	d.extractModelAttachments(rootFile, model)
-	for _, a := range model.ProductionAttachments {
-		file, _ := d.p.FindFileFromName(a.Path)
-		d.extractCoreAttachments(file, model)
+	d.extractCoreAttachments(rootFile, model, true)
+	for _, file := range d.nonRootModels {
+		d.extractCoreAttachments(file, model, false)
 	}
 	return rootFile, nil
 }
 
-func (d *Decoder) extractCoreAttachments(rootFile packageFile, model *Model) {
-	for _, rel := range rootFile.Relationships() {
+func (d *Decoder) extractCoreAttachments(file packageFile, model *Model, isRoot bool) {
+	for _, rel := range file.Relationships() {
 		relType := rel.Type()
 		preserve := relType == relTypePrintTicket || relType == relTypeThumbnail
 		if !preserve {
 			for _, ext := range extensionDecoder {
-				if ext.FileFilter(relType) {
+				if ext.FileFilter(relType, isRoot) {
 					preserve = true
 					break
 				}
 			}
 		}
-		if preserve {
-			if file, ok := rootFile.FindFileFromName(rel.TargetURI()); ok {
-				model.Attachments = d.addAttachment(model.Attachments, file, relType)
-			}
-		}
-	}
-}
-
-func (d *Decoder) extractModelAttachments(rootFile packageFile, model *Model) {
-	d.productionModels = make(map[string]packageFile)
-	for _, rel := range rootFile.Relationships() {
-		if rel.Type() != RelTypeModel3D {
+		if !preserve {
 			continue
 		}
-
-		if file, ok := rootFile.FindFileFromName(rel.TargetURI()); ok {
-			model.ProductionAttachments = append(model.ProductionAttachments, &ProductionAttachment{
-				RelationshipType: rel.Type(),
-				Path:             file.Name(),
-			})
-			d.productionModels[file.Name()] = file
+		if file, ok := file.FindFileFromName(rel.TargetURI()); ok {
+			if relType == RelTypeModel3D {
+				d.nonRootModels = append(d.nonRootModels, file)
+			} else {
+				model.Attachments = d.addAttachment(model.Attachments, file, relType)
+			}
 		}
 	}
 }
@@ -408,14 +394,14 @@ func (d *Decoder) addAttachment(attachments []*Attachment, file packageFile, rel
 }
 
 func (d *Decoder) readProductionAttachmentModel(ctx context.Context, i int, model *Model) (*Scanner, error) {
-	attachment := model.ProductionAttachments[i]
-	file, err := d.productionModels[attachment.Path].Open()
+	attachment := d.nonRootModels[i]
+	file, err := attachment.Open()
 	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
 	mf := modelFileDecoder{}
-	err = mf.Decode(ctx, d.tokenReader(file), model, attachment.Path, false, d.Strict)
+	err = mf.Decode(ctx, d.tokenReader(file), model, attachment.Name(), false, d.Strict)
 	return mf.Scanner, err
 }
 

@@ -96,7 +96,6 @@ type Model struct {
 	Resources             []Resource
 	Build                 Build
 	Attachments           []*Attachment
-	ProductionAttachments []*ProductionAttachment
 }
 
 // UnusedID returns the lowest unused ID.

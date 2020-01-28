@@ -12,7 +12,7 @@ func init() {
 	go3mf.RegisterFileFilter(ExtensionName, fileFilter)
 }
 
-func fileFilter(relType string) bool {
+func fileFilter(relType string, _ bool) bool {
 	return relType == RelTypeTexture3D
 }
 
