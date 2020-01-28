@@ -38,7 +38,7 @@ func (d *modelDecoder) Child(name xml.Name) (child NodeDecoder) {
 	return
 }
 
-func (d *modelDecoder) Attributes(attrs []xml.Attr) bool {
+func (d *modelDecoder) Attributes(attrs []xml.Attr) {
 	var requiredExts string
 	for _, a := range attrs {
 		if a.Name.Space == "" {
@@ -58,21 +58,18 @@ func (d *modelDecoder) Attributes(attrs []xml.Attr) bool {
 		}
 	}
 
-	return d.checkRequiredExt(requiredExts)
+	d.checkRequiredExt(requiredExts)
 }
 
-func (d *modelDecoder) checkRequiredExt(requiredExts string) bool {
+func (d *modelDecoder) checkRequiredExt(requiredExts string) {
 	for _, ext := range strings.Fields(requiredExts) {
 		ext = d.Scanner.Namespaces[ext]
 		if ext != ExtensionName && ext != nsProductionSpec {
 			if _, ok := extensionDecoder[ext]; !ok {
-				if !d.Scanner.GenericError(true, fmt.Sprintf("'%s' extension is not supported", ext)) {
-					return false
-				}
+				d.Scanner.GenericError(true, fmt.Sprintf("'%s' extension is not supported", ext))
 			}
 		}
 	}
-	return true
 }
 
 func (d *modelDecoder) noCoreAttribute(a xml.Attr) {
@@ -106,8 +103,7 @@ type metadataDecoder struct {
 	metadata  Metadata
 }
 
-func (d *metadataDecoder) Attributes(attrs []xml.Attr) bool {
-	ok := true
+func (d *metadataDecoder) Attributes(attrs []xml.Attr) {
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
@@ -115,13 +111,12 @@ func (d *metadataDecoder) Attributes(attrs []xml.Attr) bool {
 		switch a.Name.Local {
 		case attrName:
 			i := strings.IndexByte(a.Value, ':')
-			var ns string
 			if i < 0 {
 				d.metadata.Name = a.Value
-			} else if ns, ok = d.Scanner.Namespaces[a.Value[0:i]]; ok {
+			} else if ns, ok := d.Scanner.Namespaces[a.Value[0:i]]; ok {
 				d.metadata.Name = ns + ":" + a.Value[i+1:]
 			} else {
-				ok = d.Scanner.GenericError(true, "unregistered namespace")
+				d.Scanner.GenericError(true, "unregistered namespace")
 			}
 		case attrType:
 			d.metadata.Type = a.Value
@@ -130,21 +125,15 @@ func (d *metadataDecoder) Attributes(attrs []xml.Attr) bool {
 				d.metadata.Preserve = true
 			}
 		}
-		if !ok {
-			break
-		}
 	}
-	return ok
 }
 
-func (d *metadataDecoder) Text(txt []byte) bool {
+func (d *metadataDecoder) Text(txt []byte) {
 	d.metadata.Value = string(txt)
-	return true
 }
 
-func (d *metadataDecoder) Close() bool {
+func (d *metadataDecoder) Close() {
 	*d.metadatas = append(*d.metadatas, d.metadata)
-	return true
 }
 
 type buildDecoder struct {
@@ -158,22 +147,20 @@ func (d *buildDecoder) Child(name xml.Name) (child NodeDecoder) {
 	return
 }
 
-func (d *buildDecoder) Attributes(attrs []xml.Attr) bool {
-	ok := true
+func (d *buildDecoder) Attributes(attrs []xml.Attr) {
 	for _, a := range attrs {
 		if a.Name.Space == nsProductionSpec && a.Name.Local == attrProdUUID {
 			if err := validateUUID(a.Value); err != nil {
-				ok = d.Scanner.InvalidRequiredAttr(attrProdUUID, a.Value)
+				d.Scanner.InvalidRequiredAttr(attrProdUUID, a.Value)
 			}
 			d.Scanner.UUID = a.Value
 			break
 		}
 	}
 
-	if ok && d.Scanner.UUID == "" && d.Scanner.NamespaceRegistered(nsProductionSpec) {
-		ok = d.Scanner.MissingAttr(attrProdUUID)
+	if d.Scanner.UUID == "" && d.Scanner.NamespaceRegistered(nsProductionSpec) {
+		d.Scanner.MissingAttr(attrProdUUID)
 	}
-	return ok
 }
 
 type buildItemDecoder struct {
@@ -183,8 +170,9 @@ type buildItemDecoder struct {
 	objectPath string
 }
 
-func (d *buildItemDecoder) Close() bool {
-	return d.processItem() && d.Scanner.CloseResource()
+func (d *buildItemDecoder) Close() {
+	d.processItem()
+	d.Scanner.CloseResource()
 }
 
 func (d *buildItemDecoder) Child(name xml.Name) (child NodeDecoder) {
@@ -194,62 +182,59 @@ func (d *buildItemDecoder) Child(name xml.Name) (child NodeDecoder) {
 	return
 }
 
-func (d *buildItemDecoder) processItem() bool {
+func (d *buildItemDecoder) processItem() {
 	resource, ok := d.Scanner.FindResource(d.objectPath, uint32(d.objectID))
 	if !ok {
-		ok = d.Scanner.GenericError(true, "non-existent referenced object")
+		d.Scanner.GenericError(true, "non-existent referenced object")
 	} else if d.item.Object, ok = resource.(Object); !ok {
-		ok = d.Scanner.GenericError(true, "non-object referenced resource")
+		d.Scanner.GenericError(true, "non-object referenced resource")
 	}
 	if ok {
 		if d.item.Object != nil && d.item.Object.Type() == ObjectTypeOther {
-			ok = d.Scanner.GenericError(true, "referenced object cannot be have OTHER type")
+			d.Scanner.GenericError(true, "referenced object cannot be have OTHER type")
 		}
 	}
 	if ok {
 		d.Scanner.BuildItems = append(d.Scanner.BuildItems, &d.item)
 	}
-	return ok
 }
 
-func (d *buildItemDecoder) Attributes(attrs []xml.Attr) bool {
-	ok := true
+func (d *buildItemDecoder) Attributes(attrs []xml.Attr) {
 	for _, a := range attrs {
 		switch a.Name.Space {
 		case nsProductionSpec:
 			if a.Name.Local == attrProdUUID {
 				if err := validateUUID(a.Value); err != nil {
-					ok = d.Scanner.InvalidRequiredAttr(attrProdUUID, a.Value)
+					d.Scanner.InvalidRequiredAttr(attrProdUUID, a.Value)
 				}
 				d.item.UUID = a.Value
 			} else if a.Name.Local == attrPath {
 				d.objectPath = a.Value
 			}
 		case "":
-			ok = d.parseCoreAttr(a)
-		}
-		if !ok {
-			return false
+			d.parseCoreAttr(a)
 		}
 	}
 
 	if d.item.UUID == "" && d.Scanner.NamespaceRegistered(nsProductionSpec) {
-		ok = d.Scanner.MissingAttr(attrProdUUID)
+		d.Scanner.MissingAttr(attrProdUUID)
 	}
-	return ok
+	return
 }
 
-func (d *buildItemDecoder) parseCoreAttr(a xml.Attr) bool {
-	ok := true
+func (d *buildItemDecoder) parseCoreAttr(a xml.Attr) {
 	switch a.Name.Local {
 	case attrObjectID:
-		d.objectID, ok = d.Scanner.ParseResourceID(a.Value)
+		d.objectID = d.Scanner.ParseResourceID(a.Value)
 	case attrPartNumber:
 		d.item.PartNumber = a.Value
 	case attrTransform:
-		d.item.Transform = d.Scanner.ParseToMatrixOptional(attrTransform, a.Value)
+		var ok bool
+		d.item.Transform, ok = ParseToMatrix(a.Value)
+		if !ok {
+			d.Scanner.InvalidOptionalAttr(a.Name.Local, a.Value)
+		}
 	}
-	return ok
 }
 
 type resourceDecoder struct {
@@ -281,12 +266,9 @@ func (d *baseMaterialsDecoder) Open() {
 	d.baseMaterialDecoder.resource = &d.resource
 }
 
-func (d *baseMaterialsDecoder) Close() bool {
-	ok := d.Scanner.CloseResource()
-	if ok {
-		d.Scanner.AddResource(&d.resource)
-	}
-	return ok
+func (d *baseMaterialsDecoder) Close() {
+	d.Scanner.CloseResource()
+	d.Scanner.AddResource(&d.resource)
 }
 
 func (d *baseMaterialsDecoder) Child(name xml.Name) (child NodeDecoder) {
@@ -296,15 +278,13 @@ func (d *baseMaterialsDecoder) Child(name xml.Name) (child NodeDecoder) {
 	return
 }
 
-func (d *baseMaterialsDecoder) Attributes(attrs []xml.Attr) bool {
-	ok := true
+func (d *baseMaterialsDecoder) Attributes(attrs []xml.Attr) {
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrID {
-			d.resource.ID, ok = d.Scanner.ParseResourceID(a.Value)
+			d.resource.ID = d.Scanner.ParseResourceID(a.Value)
 			break
 		}
 	}
-	return ok
 }
 
 type baseMaterialDecoder struct {
@@ -312,34 +292,31 @@ type baseMaterialDecoder struct {
 	resource *BaseMaterialsResource
 }
 
-func (d *baseMaterialDecoder) Attributes(attrs []xml.Attr) bool {
+func (d *baseMaterialDecoder) Attributes(attrs []xml.Attr) {
 	var name string
 	var withColor bool
 	baseColor := color.RGBA{}
-	ok := true
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrName:
 			name = a.Value
 		case attrBaseMaterialColor:
 			var err error
-			baseColor, err = ReadRGB(a.Value)
+			baseColor, err = ParseRGB(a.Value)
 			withColor = true
 			if err != nil {
-				ok = d.Scanner.InvalidRequiredAttr(attrBaseMaterialColor, a.Value)
+				d.Scanner.InvalidRequiredAttr(attrBaseMaterialColor, a.Value)
 			}
 		}
 	}
-	if ok {
-		if name == "" {
-			ok = d.Scanner.MissingAttr(attrName)
-		}
-		if !withColor {
-			ok = d.Scanner.MissingAttr(attrBaseMaterialColor)
-		}
-		d.resource.Materials = append(d.resource.Materials, BaseMaterial{Name: name, Color: baseColor})
+	if name == "" {
+		d.Scanner.MissingAttr(attrName)
 	}
-	return ok
+	if !withColor {
+		d.Scanner.MissingAttr(attrBaseMaterialColor)
+	}
+	d.resource.Materials = append(d.resource.Materials, BaseMaterial{Name: name, Color: baseColor})
+	return
 }
 
 type meshDecoder struct {
@@ -347,9 +324,8 @@ type meshDecoder struct {
 	mesh Mesh
 }
 
-func (d *meshDecoder) Close() bool {
+func (d *meshDecoder) Close() {
 	d.Scanner.AddResource(&d.mesh)
-	return true
 }
 
 func (d *meshDecoder) Child(name xml.Name) (child NodeDecoder) {
@@ -387,24 +363,19 @@ type vertexDecoder struct {
 	mesh *Mesh
 }
 
-func (d *vertexDecoder) Attributes(attrs []xml.Attr) bool {
+func (d *vertexDecoder) Attributes(attrs []xml.Attr) {
 	var x, y, z float32
-	ok := true
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrX:
-			x, ok = d.Scanner.ParseFloat32Required(attrX, a.Value)
+			x = d.Scanner.ParseFloat32Required(attrX, a.Value)
 		case attrY:
-			y, ok = d.Scanner.ParseFloat32Required(attrY, a.Value)
+			y = d.Scanner.ParseFloat32Required(attrY, a.Value)
 		case attrZ:
-			z, ok = d.Scanner.ParseFloat32Required(attrZ, a.Value)
-		}
-		if !ok {
-			return false
+			z = d.Scanner.ParseFloat32Required(attrZ, a.Value)
 		}
 	}
 	d.mesh.Nodes = append(d.mesh.Nodes, Point3D{x, y, z})
-	return true
 }
 
 type trianglesDecoder struct {
@@ -433,18 +404,17 @@ type triangleDecoder struct {
 	mesh *Mesh
 }
 
-func (d *triangleDecoder) Attributes(attrs []xml.Attr) bool {
+func (d *triangleDecoder) Attributes(attrs []xml.Attr) {
 	var v1, v2, v3, pid, p1, p2, p3 uint32
 	var hasPID, hasP1, hasP2, hasP3 bool
-	ok := true
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrV1:
-			v1, ok = d.Scanner.ParseUint32Required(attrV1, a.Value)
+			v1 = d.Scanner.ParseUint32Required(attrV1, a.Value)
 		case attrV2:
-			v2, ok = d.Scanner.ParseUint32Required(attrV2, a.Value)
+			v2 = d.Scanner.ParseUint32Required(attrV2, a.Value)
 		case attrV3:
-			v3, ok = d.Scanner.ParseUint32Required(attrV3, a.Value)
+			v3 = d.Scanner.ParseUint32Required(attrV3, a.Value)
 		case attrPID:
 			pid = d.Scanner.ParseUint32Optional(attrPID, a.Value)
 			hasPID = true
@@ -458,9 +428,6 @@ func (d *triangleDecoder) Attributes(attrs []xml.Attr) bool {
 			p3 = d.Scanner.ParseUint32Optional(attrP3, a.Value)
 			hasP3 = true
 		}
-		if !ok {
-			return false
-		}
 	}
 
 	p1 = applyDefault(p1, d.mesh.DefaultPropertyIndex, hasP1)
@@ -468,23 +435,22 @@ func (d *triangleDecoder) Attributes(attrs []xml.Attr) bool {
 	p3 = applyDefault(p3, p1, hasP3)
 	pid = applyDefault(pid, d.mesh.DefaultPropertyID, hasPID)
 
-	return d.addTriangle(v1, v2, v3, pid, p1, p2, p3)
+	d.addTriangle(v1, v2, v3, pid, p1, p2, p3)
 }
 
-func (d *triangleDecoder) addTriangle(v1, v2, v3, pid, p1, p2, p3 uint32) bool {
+func (d *triangleDecoder) addTriangle(v1, v2, v3, pid, p1, p2, p3 uint32) {
 	if v1 == v2 || v1 == v3 || v2 == v3 {
-		return d.Scanner.GenericError(true, "duplicated triangle indices")
+		d.Scanner.GenericError(true, "duplicated triangle indices")
 	}
 	nodeCount := uint32(len(d.mesh.Nodes))
 	if v1 >= nodeCount || v2 >= nodeCount || v3 >= nodeCount {
-		return d.Scanner.GenericError(true, "triangle indices are out of range")
+		d.Scanner.GenericError(true, "triangle indices are out of range")
 	}
 	d.mesh.Faces = append(d.mesh.Faces, Face{
 		NodeIndices:     [3]uint32{v1, v2, v3},
 		Resource:        pid,
 		ResourceIndices: [3]uint32{p1, p2, p3},
 	})
-	return true
 }
 
 func applyDefault(val, defVal uint32, noDef bool) uint32 {
@@ -503,34 +469,29 @@ func (d *objectDecoder) Open() {
 	d.resource.ModelPath = d.Scanner.ModelPath
 }
 
-func (d *objectDecoder) Close() bool {
-	return d.Scanner.CloseResource()
+func (d *objectDecoder) Close() {
+	d.Scanner.CloseResource()
 }
 
-func (d *objectDecoder) Attributes(attrs []xml.Attr) bool {
-	ok := true
+func (d *objectDecoder) Attributes(attrs []xml.Attr) {
 	for _, a := range attrs {
 		switch a.Name.Space {
 		case nsProductionSpec:
 			if a.Name.Local == attrProdUUID {
 				if err := validateUUID(a.Value); err != nil {
-					ok = d.Scanner.InvalidRequiredAttr(attrProdUUID, a.Value)
+					d.Scanner.InvalidRequiredAttr(attrProdUUID, a.Value)
 				} else {
 					d.resource.UUID = a.Value
 				}
 			}
 		case "":
-			ok = d.parseCoreAttr(a)
+			d.parseCoreAttr(a)
 		default:
 			if ext, ok := extensionDecoder[a.Name.Space]; ok {
-				ok = ext.DecodeAttribute(d.Scanner, &d.resource, a)
+				ext.DecodeAttribute(d.Scanner, &d.resource, a)
 			}
 		}
-		if !ok {
-			break
-		}
 	}
-	return ok
 }
 
 func (d *objectDecoder) Child(name xml.Name) (child NodeDecoder) {
@@ -549,15 +510,14 @@ func (d *objectDecoder) Child(name xml.Name) (child NodeDecoder) {
 	return
 }
 
-func (d *objectDecoder) parseCoreAttr(a xml.Attr) bool {
-	ok := true
+func (d *objectDecoder) parseCoreAttr(a xml.Attr) {
 	switch a.Name.Local {
 	case attrID:
-		d.resource.ID, ok = d.Scanner.ParseResourceID(a.Value)
+		d.resource.ID = d.Scanner.ParseResourceID(a.Value)
 	case attrType:
+		var ok bool
 		d.resource.ObjectType, ok = newObjectType(a.Value)
 		if !ok {
-			ok = true
 			d.Scanner.InvalidOptionalAttr(attrType, a.Value)
 		}
 	case attrThumbnail:
@@ -571,7 +531,6 @@ func (d *objectDecoder) parseCoreAttr(a xml.Attr) bool {
 	case attrPIndex:
 		d.resource.DefaultPropertyIndex = d.Scanner.ParseUint32Optional(attrPIndex, a.Value)
 	}
-	return ok
 }
 
 type componentsDecoder struct {
@@ -583,9 +542,8 @@ type componentsDecoder struct {
 func (d *componentsDecoder) Open() {
 	d.componentDecoder.resource = &d.resource
 }
-func (d *componentsDecoder) Close() bool {
+func (d *componentsDecoder) Close() {
 	d.Scanner.AddResource(&d.resource)
-	return true
 }
 
 func (d *componentsDecoder) Child(name xml.Name) (child NodeDecoder) {
@@ -600,19 +558,18 @@ type componentDecoder struct {
 	resource *Components
 }
 
-func (d *componentDecoder) Attributes(attrs []xml.Attr) bool {
+func (d *componentDecoder) Attributes(attrs []xml.Attr) {
 	var (
 		component Component
 		path      string
 		objectID  uint32
 	)
-	ok := true
 	for _, a := range attrs {
 		switch a.Name.Space {
 		case nsProductionSpec:
 			if a.Name.Local == attrProdUUID {
 				if err := validateUUID(a.Value); err != nil {
-					ok = d.Scanner.InvalidRequiredAttr(attrProdUUID, a.Value)
+					d.Scanner.InvalidRequiredAttr(attrProdUUID, a.Value)
 				} else {
 					component.UUID = a.Value
 				}
@@ -621,38 +578,32 @@ func (d *componentDecoder) Attributes(attrs []xml.Attr) bool {
 			}
 		case "":
 			if a.Name.Local == attrObjectID {
-				objectID, ok = d.Scanner.ParseUint32Required(attrObjectID, a.Value)
+				objectID = d.Scanner.ParseUint32Required(attrObjectID, a.Value)
 			} else if a.Name.Local == attrTransform {
-				component.Transform = d.Scanner.ParseToMatrixOptional(attrTransform, a.Value)
+				var ok bool
+				component.Transform, ok = ParseToMatrix(a.Value)
+				if !ok {
+					d.Scanner.InvalidOptionalAttr(a.Name.Local, a.Value)
+				}
 			}
 		}
-		if !ok {
-			return false
-		}
 	}
-	return ok && d.addComponent(&component, path, objectID)
+	d.addComponent(&component, path, objectID)
 }
 
-func (d *componentDecoder) addComponent(component *Component, path string, objectID uint32) bool {
-	ok := true
+func (d *componentDecoder) addComponent(component *Component, path string, objectID uint32) {
 	if component.UUID == "" && d.Scanner.NamespaceRegistered(nsProductionSpec) {
-		ok = d.Scanner.MissingAttr(attrProdUUID)
+		d.Scanner.MissingAttr(attrProdUUID)
 	}
-	if ok && path != "" && !d.Scanner.IsRoot {
-		ok = d.Scanner.GenericError(true, "path attribute in a non-root file is not supported")
-	}
-	if !ok {
-		return false
+	if path != "" && !d.Scanner.IsRoot {
+		d.Scanner.GenericError(true, "path attribute in a non-root file is not supported")
 	}
 
 	resource, ok := d.Scanner.FindResource(path, uint32(objectID))
 	if !ok {
-		ok = d.Scanner.GenericError(true, "non-existent referenced object")
+		d.Scanner.GenericError(true, "non-existent referenced object")
 	} else if component.Object, ok = resource.(Object); !ok {
-		ok = d.Scanner.GenericError(true, "non-object referenced resource")
+		d.Scanner.GenericError(true, "non-object referenced resource")
 	}
-	if ok {
-		d.resource.Components = append(d.resource.Components, component)
-	}
-	return ok
+	d.resource.Components = append(d.resource.Components, component)
 }

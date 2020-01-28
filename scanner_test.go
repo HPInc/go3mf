@@ -29,7 +29,7 @@ func TestParser_NamespaceRegistered(t *testing.T) {
 	}
 }
 
-func TestScanner_ParseToMatrixOptional(t *testing.T) {
+func TestParseToMatrixOptional(t *testing.T) {
 	type args struct {
 		s string
 	}
@@ -47,9 +47,9 @@ func TestScanner_ParseToMatrixOptional(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := new(Scanner).ParseToMatrixOptional("", tt.args.s)
+			got, _ := ParseToMatrix(tt.args.s)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Scanner.ParseToMatrixOptional() = %v, want %v", got, tt.want)
+				t.Errorf("Scanner.ParseToMatrix() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -77,13 +77,13 @@ func TestReadRGB(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotC, err := ReadRGB(tt.args.s)
+			gotC, err := ParseRGB(tt.args.s)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("ReadRGB() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("ParseRGB() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(gotC, tt.wantC) {
-				t.Errorf("ReadRGB() = %v, want %v", gotC, tt.wantC)
+				t.Errorf("ParseRGB() = %v, want %v", gotC, tt.wantC)
 			}
 		})
 	}

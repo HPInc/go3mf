@@ -43,7 +43,7 @@ func TestDecode(t *testing.T) {
 	want := &go3mf.Model{Path: "/3d/3dmodel.model"}
 	colorGroup := &ColorGroupResource{ID: 1, ModelPath: "/3d/3dmodel.model", Colors: []color.RGBA{{R: 255, G: 255, B: 255, A: 255}, {R: 0, G: 0, B: 0, A: 255}, {R: 26, G: 181, B: 103, A: 255}, {R: 223, G: 4, B: 90, A: 255}}}
 	texGroup := &Texture2DGroupResource{ID: 2, ModelPath: "/3d/3dmodel.model", TextureID: 6, Coords: []TextureCoord{{0.3, 0.5}, {0.3, 0.8}, {0.5, 0.8}, {0.5, 0.5}}}
-	compositeGroup := &CompositeMaterialsResource{ID: 4, ModelPath: "/3d/3dmodel.model", MaterialID: 5, Indices: []uint32{1, 2}, Composites: []Composite{{Values: []float64{0.5, 0.5}}, {Values: []float64{0.2, 0.8}}}}
+	compositeGroup := &CompositeMaterialsResource{ID: 4, ModelPath: "/3d/3dmodel.model", MaterialID: 5, Indices: []uint32{1, 2}, Composites: []Composite{{Values: []float32{0.5, 0.5}}, {Values: []float32{0.2, 0.8}}}}
 	multiGroup := &MultiPropertiesResource{ID: 9, ModelPath: "/3d/3dmodel.model", BlendMethods: []BlendMethod{BlendMultiply}, Resources: []uint32{5, 2}, Multis: []Multi{{ResourceIndices: []uint32{0, 0}}, {ResourceIndices: []uint32{1, 0}}, {ResourceIndices: []uint32{2, 3}}}}
 	want.Resources = append(want.Resources, baseTexture, colorGroup, texGroup, compositeGroup, multiGroup, meshRes)
 	want.BuildItems = append(want.BuildItems, &go3mf.BuildItem{Object: meshRes})

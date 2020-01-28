@@ -29,8 +29,7 @@ func (d *extensionDecoder) NodeDecoder(_ interface{}, nodeName string) (child go
 	return
 }
 
-func (d *extensionDecoder) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) bool {
-	return true
+func (d *extensionDecoder) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
 }
 
 type colorGroupDecoder struct {
@@ -44,9 +43,9 @@ func (d *colorGroupDecoder) Open() {
 	d.colorDecoder.resource = &d.resource
 }
 
-func (d *colorGroupDecoder) Close() bool {
+func (d *colorGroupDecoder) Close() {
 	d.Scanner.AddResource(&d.resource)
-	return d.Scanner.CloseResource()
+	d.Scanner.CloseResource()
 }
 
 func (d *colorGroupDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
@@ -56,15 +55,13 @@ func (d *colorGroupDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	return
 }
 
-func (d *colorGroupDecoder) Attributes(attrs []xml.Attr) bool {
-	ok := true
+func (d *colorGroupDecoder) Attributes(attrs []xml.Attr) {
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrID {
-			d.resource.ID, ok = d.Scanner.ParseResourceID(a.Value)
+			d.resource.ID = d.Scanner.ParseResourceID(a.Value)
 			break
 		}
 	}
-	return ok
 }
 
 type colorDecoder struct {
@@ -72,17 +69,16 @@ type colorDecoder struct {
 	resource *ColorGroupResource
 }
 
-func (d *colorDecoder) Attributes(attrs []xml.Attr) bool {
+func (d *colorDecoder) Attributes(attrs []xml.Attr) {
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrColor {
-			c, err := go3mf.ReadRGB(a.Value)
+			c, err := go3mf.ParseRGB(a.Value)
 			if err != nil {
-				return d.Scanner.InvalidRequiredAttr(attrColor, a.Value)
+				d.Scanner.InvalidRequiredAttr(attrColor, a.Value)
 			}
 			d.resource.Colors = append(d.resource.Colors, c)
 		}
 	}
-	return true
 }
 
 type tex2DCoordDecoder struct {
@@ -90,25 +86,20 @@ type tex2DCoordDecoder struct {
 	resource *Texture2DGroupResource
 }
 
-func (d *tex2DCoordDecoder) Attributes(attrs []xml.Attr) bool {
+func (d *tex2DCoordDecoder) Attributes(attrs []xml.Attr) {
 	var u, v float32
-	ok := true
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
 		}
 		switch a.Name.Local {
 		case attrU:
-			u, ok = d.Scanner.ParseFloat32Required(attrU, a.Value)
+			u = d.Scanner.ParseFloat32Required(attrU, a.Value)
 		case attrV:
-			v, ok = d.Scanner.ParseFloat32Required(attrV, a.Value)
-		}
-		if !ok {
-			break
+			v = d.Scanner.ParseFloat32Required(attrV, a.Value)
 		}
 	}
 	d.resource.Coords = append(d.resource.Coords, TextureCoord{float32(u), float32(v)})
-	return ok
 }
 
 type tex2DGroupDecoder struct {
@@ -122,9 +113,9 @@ func (d *tex2DGroupDecoder) Open() {
 	d.tex2DCoordDecoder.resource = &d.resource
 }
 
-func (d *tex2DGroupDecoder) Close() bool {
+func (d *tex2DGroupDecoder) Close() {
 	d.Scanner.AddResource(&d.resource)
-	return d.Scanner.CloseResource()
+	d.Scanner.CloseResource()
 }
 
 func (d *tex2DGroupDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
@@ -134,23 +125,18 @@ func (d *tex2DGroupDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	return
 }
 
-func (d *tex2DGroupDecoder) Attributes(attrs []xml.Attr) bool {
-	ok := true
+func (d *tex2DGroupDecoder) Attributes(attrs []xml.Attr) {
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
 		}
 		switch a.Name.Local {
 		case attrID:
-			d.resource.ID, ok = d.Scanner.ParseResourceID(a.Value)
+			d.resource.ID = d.Scanner.ParseResourceID(a.Value)
 		case attrTexID:
-			d.resource.TextureID, ok = d.Scanner.ParseUint32Required(attrTexID, a.Value)
-		}
-		if !ok {
-			break
+			d.resource.TextureID = d.Scanner.ParseUint32Required(attrTexID, a.Value)
 		}
 	}
-	return ok
 }
 
 type texture2DDecoder struct {
@@ -162,20 +148,19 @@ func (d *texture2DDecoder) Open() {
 	d.resource.ModelPath = d.Scanner.ModelPath
 }
 
-func (d *texture2DDecoder) Close() bool {
+func (d *texture2DDecoder) Close() {
 	d.Scanner.AddResource(&d.resource)
-	return d.Scanner.CloseResource()
+	d.Scanner.CloseResource()
 }
 
-func (d *texture2DDecoder) Attributes(attrs []xml.Attr) bool {
-	ok := true
+func (d *texture2DDecoder) Attributes(attrs []xml.Attr) {
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
 		}
 		switch a.Name.Local {
 		case attrID:
-			d.resource.ID, ok = d.Scanner.ParseResourceID(a.Value)
+			d.resource.ID = d.Scanner.ParseResourceID(a.Value)
 		case attrPath:
 			d.resource.Path = a.Value
 		case attrContentType:
@@ -187,14 +172,10 @@ func (d *texture2DDecoder) Attributes(attrs []xml.Attr) bool {
 		case attrFilter:
 			d.resource.Filter, _ = newTextureFilter(a.Value)
 		}
-		if !ok {
-			break
-		}
 	}
 	if d.resource.Path == "" {
-		return d.Scanner.MissingAttr(attrPath)
+		d.Scanner.MissingAttr(attrPath)
 	}
-	return ok
 }
 
 type compositeMaterialsDecoder struct {
@@ -208,9 +189,9 @@ func (d *compositeMaterialsDecoder) Open() {
 	d.compositeDecoder.resource = &d.resource
 }
 
-func (d *compositeMaterialsDecoder) Close() bool {
+func (d *compositeMaterialsDecoder) Close() {
 	d.Scanner.AddResource(&d.resource)
-	return d.Scanner.CloseResource()
+	d.Scanner.CloseResource()
 }
 
 func (d *compositeMaterialsDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
@@ -220,38 +201,29 @@ func (d *compositeMaterialsDecoder) Child(name xml.Name) (child go3mf.NodeDecode
 	return
 }
 
-func (d *compositeMaterialsDecoder) Attributes(attrs []xml.Attr) bool {
-	ok := true
+func (d *compositeMaterialsDecoder) Attributes(attrs []xml.Attr) {
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
 		}
 		switch a.Name.Local {
 		case attrID:
-			d.resource.ID, ok = d.Scanner.ParseResourceID(a.Value)
+			d.resource.ID = d.Scanner.ParseResourceID(a.Value)
 		case attrMatID:
-			d.resource.MaterialID, ok = d.Scanner.ParseUint32Required(attrMatID, a.Value)
+			d.resource.MaterialID = d.Scanner.ParseUint32Required(attrMatID, a.Value)
 		case attrMatIndices:
 			for _, f := range strings.Fields(a.Value) {
-				var val uint32
-				if val, ok = d.Scanner.ParseUint32Required(attrValues, f); ok {
-					d.resource.Indices = append(d.resource.Indices, val)
-				} else {
-					break
-				}
+				val := d.Scanner.ParseUint32Required(attrValues, f)
+				d.resource.Indices = append(d.resource.Indices, val)
 			}
-		}
-		if !ok {
-			break
 		}
 	}
 	if d.resource.MaterialID == 0 {
-		ok = d.Scanner.MissingAttr(attrMatID)
+		d.Scanner.MissingAttr(attrMatID)
 	}
-	if ok && len(d.resource.Indices) == 0 {
-		ok = d.Scanner.MissingAttr(attrMatIndices)
+	if len(d.resource.Indices) == 0 {
+		d.Scanner.MissingAttr(attrMatIndices)
 	}
-	return ok
 }
 
 type compositeDecoder struct {
@@ -259,27 +231,20 @@ type compositeDecoder struct {
 	resource *CompositeMaterialsResource
 }
 
-func (d *compositeDecoder) Attributes(attrs []xml.Attr) (ok bool) {
+func (d *compositeDecoder) Attributes(attrs []xml.Attr) {
 	composite := Composite{}
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrValues {
 			for _, f := range strings.Fields(a.Value) {
-				var val float32
-				if val, ok = d.Scanner.ParseFloat32Required(attrValues, f); ok {
-					composite.Values = append(composite.Values, val)
-				} else {
-					break
-				}
+				val := d.Scanner.ParseFloat32Required(attrValues, f)
+				composite.Values = append(composite.Values, val)
 			}
 		}
 	}
 	if len(composite.Values) == 0 {
-		ok = d.Scanner.MissingAttr(attrValues)
+		d.Scanner.MissingAttr(attrValues)
 	}
-	if ok {
-		d.resource.Composites = append(d.resource.Composites, composite)
-	}
-	return ok
+	d.resource.Composites = append(d.resource.Composites, composite)
 }
 
 type multiPropertiesDecoder struct {
@@ -293,9 +258,9 @@ func (d *multiPropertiesDecoder) Open() {
 	d.multiDecoder.resource = &d.resource
 }
 
-func (d *multiPropertiesDecoder) Close() bool {
+func (d *multiPropertiesDecoder) Close() {
 	d.Scanner.AddResource(&d.resource)
-	return d.Scanner.CloseResource()
+	d.Scanner.CloseResource()
 }
 
 func (d *multiPropertiesDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
@@ -305,15 +270,14 @@ func (d *multiPropertiesDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) 
 	return
 }
 
-func (d *multiPropertiesDecoder) Attributes(attrs []xml.Attr) bool {
-	ok := true
+func (d *multiPropertiesDecoder) Attributes(attrs []xml.Attr) {
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
 		}
 		switch a.Name.Local {
 		case attrID:
-			d.resource.ID, ok = d.Scanner.ParseResourceID(a.Value)
+			d.resource.ID = d.Scanner.ParseResourceID(a.Value)
 		case attrBlendMethods:
 			for _, f := range strings.Fields(a.Value) {
 				val, _ := newBlendMethod(f)
@@ -321,22 +285,14 @@ func (d *multiPropertiesDecoder) Attributes(attrs []xml.Attr) bool {
 			}
 		case attrPIDs:
 			for _, f := range strings.Fields(a.Value) {
-				var val uint32
-				if val, ok = d.Scanner.ParseUint32Required(attrPIDs, f); ok {
-					d.resource.Resources = append(d.resource.Resources, val)
-				} else {
-					break
-				}
+				val := d.Scanner.ParseUint32Required(attrPIDs, f)
+				d.resource.Resources = append(d.resource.Resources, val)
 			}
 		}
-		if !ok {
-			break
-		}
 	}
-	if ok && len(d.resource.Resources) == 0 {
-		ok = d.Scanner.MissingAttr(attrPIDs)
+	if len(d.resource.Resources) == 0 {
+		d.Scanner.MissingAttr(attrPIDs)
 	}
-	return ok
 }
 
 type multiDecoder struct {
@@ -344,25 +300,18 @@ type multiDecoder struct {
 	resource *MultiPropertiesResource
 }
 
-func (d *multiDecoder) Attributes(attrs []xml.Attr) (ok bool) {
+func (d *multiDecoder) Attributes(attrs []xml.Attr) {
 	multi := Multi{}
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrPIndices {
 			for _, f := range strings.Fields(a.Value) {
-				var val uint32
-				if val, ok = d.Scanner.ParseUint32Required(attrPIndices, f); ok {
-					multi.ResourceIndices = append(multi.ResourceIndices, val)
-				} else {
-					break
-				}
+				val := d.Scanner.ParseUint32Required(attrPIndices, f)
+				multi.ResourceIndices = append(multi.ResourceIndices, val)
 			}
 		}
 	}
 	if len(multi.ResourceIndices) == 0 {
-		ok = d.Scanner.MissingAttr(attrPIndices)
+		d.Scanner.MissingAttr(attrPIndices)
 	}
-	if ok {
-		d.resource.Multis = append(d.resource.Multis, multi)
-	}
-	return ok
+	d.resource.Multis = append(d.resource.Multis, multi)
 }

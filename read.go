@@ -18,7 +18,7 @@ import (
 // DecodeAttribute should parse the attribute and update the parentNode.
 type ExtensionDecoder interface {
 	NodeDecoder(parentNode interface{}, nodeName string) NodeDecoder
-	DecodeAttribute(s *Scanner, parentNode interface{}, attr xml.Attr) bool
+	DecodeAttribute(s *Scanner, parentNode interface{}, attr xml.Attr)
 }
 
 var extensionDecoder = make(map[string]ExtensionDecoder)
@@ -99,7 +99,7 @@ type modelFileDecoder struct {
 	Scanner *Scanner
 }
 
-func (d *modelFileDecoder) Decode(ctx context.Context, x XMLDecoder, model *Model, path string, isRoot, strict bool) (err error) {
+func (d *modelFileDecoder) Decode(ctx context.Context, x XMLDecoder, model *Model, path string, isRoot, strict bool) error {
 	d.Scanner = NewScanner(model)
 	d.Scanner.IsRoot = isRoot
 	d.Scanner.Strict = strict
@@ -118,8 +118,8 @@ func (d *modelFileDecoder) Decode(ctx context.Context, x XMLDecoder, model *Mode
 	currentDecoder.SetScanner(d.Scanner)
 
 	for {
-		t, err = x.Token()
-		if err != nil {
+		t, d.Scanner.Err = x.Token()
+		if d.Scanner.Err != nil {
 			break
 		}
 		switch tp := t.(type) {
@@ -133,43 +133,36 @@ func (d *modelFileDecoder) Decode(ctx context.Context, x XMLDecoder, model *Mode
 				d.Scanner.Element = tp.Name.Local
 				currentDecoder = tmpDecoder
 				currentDecoder.Open()
-				if !currentDecoder.Attributes(tp.Attr) {
-					err = d.Scanner.Err
-				}
+				currentDecoder.Attributes(tp.Attr)
 			} else {
-				err = x.Skip()
+				d.Scanner.Err = x.Skip()
 			}
 		case xml.CharData:
-			if !currentDecoder.Text(tp) {
-				err = d.Scanner.Err
-			}
+			currentDecoder.Text(tp)
 		case xml.EndElement:
 			if currentName == tp.Name {
 				d.Scanner.Element = tp.Name.Local
-				if currentDecoder.Close() {
-					currentDecoder, state = state[len(state)-1], state[:len(state)-1]
-					currentName, names = names[len(names)-1], names[:len(names)-1]
-				} else {
-					err = d.Scanner.Err
-				}
+				currentDecoder.Close()
+				currentDecoder, state = state[len(state)-1], state[:len(state)-1]
+				currentName, names = names[len(names)-1], names[:len(names)-1]
 			}
 			if x.InputOffset() > nextBytesCheck {
 				select {
 				case <-ctx.Done():
-					err = ctx.Err()
+					d.Scanner.Err = ctx.Err()
 				default: // Default is must to avoid blocking
 				}
 				nextBytesCheck += checkEveryBytes
 			}
 		}
-		if err != nil {
+		if d.Scanner.Err != nil {
 			break
 		}
 	}
-	if err == io.EOF {
-		err = nil
+	if d.Scanner.Err == io.EOF {
+		d.Scanner.Err = nil
 	}
-	return err
+	return d.Scanner.Err
 }
 
 // Decoder implements a 3mf file decoder.

@@ -19,8 +19,7 @@ func (d *extensionDecoder) NodeDecoder(parentNode interface{}, nodeName string) 
 	return nil
 }
 
-func (d *extensionDecoder) DecodeAttribute(_ *go3mf.Scanner, _ interface{}, _ xml.Attr) bool {
-	return true
+func (d *extensionDecoder) DecodeAttribute(_ *go3mf.Scanner, _ interface{}, _ xml.Attr) {
 }
 
 type beamLatticeDecoder struct {
@@ -28,8 +27,7 @@ type beamLatticeDecoder struct {
 	mesh *go3mf.Mesh
 }
 
-func (d *beamLatticeDecoder) Attributes(attrs []xml.Attr) bool {
-	ok := true
+func (d *beamLatticeDecoder) Attributes(attrs []xml.Attr) {
 	var hasRadius, hasMinLength bool
 	beamLattice := ExtensionBeamLattice(d.mesh)
 	for _, a := range attrs {
@@ -38,31 +36,35 @@ func (d *beamLatticeDecoder) Attributes(attrs []xml.Attr) bool {
 		}
 		switch a.Name.Local {
 		case attrRadius:
-			beamLattice.DefaultRadius, ok = d.Scanner.ParseFloat32Required(attrRadius, a.Value)
+			beamLattice.DefaultRadius = d.Scanner.ParseFloat32Required(attrRadius, a.Value)
 			hasRadius = true
 		case attrMinLength, attrPrecision: // lib3mf legacy
-			beamLattice.MinLength, ok = d.Scanner.ParseFloat32Required(a.Name.Local, a.Value)
+			beamLattice.MinLength = d.Scanner.ParseFloat32Required(a.Name.Local, a.Value)
 			hasMinLength = true
 		case attrClippingMode, attrClipping: // lib3mf legacy
-			beamLattice.ClipMode, _ = newClipMode(a.Value)
+			var ok bool
+			beamLattice.ClipMode, ok = newClipMode(a.Value)
+			if !ok {
+				d.Scanner.InvalidOptionalAttr(a.Name.Local, a.Value)
+			}
 		case attrClippingMesh:
 			beamLattice.ClippingMeshID = d.Scanner.ParseUint32Optional(attrClippingMesh, a.Value)
 		case attrRepresentationMesh:
 			beamLattice.RepresentationMeshID = d.Scanner.ParseUint32Optional(attrRepresentationMesh, a.Value)
 		case attrCap:
-			beamLattice.CapMode, _ = newCapMode(a.Value)
-		}
-		if !ok {
-			return false
+			var ok bool
+			beamLattice.CapMode, ok = newCapMode(a.Value)
+			if !ok {
+				d.Scanner.InvalidOptionalAttr(a.Name.Local, a.Value)
+			}
 		}
 	}
 	if !hasRadius {
-		ok = d.Scanner.MissingAttr(attrRadius)
+		d.Scanner.MissingAttr(attrRadius)
 	}
 	if !hasMinLength {
-		ok = d.Scanner.MissingAttr(attrMinLength)
+		d.Scanner.MissingAttr(attrMinLength)
 	}
-	return ok
 }
 
 func (d *beamLatticeDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
@@ -98,12 +100,11 @@ type beamDecoder struct {
 	mesh *go3mf.Mesh
 }
 
-func (d *beamDecoder) Attributes(attrs []xml.Attr) bool {
+func (d *beamDecoder) Attributes(attrs []xml.Attr) {
 	beam := Beam{}
 	var (
 		hasV1, hasV2, hasCap1, hasCap2 bool
 	)
-	ok := true
 	beamLattice := ExtensionBeamLattice(d.mesh)
 	for _, a := range attrs {
 		if a.Name.Space != "" {
@@ -111,48 +112,48 @@ func (d *beamDecoder) Attributes(attrs []xml.Attr) bool {
 		}
 		switch a.Name.Local {
 		case attrV1:
-			beam.NodeIndices[0], ok = d.Scanner.ParseUint32Required(attrV1, a.Value)
+			beam.NodeIndices[0] = d.Scanner.ParseUint32Required(attrV1, a.Value)
 			hasV1 = true
 		case attrV2:
-			beam.NodeIndices[1], ok = d.Scanner.ParseUint32Required(attrV2, a.Value)
+			beam.NodeIndices[1] = d.Scanner.ParseUint32Required(attrV2, a.Value)
 			hasV2 = true
 		case attrR1:
 			beam.Radius[0] = d.Scanner.ParseFloat32Optional(attrR1, a.Value)
 		case attrR2:
 			beam.Radius[1] = d.Scanner.ParseFloat32Optional(attrR2, a.Value)
 		case attrCap1:
-			beam.CapMode[0], _ = newCapMode(a.Value)
-			hasCap1 = true
+			var ok bool
+			beam.CapMode[0], ok = newCapMode(a.Value)
+			if ok {
+				hasCap1 = true
+			}
 		case attrCap2:
-			beam.CapMode[1], _ = newCapMode(a.Value)
-			hasCap2 = true
-		}
-		if !ok {
-			return false
+			var ok bool
+			beam.CapMode[1], ok = newCapMode(a.Value)
+			if ok {
+				hasCap2 = true
+			}
 		}
 	}
 	if !hasV1 {
-		ok = d.Scanner.MissingAttr(attrV1)
+		d.Scanner.MissingAttr(attrV1)
 	}
 	if !hasV2 {
-		ok = d.Scanner.MissingAttr(attrV2)
+		d.Scanner.MissingAttr(attrV2)
 	}
-	if ok {
-		if beam.Radius[0] == 0 {
-			beam.Radius[0] = beamLattice.DefaultRadius
-		}
-		if beam.Radius[1] == 0 {
-			beam.Radius[1] = beam.Radius[0]
-		}
-		if !hasCap1 {
-			beam.CapMode[0] = beamLattice.CapMode
-		}
-		if !hasCap2 {
-			beam.CapMode[1] = beamLattice.CapMode
-		}
-		beamLattice.Beams = append(beamLattice.Beams, beam)
+	if beam.Radius[0] == 0 {
+		beam.Radius[0] = beamLattice.DefaultRadius
 	}
-	return ok
+	if beam.Radius[1] == 0 {
+		beam.Radius[1] = beam.Radius[0]
+	}
+	if !hasCap1 {
+		beam.CapMode[0] = beamLattice.CapMode
+	}
+	if !hasCap2 {
+		beam.CapMode[1] = beamLattice.CapMode
+	}
+	beamLattice.Beams = append(beamLattice.Beams, beam)
 }
 
 type beamSetsDecoder struct {
@@ -178,13 +179,12 @@ func (d *beamSetDecoder) Open() {
 	d.beamRefDecoder.beamSet = &d.beamSet
 }
 
-func (d *beamSetDecoder) Close() bool {
+func (d *beamSetDecoder) Close() {
 	ext := ExtensionBeamLattice(d.mesh)
 	ext.BeamSets = append(ext.BeamSets, d.beamSet)
-	return true
 }
 
-func (d *beamSetDecoder) Attributes(attrs []xml.Attr) bool {
+func (d *beamSetDecoder) Attributes(attrs []xml.Attr) {
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
@@ -196,7 +196,6 @@ func (d *beamSetDecoder) Attributes(attrs []xml.Attr) bool {
 			d.beamSet.Identifier = a.Value
 		}
 	}
-	return true
 }
 
 func (d *beamSetDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
@@ -211,16 +210,13 @@ type beamRefDecoder struct {
 	beamSet *BeamSet
 }
 
-func (d *beamRefDecoder) Attributes(attrs []xml.Attr) bool {
+func (d *beamRefDecoder) Attributes(attrs []xml.Attr) {
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrIndex {
-			index, ok := d.Scanner.ParseUint32Required(attrIndex, a.Value)
-			if ok {
-				d.beamSet.Refs = append(d.beamSet.Refs, uint32(index))
-				return true
-			}
-			break
+			index := d.Scanner.ParseUint32Required(attrIndex, a.Value)
+			d.beamSet.Refs = append(d.beamSet.Refs, uint32(index))
+			return
 		}
 	}
-	return d.Scanner.MissingAttr(attrIndex)
+	d.Scanner.MissingAttr(attrIndex)
 }
