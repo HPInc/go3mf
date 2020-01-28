@@ -68,10 +68,9 @@ func (s *Slice) IsPolygonValid(index int) bool {
 // SliceResolution defines the resolutions for a slice.
 type SliceResolution uint8
 
+// Supported slice resolution.
 const (
-	// ResolutionFull defines a full resolution slice.
 	ResolutionFull SliceResolution = iota
-	// ResolutionLow defines a low resolution slice.
 	ResolutionLow
 )
 

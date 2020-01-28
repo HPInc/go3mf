@@ -15,18 +15,13 @@ const thumbnailPath = "/Metadata/thumbnail.png"
 // Units define the allowed model units.
 type Units uint8
 
+// Supported units.
 const (
-	// UnitMillimeter for millimeter
 	UnitMillimeter Units = iota
-	// UnitMicrometer for microns
 	UnitMicrometer
-	// UnitCentimeter for centimeter
 	UnitCentimeter
-	// UnitInch for inch
 	UnitInch
-	// UnitFoot for foot
 	UnitFoot
-	// UnitMeter for meter
 	UnitMeter
 )
 
@@ -44,16 +39,12 @@ func (u Units) String() string {
 // ObjectType defines the allowed object types.
 type ObjectType int8
 
+// Supported object types.
 const (
-	// ObjectTypeModel defines a model object type.
 	ObjectTypeModel ObjectType = iota
-	// ObjectTypeOther defines a generic object type.
 	ObjectTypeOther
-	// ObjectTypeSupport defines a support object type.
 	ObjectTypeSupport
-	// ObjectTypeSolidSupport defines a solid support object type.
 	ObjectTypeSolidSupport
-	// ObjectTypeSurface defines a surface object type.
 	ObjectTypeSurface
 )
 

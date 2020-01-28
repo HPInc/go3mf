@@ -9,10 +9,9 @@ import (
 // EncodingType is the type of encoding used in the file.
 type EncodingType int
 
+// Standard STL encoding types.
 const (
-	// Binary when the STL is encoded as a binary file.
 	Binary EncodingType = iota
-	// ASCII when the STL is encoded as an ASCII file.
 	ASCII
 )
 

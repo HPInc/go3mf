@@ -8,12 +8,10 @@ const ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/beamlattice/
 // ClipMode defines the clipping modes for the beam lattices.
 type ClipMode uint8
 
+// Supported clip modes.
 const (
-	// ClipNone defines a beam lattice without clipping.
 	ClipNone ClipMode = iota
-	// ClipInside defines a beam lattice with clipping inside.
 	ClipInside
-	// ClipOutside defines a beam lattice with clipping outside.
 	ClipOutside
 )
 
@@ -37,12 +35,10 @@ func (c ClipMode) String() string {
 // A CapMode is an enumerable for the different capping modes.
 type CapMode uint8
 
+// Supported cap modes.
 const (
-	// CapModeSphere when the capping is an sphere.
 	CapModeSphere CapMode = iota
-	// CapModeHemisphere when the capping is an hemisphere.
 	CapModeHemisphere
-	// CapModeButt when the capping is an butt.
 	CapModeButt
 )
 

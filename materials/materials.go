@@ -8,10 +8,9 @@ const ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/material/201
 // Texture2DType defines the allowed texture 2D types.
 type Texture2DType uint8
 
+// Supported texture types.
 const (
-	// TextureTypePNG defines a png texture type.
 	TextureTypePNG Texture2DType = iota + 1
-	// TextureTypeJPEG defines a jpeg texture type.
 	TextureTypeJPEG
 )
 
@@ -25,14 +24,11 @@ func (t Texture2DType) String() string {
 // TileStyle defines the allowed tile styles.
 type TileStyle uint8
 
+// Supported tile style.
 const (
-	// TileWrap wraps the tile.
 	TileWrap TileStyle = iota
-	// TileMirror mirrors the tile.
 	TileMirror
-	// TileClamp clamps the tile.
 	TileClamp
-	// TileNone apply no style.
 	TileNone
 )
 
@@ -48,12 +44,10 @@ func (t TileStyle) String() string {
 // TextureFilter defines the allowed texture filters.
 type TextureFilter uint8
 
+// Supported texture filters.
 const (
-	// TextureFilterAuto applies an automatic filter.
 	TextureFilterAuto TextureFilter = iota
-	// TextureFilterLinear applies a linear filter.
 	TextureFilterLinear
-	// TextureFilterNearest applies an nearest filter.
 	TextureFilterNearest
 )
 
@@ -68,10 +62,9 @@ func (t TextureFilter) String() string {
 // BlendMethod defines the equation to use when blending a layer with the previous layer.
 type BlendMethod uint8
 
+// Supported blend methods.
 const (
-	// BlendMix to mix the layer properties.
 	BlendMix BlendMethod = iota
-	// BlendMultiply multiply the layer properties.
 	BlendMultiply
 )
 
