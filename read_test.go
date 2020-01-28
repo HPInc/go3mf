@@ -61,7 +61,7 @@ func (m *modelBuilder) addAttr(prefix, name, value string) *modelBuilder {
 }
 
 func (m *modelBuilder) withDefaultModel() *modelBuilder {
-	m.withModel("millimeter", "en-US", "/Metadata/thumbnail.png")
+	m.withModel("millimeter", "en-US", "/thumbnail.png")
 	return m
 }
 
@@ -165,8 +165,10 @@ func (m *mockPackage) FindFileFromRel(args0 string) (packageFile, bool) {
 }
 
 func TestDecoder_processOPC(t *testing.T) {
-	textureFile := newMockFile("/text.png", nil, nil, false)
-	thumbFile := newMockFile("/a.png", nil, nil, false)
+	extType := "fake_type"
+	RegisterFileFilter("", func(relType string) bool {
+		return relType == extType
+	})
 	tests := []struct {
 		name    string
 		d       *Decoder
@@ -176,25 +178,31 @@ func TestDecoder_processOPC(t *testing.T) {
 		{"noRoot", &Decoder{p: newMockPackage(nil)}, &Model{}, true},
 		{"noRels", &Decoder{p: newMockPackage(newMockFile("/a.model", nil, nil, false))}, &Model{Path: "/a.model"}, false},
 		{"withThumb", &Decoder{
-			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeThumbnail, "/a.png")}, thumbFile, false)),
+			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeThumbnail, "/a.png")}, newMockFile("/a.png", nil, nil, false), false)),
 		}, &Model{
 			Path:        "/a.model",
 			Attachments: []*Attachment{{RelationshipType: relTypeThumbnail, Path: "/a.png", Stream: new(bytes.Buffer)}},
 		}, false},
-		{"withTexture", &Decoder{
-			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeTexture3D, "/text.png")}, textureFile, false)),
+		{"withPrintTicket", &Decoder{
+			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypePrintTicket, "/pc.png")}, newMockFile("/pc.png", nil, nil, false), false)),
 		}, &Model{
 			Path:        "/a.model",
-			Attachments: []*Attachment{{RelationshipType: relTypeTexture3D, Path: "/text.png", Stream: new(bytes.Buffer)}},
+			Attachments: []*Attachment{{RelationshipType: relTypePrintTicket, Path: "/pc.png", Stream: new(bytes.Buffer)}},
+		}, false},
+		{"withExtRel", &Decoder{
+			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(extType, "/other.png")}, newMockFile("/other.png", nil, nil, false), false)),
+		}, &Model{
+			Path:        "/a.model",
+			Attachments: []*Attachment{{RelationshipType: extType, Path: "/other.png", Stream: new(bytes.Buffer)}},
 		}, false},
 		{"withOtherRel", &Decoder{
 			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship("other", "/a.png")}, nil, false)),
 		}, &Model{Path: "/a.model"}, false},
 		{"withModelAttachment", &Decoder{
-			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeModel3D, "/a.model")}, newMockFile("/a.model", nil, nil, false), false)),
+			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(RelTypeModel3D, "/a.model")}, newMockFile("/a.model", nil, nil, false), false)),
 		}, &Model{
 			Path:                  "/a.model",
-			ProductionAttachments: []*ProductionAttachment{{RelationshipType: relTypeModel3D, Path: "/a.model"}},
+			ProductionAttachments: []*ProductionAttachment{{RelationshipType: RelTypeModel3D, Path: "/a.model"}},
 		}, false},
 	}
 	for _, tt := range tests {
@@ -277,7 +285,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 		Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
 	}
 
-	want := &Model{Units: UnitMillimeter, Language: "en-US", Path: "/3d/3dmodel.model", Thumbnail: thumbnailPath}
+	want := &Model{Units: UnitMillimeter, Language: "en-US", Path: "/3d/3dmodel.model", Thumbnail: "/thumbnail.png"}
 	want.Resources = append(want.Resources, baseMaterials, meshRes, components)
 	want.Build.Items = append(want.Build.Items, &Item{
 		ObjectID: 20, PartNumber: "bob", Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
@@ -389,7 +397,7 @@ func TestDecoder_processNonRootModels(t *testing.T) {
 				</resources>
 			`).build(),
 		}}, false, &Model{
-			Thumbnail: thumbnailPath,
+			Thumbnail: "/thumbnail.png",
 			ProductionAttachments: []*ProductionAttachment{
 				{Path: "3d/new.model"},
 				{Path: "3d/other.model"},

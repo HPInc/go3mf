@@ -8,6 +8,11 @@ import (
 
 func init() {
 	go3mf.RegisterDecodeAttribute(ExtensionName, decodeAttribute)
+	go3mf.RegisterFileFilter(ExtensionName, fileFilter)
+}
+
+func fileFilter(relType string) bool {
+	return relType == go3mf.RelTypeModel3D
 }
 
 func decodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {

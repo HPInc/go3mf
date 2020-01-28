@@ -7,11 +7,6 @@ import (
 	"sort"
 )
 
-// ExtensionName is the canonical name of this extension.
-const ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/core/2015/02"
-
-const thumbnailPath = "/Metadata/thumbnail.png"
-
 // Units define the allowed model units.
 type Units uint8
 

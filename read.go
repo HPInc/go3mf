@@ -12,36 +12,37 @@ import (
 	"sync"
 )
 
-// ExtensionDecoder is the contract that should be implemented
-// in order to enable automatic extension decoding.
-// NodeDecoder should return a NodeDecoder that will do the real decoding.
-type NewNodeDecoderFunc func (parentNode interface{}, nodeName string) NodeDecoder
-
-// DecodeAttribute should parse the attribute and update the parentNode.
-type DecodeAttributeFunc func (s *Scanner, parentNode interface{}, attr xml.Attr)
-
 type extensionDecoderWrapper struct {
-	newNodeDecoder NewNodeDecoderFunc
-	decodeAttribute DecodeAttributeFunc
+	newNodeDecoder func(interface{}, string) NodeDecoder
+	decodeAttribute func(*Scanner, interface{}, xml.Attr)
+	fileFilter func(string) bool
 }
 
-func (e *extensionDecoderWrapper) NewNodeDecoder (parentNode interface{}, nodeName string) NodeDecoder {
-	if e.newNodeDecoder == nil {
-		return nil
+func (e *extensionDecoderWrapper) NewNodeDecoder(parentNode interface{}, nodeName string) NodeDecoder {
+	if e.newNodeDecoder != nil {
+		return e.newNodeDecoder(parentNode, nodeName)
 	}
-	return e.newNodeDecoder(parentNode, nodeName)
+	return nil
 }
 
-func (e *extensionDecoderWrapper) DecodeAttribute  (s *Scanner, parentNode interface{}, attr xml.Attr) {
+func (e *extensionDecoderWrapper) DecodeAttribute(s *Scanner, parentNode interface{}, attr xml.Attr) {
 	if e.decodeAttribute != nil {
 		e.decodeAttribute(s, parentNode, attr)
 	}
 }
 
+func (e *extensionDecoderWrapper) FileFilter(relType string) bool {
+	if e.fileFilter != nil {
+		return e.fileFilter(relType)
+	}
+	return false
+}
+
 var extensionDecoder = make(map[string]*extensionDecoderWrapper)
 
-// RegisterExtensionDecoder registers a NewNodeDecoderFunc.
-func RegisterNewNodeDecoder(key string, f NewNodeDecoderFunc) {
+// RegisterExtensionDecoder registers a NewNodeDecoder function to the associated extension key.
+// The registered function should return a NodeDecoder that will do the real decoding.
+func RegisterNewNodeDecoder(key string, f func (parentNode interface{}, nodeName string) NodeDecoder) {
 	if e, ok := extensionDecoder[key]; ok {
 		e.newNodeDecoder = f
 	} else {
@@ -49,12 +50,26 @@ func RegisterNewNodeDecoder(key string, f NewNodeDecoderFunc) {
 	}
 }
 
-// RegisterExtensionDecoder registers a DecodeAttributeFunc.
-func RegisterDecodeAttribute(key string, f DecodeAttributeFunc) {
+// RegisterDecodeAttribute registers a DecodeAttribute function to the associated extension key.
+// The registered function should parse the attribute and update the parentNode.
+func RegisterDecodeAttribute(key string, f func(s *Scanner, parentNode interface{}, attr xml.Attr)) {
 	if e, ok := extensionDecoder[key]; ok {
 		e.decodeAttribute = f
 	} else {
 		extensionDecoder[key] = &extensionDecoderWrapper{decodeAttribute: f}
+	}
+}
+
+// RegisterFileFilter registers a FileFilter function to the associated extension key.
+// The registered function should return true if a file with an specific relationship with a model file
+// should be preserved as an attachment or not. If the file is accepted and it is a 3dmodel
+// it will processed decoded. It can happen that a file is preserved even if this method is
+// not called or it is discarded as other packages could accept it.
+func RegisterFileFilter(key string, f func(relType string) bool) {
+	if e, ok := extensionDecoder[key]; ok {
+		e.fileFilter = f
+	} else {
+		extensionDecoder[key] = &extensionDecoderWrapper{fileFilter: f}
 	}
 }
 
@@ -328,29 +343,37 @@ func (d *Decoder) processOPC(model *Model) (packageFile, error) {
 	if err != nil {
 		return nil, err
 	}
-	rootFile, ok := d.p.FindFileFromRel(relTypeModel3D)
+	rootFile, ok := d.p.FindFileFromRel(RelTypeModel3D)
 	if !ok {
 		return nil, errors.New("go3mf: package does not have root model")
 	}
 
 	model.Path = rootFile.Name()
-	d.extractTexturesAttachments(rootFile, model)
+	d.extractCoreAttachments(rootFile, model)
 	d.extractModelAttachments(rootFile, model)
 	for _, a := range model.ProductionAttachments {
 		file, _ := d.p.FindFileFromName(a.Path)
-		d.extractTexturesAttachments(file, model)
+		d.extractCoreAttachments(file, model)
 	}
 	return rootFile, nil
 }
 
-func (d *Decoder) extractTexturesAttachments(rootFile packageFile, model *Model) {
+func (d *Decoder) extractCoreAttachments(rootFile packageFile, model *Model) {
 	for _, rel := range rootFile.Relationships() {
-		if rel.Type() != relTypeTexture3D && rel.Type() != relTypeThumbnail {
-			continue
+		relType := rel.Type()
+		preserve := relType == relTypePrintTicket || relType == relTypeThumbnail
+		if !preserve {
+			for _, ext := range extensionDecoder {
+				if ext.FileFilter(relType) {
+					preserve = true
+					break
+				}
+			}
 		}
-
-		if file, ok := rootFile.FindFileFromName(rel.TargetURI()); ok {
-			model.Attachments = d.addAttachment(model.Attachments, file, rel.Type())
+		if preserve {
+			if file, ok := rootFile.FindFileFromName(rel.TargetURI()); ok {
+				model.Attachments = d.addAttachment(model.Attachments, file, relType)
+			}
 		}
 	}
 }
@@ -358,7 +381,7 @@ func (d *Decoder) extractTexturesAttachments(rootFile packageFile, model *Model)
 func (d *Decoder) extractModelAttachments(rootFile packageFile, model *Model) {
 	d.productionModels = make(map[string]packageFile)
 	for _, rel := range rootFile.Relationships() {
-		if rel.Type() != relTypeModel3D {
+		if rel.Type() != RelTypeModel3D {
 			continue
 		}
 

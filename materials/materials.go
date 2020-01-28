@@ -2,8 +2,12 @@ package materials
 
 import "image/color"
 
-// ExtensionName is the canonical name of this extension.
-const ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/material/2015/02"
+const (
+	// ExtensionName is the canonical name of this extension.
+	ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/material/2015/02"
+	// RelTypeTexture3D is the canonical 3D texture relationship type.
+	RelTypeTexture3D = "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture"
+)
 
 // Texture2DType defines the allowed texture 2D types.
 type Texture2DType uint8

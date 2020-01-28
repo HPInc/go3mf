@@ -9,6 +9,11 @@ import (
 
 func init() {
 	go3mf.RegisterNewNodeDecoder(ExtensionName, nodeDecoder)
+	go3mf.RegisterFileFilter(ExtensionName, fileFilter)
+}
+
+func fileFilter(relType string) bool {
+	return relType == RelTypeTexture3D
 }
 
 func nodeDecoder(_ interface{}, nodeName string) (child go3mf.NodeDecoder) {
