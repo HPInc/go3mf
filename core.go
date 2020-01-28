@@ -96,7 +96,7 @@ type Model struct {
 	Path                  string
 	Language              string
 	Units                 Units
-	Thumbnail             *Attachment
+	Thumbnail             string
 	Metadata              []Metadata
 	Resources             []Resource
 	Build                 Build
@@ -126,12 +126,6 @@ func (m *Model) UnusedID() uint32 {
 		lowest = ids[len(ids)-1] + 1
 	}
 	return uint32(lowest)
-}
-
-// SetThumbnail sets the package thumbnail.
-func (m *Model) SetThumbnail(r io.Reader) *Attachment {
-	m.Thumbnail = &Attachment{Stream: r, Path: thumbnailPath, RelationshipType: relTypeThumbnail}
-	return m.Thumbnail
 }
 
 // FindResource returns the resource with the target unique ID.

@@ -41,6 +41,10 @@ func (o *opcFile) Name() string {
 
 func (o *opcFile) FindFileFromRel(relType string) (packageFile, bool) {
 	name := findOPCFileURIFromRel(relType, o.f.Relationships)
+	return o.FindFileFromName(name)
+}
+
+func (o *opcFile) FindFileFromName(name string) (packageFile, bool) {
 	name = opc.ResolveRelationship(o.f.Name, name)
 	return findOPCFileFromName(name, o.r)
 }

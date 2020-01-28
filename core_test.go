@@ -2,7 +2,6 @@ package go3mf
 
 import (
 	"image/color"
-	"io"
 	"reflect"
 	"testing"
 
@@ -26,27 +25,6 @@ func (o *MockObject) Identify() (string, uint32) {
 
 func (o *MockObject) Type() ObjectType {
 	return ObjectTypeOther
-}
-
-func TestModel_SetThumbnail(t *testing.T) {
-	type args struct {
-		r io.Reader
-	}
-	tests := []struct {
-		name string
-		m    *Model
-		args args
-		want *Attachment
-	}{
-		{"base", new(Model), args{nil}, &Attachment{Path: thumbnailPath, RelationshipType: "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail"}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.m.SetThumbnail(tt.args.r); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Model.SetThumbnail() = %v, want %v", got, tt.want)
-			}
-		})
-	}
 }
 
 func TestModel_FindResource(t *testing.T) {

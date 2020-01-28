@@ -61,15 +61,18 @@ func (m *modelBuilder) addAttr(prefix, name, value string) *modelBuilder {
 }
 
 func (m *modelBuilder) withDefaultModel() *modelBuilder {
-	m.withModel("millimeter", "en-US")
+	m.withModel("millimeter", "en-US", "/Metadata/thumbnail.png")
 	return m
 }
 
-func (m *modelBuilder) withModel(unit string, lang string) *modelBuilder {
+func (m *modelBuilder) withModel(unit string, lang string, thumbnail string) *modelBuilder {
 	m.str.WriteString(`<model `)
 	m.addAttr("", "unit", unit).addAttr("xml", "lang", lang)
 	m.addAttr("", "xmlns", ExtensionName).addAttr("xmlns", "qm", "fake_ext")
 	m.addAttr("", "requiredextensions", "qm")
+	if thumbnail != "" {
+		m.addAttr("", "thumbnail", thumbnail)
+	}
 	m.str.WriteString(">\n")
 	m.hasModel = true
 	return m
@@ -95,12 +98,12 @@ type mockFile struct {
 	mock.Mock
 }
 
-func newMockFile(name string, relationships []relationship, thumb *mockFile, other *mockFile, openErr bool) *mockFile {
+func newMockFile(name string, relationships []relationship, other *mockFile, openErr bool) *mockFile {
 	m := new(mockFile)
 	m.On("Name").Return(name).Maybe()
 	m.On("Relationships").Return(relationships).Maybe()
-	m.On("FindFileFromRel", relTypeThumbnail).Return(thumb, thumb != nil).Maybe()
 	m.On("FindFileFromRel", mock.Anything).Return(other, other != nil).Maybe()
+	m.On("FindFileFromName", mock.Anything).Return(other, other != nil).Maybe()
 	var err error
 	if openErr {
 		err = errors.New("")
@@ -120,6 +123,11 @@ func (m *mockFile) Name() string {
 }
 
 func (m *mockFile) FindFileFromRel(args0 string) (packageFile, bool) {
+	args := m.Called(args0)
+	return args.Get(0).(packageFile), args.Bool(1)
+}
+
+func (m *mockFile) FindFileFromName(args0 string) (packageFile, bool) {
 	args := m.Called(args0)
 	return args.Get(0).(packageFile), args.Bool(1)
 }
@@ -157,8 +165,8 @@ func (m *mockPackage) FindFileFromRel(args0 string) (packageFile, bool) {
 }
 
 func TestDecoder_processOPC(t *testing.T) {
-	thumbFile := newMockFile("/a.png", nil, nil, nil, false)
-	thumbErr := newMockFile("/a.png", nil, nil, nil, true)
+	textureFile := newMockFile("/text.png", nil, nil, false)
+	thumbFile := newMockFile("/a.png", nil, nil, false)
 	tests := []struct {
 		name    string
 		d       *Decoder
@@ -166,31 +174,27 @@ func TestDecoder_processOPC(t *testing.T) {
 		wantErr bool
 	}{
 		{"noRoot", &Decoder{p: newMockPackage(nil)}, &Model{}, true},
-		{"noRels", &Decoder{p: newMockPackage(newMockFile("/a.model", nil, nil, nil, false))}, &Model{Path: "/a.model"}, false},
+		{"noRels", &Decoder{p: newMockPackage(newMockFile("/a.model", nil, nil, false))}, &Model{Path: "/a.model"}, false},
 		{"withThumb", &Decoder{
-			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeThumbnail, "/a.png")}, thumbFile, thumbFile, false)),
+			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeThumbnail, "/a.png")}, thumbFile, false)),
 		}, &Model{
 			Path:        "/a.model",
-			Thumbnail:   &Attachment{RelationshipType: relTypeThumbnail, Path: "/Metadata/thumbnail.png", Stream: new(bytes.Buffer)},
 			Attachments: []*Attachment{{RelationshipType: relTypeThumbnail, Path: "/a.png", Stream: new(bytes.Buffer)}},
 		}, false},
-		{"withThumbErr", &Decoder{
-			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeThumbnail, "/a.png")}, thumbErr, thumbErr, false)),
-		}, &Model{Path: "/a.model"}, false},
+		{"withTexture", &Decoder{
+			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeTexture3D, "/text.png")}, textureFile, false)),
+		}, &Model{
+			Path:        "/a.model",
+			Attachments: []*Attachment{{RelationshipType: relTypeTexture3D, Path: "/text.png", Stream: new(bytes.Buffer)}},
+		}, false},
 		{"withOtherRel", &Decoder{
-			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship("other", "/a.png")}, nil, nil, false)),
+			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship("other", "/a.png")}, nil, false)),
 		}, &Model{Path: "/a.model"}, false},
 		{"withModelAttachment", &Decoder{
-			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeModel3D, "/a.model")}, nil, newMockFile("/a.model", nil, nil, nil, false), false)),
+			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeModel3D, "/a.model")}, newMockFile("/a.model", nil, nil, false), false)),
 		}, &Model{
 			Path:                  "/a.model",
 			ProductionAttachments: []*ProductionAttachment{{RelationshipType: relTypeModel3D, Path: "/a.model"}},
-		}, false},
-		{"withAttRel", &Decoder{AttachmentRelations: []string{"b"},
-			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship("b", "/a.xml")}, nil, newMockFile("/a.xml", nil, nil, nil, false), false)),
-		}, &Model{
-			Path:        "/a.model",
-			Attachments: []*Attachment{{RelationshipType: "b", Path: "/a.xml", Stream: new(bytes.Buffer)}},
 		}, false},
 	}
 	for _, tt := range tests {
@@ -215,9 +219,9 @@ func TestDecoder_processRootModel_Fail(t *testing.T) {
 		f       *mockFile
 		wantErr bool
 	}{
-		{"errOpen", newMockFile("/a.model", nil, nil, nil, true), true},
+		{"errOpen", newMockFile("/a.model", nil, nil, true), true},
 		{"errEncode", new(modelBuilder).withEncoding("utf16").build(), true},
-		{"invalidUnits", new(modelBuilder).withModel("other", "en-US").build(), false},
+		{"invalidUnits", new(modelBuilder).withModel("other", "en-US", "").build(), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -272,7 +276,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 		Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
 	}
 
-	want := &Model{Units: UnitMillimeter, Language: "en-US", Path: "/3d/3dmodel.model"}
+	want := &Model{Units: UnitMillimeter, Language: "en-US", Path: "/3d/3dmodel.model", Thumbnail: thumbnailPath}
 	want.Resources = append(want.Resources, baseMaterials, meshRes, components)
 	want.Build.Items = append(want.Build.Items, &Item{
 		ObjectID: 20, PartNumber: "bob", Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
@@ -384,6 +388,7 @@ func TestDecoder_processNonRootModels(t *testing.T) {
 				</resources>
 			`).build(),
 		}}, false, &Model{
+			Thumbnail: thumbnailPath,
 			ProductionAttachments: []*ProductionAttachment{
 				{Path: "3d/new.model"},
 				{Path: "3d/other.model"},
@@ -419,8 +424,8 @@ func TestDecoder_Decode(t *testing.T) {
 		d       *Decoder
 		wantErr bool
 	}{
-		{"base", &Decoder{AttachmentRelations: []string{"b"},
-			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship("b", "/a.xml")}, nil, newMockFile("/a.xml", nil, nil, nil, false), false)),
+		{"base", &Decoder{
+			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship("b", "/a.xml")}, nil, false)),
 		}, false},
 	}
 	for _, tt := range tests {

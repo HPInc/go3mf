@@ -45,6 +45,7 @@ type relationship interface {
 type packageFile interface {
 	Name() string
 	FindFileFromRel(string) (packageFile, bool)
+	FindFileFromName(string) (packageFile, bool)
 	Relationships() []relationship
 	Open() (io.ReadCloser, error)
 }
@@ -167,14 +168,13 @@ func (d *modelFileDecoder) Decode(ctx context.Context, x XMLDecoder, model *Mode
 
 // Decoder implements a 3mf file decoder.
 type Decoder struct {
-	Strict              bool
-	Warnings            []error
-	AttachmentRelations []string
-	p                   packageReader
-	x                   func(r io.Reader) XMLDecoder
-	flate               func(r io.Reader) io.ReadCloser
-	productionModels    map[string]packageFile
-	ctx                 context.Context
+	Strict           bool
+	Warnings         []error
+	p                packageReader
+	x                func(r io.Reader) XMLDecoder
+	flate            func(r io.Reader) io.ReadCloser
+	productionModels map[string]packageFile
+	ctx              context.Context
 }
 
 // NewDecoder returns a new Decoder reading a 3mf file from r.
@@ -305,20 +305,11 @@ func (d *Decoder) processOPC(model *Model) (packageFile, error) {
 
 	model.Path = rootFile.Name()
 	d.extractTexturesAttachments(rootFile, model)
-	d.extractCustomAttachments(rootFile, model)
 	d.extractModelAttachments(rootFile, model)
 	for _, a := range model.ProductionAttachments {
 		file, _ := d.p.FindFileFromName(a.Path)
-		d.extractCustomAttachments(file, model)
 		d.extractTexturesAttachments(file, model)
 	}
-	thumbFile, ok := rootFile.FindFileFromRel(relTypeThumbnail)
-	if ok {
-		if buff, err := copyFile(thumbFile); err == nil {
-			model.SetThumbnail(buff)
-		}
-	}
-
 	return rootFile, nil
 }
 
@@ -328,16 +319,8 @@ func (d *Decoder) extractTexturesAttachments(rootFile packageFile, model *Model)
 			continue
 		}
 
-		if file, ok := rootFile.FindFileFromRel(rel.Type()); ok {
+		if file, ok := rootFile.FindFileFromName(rel.TargetURI()); ok {
 			model.Attachments = d.addAttachment(model.Attachments, file, rel.Type())
-		}
-	}
-}
-
-func (d *Decoder) extractCustomAttachments(rootFile packageFile, model *Model) {
-	for _, rel := range d.AttachmentRelations {
-		if file, ok := rootFile.FindFileFromRel(rel); ok {
-			model.Attachments = d.addAttachment(model.Attachments, file, rel)
 		}
 	}
 }
@@ -349,7 +332,7 @@ func (d *Decoder) extractModelAttachments(rootFile packageFile, model *Model) {
 			continue
 		}
 
-		if file, ok := rootFile.FindFileFromRel(rel.TargetURI()); ok {
+		if file, ok := rootFile.FindFileFromName(rel.TargetURI()); ok {
 			model.ProductionAttachments = append(model.ProductionAttachments, &ProductionAttachment{
 				RelationshipType: rel.Type(),
 				Path:             file.Name(),
@@ -398,9 +381,10 @@ type fakePackageFile struct {
 	str string
 }
 
-func (f *fakePackageFile) Name() string                               { return "/3d/3dmodel.model" }
-func (f *fakePackageFile) FindFileFromRel(string) (packageFile, bool) { return nil, false }
-func (f *fakePackageFile) Relationships() []relationship              { return nil }
+func (f *fakePackageFile) Name() string                                { return "/3d/3dmodel.model" }
+func (f *fakePackageFile) FindFileFromRel(string) (packageFile, bool)  { return nil, false }
+func (f *fakePackageFile) FindFileFromName(string) (packageFile, bool) { return nil, false }
+func (f *fakePackageFile) Relationships() []relationship               { return nil }
 func (f *fakePackageFile) Open() (io.ReadCloser, error) {
 	return ioutil.NopCloser(bytes.NewBufferString(f.str)), nil
 }

@@ -50,6 +50,8 @@ func (d *modelDecoder) Attributes(attrs []xml.Attr) {
 						d.Scanner.InvalidOptionalAttr(attrUnit, a.Value)
 					}
 				}
+			case attrThumbnail:
+				d.model.Thumbnail = a.Value
 			case attrReqExt:
 				requiredExts = a.Value
 			}
