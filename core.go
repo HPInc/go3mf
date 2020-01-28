@@ -63,12 +63,6 @@ type Resource interface {
 	Identify() (string, uint32)
 }
 
-// Object defines a composable object.
-type Object interface {
-	Identify() (string, uint32)
-	Type() ObjectType
-}
-
 // Metadata item is an in memory representation of the 3MF metadata,
 // and can be attached to any 3MF model node.
 type Metadata struct {
