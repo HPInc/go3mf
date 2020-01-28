@@ -68,8 +68,8 @@ func (m *modelBuilder) withDefaultModel() *modelBuilder {
 func (m *modelBuilder) withModel(unit string, lang string) *modelBuilder {
 	m.str.WriteString(`<model `)
 	m.addAttr("", "unit", unit).addAttr("xml", "lang", lang)
-	m.addAttr("", "xmlns", ExtensionName).addAttr("xmlns", "p", nsProductionSpec)
-	m.addAttr("", "requiredextensions", "p")
+	m.addAttr("", "xmlns", ExtensionName).addAttr("xmlns", "qm", "fake_ext")
+	m.addAttr("", "requiredextensions", "qm")
 	m.str.WriteString(">\n")
 	m.hasModel = true
 	return m
@@ -230,6 +230,7 @@ func TestDecoder_processRootModel_Fail(t *testing.T) {
 }
 
 func TestDecoder_processRootModel(t *testing.T) {
+	extensionDecoder = map[string]ExtensionDecoder{"fake_ext": nil}
 	baseMaterials := &BaseMaterialsResource{ID: 5, ModelPath: "/3d/3dmodel.model", Materials: []BaseMaterial{
 		{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 		{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
@@ -253,10 +254,10 @@ func TestDecoder_processRootModel(t *testing.T) {
 		{NodeIndices: [3]uint32{1, 0, 3}, Resource: 5},
 		{NodeIndices: [3]uint32{4, 5, 6}, Resource: 5, ResourceIndices: [3]uint32{1, 1, 1}},
 		{NodeIndices: [3]uint32{6, 7, 4}, Resource: 5, ResourceIndices: [3]uint32{1, 1, 1}},
-		{NodeIndices: [3]uint32{0, 1, 5}, Resource: 2, ResourceIndices: [3]uint32{0, 1, 2}},
-		{NodeIndices: [3]uint32{5, 4, 0}, Resource: 2, ResourceIndices: [3]uint32{3, 0, 2}},
-		{NodeIndices: [3]uint32{1, 2, 6}, Resource: 1, ResourceIndices: [3]uint32{0, 1, 2}},
-		{NodeIndices: [3]uint32{6, 5, 1}, Resource: 1, ResourceIndices: [3]uint32{2, 1, 3}},
+		{NodeIndices: [3]uint32{0, 1, 5}, Resource: 5, ResourceIndices: [3]uint32{0, 1, 2}},
+		{NodeIndices: [3]uint32{5, 4, 0}, Resource: 5, ResourceIndices: [3]uint32{3, 0, 2}},
+		{NodeIndices: [3]uint32{1, 2, 6}, Resource: 5, ResourceIndices: [3]uint32{0, 1, 2}},
+		{NodeIndices: [3]uint32{6, 5, 1}, Resource: 5, ResourceIndices: [3]uint32{2, 1, 3}},
 		{NodeIndices: [3]uint32{2, 3, 7}, Resource: 5},
 		{NodeIndices: [3]uint32{7, 6, 2}, Resource: 5},
 		{NodeIndices: [3]uint32{3, 0, 4}, Resource: 5},
@@ -265,28 +266,24 @@ func TestDecoder_processRootModel(t *testing.T) {
 
 	components := &Components{
 		ObjectResource: ObjectResource{
-			ID: 20, UUID: "cb828680-8895-4e08-a1fc-be63e033df15", ModelPath: "/3d/3dmodel.model",
-			Metadata: []Metadata{{Name: nsProductionSpec + ":CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: nsProductionSpec + ":CustomMetadata4", Type: "xs:boolean", Value: "2"}},
+			ID: 20, ModelPath: "/3d/3dmodel.model",
+			Metadata: []Metadata{{Name: "fake_ext:CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: "fake_ext:CustomMetadata4", Type: "xs:boolean", Value: "2"}},
 		},
-		Components: []*Component{{UUID: "cb828680-8895-4e08-a1fc-be63e033df16", Object: meshRes,
-			Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
+		Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
 	}
 
 	want := &Model{Units: UnitMillimeter, Language: "en-US", Path: "/3d/3dmodel.model"}
-	otherMesh := &Mesh{ObjectResource: ObjectResource{ID: 8, ModelPath: "/3d/other.model"}}
-	want.Resources = append(want.Resources, otherMesh, baseMaterials, meshRes, components)
-	want.Build.UUID = "e9e25302-6428-402e-8633-cc95528d0ed3"
-	want.Build.Items = append(want.Build.Items, &Item{Object: components, PartNumber: "bob", UUID: "e9e25302-6428-402e-8633-cc95528d0ed2",
-		Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
+	want.Resources = append(want.Resources, baseMaterials, meshRes, components)
+	want.Build.Items = append(want.Build.Items, &Item{
+		ObjectID: 20, PartNumber: "bob", Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
+		Metadata: []Metadata{{Name: "fake_ext:CustomMetadata3", Type: "xs:boolean", Value: "1"}},
 	})
-	want.Build.Items = append(want.Build.Items, &Item{Object: otherMesh, UUID: "e9e25302-6428-402e-8633-cc95528d0ed3", Metadata: []Metadata{{Name: nsProductionSpec + ":CustomMetadata3", Type: "xs:boolean", Value: "1"}}})
 	want.Metadata = append(want.Metadata, []Metadata{
 		{Name: "Application", Value: "go3mf app"},
-		{Name: nsProductionSpec + ":CustomMetadata1", Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},
+		{Name: "fake_ext:CustomMetadata1", Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},
 	}...)
 	got := new(Model)
 	got.Path = "/3d/3dmodel.model"
-	got.Resources = append(got.Resources, otherMesh)
 	rootFile := new(modelBuilder).withDefaultModel().withElement(`
 		<resources>
 			<basematerials id="5">
@@ -310,10 +307,10 @@ func TestDecoder_processRootModel(t *testing.T) {
 						<triangle v1="1" v2="0" v3="3" />
 						<triangle v1="4" v2="5" v3="6" p1="1" />
 						<triangle v1="6" v2="7" v3="4" pid="5" p1="1" />
-						<triangle v1="0" v2="1" v3="5" pid="2" p1="0" p2="1" p3="2"/>
-						<triangle v1="5" v2="4" v3="0" pid="2" p1="3" p2="0" p3="2"/>
-						<triangle v1="1" v2="2" v3="6" pid="1" p1="0" p2="1" p3="2"/>
-						<triangle v1="6" v2="5" v3="1" pid="1" p1="2" p2="1" p3="3"/>
+						<triangle v1="0" v2="1" v3="5" pid="5" p1="0" p2="1" p3="2"/>
+						<triangle v1="5" v2="4" v3="0" pid="5" p1="3" p2="0" p3="2"/>
+						<triangle v1="1" v2="2" v3="6" pid="5" p1="0" p2="1" p3="2"/>
+						<triangle v1="6" v2="5" v3="1" pid="5" p1="2" p2="1" p3="3"/>
 						<triangle v1="2" v2="3" v3="7" />
 						<triangle v1="7" v2="6" v3="2" />
 						<triangle v1="3" v2="0" v3="4" />
@@ -321,26 +318,25 @@ func TestDecoder_processRootModel(t *testing.T) {
 					</triangles>
 				</mesh>
 			</object>
-			<object id="20" p:UUID="cb828680-8895-4e08-a1fc-be63e033df15">
+			<object id="20">
 				<metadatagroup>
-					<metadata name="p:CustomMetadata3" type="xs:boolean">1</metadata>
-					<metadata name="p:CustomMetadata4" type="xs:boolean">2</metadata>
+					<metadata name="qm:CustomMetadata3" type="xs:boolean">1</metadata>
+					<metadata name="qm:CustomMetadata4" type="xs:boolean">2</metadata>
 				</metadatagroup>
 				<components>
-					<component objectid="8" p:UUID="cb828680-8895-4e08-a1fc-be63e033df16" transform="3 0 0 0 1 0 0 0 2 -66.4 -87.1 8.8"/>
+					<component objectid="8" transform="3 0 0 0 1 0 0 0 2 -66.4 -87.1 8.8"/>
 				</components>
 			</object>
 		</resources>
-		<build p:UUID="e9e25302-6428-402e-8633-cc95528d0ed3">
-			<item partnumber="bob" objectid="20" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed2" transform="1 0 0 0 2 0 0 0 3 -66.4 -87.1 8.8" />
-			<item objectid="8" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed3" p:path="/3d/other.model">
+		<build>
+			<item partnumber="bob" objectid="20" transform="1 0 0 0 2 0 0 0 3 -66.4 -87.1 8.8">
 				<metadatagroup>
-					<metadata name="p:CustomMetadata3" type="xs:boolean">1</metadata>
+					<metadata name="qm:CustomMetadata3" type="xs:boolean">1</metadata>
 				</metadatagroup>
 			</item>
 		</build>
 		<metadata name="Application">go3mf app</metadata>
-		<metadata name="p:CustomMetadata1" type="xs:string" preserve="1">CE8A91FB-C44E-4F00-B634-BAA411465F6A</metadata>
+		<metadata name="qm:CustomMetadata1" type="xs:string" preserve="1">CE8A91FB-C44E-4F00-B634-BAA411465F6A</metadata>
 		<other />
 		`).build()
 
@@ -495,6 +491,7 @@ func TestNewDecoder(t *testing.T) {
 }
 
 func TestDecoder_processRootModel_warns(t *testing.T) {
+	extensionDecoder = map[string]ExtensionDecoder{"fake_ext": nil}
 	want := []error{
 		ParsePropertyError{ResourceID: 0, Element: "base", Name: "displaycolor", Value: "0000FF", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
 		MissingPropertyError{ResourceID: 0, Element: "base", ModelPath: "/3d/3dmodel.model", Name: "name"},
@@ -505,20 +502,14 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 		GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3d/3dmodel.model", Message: "duplicated triangle indices"},
 		GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3d/3dmodel.model", Message: "triangle indices are out of range"},
 		ParsePropertyError{ResourceID: 22, Element: "object", ModelPath: "/3d/3dmodel.model", Name: "type", Value: "invalid", Type: PropertyOptional},
-		ParsePropertyError{ResourceID: 20, Element: "object", ModelPath: "/3d/3dmodel.model", Name: "UUID", Value: "cb8286808895-4e08-a1fc-be63e033df15", Type: PropertyRequired},
 		GenericError{ResourceID: 20, Element: "object", ModelPath: "/3d/3dmodel.model", Message: "default PID is not supported for component objects"},
-		ParsePropertyError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Name: "UUID", Value: "cb8286808895-4e08-a1fc-be63e033df16", Type: PropertyRequired},
 		ParsePropertyError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Name: "transform", Value: "0 0 0 1 0 0 0 2 -66.4 -87.1 8.8", Type: PropertyOptional},
-		MissingPropertyError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
-		GenericError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced object"},
-		GenericError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Message: "non-object referenced resource"},
-		MissingPropertyError{ResourceID: 0, Element: "build", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
+		//GenericError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced object"},
+		//GenericError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Message: "non-object referenced resource"},
 		ParsePropertyError{ResourceID: 20, Element: "item", Name: "transform", Value: "1 0 0 0 2 0 0 0 3 -66.4 -87.1", ModelPath: "/3d/3dmodel.model", Type: PropertyOptional},
-		GenericError{ResourceID: 20, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "referenced object cannot be have OTHER type"},
-		MissingPropertyError{ResourceID: 8, Element: "item", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
-		GenericError{ResourceID: 8, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced object"},
-		GenericError{ResourceID: 5, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "non-object referenced resource"},
-		ParsePropertyError{ResourceID: 0, Element: "build", Name: "UUID", Value: "e9e25302-6428-402e-8633ed2", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
+		//GenericError{ResourceID: 20, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "referenced object cannot be have OTHER type"},
+		//GenericError{ResourceID: 8, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced object"},
+		//GenericError{ResourceID: 5, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "non-object referenced resource"},
 	}
 	got := new(Model)
 	got.Path = "/3d/3dmodel.model"
@@ -563,22 +554,21 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 					</triangles>
 				</mesh>
 			</object>
-			<object id="22" p:UUID="cb828680-8895-4e08-a1fc-be63e033df15" type="invalid" />
-			<object id="20" pid="3" p:UUID="cb8286808895-4e08-a1fc-be63e033df15" type="other">
+			<object id="22" type="invalid" />
+			<object id="20" pid="3" type="other">
 				<components>
-					<component objectid="8" p:path="/2d/2d.model" p:UUID="cb8286808895-4e08-a1fc-be63e033df16" transform="0 0 0 1 0 0 0 2 -66.4 -87.1 8.8"/>
-					<component objectid="5" p:UUID="cb828680-8895-4e08-a1fc-be63e033df16"/>
+					<component objectid="8" transform="0 0 0 1 0 0 0 2 -66.4 -87.1 8.8"/>
+					<component objectid="5"/>
 				</components>
 			</object>
 		</resources>
 		<build>
-			<item partnumber="bob" objectid="20" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed2" transform="1 0 0 0 2 0 0 0 3 -66.4 -87.1" />
-			<item objectid="8" p:path="/3d/other.model"/>
-			<item objectid="5" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed4"/>
+			<item partnumber="bob" objectid="20" transform="1 0 0 0 2 0 0 0 3 -66.4 -87.1" />
+			<item objectid="8"/>
+			<item objectid="5"/>
 		</build>
-		<build p:UUID="e9e25302-6428-402e-8633ed2"/>
 		<metadata name="Application">go3mf app</metadata>
-		<metadata name="p:CustomMetadata1" type="xs:string" preserve="1">CE8A91FB-C44E-4F00-B634-BAA411465F6A</metadata>
+		<metadata name="qm:CustomMetadata1" type="xs:string" preserve="1">CE8A91FB-C44E-4F00-B634-BAA411465F6A</metadata>
 		<other />
 		`).build()
 

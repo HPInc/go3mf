@@ -47,7 +47,6 @@ func TestDecode(t *testing.T) {
 
 	want := &go3mf.Model{Path: "/3d/3dmodel.model"}
 	want.Resources = append(want.Resources, meshLattice)
-	want.Build.Items = append(want.Build.Items, &go3mf.Item{Object: meshLattice})
 	got := new(go3mf.Model)
 	got.Path = "/3d/3dmodel.model"
 	rootFile := `
@@ -90,7 +89,6 @@ func TestDecode(t *testing.T) {
 			</object>
 		</resources>
 		<build>
-			<item objectid="15" />
 		</build>
 		</model>
 		`
@@ -166,7 +164,6 @@ func TestDecode_warns(t *testing.T) {
 			</object>
 		</resources>
 		<build>
-			<item objectid="15"/>
 		</build>
 		</model>
 		`

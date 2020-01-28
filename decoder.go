@@ -64,7 +64,7 @@ func (d *modelDecoder) Attributes(attrs []xml.Attr) {
 func (d *modelDecoder) checkRequiredExt(requiredExts string) {
 	for _, ext := range strings.Fields(requiredExts) {
 		ext = d.Scanner.Namespaces[ext]
-		if ext != ExtensionName && ext != nsProductionSpec {
+		if ext != ExtensionName {
 			if _, ok := extensionDecoder[ext]; !ok {
 				d.Scanner.GenericError(true, fmt.Sprintf("'%s' extension is not supported", ext))
 			}
@@ -150,29 +150,19 @@ func (d *buildDecoder) Child(name xml.Name) (child NodeDecoder) {
 
 func (d *buildDecoder) Attributes(attrs []xml.Attr) {
 	for _, a := range attrs {
-		if a.Name.Space == nsProductionSpec && a.Name.Local == attrProdUUID {
-			if err := validateUUID(a.Value); err != nil {
-				d.Scanner.InvalidRequiredAttr(attrProdUUID, a.Value)
-			}
-			d.build.UUID = a.Value
-			break
+		if ext, ok := extensionDecoder[a.Name.Space]; ok {
+			ext.DecodeAttribute(d.Scanner, d.build, a)
 		}
-	}
-
-	if d.build.UUID == "" && d.Scanner.NamespaceRegistered(nsProductionSpec) {
-		d.Scanner.MissingAttr(attrProdUUID)
 	}
 }
 
 type buildItemDecoder struct {
 	BaseDecoder
-	item       Item
-	objectID   uint32
-	objectPath string
+	item Item
 }
 
 func (d *buildItemDecoder) Close() {
-	d.processItem()
+	d.Scanner.BuildItems = append(d.Scanner.BuildItems, &d.item)
 	d.Scanner.CloseResource()
 }
 
@@ -183,42 +173,29 @@ func (d *buildItemDecoder) Child(name xml.Name) (child NodeDecoder) {
 	return
 }
 
-func (d *buildItemDecoder) processItem() {
-	resource, ok := d.Scanner.FindResource(d.objectPath, uint32(d.objectID))
-	if !ok {
-		d.Scanner.GenericError(true, "non-existent referenced object")
-	} else if d.item.Object, ok = resource.(Object); !ok {
-		d.Scanner.GenericError(true, "non-object referenced resource")
-	}
-	if ok {
-		if d.item.Object != nil && d.item.Object.Type() == ObjectTypeOther {
-			d.Scanner.GenericError(true, "referenced object cannot be have OTHER type")
-		}
-	}
-	if ok {
-		d.Scanner.BuildItems = append(d.Scanner.BuildItems, &d.item)
-	}
-}
+// func (d *buildItemDecoder) processItem() {
+// 	resource, ok := d.Scanner.FindResource(d.objectPath, uint32(d.objectID))
+// 	if !ok {
+// 		d.Scanner.GenericError(true, "non-existent referenced object")
+// 	} else if d.item.Object, ok = resource.(Object); !ok {
+// 		d.Scanner.GenericError(true, "non-object referenced resource")
+// 	}
+// 	if ok {
+// 		if d.item.Object != nil && d.item.Object.Type() == ObjectTypeOther {
+// 			d.Scanner.GenericError(true, "referenced object cannot be have OTHER type")
+// 		}
+// 	}
+// 	if ok {
+// 	}
+// }
 
 func (d *buildItemDecoder) Attributes(attrs []xml.Attr) {
 	for _, a := range attrs {
-		switch a.Name.Space {
-		case nsProductionSpec:
-			if a.Name.Local == attrProdUUID {
-				if err := validateUUID(a.Value); err != nil {
-					d.Scanner.InvalidRequiredAttr(attrProdUUID, a.Value)
-				}
-				d.item.UUID = a.Value
-			} else if a.Name.Local == attrPath {
-				d.objectPath = a.Value
-			}
-		case "":
+		if a.Name.Space == "" {
 			d.parseCoreAttr(a)
+		} else if ext, ok := extensionDecoder[a.Name.Space]; ok {
+			ext.DecodeAttribute(d.Scanner, &d.item, a)
 		}
-	}
-
-	if d.item.UUID == "" && d.Scanner.NamespaceRegistered(nsProductionSpec) {
-		d.Scanner.MissingAttr(attrProdUUID)
 	}
 	return
 }
@@ -226,7 +203,7 @@ func (d *buildItemDecoder) Attributes(attrs []xml.Attr) {
 func (d *buildItemDecoder) parseCoreAttr(a xml.Attr) {
 	switch a.Name.Local {
 	case attrObjectID:
-		d.objectID = d.Scanner.ParseResourceID(a.Value)
+		d.item.ObjectID = d.Scanner.ParseResourceID(a.Value)
 	case attrPartNumber:
 		d.item.PartNumber = a.Value
 	case attrTransform:
@@ -476,21 +453,10 @@ func (d *objectDecoder) Close() {
 
 func (d *objectDecoder) Attributes(attrs []xml.Attr) {
 	for _, a := range attrs {
-		switch a.Name.Space {
-		case nsProductionSpec:
-			if a.Name.Local == attrProdUUID {
-				if err := validateUUID(a.Value); err != nil {
-					d.Scanner.InvalidRequiredAttr(attrProdUUID, a.Value)
-				} else {
-					d.resource.UUID = a.Value
-				}
-			}
-		case "":
+		if a.Name.Space == "" {
 			d.parseCoreAttr(a)
-		default:
-			if ext, ok := extensionDecoder[a.Name.Space]; ok {
-				ext.DecodeAttribute(d.Scanner, &d.resource, a)
-			}
+		} else if ext, ok := extensionDecoder[a.Name.Space]; ok {
+			ext.DecodeAttribute(d.Scanner, &d.resource, a)
 		}
 	}
 }
@@ -560,26 +526,11 @@ type componentDecoder struct {
 }
 
 func (d *componentDecoder) Attributes(attrs []xml.Attr) {
-	var (
-		component Component
-		path      string
-		objectID  uint32
-	)
+	var component Component
 	for _, a := range attrs {
-		switch a.Name.Space {
-		case nsProductionSpec:
-			if a.Name.Local == attrProdUUID {
-				if err := validateUUID(a.Value); err != nil {
-					d.Scanner.InvalidRequiredAttr(attrProdUUID, a.Value)
-				} else {
-					component.UUID = a.Value
-				}
-			} else if a.Name.Local == attrPath {
-				path = a.Value
-			}
-		case "":
+		if a.Name.Space == "" {
 			if a.Name.Local == attrObjectID {
-				objectID = d.Scanner.ParseUint32Required(attrObjectID, a.Value)
+				component.ObjectID = d.Scanner.ParseUint32Required(attrObjectID, a.Value)
 			} else if a.Name.Local == attrTransform {
 				var ok bool
 				component.Transform, ok = ParseToMatrix(a.Value)
@@ -587,24 +538,23 @@ func (d *componentDecoder) Attributes(attrs []xml.Attr) {
 					d.Scanner.InvalidOptionalAttr(a.Name.Local, a.Value)
 				}
 			}
+		} else if ext, ok := extensionDecoder[a.Name.Space]; ok {
+			ext.DecodeAttribute(d.Scanner, &component, a)
 		}
 	}
-	d.addComponent(&component, path, objectID)
+	d.resource.Components = append(d.resource.Components, &component)
 }
 
-func (d *componentDecoder) addComponent(component *Component, path string, objectID uint32) {
-	if component.UUID == "" && d.Scanner.NamespaceRegistered(nsProductionSpec) {
-		d.Scanner.MissingAttr(attrProdUUID)
-	}
-	if path != "" && !d.Scanner.IsRoot {
-		d.Scanner.GenericError(true, "path attribute in a non-root file is not supported")
-	}
+// func (d *componentDecoder) addComponent(component *Component, path string, objectID uint32) {
+// if path != "" && !d.Scanner.IsRoot {
+// d.Scanner.GenericError(true, "path attribute in a non-root file is not supported")
+// }
 
-	resource, ok := d.Scanner.FindResource(path, uint32(objectID))
-	if !ok {
-		d.Scanner.GenericError(true, "non-existent referenced object")
-	} else if component.Object, ok = resource.(Object); !ok {
-		d.Scanner.GenericError(true, "non-object referenced resource")
-	}
-	d.resource.Components = append(d.resource.Components, component)
-}
+// resource, ok := d.Scanner.FindResource(path, uint32(objectID))
+// if !ok {
+// d.Scanner.GenericError(true, "non-existent referenced object")
+// } else if component.Object, ok = resource.(Object); !ok {
+// d.Scanner.GenericError(true, "non-object referenced resource")
+// }
+// d.resource.Components = append(d.resource.Components, component)
+// }

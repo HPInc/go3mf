@@ -68,7 +68,6 @@ func TestDecode(t *testing.T) {
 	want := &go3mf.Model{Path: "/3d/3dmodel.model"}
 	want.Resources = append(want.Resources, &SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", Stack: otherSlices})
 	want.Resources = append(want.Resources, sliceStack, sliceStackRef, meshRes)
-	want.Build.Items = append(want.Build.Items, &go3mf.Item{Object: meshRes})
 	got := new(go3mf.Model)
 	got.Path = "/3d/3dmodel.model"
 	got.Resources = append(got.Resources, &SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", Stack: otherSlices})
@@ -126,7 +125,6 @@ func TestDecode(t *testing.T) {
 			</object>
 		</resources>
 		<build>
-			<item objectid="8"/>
 		</build>
 	</model>`
 
@@ -221,7 +219,6 @@ func TestDecode_warns(t *testing.T) {
 			</object>
 		</resources>
 		<build>
-			<item objectid="8" p:path="/3d/other.model"/>
 		</build>
 		</model>
 		`

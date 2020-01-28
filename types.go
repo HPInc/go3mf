@@ -3,9 +3,8 @@ package go3mf
 var checkEveryBytes = int64(4 * 1024 * 1024)
 
 const (
-	nsXML            = "http://www.w3.org/XML/1998/namespace"
-	nsXMLNs          = "http://www.w3.org/2000/xmlns/"
-	nsProductionSpec = "http://schemas.microsoft.com/3dmanufacturing/production/2015/06"
+	nsXML   = "http://www.w3.org/XML/1998/namespace"
+	nsXMLNs = "http://www.w3.org/2000/xmlns/"
 )
 
 const (
@@ -18,8 +17,6 @@ const (
 	attrXmlns             = "xmlns"
 	attrID                = "id"
 	attrName              = "name"
-	attrProdUUID          = "UUID"
-	attrPath              = "path"
 	attrObjectID          = "objectid"
 	attrTransform         = "transform"
 	attrUnit              = "unit"

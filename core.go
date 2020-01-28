@@ -75,7 +75,6 @@ type Resource interface {
 // Object defines a composable object.
 type Object interface {
 	Identify() (string, uint32)
-	IsValid() bool
 	Type() ObjectType
 }
 
@@ -103,7 +102,6 @@ type ProductionAttachment struct {
 
 // Build contains one or more items to manufacture as part of processing the job.
 type Build struct {
-	UUID       string
 	Items      []*Item
 	Extensions map[string]interface{}
 }
@@ -193,11 +191,11 @@ func (ms *BaseMaterialsResource) Identify() (string, uint32) {
 
 // A Item is an in memory representation of the 3MF build item.
 type Item struct {
-	Object     Object
+	ObjectID   uint32
 	Transform  Matrix
 	PartNumber string
-	UUID       string
 	Metadata   []Metadata
+	Extensions map[string]interface{}
 }
 
 // HasTransform returns true if the transform is different than the identity.
@@ -209,7 +207,6 @@ func (b *Item) HasTransform() bool {
 type ObjectResource struct {
 	ID                   uint32
 	ModelPath            string
-	UUID                 string
 	Name                 string
 	PartNumber           string
 	Thumbnail            string
@@ -232,9 +229,9 @@ func (o *ObjectResource) Type() ObjectType {
 
 // A Component is an in memory representation of the 3MF component.
 type Component struct {
-	Object    Object
-	Transform Matrix
-	UUID      string
+	ObjectID   uint32
+	Transform  Matrix
+	Extensions map[string]interface{}
 }
 
 // HasTransform returns true if the transform is different than the identity.
@@ -246,20 +243,6 @@ func (c *Component) HasTransform() bool {
 type Components struct {
 	ObjectResource
 	Components []*Component
-}
-
-// IsValid checks if the component resource and all its child are valid.
-func (c *Components) IsValid() bool {
-	if len(c.Components) == 0 {
-		return false
-	}
-
-	for _, comp := range c.Components {
-		if !comp.Object.IsValid() {
-			return false
-		}
-	}
-	return true
 }
 
 // Face defines a triangle of a mesh.

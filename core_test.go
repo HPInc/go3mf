@@ -14,9 +14,8 @@ type MockObject struct {
 	mock.Mock
 }
 
-func NewMockObject(isValid bool) *MockObject {
+func NewMockObject() *MockObject {
 	o := new(MockObject)
-	o.On("IsValid").Return(isValid)
 	return o
 }
 
@@ -27,11 +26,6 @@ func (o *MockObject) Identify() (string, uint32) {
 
 func (o *MockObject) Type() ObjectType {
 	return ObjectTypeOther
-}
-
-func (o *MockObject) IsValid() bool {
-	args := o.Called()
-	return args.Bool(0)
 }
 
 func TestModel_SetThumbnail(t *testing.T) {
@@ -139,25 +133,6 @@ func TestComponent_HasTransform(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.c.HasTransform(); got != tt.want {
 				t.Errorf("Component.HasTransform() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestComponents_IsValid(t *testing.T) {
-	tests := []struct {
-		name string
-		c    *Components
-		want bool
-	}{
-		{"empty", new(Components), false},
-		{"oneInvalid", &Components{Components: []*Component{{Object: NewMockObject(true)}, {Object: NewMockObject(false)}}}, false},
-		{"valid", &Components{Components: []*Component{{Object: NewMockObject(true)}, {Object: NewMockObject(true)}}}, true},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.c.IsValid(); got != tt.want {
-				t.Errorf("Components.IsValid() = %v, want %v", got, tt.want)
 			}
 		})
 	}
