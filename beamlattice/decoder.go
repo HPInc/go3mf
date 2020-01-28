@@ -38,10 +38,10 @@ func (d *beamLatticeDecoder) Attributes(attrs []xml.Attr) bool {
 		}
 		switch a.Name.Local {
 		case attrRadius:
-			beamLattice.DefaultRadius, ok = d.Scanner.ParseFloat64Required(attrRadius, a.Value)
+			beamLattice.DefaultRadius, ok = d.Scanner.ParseFloat32Required(attrRadius, a.Value)
 			hasRadius = true
 		case attrMinLength, attrPrecision: // lib3mf legacy
-			beamLattice.MinLength, ok = d.Scanner.ParseFloat64Required(a.Name.Local, a.Value)
+			beamLattice.MinLength, ok = d.Scanner.ParseFloat32Required(a.Name.Local, a.Value)
 			hasMinLength = true
 		case attrClippingMode, attrClipping: // lib3mf legacy
 			beamLattice.ClipMode, _ = newClipMode(a.Value)

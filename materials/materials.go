@@ -138,7 +138,7 @@ func (c *ColorGroupResource) Identify() (string, uint32) {
 
 // A Composite specifies the proportion of the overall mixture for each material.
 type Composite struct {
-	Values []float64
+	Values []float32
 }
 
 // CompositeMaterialsResource defines materials derived by mixing 2 or more base materials in defined ratios.

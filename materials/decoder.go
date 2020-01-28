@@ -264,8 +264,8 @@ func (d *compositeDecoder) Attributes(attrs []xml.Attr) (ok bool) {
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrValues {
 			for _, f := range strings.Fields(a.Value) {
-				var val float64
-				if val, ok = d.Scanner.ParseFloat64Required(attrValues, f); ok {
+				var val float32
+				if val, ok = d.Scanner.ParseFloat32Required(attrValues, f); ok {
 					composite.Values = append(composite.Values, val)
 				} else {
 					break

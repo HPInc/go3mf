@@ -257,27 +257,6 @@ func (p *Scanner) ParseFloat32Optional(attr string, s string) float32 {
 	return float32(n)
 }
 
-// ParseFloat64Required parses s as a float64.
-// If it cannot be parsed a ParsePropertyError is added to the warnings.
-// Returns false if scanning cannot continue.
-func (p *Scanner) ParseFloat64Required(attr string, s string) (float64, bool) {
-	n, err := strconv.ParseFloat(s, 64)
-	if err != nil {
-		return 0, p.InvalidRequiredAttr(attr, s)
-	}
-	return n, true
-}
-
-// ParseFloat64Optional parses s as a float64.
-// If it cannot be parsed a ParsePropertyError is added to the warnings.
-func (p *Scanner) ParseFloat64Optional(attr string, s string) float64 {
-	n, err := strconv.ParseFloat(s, 64)
-	if err != nil {
-		p.InvalidOptionalAttr(attr, s)
-	}
-	return n
-}
-
 // ParseToMatrixRequired parses s as a Matrix.
 // If it cannot be parsed a ParsePropertyError is added to the warnings.
 // Returns false if scanning cannot continue.
