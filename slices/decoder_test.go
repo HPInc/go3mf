@@ -154,10 +154,10 @@ func TestDecode_warns(t *testing.T) {
 		go3mf.GenericError{ResourceID: 3, Element: "segment", ModelPath: "/3d/3dmodel.model", Message: "invalid slice segment index"},
 		go3mf.GenericError{ResourceID: 3, Element: "polygon", ModelPath: "/3d/3dmodel.model", Message: "a closed slice polygon is actually a line"},
 		go3mf.GenericError{ResourceID: 3, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Message: "a slicepath is invalid"},
-		go3mf.GenericError{ResourceID: 3, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced resource"},
+		//go3mf.GenericError{ResourceID: 3, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced resource"},
 		go3mf.GenericError{ResourceID: 3, Element: "slicestack", ModelPath: "/3d/3dmodel.model", Message: "slicestack contains slices and slicerefs"},
 		go3mf.MissingPropertyError{ResourceID: 7, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Name: "slicestackid"},
-		go3mf.GenericError{ResourceID: 7, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced resource"},
+		//go3mf.GenericError{ResourceID: 7, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced resource"},
 		go3mf.ParsePropertyError{ResourceID: 8, Element: "object", ModelPath: "/3d/3dmodel.model", Name: "meshresolution", Value: "invalid", Type: go3mf.PropertyOptional},
 	}
 	got := new(go3mf.Model)
