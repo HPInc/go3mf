@@ -67,7 +67,7 @@ func (d *modelDecoder) checkRequiredExt(requiredExts string) {
 	for _, ext := range strings.Fields(requiredExts) {
 		ext = d.Scanner.Namespaces[ext]
 		if ext != ExtensionName {
-			if _, ok := extensionDecoder[ext]; !ok {
+			if _, ok := d.Scanner.extensionDecoder[ext]; !ok {
 				d.Scanner.GenericError(true, fmt.Sprintf("'%s' extension is not supported", ext))
 			}
 		}
@@ -152,7 +152,7 @@ func (d *buildDecoder) Child(name xml.Name) (child NodeDecoder) {
 
 func (d *buildDecoder) Attributes(attrs []xml.Attr) {
 	for _, a := range attrs {
-		if ext, ok := extensionDecoder[a.Name.Space]; ok {
+		if ext, ok := d.Scanner.extensionDecoder[a.Name.Space]; ok {
 			ext.DecodeAttribute(d.Scanner, d.build, a)
 		}
 	}
@@ -175,6 +175,7 @@ func (d *buildItemDecoder) Child(name xml.Name) (child NodeDecoder) {
 	return
 }
 
+// TODO: validate coeherence after parsing
 // func (d *buildItemDecoder) processItem() {
 // 	resource, ok := d.Scanner.FindResource(d.objectPath, uint32(d.objectID))
 // 	if !ok {
@@ -195,7 +196,7 @@ func (d *buildItemDecoder) Attributes(attrs []xml.Attr) {
 	for _, a := range attrs {
 		if a.Name.Space == "" {
 			d.parseCoreAttr(a)
-		} else if ext, ok := extensionDecoder[a.Name.Space]; ok {
+		} else if ext, ok := d.Scanner.extensionDecoder[a.Name.Space]; ok {
 			ext.DecodeAttribute(d.Scanner, &d.item, a)
 		}
 	}
@@ -229,7 +230,7 @@ func (d *resourceDecoder) Child(name xml.Name) (child NodeDecoder) {
 		case attrBaseMaterials:
 			child = new(baseMaterialsDecoder)
 		}
-	} else if ext, ok := extensionDecoder[name.Space]; ok {
+	} else if ext, ok := d.Scanner.extensionDecoder[name.Space]; ok {
 		child = ext.NewNodeDecoder(nil, name.Local)
 	}
 	return
@@ -315,7 +316,7 @@ func (d *meshDecoder) Child(name xml.Name) (child NodeDecoder) {
 		} else if name.Local == attrTriangles {
 			child = &trianglesDecoder{mesh: &d.mesh}
 		}
-	} else if ext, ok := extensionDecoder[name.Space]; ok {
+	} else if ext, ok := d.Scanner.extensionDecoder[name.Space]; ok {
 		child = ext.NewNodeDecoder(&d.mesh, name.Local)
 	}
 	return
@@ -457,7 +458,7 @@ func (d *objectDecoder) Attributes(attrs []xml.Attr) {
 	for _, a := range attrs {
 		if a.Name.Space == "" {
 			d.parseCoreAttr(a)
-		} else if ext, ok := extensionDecoder[a.Name.Space]; ok {
+		} else if ext, ok := d.Scanner.extensionDecoder[a.Name.Space]; ok {
 			ext.DecodeAttribute(d.Scanner, &d.resource, a)
 		}
 	}
@@ -540,7 +541,7 @@ func (d *componentDecoder) Attributes(attrs []xml.Attr) {
 					d.Scanner.InvalidOptionalAttr(a.Name.Local, a.Value)
 				}
 			}
-		} else if ext, ok := extensionDecoder[a.Name.Space]; ok {
+		} else if ext, ok := d.Scanner.extensionDecoder[a.Name.Space]; ok {
 			ext.DecodeAttribute(d.Scanner, &component, a)
 		}
 	}

@@ -101,26 +101,27 @@ func (e GenericError) Error() string {
 
 // A Scanner is a 3mf model file scanning state machine.
 type Scanner struct {
-	Resources    []Resource
-	BuildItems   []*Item
-	Strict       bool
-	ModelPath    string
-	IsRoot       bool
-	Element      string
-	ResourceID   uint32
-	Err          error
-	Warnings     []error
-	Namespaces   map[string]string
-	model        *Model
-	resourcesMap map[uint32]Resource
+	Resources        []Resource
+	BuildItems       []*Item
+	Strict           bool
+	ModelPath        string
+	IsRoot           bool
+	Element          string
+	ResourceID       uint32
+	Err              error
+	Warnings         []error
+	Namespaces       map[string]string
+	model            *Model
+	resourcesMap     map[uint32]Resource
+	extensionDecoder map[string]*extensionDecoderWrapper
 }
 
-// NewScanner returns an initialized scanner.
-func NewScanner(model *Model) *Scanner {
+func newScanner(model *Model) *Scanner {
 	return &Scanner{
-		model:        model,
-		Namespaces:   make(map[string]string),
-		resourcesMap: make(map[uint32]Resource),
+		model:            model,
+		Namespaces:       make(map[string]string),
+		resourcesMap:     make(map[uint32]Resource),
+		extensionDecoder: make(map[string]*extensionDecoderWrapper),
 	}
 }
 

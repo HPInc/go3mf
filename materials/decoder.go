@@ -7,9 +7,10 @@ import (
 	"github.com/qmuntal/go3mf"
 )
 
-func init() {
-	go3mf.RegisterNewNodeDecoder(ExtensionName, nodeDecoder)
-	go3mf.RegisterFileFilter(ExtensionName, fileFilter)
+// RegisterExtension registers this extension in the decoder instance.
+func RegisterExtension(d *go3mf.Decoder) {
+	d.RegisterNodeDecoderExtension(ExtensionName, nodeDecoder)
+	d.RegisterFileFilterExtension(ExtensionName, fileFilter)
 }
 
 func fileFilter(relType string, _ bool) bool {

@@ -13,9 +13,9 @@ import (
 )
 
 type extensionDecoderWrapper struct {
-	newNodeDecoder func(interface{}, string) NodeDecoder
+	newNodeDecoder  func(interface{}, string) NodeDecoder
 	decodeAttribute func(*Scanner, interface{}, xml.Attr)
-	fileFilter func(string, bool) bool
+	fileFilter      func(string, bool) bool
 }
 
 func (e *extensionDecoderWrapper) NewNodeDecoder(parentNode interface{}, nodeName string) NodeDecoder {
@@ -36,41 +36,6 @@ func (e *extensionDecoderWrapper) FileFilter(relType string, isRootModel bool) b
 		return e.fileFilter(relType, isRootModel)
 	}
 	return false
-}
-
-var extensionDecoder = make(map[string]*extensionDecoderWrapper)
-
-// RegisterExtensionDecoder registers a NewNodeDecoder function to the associated extension key.
-// The registered function should return a NodeDecoder that will do the real decoding.
-func RegisterNewNodeDecoder(key string, f func (parentNode interface{}, nodeName string) NodeDecoder) {
-	if e, ok := extensionDecoder[key]; ok {
-		e.newNodeDecoder = f
-	} else {
-		extensionDecoder[key] = &extensionDecoderWrapper{newNodeDecoder: f}
-	}
-}
-
-// RegisterDecodeAttribute registers a DecodeAttribute function to the associated extension key.
-// The registered function should parse the attribute and update the parentNode.
-func RegisterDecodeAttribute(key string, f func(s *Scanner, parentNode interface{}, attr xml.Attr)) {
-	if e, ok := extensionDecoder[key]; ok {
-		e.decodeAttribute = f
-	} else {
-		extensionDecoder[key] = &extensionDecoderWrapper{decodeAttribute: f}
-	}
-}
-
-// RegisterFileFilter registers a FileFilter function to the associated extension key.
-// The registered function should return true if a file with an specific relationship with a model file
-// should be preserved as an attachment or not. If the file is accepted and it is a 3dmodel
-// it will processed decoded. It can happen that a file is preserved even if this method is
-// not called or it is discarded as other packages could accept it.
-func RegisterFileFilter(key string, f func(relType string, isRootModel bool) bool) {
-	if e, ok := extensionDecoder[key]; ok {
-		e.fileFilter = f
-	} else {
-		extensionDecoder[key] = &extensionDecoderWrapper{fileFilter: f}
-	}
 }
 
 // A XMLDecoder is anything that can decode a stream of XML tokens, including a Decoder.
@@ -145,8 +110,11 @@ type modelFileDecoder struct {
 	Scanner *Scanner
 }
 
-func (d *modelFileDecoder) Decode(ctx context.Context, x XMLDecoder, model *Model, path string, isRoot, strict bool) error {
-	d.Scanner = NewScanner(model)
+func (d *modelFileDecoder) Decode(ctx context.Context, x XMLDecoder, model *Model, path string, isRoot, strict bool, extensionDecoder map[string]*extensionDecoderWrapper) error {
+	d.Scanner = newScanner(model)
+	if extensionDecoder != nil {
+		d.Scanner.extensionDecoder = extensionDecoder
+	}
 	d.Scanner.IsRoot = isRoot
 	d.Scanner.Strict = strict
 	d.Scanner.ModelPath = path
@@ -220,6 +188,7 @@ type Decoder struct {
 	flate            func(r io.Reader) io.ReadCloser
 	nonRootModels    []packageFile
 	ctx              context.Context
+	extensionDecoder map[string]*extensionDecoderWrapper
 }
 
 // NewDecoder returns a new Decoder reading a 3mf file from r.
@@ -243,6 +212,51 @@ func (d *Decoder) SetXMLDecoder(x func(r io.Reader) XMLDecoder) {
 // SetDecompressor sets or overrides a custom decompressor for deflating the zip package.
 func (d *Decoder) SetDecompressor(dcomp func(r io.Reader) io.ReadCloser) {
 	d.flate = dcomp
+}
+
+// RegisterNodeDecoderExtension registers a node decoding function to the associated extension key.
+// The registered function should return a NodeDecoder that will do the real decoding.
+func (d *Decoder) RegisterNodeDecoderExtension(key string, f func(parentNode interface{}, nodeName string) NodeDecoder) {
+	if e, ok := d.extensionDecoder[key]; ok {
+		e.newNodeDecoder = f
+	} else {
+		if d.extensionDecoder == nil {
+			d.extensionDecoder = make(map[string]*extensionDecoderWrapper)
+		}
+		d.extensionDecoder[key] = &extensionDecoderWrapper{newNodeDecoder: f}
+	}
+}
+
+// RegisterDecodeAttributeExtension registers a DecodeAttribute function to the associated extension key.
+// The registered function should parse the attribute and update the parentNode.
+func (d *Decoder) RegisterDecodeAttributeExtension(key string, f func(s *Scanner, parentNode interface{}, attr xml.Attr)) {
+	if e, ok := d.extensionDecoder[key]; ok {
+		e.decodeAttribute = f
+	} else {
+		if d.extensionDecoder == nil {
+			d.extensionDecoder = make(map[string]*extensionDecoderWrapper)
+		}
+		d.extensionDecoder[key] = &extensionDecoderWrapper{decodeAttribute: f}
+	}
+}
+
+// RegisterFileFilterExtension registers a FileFilter function to the associated extension key.
+// The registered function should return true if a file with an specific relationship with a model file
+// should be preserved as an attachment or not. If the file is accepted and it is a 3dmodel
+// it will processed decoded. It can happen that a file is preserved even if this method is
+// not called or it is discarded as other packages could accept it.
+func (d *Decoder) RegisterFileFilterExtension(key string, f func(relType string, isRootModel bool) bool) {
+	if e, ok := d.extensionDecoder[key]; ok {
+		e.fileFilter = f
+	} else {
+		if d.extensionDecoder == nil {
+			d.extensionDecoder = make(map[string]*extensionDecoderWrapper)
+		}
+		if d.extensionDecoder == nil {
+			d.extensionDecoder = make(map[string]*extensionDecoderWrapper)
+		}
+		d.extensionDecoder[key] = &extensionDecoderWrapper{fileFilter: f}
+	}
 }
 
 // DecodeContext reads the 3mf file and unmarshall its content into the model.
@@ -276,7 +290,7 @@ func (d *Decoder) processRootModel(ctx context.Context, rootFile packageFile, mo
 	}
 	defer f.Close()
 	mf := modelFileDecoder{}
-	err = mf.Decode(ctx, d.tokenReader(f), model, rootFile.Name(), true, d.Strict)
+	err = mf.Decode(ctx, d.tokenReader(f), model, rootFile.Name(), true, d.Strict, d.extensionDecoder)
 	select {
 	case <-ctx.Done():
 		err = ctx.Err()
@@ -361,7 +375,7 @@ func (d *Decoder) extractCoreAttachments(file packageFile, model *Model, isRoot 
 		relType := rel.Type()
 		preserve := relType == relTypePrintTicket || relType == relTypeThumbnail
 		if !preserve {
-			for _, ext := range extensionDecoder {
+			for _, ext := range d.extensionDecoder {
 				if ext.FileFilter(relType, isRoot) {
 					preserve = true
 					break
@@ -401,7 +415,7 @@ func (d *Decoder) readProductionAttachmentModel(ctx context.Context, i int, mode
 	}
 	defer file.Close()
 	mf := modelFileDecoder{}
-	err = mf.Decode(ctx, d.tokenReader(file), model, attachment.Name(), false, d.Strict)
+	err = mf.Decode(ctx, d.tokenReader(file), model, attachment.Name(), false, d.Strict, d.extensionDecoder)
 	return mf.Scanner, err
 }
 

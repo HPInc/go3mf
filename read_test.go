@@ -169,16 +169,13 @@ func (m *mockPackage) FindFileFromRel(args0 string) (packageFile, bool) {
 
 func TestDecoder_processOPC(t *testing.T) {
 	extType := "fake_type"
-	RegisterFileFilter("", func(relType string, isRoot bool) bool {
-		return relType == extType || ( isRoot && relType == RelTypeModel3D)
-	})
 	otherModel := newMockFile("/other.model", nil, nil, false)
 	tests := []struct {
-		name    string
-		d       *Decoder
-		want    *Model
+		name          string
+		d             *Decoder
+		want          *Model
 		nonRootModels []packageFile
-		wantErr bool
+		wantErr       bool
 	}{
 		{"noRoot", &Decoder{p: newMockPackage(nil)}, &Model{}, nil, true},
 		{"noRels", &Decoder{p: newMockPackage(newMockFile("/a.model", nil, nil, false))}, &Model{Path: "/a.model"}, nil, false},
@@ -206,11 +203,14 @@ func TestDecoder_processOPC(t *testing.T) {
 		{"withModelAttachment", &Decoder{
 			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(RelTypeModel3D, "/other.model")}, otherModel, false)),
 		}, &Model{
-			Path:                  "/a.model",
+			Path: "/a.model",
 		}, []packageFile{otherModel}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			tt.d.RegisterFileFilterExtension("", func(relType string, isRoot bool) bool {
+				return relType == extType || (isRoot && relType == RelTypeModel3D)
+			})
 			model := new(Model)
 			_, err := tt.d.processOPC(model)
 			if (err != nil) != tt.wantErr {
@@ -246,8 +246,6 @@ func TestDecoder_processRootModel_Fail(t *testing.T) {
 }
 
 func TestDecoder_processRootModel(t *testing.T) {
-	RegisterNewNodeDecoder("fake_ext", nil)
-	RegisterDecodeAttribute("fake_ext", nil)
 	baseMaterials := &BaseMaterialsResource{ID: 5, ModelPath: "/3d/3dmodel.model", Materials: []BaseMaterial{
 		{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 		{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
@@ -359,6 +357,8 @@ func TestDecoder_processRootModel(t *testing.T) {
 
 	t.Run("base", func(t *testing.T) {
 		d := new(Decoder)
+		d.RegisterNodeDecoderExtension("fake_ext", nil)
+		d.RegisterDecodeAttributeExtension("fake_ext", nil)
 		d.Strict = true
 		d.SetDecompressor(func(r io.Reader) io.ReadCloser { return flate.NewReader(r) })
 		d.SetXMLDecoder(func(r io.Reader) XMLDecoder { return xml.NewDecoder(r) })
@@ -473,7 +473,7 @@ func Test_modelFile_Decode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.d.Decode(tt.args.ctx, tt.args.x, new(Model), "", true, false); (err != nil) != tt.wantErr {
+			if err := tt.d.Decode(tt.args.ctx, tt.args.x, new(Model), "", true, false, nil); (err != nil) != tt.wantErr {
 				t.Errorf("modelFile.Decode() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -502,8 +502,6 @@ func TestNewDecoder(t *testing.T) {
 }
 
 func TestDecoder_processRootModel_warns(t *testing.T) {
-	RegisterNewNodeDecoder("fake_ext", nil)
-	RegisterDecodeAttribute("fake_ext", nil)
 	want := []error{
 		ParsePropertyError{ResourceID: 0, Element: "base", Name: "displaycolor", Value: "0000FF", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
 		MissingPropertyError{ResourceID: 0, Element: "base", ModelPath: "/3d/3dmodel.model", Name: "name"},
@@ -586,6 +584,8 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 
 	t.Run("base", func(t *testing.T) {
 		d := new(Decoder)
+		d.RegisterNodeDecoderExtension("fake_ext", nil)
+		d.RegisterDecodeAttributeExtension("fake_ext", nil)
 		d.Strict = false
 		d.SetDecompressor(func(r io.Reader) io.ReadCloser { return flate.NewReader(r) })
 		d.SetXMLDecoder(func(r io.Reader) XMLDecoder { return xml.NewDecoder(r) })

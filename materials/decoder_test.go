@@ -101,6 +101,7 @@ func TestDecode(t *testing.T) {
 	</model>`
 	t.Run("base", func(t *testing.T) {
 		d := new(go3mf.Decoder)
+		RegisterExtension(d)
 		d.Strict = true
 		if err := d.DecodeRawModel(context.Background(), got, rootFile); err != nil {
 			t.Errorf("DecodeRawModel() unexpected error = %v", err)
@@ -188,6 +189,7 @@ func TestDecode_warns(t *testing.T) {
 	</model>`
 	t.Run("base", func(t *testing.T) {
 		d := new(go3mf.Decoder)
+		RegisterExtension(d)
 		d.Strict = false
 		if err := d.DecodeRawModel(context.Background(), got, rootFile); err != nil {
 			t.Errorf("DecodeRawModel_warn() unexpected error = %v", err)

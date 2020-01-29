@@ -74,12 +74,6 @@ type Attachment struct {
 	Path             string
 }
 
-// ProductionAttachment defines the Model Production Attachment.
-type ProductionAttachment struct {
-	RelationshipType string
-	Path             string
-}
-
 // Build contains one or more items to manufacture as part of processing the job.
 type Build struct {
 	Items      []*Item
@@ -88,14 +82,14 @@ type Build struct {
 
 // A Model is an in memory representation of the 3MF file.
 type Model struct {
-	Path                  string
-	Language              string
-	Units                 Units
-	Thumbnail             string
-	Metadata              []Metadata
-	Resources             []Resource
-	Build                 Build
-	Attachments           []*Attachment
+	Path        string
+	Language    string
+	Units       Units
+	Thumbnail   string
+	Metadata    []Metadata
+	Resources   []Resource
+	Build       Build
+	Attachments []*Attachment
 }
 
 // UnusedID returns the lowest unused ID.

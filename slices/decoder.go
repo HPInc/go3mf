@@ -6,9 +6,10 @@ import (
 	"github.com/qmuntal/go3mf"
 )
 
-func init() {
-	go3mf.RegisterNewNodeDecoder(ExtensionName, nodeDecoder)
-	go3mf.RegisterDecodeAttribute(ExtensionName, decodeAttribute)
+// RegisterExtension registers this extension in the decoder instance.
+func RegisterExtension(d *go3mf.Decoder) {
+	d.RegisterNodeDecoderExtension(ExtensionName, nodeDecoder)
+	d.RegisterDecodeAttributeExtension(ExtensionName, decodeAttribute)
 }
 
 func nodeDecoder(_ interface{}, nodeName string) go3mf.NodeDecoder {
