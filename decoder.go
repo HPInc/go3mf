@@ -9,28 +9,20 @@ import (
 
 type modelDecoder struct {
 	BaseDecoder
-	model                *Model
-	withinIgnoredElement bool
+	model *Model
 }
 
 func (d *modelDecoder) Child(name xml.Name) (child NodeDecoder) {
 	if name.Space == ExtensionName {
 		switch name.Local {
 		case attrResources:
-			d.withinIgnoredElement = false
 			child = &resourceDecoder{}
 		case attrBuild:
-			if !d.Scanner.IsRoot {
-				d.withinIgnoredElement = true
-			} else {
-				d.withinIgnoredElement = false
+			if d.Scanner.IsRoot {
 				child = &buildDecoder{build: &d.model.Build}
 			}
 		case attrMetadata:
-			if !d.Scanner.IsRoot {
-				d.withinIgnoredElement = true
-			} else {
-				d.withinIgnoredElement = true
+			if d.Scanner.IsRoot {
 				child = &metadataDecoder{metadatas: &d.model.Metadata}
 			}
 		}
@@ -175,7 +167,7 @@ func (d *buildItemDecoder) Child(name xml.Name) (child NodeDecoder) {
 	return
 }
 
-// TODO: validate coeherence after parsing
+// TODO: validate coeherence after decoding
 // func (d *buildItemDecoder) processItem() {
 // 	resource, ok := d.Scanner.FindResource(d.objectPath, uint32(d.objectID))
 // 	if !ok {
@@ -548,6 +540,7 @@ func (d *componentDecoder) Attributes(attrs []xml.Attr) {
 	d.resource.Components = append(d.resource.Components, &component)
 }
 
+// TODO: validate coeherence after decoding
 // func (d *componentDecoder) addComponent(component *Component, path string, objectID uint32) {
 // if path != "" && !d.Scanner.IsRoot {
 // d.Scanner.GenericError(true, "path attribute in a non-root file is not supported")

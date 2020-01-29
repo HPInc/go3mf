@@ -98,24 +98,24 @@ func (d *sliceRefDecoder) Attributes(attrs []xml.Attr) {
 		}
 	}
 
-	d.addSliceRef(sliceStackID, path)
-}
-
-func (d *sliceRefDecoder) addSliceRef(sliceStackID uint32, path string) {
-	if sliceStackID == 0 {
-		d.Scanner.MissingAttr(attrSliceRefID)
-	}
-	if path == d.resource.ModelPath {
-		d.Scanner.GenericError(true, "a slicepath is invalid")
-	}
-	resource, exist := d.Scanner.FindResource(path, sliceStackID)
-	if !exist {
-		d.Scanner.GenericError(true, "non-existent referenced resource")
-	} else if _, isSlice := resource.(*SliceStackResource); !isSlice {
-		d.Scanner.GenericError(true, "non-slicestack referenced resource")
-	}
 	d.resource.Stack.Refs = append(d.resource.Stack.Refs, SliceRef{SliceStackID: sliceStackID, Path: path})
 }
+
+// TODO: validate coherency after decoding.
+// func (d *sliceRefDecoder) addSliceRef(sliceStackID uint32, path string) {
+// 	if sliceStackID == 0 {
+// 		d.Scanner.MissingAttr(attrSliceRefID)
+// 	}
+// 	if path == d.resource.ModelPath {
+// 		d.Scanner.GenericError(true, "a slicepath is invalid")
+// 	}
+// 	resource, exist := d.Scanner.FindResource(path, sliceStackID)
+// 	if !exist {
+// 		d.Scanner.GenericError(true, "non-existent referenced resource")
+// 	} else if _, isSlice := resource.(*SliceStackResource); !isSlice {
+// 		d.Scanner.GenericError(true, "non-slicestack referenced resource")
+// 	}
+// }
 
 type sliceDecoder struct {
 	go3mf.BaseDecoder
