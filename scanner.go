@@ -132,19 +132,6 @@ func (p *Scanner) AddResource(r Resource) {
 	p.Resources = append(p.Resources, r)
 }
 
-// FindResource returns the resource with the target unique ID.
-func (p *Scanner) FindResource(path string, id uint32) (r Resource, ok bool) {
-	if path == "" {
-		path = p.model.Path
-	}
-	if path == p.ModelPath {
-		r, ok = p.resourcesMap[id]
-	} else {
-		r, ok = p.model.FindResource(path, id)
-	}
-	return
-}
-
 // NamespaceRegistered checks if the namespace is registered.
 func (p *Scanner) NamespaceRegistered(ns string) bool {
 	for _, space := range p.Namespaces {
