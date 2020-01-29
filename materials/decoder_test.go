@@ -11,11 +11,11 @@ import (
 
 func TestDecode(t *testing.T) {
 	baseTexture := &Texture2DResource{ID: 6, ModelPath: "/3d/3dmodel.model", Path: "/3D/Texture/msLogo.png", ContentType: TextureTypePNG, TileStyleU: TileWrap, TileStyleV: TileMirror, Filter: TextureFilterAuto}
-	meshRes := &go3mf.Mesh{
-		ObjectResource: go3mf.ObjectResource{
-			ID: 8, Name: "Box 1", ModelPath: "/3d/3dmodel.model", Thumbnail: "/a.png", DefaultPropertyID: 5, PartNumber: "11111111-1111-1111-1111-111111111111"},
+	meshRes := &go3mf.ObjectResource{
+		Mesh: new(go3mf.Mesh),
+		ID: 8, Name: "Box 1", ModelPath: "/3d/3dmodel.model", Thumbnail: "/a.png", DefaultPropertyID: 5, PartNumber: "11111111-1111-1111-1111-111111111111",
 	}
-	meshRes.Nodes = append(meshRes.Nodes, []go3mf.Point3D{
+	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []go3mf.Point3D{
 		{0, 0, 0},
 		{100, 0, 0},
 		{100, 100, 0},
@@ -25,7 +25,7 @@ func TestDecode(t *testing.T) {
 		{100, 100, 100},
 		{0, 100, 100},
 	}...)
-	meshRes.Faces = append(meshRes.Faces, []go3mf.Face{
+	meshRes.Mesh.Faces = append(meshRes.Mesh.Faces, []go3mf.Face{
 		{NodeIndices: [3]uint32{3, 2, 1}, Resource: 5},
 		{NodeIndices: [3]uint32{1, 0, 3}, Resource: 5},
 		{NodeIndices: [3]uint32{4, 5, 6}, Resource: 5, ResourceIndices: [3]uint32{1, 1, 1}},

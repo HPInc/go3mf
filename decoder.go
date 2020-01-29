@@ -294,22 +294,22 @@ func (d *baseMaterialDecoder) Attributes(attrs []xml.Attr) {
 
 type meshDecoder struct {
 	BaseDecoder
-	mesh Mesh
+	resource *ObjectResource
 }
 
-func (d *meshDecoder) Close() {
-	d.Scanner.AddResource(&d.mesh)
+func (d *meshDecoder) Open() {
+	d.resource.Mesh = new(Mesh)
 }
 
 func (d *meshDecoder) Child(name xml.Name) (child NodeDecoder) {
 	if name.Space == ExtensionName {
 		if name.Local == attrVertices {
-			child = &verticesDecoder{mesh: &d.mesh}
+			child = &verticesDecoder{mesh: d.resource.Mesh}
 		} else if name.Local == attrTriangles {
-			child = &trianglesDecoder{mesh: &d.mesh}
+			child = &trianglesDecoder{resource: d.resource}
 		}
 	} else if ext, ok := d.Scanner.extensionDecoder[name.Space]; ok {
-		child = ext.NewNodeDecoder(&d.mesh, name.Local)
+		child = ext.NewNodeDecoder(d.resource.Mesh, name.Local)
 	}
 	return
 }
@@ -353,15 +353,17 @@ func (d *vertexDecoder) Attributes(attrs []xml.Attr) {
 
 type trianglesDecoder struct {
 	BaseDecoder
-	mesh            *Mesh
+	resource            *ObjectResource
 	triangleDecoder triangleDecoder
 }
 
 func (d *trianglesDecoder) Open() {
-	d.triangleDecoder.mesh = d.mesh
+	d.triangleDecoder.mesh = d.resource.Mesh
+	d.triangleDecoder.defaultPropertyID = d.resource.DefaultPropertyID
+	d.triangleDecoder.defaultPropertyIndex = d.resource.DefaultPropertyIndex
 
-	if len(d.mesh.Faces) == 0 && len(d.mesh.Nodes) > 0 {
-		d.mesh.Faces = make([]Face, 0, len(d.mesh.Nodes)-1)
+	if len(d.resource.Mesh.Faces) == 0 && len(d.resource.Mesh.Nodes) > 0 {
+		d.resource.Mesh.Faces = make([]Face, 0, len(d.resource.Mesh.Nodes)-1)
 	}
 }
 
@@ -375,6 +377,7 @@ func (d *trianglesDecoder) Child(name xml.Name) (child NodeDecoder) {
 type triangleDecoder struct {
 	BaseDecoder
 	mesh *Mesh
+	defaultPropertyIndex, defaultPropertyID uint32
 }
 
 func (d *triangleDecoder) Attributes(attrs []xml.Attr) {
@@ -403,10 +406,10 @@ func (d *triangleDecoder) Attributes(attrs []xml.Attr) {
 		}
 	}
 
-	p1 = applyDefault(p1, d.mesh.DefaultPropertyIndex, hasP1)
+	p1 = applyDefault(p1, d.defaultPropertyIndex, hasP1)
 	p2 = applyDefault(p2, p1, hasP2)
 	p3 = applyDefault(p3, p1, hasP3)
-	pid = applyDefault(pid, d.mesh.DefaultPropertyID, hasPID)
+	pid = applyDefault(pid, d.defaultPropertyID, hasPID)
 
 	d.addTriangle(v1, v2, v3, pid, p1, p2, p3)
 }
@@ -443,6 +446,7 @@ func (d *objectDecoder) Open() {
 }
 
 func (d *objectDecoder) Close() {
+	d.Scanner.AddResource(&d.resource)
 	d.Scanner.CloseResource()
 }
 
@@ -459,12 +463,12 @@ func (d *objectDecoder) Attributes(attrs []xml.Attr) {
 func (d *objectDecoder) Child(name xml.Name) (child NodeDecoder) {
 	if name.Space == ExtensionName {
 		if name.Local == attrMesh {
-			child = &meshDecoder{mesh: Mesh{ObjectResource: d.resource}}
+			child = &meshDecoder{resource: &d.resource}
 		} else if name.Local == attrComponents {
 			if d.resource.DefaultPropertyID != 0 {
 				d.Scanner.GenericError(true, "default PID is not supported for component objects")
 			}
-			child = &componentsDecoder{resource: Components{ObjectResource: d.resource}}
+			child = &componentsDecoder{resource: &d.resource}
 		} else if name.Local == attrMetadataGroup {
 			child = &metadataGroupDecoder{metadatas: &d.resource.Metadata}
 		}
@@ -497,15 +501,13 @@ func (d *objectDecoder) parseCoreAttr(a xml.Attr) {
 
 type componentsDecoder struct {
 	BaseDecoder
-	resource         Components
+	resource         *ObjectResource
 	componentDecoder componentDecoder
 }
 
 func (d *componentsDecoder) Open() {
-	d.componentDecoder.resource = &d.resource
-}
-func (d *componentsDecoder) Close() {
-	d.Scanner.AddResource(&d.resource)
+	d.resource.Components = make([]*Component, 0)
+	d.componentDecoder.resource = d.resource
 }
 
 func (d *componentsDecoder) Child(name xml.Name) (child NodeDecoder) {
@@ -517,7 +519,7 @@ func (d *componentsDecoder) Child(name xml.Name) (child NodeDecoder) {
 
 type componentDecoder struct {
 	BaseDecoder
-	resource *Components
+	resource *ObjectResource
 }
 
 func (d *componentDecoder) Attributes(attrs []xml.Attr) {

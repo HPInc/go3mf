@@ -195,7 +195,21 @@ type ObjectResource struct {
 	DefaultPropertyIndex uint32
 	ObjectType           ObjectType
 	Metadata             []Metadata
+	Mesh *Mesh
+	Components 			 []*Component
 	Extensions           map[string]interface{}
+}
+
+// NewMeshResource returns a new object resource
+// with an initialized mesh.
+func NewMeshResource() *ObjectResource {
+	return &ObjectResource{Mesh: new(Mesh)}
+}
+
+// NewComponentsResource returns a new object resource
+// with an initialized components.
+func NewComponentsResource() *ObjectResource {
+	return &ObjectResource{Components: make([]*Component, 0)}
 }
 
 // Identify returns the unique ID of the resource.
@@ -206,6 +220,32 @@ func (o *ObjectResource) Identify() (string, uint32) {
 // Type returns the type of the object.
 func (o *ObjectResource) Type() ObjectType {
 	return o.ObjectType
+}
+
+
+
+// IsValid checks if the mesh resource are valid.
+func (o *ObjectResource) IsValid() bool {
+	if o.Mesh == nil && o.Components == nil {
+		return false
+	} else if o.Mesh != nil && o.Components != nil {
+		return false
+	}
+	var isValid bool
+	if o.Mesh != nil {
+		switch o.ObjectType {
+		case ObjectTypeModel:
+			isValid = o.Mesh.IsManifoldAndOriented()
+		case ObjectTypeSolidSupport:
+			isValid = o.Mesh.IsManifoldAndOriented()
+		//case ObjectTypeSupport:
+		//	return len(c.Mesh.Beams) == 0
+		//case ObjectTypeSurface:
+		//	return len(c.Mesh.Beams) == 0
+		}
+	}
+
+	return isValid
 }
 
 // A Component is an in memory representation of the 3MF component.
@@ -220,12 +260,6 @@ func (c *Component) HasTransform() bool {
 	return c.Transform != Matrix{} && c.Transform != Identity()
 }
 
-// A Components resource is an in memory representation of the 3MF component object.
-type Components struct {
-	ObjectResource
-	Components []*Component
-}
-
 // Face defines a triangle of a mesh.
 type Face struct {
 	NodeIndices     [3]uint32 // Coordinates of the three nodes that defines the face.
@@ -238,26 +272,9 @@ type Face struct {
 // orientation (i.e. the face can look up or look down) and have three nodes.
 // The orientation is defined by the order of its nodes.
 type Mesh struct {
-	ObjectResource
 	Nodes      []Point3D
 	Faces      []Face
 	Extensions map[string]interface{}
-}
-
-// IsValid checks if the mesh resource are valid.
-func (m *Mesh) IsValid() bool {
-	switch m.ObjectType {
-	case ObjectTypeModel:
-		return m.IsManifoldAndOriented()
-	case ObjectTypeSolidSupport:
-		return m.IsManifoldAndOriented()
-		//case ObjectTypeSupport:
-		//	return len(c.Mesh.Beams) == 0
-		//case ObjectTypeSurface:
-		//	return len(c.Mesh.Beams) == 0
-	}
-
-	return false
 }
 
 // CheckSanity checks if the mesh is well formated.

@@ -35,12 +35,12 @@ func TestDecode(t *testing.T) {
 		},
 	}}
 	sliceStackRef := &SliceStackResource{ID: 7, ModelPath: "/3d/3dmodel.model", Stack: SliceStack{BottomZ: 1.1, Refs: []SliceRef{{SliceStackID: 10, Path: "/2D/2Dmodel.model"}}}}
-	meshRes := &go3mf.Mesh{
-		ObjectResource: go3mf.ObjectResource{
+	meshRes := &go3mf.ObjectResource{
+			Mesh: new(go3mf.Mesh),
 			ID: 8, Name: "Box 1", ModelPath: "/3d/3dmodel.model",
-			Extensions: map[string]interface{}{ExtensionName: &ObjectAttr{SliceStackID: 3, SliceResolution: ResolutionLow}}},
+			Extensions: map[string]interface{}{ExtensionName: &ObjectAttr{SliceStackID: 3, SliceResolution: ResolutionLow}},
 	}
-	meshRes.Nodes = append(meshRes.Nodes, []go3mf.Point3D{
+	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []go3mf.Point3D{
 		{0, 0, 0},
 		{100, 0, 0},
 		{100, 100, 0},
@@ -50,7 +50,7 @@ func TestDecode(t *testing.T) {
 		{100, 100, 100},
 		{0, 100, 100},
 	}...)
-	meshRes.Faces = append(meshRes.Faces, []go3mf.Face{
+	meshRes.Mesh.Faces = append(meshRes.Mesh.Faces, []go3mf.Face{
 		{NodeIndices: [3]uint32{3, 2, 1}},
 		{NodeIndices: [3]uint32{1, 0, 3}},
 		{NodeIndices: [3]uint32{4, 5, 6}},

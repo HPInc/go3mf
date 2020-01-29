@@ -39,17 +39,17 @@ func (d *Decoder) DecodeContext(ctx context.Context, m *go3mf.Model) error {
 	if err != nil {
 		return err
 	}
-	newMesh := new(go3mf.Mesh)
+	newMesh := go3mf.NewMeshResource()
 	if isASCII {
 		decoder := asciiDecoder{r: b}
-		err = decoder.decode(ctx, newMesh)
+		err = decoder.decode(ctx, newMesh.Mesh)
 	} else {
 		decoder := binaryDecoder{r: b}
-		err = decoder.decode(ctx, newMesh)
+		err = decoder.decode(ctx, newMesh.Mesh)
 	}
 	if err == nil {
-		newMesh.ObjectResource.ModelPath = m.Path
-		newMesh.ObjectResource.ID = m.UnusedID()
+		newMesh.ModelPath = m.Path
+		newMesh.ID = m.UnusedID()
 		m.Resources = append(m.Resources, newMesh)
 	}
 	return err

@@ -9,13 +9,13 @@ import (
 )
 
 func TestDecode(t *testing.T) {
-	meshRes := &go3mf.Mesh{
-		ObjectResource: go3mf.ObjectResource{
+	meshRes := &go3mf.ObjectResource{
+			Mesh: new(go3mf.Mesh),
 			ID: 8, Name: "Box 1", ModelPath: "/3d/3dmodel.model",
-			Extensions: map[string]interface{}{ExtensionName: &ObjectAttr{UUID: "11111111-1111-1111-1111-111111111111"}},
+			Extensions: map[string]interface{}{ExtensionName: &ObjectAttr{UUID: "11111111-1111-1111-1111-111111111111"},
 		},
 	}
-	meshRes.Nodes = append(meshRes.Nodes, []go3mf.Point3D{
+	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []go3mf.Point3D{
 		{0, 0, 0},
 		{100, 0, 0},
 		{100, 100, 0},
@@ -25,7 +25,7 @@ func TestDecode(t *testing.T) {
 		{100, 100, 100},
 		{0, 100, 100},
 	}...)
-	meshRes.Faces = append(meshRes.Faces, []go3mf.Face{
+	meshRes.Mesh.Faces = append(meshRes.Mesh.Faces, []go3mf.Face{
 		{NodeIndices: [3]uint32{3, 2, 1}},
 		{NodeIndices: [3]uint32{1, 0, 3}},
 		{NodeIndices: [3]uint32{4, 5, 6}},
@@ -40,11 +40,9 @@ func TestDecode(t *testing.T) {
 		{NodeIndices: [3]uint32{4, 7, 3}},
 	}...)
 
-	components := &go3mf.Components{
-		ObjectResource: go3mf.ObjectResource{
-			Extensions: map[string]interface{}{ExtensionName: &ObjectAttr{UUID: "cb828680-8895-4e08-a1fc-be63e033df15"}},
-			ID:         20, ModelPath: "/3d/3dmodel.model",
-		},
+	components := &go3mf.ObjectResource{
+		Extensions: map[string]interface{}{ExtensionName: &ObjectAttr{UUID: "cb828680-8895-4e08-a1fc-be63e033df15"}},
+		ID:         20, ModelPath: "/3d/3dmodel.model",
 		Components: []*go3mf.Component{{
 			Extensions: map[string]interface{}{ExtensionName: &ComponentAttr{UUID: "cb828680-8895-4e08-a1fc-be63e033df16"}},
 			ObjectID:   8, Transform: go3mf.Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}},
@@ -52,7 +50,7 @@ func TestDecode(t *testing.T) {
 	}
 
 	want := &go3mf.Model{Path: "/3d/3dmodel.model"}
-	otherMesh := &go3mf.Mesh{ObjectResource: go3mf.ObjectResource{ID: 8, ModelPath: "/3d/other.model"}}
+	otherMesh := &go3mf.ObjectResource{Mesh: new(go3mf.Mesh), ID: 8, ModelPath: "/3d/other.model"}
 	want.Resources = append(want.Resources, otherMesh, meshRes, components)
 	ExtensionBuild(&want.Build).UUID = "e9e25302-6428-402e-8633-cc95528d0ed3"
 	want.Build.Items = append(want.Build.Items, &go3mf.Item{ObjectID: 20,

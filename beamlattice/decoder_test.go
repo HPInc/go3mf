@@ -9,17 +9,18 @@ import (
 )
 
 func TestDecode(t *testing.T) {
-	meshLattice := &go3mf.Mesh{
-		ObjectResource: go3mf.ObjectResource{ID: 15, Name: "Box", ModelPath: "/3d/3dmodel.model"},
+	meshLattice := &go3mf.ObjectResource{
+		ID: 15, Name: "Box", ModelPath: "/3d/3dmodel.model",
+		Mesh: &go3mf.Mesh {
 		Extensions: map[string]interface{}{
 			ExtensionName: &BeamLattice{ClipMode: ClipInside, ClippingMeshID: 8, RepresentationMeshID: 8},
-		},
+		}},
 	}
-	beamLattice := ExtensionBeamLattice(meshLattice)
+	beamLattice := ExtensionBeamLattice(meshLattice.Mesh)
 	beamLattice.MinLength = 0.0001
 	beamLattice.CapMode = CapModeHemisphere
 	beamLattice.DefaultRadius = 1
-	meshLattice.Nodes = append(meshLattice.Nodes, []go3mf.Point3D{
+	meshLattice.Mesh.Nodes = append(meshLattice.Mesh.Nodes, []go3mf.Point3D{
 		{45, 55, 55},
 		{45, 45, 55},
 		{45, 55, 45},

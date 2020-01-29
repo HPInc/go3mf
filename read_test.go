@@ -250,11 +250,11 @@ func TestDecoder_processRootModel(t *testing.T) {
 		{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 		{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
 	}}
-	meshRes := &Mesh{
-		ObjectResource: ObjectResource{
-			ID: 8, Name: "Box 1", ModelPath: "/3d/3dmodel.model", Thumbnail: "/a.png", DefaultPropertyID: 5, PartNumber: "11111111-1111-1111-1111-111111111111"},
+	meshRes := &ObjectResource{
+		Mesh: new(Mesh),
+		ID: 8, Name: "Box 1", ModelPath: "/3d/3dmodel.model", Thumbnail: "/a.png", DefaultPropertyID: 5, PartNumber: "11111111-1111-1111-1111-111111111111",
 	}
-	meshRes.Nodes = append(meshRes.Nodes, []Point3D{
+	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []Point3D{
 		{0, 0, 0},
 		{100, 0, 0},
 		{100, 100, 0},
@@ -264,7 +264,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 		{100, 100, 100},
 		{0, 100, 100},
 	}...)
-	meshRes.Faces = append(meshRes.Faces, []Face{
+	meshRes.Mesh.Faces = append(meshRes.Mesh.Faces, []Face{
 		{NodeIndices: [3]uint32{3, 2, 1}, Resource: 5},
 		{NodeIndices: [3]uint32{1, 0, 3}, Resource: 5},
 		{NodeIndices: [3]uint32{4, 5, 6}, Resource: 5, ResourceIndices: [3]uint32{1, 1, 1}},
@@ -279,10 +279,9 @@ func TestDecoder_processRootModel(t *testing.T) {
 		{NodeIndices: [3]uint32{4, 7, 3}, Resource: 5},
 	}...)
 
-	components := &Components{
-		ObjectResource: ObjectResource{
+	components := &ObjectResource{
 			ID: 20, ModelPath: "/3d/3dmodel.model",
-			Metadata: []Metadata{{Name: "fake_ext:CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: "fake_ext:CustomMetadata4", Type: "xs:boolean", Value: "2"}},
+			Metadata: []Metadata{{Name: "fake_ext:CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: "fake_ext:CustomMetadata4", Type: "xs:boolean", Value: "2"},
 		},
 		Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
 	}

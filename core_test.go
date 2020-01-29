@@ -149,23 +149,24 @@ func TestComponent_HasTransform(t *testing.T) {
 	}
 }
 
-func TestMesh_IsValid(t *testing.T) {
+func TestObjectResource_IsValid(t *testing.T) {
 	tests := []struct {
 		name string
-		c    *Mesh
+		c    *ObjectResource
 		want bool
 	}{
-		{"empty", new(Mesh), false},
-		{"other", &Mesh{ObjectResource: ObjectResource{ObjectType: ObjectTypeOther}}, false},
+		{"empty", new(ObjectResource), false},
+		{"both", &ObjectResource{Mesh: new(Mesh), Components: make([]*Component, 0)}, false},
+		{"other", &ObjectResource{Mesh: new(Mesh), ObjectType: ObjectTypeOther}, false},
 		//{"surface", &Mesh{ObjectResource: ObjectResource{ObjectType: ObjectTypeSurface}}, true},
 		//{"support", &Mesh{ObjectResource: ObjectResource{ObjectType: ObjectTypeSupport}}, true},
-		{"solidsupport", &Mesh{ObjectResource: ObjectResource{ObjectType: ObjectTypeSolidSupport}}, false},
-		{"model", &Mesh{ObjectResource: ObjectResource{ObjectType: ObjectTypeModel}}, false},
+		{"solidsupport", &ObjectResource{Mesh: new(Mesh), ObjectType: ObjectTypeSolidSupport}, false},
+		{"model", &ObjectResource{Mesh: new(Mesh), ObjectType: ObjectTypeModel}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.c.IsValid(); got != tt.want {
-				t.Errorf("Mesh.IsValid() = %v, want %v", got, tt.want)
+				t.Errorf("ObjectResource.IsValid() = %v, want %v", got, tt.want)
 			}
 		})
 	}

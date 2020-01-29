@@ -22,8 +22,8 @@ func Test_binaryDecoder_decode(t *testing.T) {
 		want    *go3mf.Mesh
 		wantErr bool
 	}{
-		{"base", &binaryDecoder{r: bytes.NewReader(triangle)}, context.Background(), createMeshTriangle(0), false},
-		{"cancel", &binaryDecoder{r: bytes.NewReader(triangle)}, ctx, createMeshTriangle(0), true},
+		{"base", &binaryDecoder{r: bytes.NewReader(triangle)}, context.Background(), createMeshTriangle(0).Mesh, false},
+		{"cancel", &binaryDecoder{r: bytes.NewReader(triangle)}, ctx, createMeshTriangle(0).Mesh, true},
 		{"eof", &binaryDecoder{r: bytes.NewReader(make([]byte, 0))}, context.Background(), nil, true},
 		{"onlyheader", &binaryDecoder{r: bytes.NewReader(make([]byte, 80))}, context.Background(), nil, true},
 		{"invalidface", &binaryDecoder{r: bytes.NewReader(triangle[:100])}, context.Background(), nil, true},
@@ -57,9 +57,9 @@ func Test_binaryEncoder_encode(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"errorHeader", &binaryEncoder{w: new(errorWriter)}, args{triangle}, true},
-		{"errorFace", &binaryEncoder{w: &errorWriter{max: 1}}, args{triangle}, true},
-		{"base", &binaryEncoder{w: new(bytes.Buffer)}, args{triangle}, false},
+		{"errorHeader", &binaryEncoder{w: new(errorWriter)}, args{triangle.Mesh}, true},
+		{"errorFace", &binaryEncoder{w: &errorWriter{max: 1}}, args{triangle.Mesh}, true},
+		{"base", &binaryEncoder{w: new(bytes.Buffer)}, args{triangle.Mesh}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -94,17 +94,17 @@ func (w *errorWriter) Write(p []byte) (n int, err error) {
 	return 0, nil
 }
 
-func createMeshTriangle(id uint32) *go3mf.Mesh {
-	m := new(go3mf.Mesh)
+func createMeshTriangle(id uint32) *go3mf.ObjectResource {
+	m := go3mf.NewMeshResource()
 	m.ID = id
-	mb := go3mf.NewMeshBuilder(m)
+	mb := go3mf.NewMeshBuilder(m.Mesh)
 	n1 := mb.AddNode(go3mf.Point3D{-20.0, -20.0, 0.0})
 	n2 := mb.AddNode(go3mf.Point3D{20.0, -20.0, 0.0})
 	n3 := mb.AddNode(go3mf.Point3D{0.0019989014, 0.0019989014, 39.998})
 	n4 := mb.AddNode(go3mf.Point3D{-20.0, 20.0, 0.0})
 	n5 := mb.AddNode(go3mf.Point3D{0.0, 0.0019989014, 39.998})
 	n6 := mb.AddNode(go3mf.Point3D{20.0, 20.0, 0.0})
-	m.Faces = append(m.Faces,
+	m.Mesh.Faces = append(m.Mesh.Faces,
 		go3mf.Face{NodeIndices: [3]uint32{n1, n2, n3}},
 		go3mf.Face{NodeIndices: [3]uint32{n4, n2, n1}},
 		go3mf.Face{NodeIndices: [3]uint32{n1, n5, n4}},

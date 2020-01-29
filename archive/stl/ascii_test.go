@@ -24,8 +24,8 @@ func Test_asciiDecoder_decode(t *testing.T) {
 		wantErr bool
 	}{
 		{"eof", &asciiDecoder{r: bytes.NewReader(make([]byte, 0))}, context.Background(), new(go3mf.Mesh), false},
-		{"base", &asciiDecoder{r: bytes.NewBufferString(triangle)}, context.Background(), createMeshTriangle(0), false},
-		{"cancel", &asciiDecoder{r: bytes.NewBufferString(triangle)}, ctx, createMeshTriangle(0), true},
+		{"base", &asciiDecoder{r: bytes.NewBufferString(triangle)}, context.Background(), createMeshTriangle(0).Mesh, false},
+		{"cancel", &asciiDecoder{r: bytes.NewBufferString(triangle)}, ctx, createMeshTriangle(0).Mesh, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -57,8 +57,8 @@ func Test_asciiEncoder_encode(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"base", &asciiEncoder{w: new(bytes.Buffer)}, args{triangle}, false},
-		{"error", &asciiEncoder{w: new(errorWriter)}, args{triangle}, true},
+		{"base", &asciiEncoder{w: new(bytes.Buffer)}, args{triangle.Mesh}, false},
+		{"error", &asciiEncoder{w: new(errorWriter)}, args{triangle.Mesh}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
