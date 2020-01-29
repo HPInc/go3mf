@@ -114,6 +114,8 @@ func TestDecode_warns(t *testing.T) {
 	want := []error{
 		go3mf.MissingPropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3d/3dmodel.model", Name: "radius"},
 		go3mf.MissingPropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3d/3dmodel.model", Name: "minlength"},
+		go3mf.ParsePropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3d/3dmodel.model", Name: "cap", Value: "invalid", Type: go3mf.PropertyOptional},
+		go3mf.ParsePropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3d/3dmodel.model", Name: "clippingmode", Value: "invalid2", Type: go3mf.PropertyOptional},
 		go3mf.MissingPropertyError{ResourceID: 15, Element: "beam", ModelPath: "/3d/3dmodel.model", Name: "v1"},
 		go3mf.MissingPropertyError{ResourceID: 15, Element: "beam", ModelPath: "/3d/3dmodel.model", Name: "v2"},
 		go3mf.MissingPropertyError{ResourceID: 15, Element: "ref", ModelPath: "/3d/3dmodel.model", Name: "index"},
@@ -137,7 +139,7 @@ func TestDecode_warns(t *testing.T) {
 						<vertex x="55.00000" y="45.00000" z="45.00000"/>
 					</vertices>
 					<b:beamlattice />
-					<b:beamlattice qm:mq="other" radius="1" minlength="0.0001" cap="hemisphere" clippingmode="inside" clippingmesh="8" representationmesh="8">
+					<b:beamlattice qm:mq="other" radius="1" minlength="0.0001" cap="invalid" clippingmode="invalid2" clippingmesh="8" representationmesh="8">
 						<b:beams>
 							<b:beam qm:mq="other" v1="0" v2="1" r1="1.50000" r2="1.60000" cap1="sphere" cap2="butt"/>
 							<b:beam v1="2" v2="0" r1="3.00000" r2="1.50000" cap1="sphere"/>

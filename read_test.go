@@ -520,6 +520,7 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 		//GenericError{ResourceID: 20, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "referenced object cannot be have OTHER type"},
 		//GenericError{ResourceID: 8, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced object"},
 		//GenericError{ResourceID: 5, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "non-object referenced resource"},
+		GenericError{ResourceID: 0, Element: "metadata", ModelPath: "/3d/3dmodel.model", Message: "unregistered namespace"},
 	}
 	got := new(Model)
 	got.Path = "/3d/3dmodel.model"
@@ -579,6 +580,7 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 		</build>
 		<metadata name="Application">go3mf app</metadata>
 		<metadata name="qm:CustomMetadata1" type="xs:string" preserve="1">CE8A91FB-C44E-4F00-B634-BAA411465F6A</metadata>
+		<metadata name="unknown:CustomMetadata1" type="xs:string" preserve="1">CE8A91FB-C44E-4F00-B634-BAA411465F6A</metadata>
 		<other />
 		`).build("")
 

@@ -132,6 +132,7 @@ func TestDecode_warns(t *testing.T) {
 		//go3mf.MissingPropertyError{ResourceID: 0, Element: "build", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
 		//go3mf.MissingPropertyError{ResourceID: 8, Element: "item", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
 		go3mf.ParsePropertyError{ResourceID: 0, Element: "build", Name: "UUID", Value: "e9e25302-6428-402e-8633ed2", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
+		go3mf.ParsePropertyError{ResourceID: 20, Element: "item", ModelPath: "/3d/3dmodel.model", Name: "UUID", Value: "invalid-uuid", Type: go3mf.PropertyRequired},
 	}
 	got := new(go3mf.Model)
 	got.Path = "/3d/3dmodel.model"
@@ -177,7 +178,7 @@ func TestDecode_warns(t *testing.T) {
 			</object>
 		</resources>
 		<build p:UUID="e9e25302-6428-402e-8633ed2">
-			<item partnumber="bob" objectid="20" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed2" />
+			<item partnumber="bob" objectid="20" p:UUID="invalid-uuid" />
 			<item objectid="8" p:path="/3d/other.model"/>
 			<item objectid="5" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed4"/>
 		</build>
@@ -197,4 +198,27 @@ func TestDecode_warns(t *testing.T) {
 			return
 		}
 	})
+}
+
+func Test_fileFilter(t *testing.T) {
+	type args struct {
+		relType     string
+		isRootModel bool
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{"accepted", args{go3mf.RelTypeModel3D, true}, true},
+		{"rejected-noroot", args{go3mf.RelTypeModel3D, false}, false},
+		{"rejected-nomodel3d", args{"other", true}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := fileFilter(tt.args.relType, tt.args.isRootModel); got != tt.want {
+				t.Errorf("fileFilter() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
