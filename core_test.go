@@ -2,11 +2,9 @@ package go3mf
 
 import (
 	"image/color"
-	"io"
 	"reflect"
 	"testing"
 
-	"github.com/qmuntal/go3mf/geo"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -15,10 +13,8 @@ type MockObject struct {
 	mock.Mock
 }
 
-func NewMockObject(isValid, isValidForSlices bool) *MockObject {
+func NewMockObject() *MockObject {
 	o := new(MockObject)
-	o.On("IsValid").Return(isValid)
-	o.On("IsValidForSlices", mock.Anything).Return(isValidForSlices)
 	return o
 }
 
@@ -29,37 +25,6 @@ func (o *MockObject) Identify() (string, uint32) {
 
 func (o *MockObject) Type() ObjectType {
 	return ObjectTypeOther
-}
-
-func (o *MockObject) IsValid() bool {
-	args := o.Called()
-	return args.Bool(0)
-}
-
-func (o *MockObject) IsValidForSlices(args0 geo.Matrix) bool {
-	args := o.Called(args0)
-	return args.Bool(0)
-}
-
-func TestModel_SetThumbnail(t *testing.T) {
-	type args struct {
-		r io.Reader
-	}
-	tests := []struct {
-		name string
-		m    *Model
-		args args
-		want *Attachment
-	}{
-		{"base", new(Model), args{nil}, &Attachment{Path: thumbnailPath, RelationshipType: "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail"}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.m.SetThumbnail(tt.args.r); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Model.SetThumbnail() = %v, want %v", got, tt.want)
-			}
-		})
-	}
 }
 
 func TestModel_FindResource(t *testing.T) {
@@ -116,17 +81,17 @@ func TestBaseMaterial_ColotString(t *testing.T) {
 func TestBuildItem_HasTransform(t *testing.T) {
 	tests := []struct {
 		name string
-		b    *BuildItem
+		b    *Item
 		want bool
 	}{
-		{"zero", &BuildItem{}, false},
-		{"identity", &BuildItem{Transform: geo.Identity()}, false},
-		{"base", &BuildItem{Transform: geo.Matrix{2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}}, true},
+		{"zero", &Item{}, false},
+		{"identity", &Item{Transform: Identity()}, false},
+		{"base", &Item{Transform: Matrix{2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.b.HasTransform(); got != tt.want {
-				t.Errorf("BuildItem.HasTransform() = %v, want %v", got, tt.want)
+				t.Errorf("Item.HasTransform() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -139,8 +104,8 @@ func TestComponent_HasTransform(t *testing.T) {
 		want bool
 	}{
 		{"zero", &Component{}, false},
-		{"identity", &Component{Transform: geo.Identity()}, false},
-		{"base", &Component{Transform: geo.Matrix{2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}}, true},
+		{"identity", &Component{Transform: Identity()}, false},
+		{"base", &Component{Transform: Matrix{2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -151,42 +116,24 @@ func TestComponent_HasTransform(t *testing.T) {
 	}
 }
 
-func TestComponentsResource_IsValid(t *testing.T) {
+func TestObjectResource_IsValid(t *testing.T) {
 	tests := []struct {
 		name string
-		c    *ComponentsResource
+		c    *ObjectResource
 		want bool
 	}{
-		{"empty", new(ComponentsResource), false},
-		{"oneInvalid", &ComponentsResource{Components: []*Component{{Object: NewMockObject(true, true)}, {Object: NewMockObject(false, true)}}}, false},
-		{"valid", &ComponentsResource{Components: []*Component{{Object: NewMockObject(true, true)}, {Object: NewMockObject(true, true)}}}, true},
+		{"empty", new(ObjectResource), false},
+		{"both", &ObjectResource{Mesh: new(Mesh), Components: make([]*Component, 0)}, false},
+		{"other", &ObjectResource{Mesh: new(Mesh), ObjectType: ObjectTypeOther}, false},
+		//{"surface", &Mesh{ObjectResource: ObjectResource{ObjectType: ObjectTypeSurface}}, true},
+		//{"support", &Mesh{ObjectResource: ObjectResource{ObjectType: ObjectTypeSupport}}, true},
+		{"solidsupport", &ObjectResource{Mesh: new(Mesh), ObjectType: ObjectTypeSolidSupport}, false},
+		{"model", &ObjectResource{Mesh: new(Mesh), ObjectType: ObjectTypeModel}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.c.IsValid(); got != tt.want {
-				t.Errorf("ComponentsResource.IsValid() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestMeshResource_IsValid(t *testing.T) {
-	tests := []struct {
-		name string
-		c    *MeshResource
-		want bool
-	}{
-		{"empty", new(MeshResource), false},
-		{"other", &MeshResource{Mesh: new(geo.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeOther}}, false},
-		{"surface", &MeshResource{Mesh: new(geo.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeSurface}}, true},
-		{"support", &MeshResource{Mesh: new(geo.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeSupport}}, true},
-		{"solidsupport", &MeshResource{Mesh: new(geo.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeSolidSupport}}, false},
-		{"model", &MeshResource{Mesh: new(geo.Mesh), ObjectResource: ObjectResource{ObjectType: ObjectTypeModel}}, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.c.IsValid(); got != tt.want {
-				t.Errorf("MeshResource.IsValid() = %v, want %v", got, tt.want)
+				t.Errorf("ObjectResource.IsValid() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -260,10 +207,10 @@ func TestModel_UnusedID(t *testing.T) {
 		want uint32
 	}{
 		{"empty", new(Model), 1},
-		{"one", &Model{Resources: []Resource{&ColorGroupResource{ID: 2}}}, 1},
-		{"two", &Model{Resources: []Resource{&ColorGroupResource{ID: 1}}}, 2},
-		{"sequence", &Model{Resources: []Resource{&ColorGroupResource{ID: 1}, &ColorGroupResource{ID: 2}}}, 3},
-		{"sparce", &Model{Resources: []Resource{&ColorGroupResource{ID: 1}, &ColorGroupResource{ID: 3}}}, 2},
+		{"one", &Model{Resources: []Resource{&ObjectResource{ID: 2}}}, 1},
+		{"two", &Model{Resources: []Resource{&ObjectResource{ID: 1}}}, 2},
+		{"sequence", &Model{Resources: []Resource{&ObjectResource{ID: 1}, &ObjectResource{ID: 2}}}, 3},
+		{"sparce", &Model{Resources: []Resource{&ObjectResource{ID: 1}, &ObjectResource{ID: 3}}}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -309,6 +256,201 @@ func TestUnits_String(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.u.String(); got != tt.name {
 				t.Errorf("Units.String() = %v, want %v", got, tt.name)
+			}
+		})
+	}
+}
+
+func TestMesh_CheckSanity(t *testing.T) {
+	tests := []struct {
+		name string
+		m    *Mesh
+		want bool
+	}{
+		{"new", new(Mesh), true},
+		{"facefail", &Mesh{Faces: make([]Face, 2)}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.CheckSanity(); got != tt.want {
+				t.Errorf("Mesh.CheckSanity() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMesh_IsManifoldAndOriented(t *testing.T) {
+	tests := []struct {
+		name string
+		m    *Mesh
+		want bool
+	}{
+		{"valid", &Mesh{
+			Nodes: []Point3D{{}, {}, {}, {}},
+			Faces: []Face{
+				{NodeIndices: [3]uint32{0, 1, 2}},
+				{NodeIndices: [3]uint32{0, 3, 1}},
+				{NodeIndices: [3]uint32{0, 2, 3}},
+				{NodeIndices: [3]uint32{1, 3, 2}},
+			},
+		}, true},
+		{"nonmanifold", &Mesh{
+			Nodes: []Point3D{{}, {}, {}, {}},
+			Faces: []Face{
+				{NodeIndices: [3]uint32{0, 1, 2}},
+				{NodeIndices: [3]uint32{0, 1, 3}},
+				{NodeIndices: [3]uint32{0, 2, 3}},
+				{NodeIndices: [3]uint32{1, 2, 3}},
+			},
+		}, false},
+		{"empty", new(Mesh), false},
+		{"2nodes", &Mesh{
+			Nodes: make([]Point3D, 2),
+			Faces: make([]Face, 3),
+		}, false},
+		{"2faces", &Mesh{
+			Nodes: make([]Point3D, 3),
+			Faces: make([]Face, 2),
+		}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.IsManifoldAndOriented(); got != tt.want {
+				t.Errorf("Mesh.IsManifoldAndOriented() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMeshBuilder_AddNode(t *testing.T) {
+	pos := Point3D{1.0, 2.0, 3.0}
+	existingStruct := NewMeshBuilder(new(Mesh))
+	existingStruct.AddNode(pos)
+	type args struct {
+		position Point3D
+	}
+	tests := []struct {
+		name string
+		m    *MeshBuilder
+		args args
+		want uint32
+	}{
+		{"existing", existingStruct, args{pos}, 0},
+		{"base", &MeshBuilder{Mesh: &Mesh{Nodes: []Point3D{{}}}, CalculateConnectivity: false}, args{pos}, 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.m.AddNode(tt.args.position)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("MeshBuilder.AddNode() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMesh_checkFacesSanity(t *testing.T) {
+	tests := []struct {
+		name string
+		m    *Mesh
+		want bool
+	}{
+		{"i0==i1", &Mesh{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{1, 1, 2}}}}, false},
+		{"i0==i2", &Mesh{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{1, 2, 1}}}}, false},
+		{"i1==i2", &Mesh{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{2, 1, 1}}}}, false},
+		{"i0big", &Mesh{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{3, 1, 2}}}}, false},
+		{"i1big", &Mesh{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{0, 3, 2}}}}, false},
+		{"i2big", &Mesh{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{0, 1, 3}}}}, false},
+		{"good", &Mesh{Nodes: make([]Point3D, 3), Faces: []Face{{NodeIndices: [3]uint32{0, 1, 2}}}}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.checkFacesSanity(); got != tt.want {
+				t.Errorf("Mesh.checkFacesSanity() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_newObjectType(t *testing.T) {
+	tests := []struct {
+		name   string
+		wantO  ObjectType
+		wantOk bool
+	}{
+		{"model", ObjectTypeModel, true},
+		{"other", ObjectTypeOther, true},
+		{"support", ObjectTypeSupport, true},
+		{"solidsupport", ObjectTypeSolidSupport, true},
+		{"surface", ObjectTypeSurface, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotO, gotOk := newObjectType(tt.name)
+			if !reflect.DeepEqual(gotO, tt.wantO) {
+				t.Errorf("newObjectType() gotO = %v, want %v", gotO, tt.wantO)
+			}
+			if gotOk != tt.wantOk {
+				t.Errorf("newObjectType() gotOk = %v, want %v", gotOk, tt.wantOk)
+			}
+		})
+	}
+}
+
+func Test_newUnits(t *testing.T) {
+	tests := []struct {
+		name  string
+		want  Units
+		want1 bool
+	}{
+		{"micron", UnitMicrometer, true},
+		{"millimeter", UnitMillimeter, true},
+		{"centimeter", UnitCentimeter, true},
+		{"inch", UnitInch, true},
+		{"foot", UnitFoot, true},
+		{"meter", UnitMeter, true},
+		{"", UnitMillimeter, false},
+		{"other", UnitMillimeter, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := newUnits(tt.name)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("newUnits() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("newUnits() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+
+func TestNewMeshResource(t *testing.T) {
+	tests := []struct {
+		name string
+		want *ObjectResource
+	}{
+		{"base", &ObjectResource{Mesh: new(Mesh)}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewMeshResource(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewMeshResource() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNewComponentsResource(t *testing.T) {
+	tests := []struct {
+		name string
+		want *ObjectResource
+	}{
+		{"base", &ObjectResource{Components: make([]*Component, 0)}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewComponentsResource(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewComponentsResource() = %v, want %v", got, tt.want)
 			}
 		})
 	}

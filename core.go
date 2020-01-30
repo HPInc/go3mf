@@ -5,27 +5,22 @@ import (
 	"image/color"
 	"io"
 	"sort"
-
-	"github.com/qmuntal/go3mf/geo"
 )
 
-const thumbnailPath = "/Metadata/thumbnail.png"
+// Extensions is an extension point containing <any> and <anyAttribute> information.
+// The key should be the extension namespace.
+type Extensions map[string]interface{}
 
 // Units define the allowed model units.
 type Units uint8
 
+// Supported units.
 const (
-	// UnitMillimeter for millimeter
 	UnitMillimeter Units = iota
-	// UnitMicrometer for microns
 	UnitMicrometer
-	// UnitCentimeter for centimeter
 	UnitCentimeter
-	// UnitInch for inch
 	UnitInch
-	// UnitFoot for foot
 	UnitFoot
-	// UnitMeter for meter
 	UnitMeter
 )
 
@@ -40,39 +35,15 @@ func (u Units) String() string {
 	}[u]
 }
 
-// ClipMode defines the clipping modes for the beam lattices.
-type ClipMode uint8
-
-const (
-	// ClipNone defines a beam lattice without clipping.
-	ClipNone ClipMode = iota
-	// ClipInside defines a beam lattice with clipping inside.
-	ClipInside
-	// ClipOutside defines a beam lattice with clipping outside.
-	ClipOutside
-)
-
-func (c ClipMode) String() string {
-	return map[ClipMode]string{
-		ClipNone:    "none",
-		ClipInside:  "inside",
-		ClipOutside: "outside",
-	}[c]
-}
-
 // ObjectType defines the allowed object types.
 type ObjectType int8
 
+// Supported object types.
 const (
-	// ObjectTypeModel defines a model object type.
 	ObjectTypeModel ObjectType = iota
-	// ObjectTypeOther defines a generic object type.
 	ObjectTypeOther
-	// ObjectTypeSupport defines a support object type.
 	ObjectTypeSupport
-	// ObjectTypeSolidSupport defines a solid support object type.
 	ObjectTypeSolidSupport
-	// ObjectTypeSurface defines a surface object type.
 	ObjectTypeSurface
 )
 
@@ -91,14 +62,6 @@ type Resource interface {
 	Identify() (string, uint32)
 }
 
-// Object defines a composable object.
-type Object interface {
-	Identify() (string, uint32)
-	IsValid() bool
-	IsValidForSlices(geo.Matrix) bool
-	Type() ObjectType
-}
-
 // Metadata item is an in memory representation of the 3MF metadata,
 // and can be attached to any 3MF model node.
 type Metadata struct {
@@ -115,31 +78,22 @@ type Attachment struct {
 	Path             string
 }
 
-// ProductionAttachment defines the Model Production Attachment.
-type ProductionAttachment struct {
-	RelationshipType string
-	Path             string
-}
-
-// BeamLatticeAttributes defines the Model Mesh BeamLattice Attributes class and is part of the BeamLattice extension to 3MF.
-type BeamLatticeAttributes struct {
-	ClipMode             ClipMode
-	ClippingMeshID       uint32
-	RepresentationMeshID uint32
+// Build contains one or more items to manufacture as part of processing the job.
+type Build struct {
+	Items      []*Item
+	Extensions Extensions
 }
 
 // A Model is an in memory representation of the 3MF file.
 type Model struct {
-	Path                  string
-	Language              string
-	UUID                  string
-	Units                 Units
-	Thumbnail             *Attachment
-	Metadata              []Metadata
-	Resources             []Resource
-	BuildItems            []*BuildItem
-	Attachments           []*Attachment
-	ProductionAttachments []*ProductionAttachment
+	Path        string
+	Language    string
+	Units       Units
+	Thumbnail   string
+	Metadata    []Metadata
+	Resources   []Resource
+	Build       Build
+	Attachments []*Attachment
 }
 
 // UnusedID returns the lowest unused ID.
@@ -166,13 +120,26 @@ func (m *Model) UnusedID() uint32 {
 	return uint32(lowest)
 }
 
-// SetThumbnail sets the package thumbnail.
-func (m *Model) SetThumbnail(r io.Reader) *Attachment {
-	m.Thumbnail = &Attachment{Stream: r, Path: thumbnailPath, RelationshipType: "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail"}
-	return m.Thumbnail
+// MustFindObject returns the object with the target path and unique ID.
+// It is guaranteed not to panic if the Model has not been modified from the last validation.
+// If path is empty the resource will be searched in the root model.
+func (m *Model) MustFindObject(path string, id uint32) *ObjectResource {
+	return m.MustFindResource(path, id).(*ObjectResource)
 }
 
-// FindResource returns the resource with the target unique ID.
+// MustFindResource returns the resource with the target path and unique ID.
+// It is guaranteed not to panic if the Model has not been modified from the last validation.
+// If path is empty the resource will be searched in the root model.
+func (m *Model) MustFindResource(path string, id uint32) Resource {
+	r, ok := m.FindResource(path, id)
+	if !ok {
+		panic("go3mf: object does not exist")
+	}
+	return r
+}
+
+// FindResource returns the resource with the target path and unique ID.
+// If path is empty the resource will be searched in the root model.
 func (m *Model) FindResource(path string, id uint32) (r Resource, ok bool) {
 	if path == "" {
 		path = m.Path
@@ -212,34 +179,47 @@ func (ms *BaseMaterialsResource) Identify() (string, uint32) {
 	return ms.ModelPath, ms.ID
 }
 
-// A BuildItem is an in memory representation of the 3MF build item.
-type BuildItem struct {
-	Object     Object
-	Transform  geo.Matrix
+// A Item is an in memory representation of the 3MF build item.
+type Item struct {
+	ObjectID   uint32
+	Path       string
+	Transform  Matrix
 	PartNumber string
-	UUID       string
 	Metadata   []Metadata
+	Extensions Extensions
 }
 
 // HasTransform returns true if the transform is different than the identity.
-func (b *BuildItem) HasTransform() bool {
-	return b.Transform != geo.Matrix{} && b.Transform != geo.Identity()
+func (b *Item) HasTransform() bool {
+	return b.Transform != Matrix{} && b.Transform != Identity()
 }
 
 // An ObjectResource is an in memory representation of the 3MF model object.
 type ObjectResource struct {
 	ID                   uint32
 	ModelPath            string
-	UUID                 string
 	Name                 string
 	PartNumber           string
-	SliceStackID         uint32
-	SliceResoultion      SliceResolution
 	Thumbnail            string
 	DefaultPropertyID    uint32
 	DefaultPropertyIndex uint32
 	ObjectType           ObjectType
 	Metadata             []Metadata
+	Mesh                 *Mesh
+	Components           []*Component
+	Extensions           Extensions
+}
+
+// NewMeshResource returns a new object resource
+// with an initialized mesh.
+func NewMeshResource() *ObjectResource {
+	return &ObjectResource{Mesh: new(Mesh)}
+}
+
+// NewComponentsResource returns a new object resource
+// with an initialized components.
+func NewComponentsResource() *ObjectResource {
+	return &ObjectResource{Components: make([]*Component, 0)}
 }
 
 // Identify returns the unique ID of the resource.
@@ -252,60 +232,174 @@ func (o *ObjectResource) Type() ObjectType {
 	return o.ObjectType
 }
 
+// IsValid checks if the mesh resource are valid.
+func (o *ObjectResource) IsValid() bool {
+	if o.Mesh == nil && o.Components == nil {
+		return false
+	} else if o.Mesh != nil && o.Components != nil {
+		return false
+	}
+	var isValid bool
+	if o.Mesh != nil {
+		switch o.ObjectType {
+		case ObjectTypeModel:
+			isValid = o.Mesh.IsManifoldAndOriented()
+		case ObjectTypeSolidSupport:
+			isValid = o.Mesh.IsManifoldAndOriented()
+			//case ObjectTypeSupport:
+			//	return len(c.Mesh.Beams) == 0
+			//case ObjectTypeSurface:
+			//	return len(c.Mesh.Beams) == 0
+		}
+	}
+
+	return isValid
+}
+
 // A Component is an in memory representation of the 3MF component.
 type Component struct {
-	Object    Object
-	Transform geo.Matrix
-	UUID      string
+	ObjectID   uint32
+	Path       string
+	Transform  Matrix
+	Extensions Extensions
 }
 
 // HasTransform returns true if the transform is different than the identity.
 func (c *Component) HasTransform() bool {
-	return c.Transform != geo.Matrix{} && c.Transform != geo.Identity()
+	return c.Transform != Matrix{} && c.Transform != Identity()
 }
 
-// A ComponentsResource resource is an in memory representation of the 3MF component object.
-type ComponentsResource struct {
-	ObjectResource
-	Components []*Component
+// Face defines a triangle of a mesh.
+type Face struct {
+	NodeIndices     [3]uint32 // Coordinates of the three nodes that defines the face.
+	Resource        uint32
+	ResourceIndices [3]uint32 // Resource subindex of the three nodes that defines the face.
 }
 
-// IsValid checks if the component resource and all its child are valid.
-func (c *ComponentsResource) IsValid() bool {
-	if len(c.Components) == 0 {
+// A Mesh is an in memory representation of the 3MF mesh object.
+// Each node,  and face have a ID, which allows to identify them. Each face have an
+// orientation (i.e. the face can look up or look down) and have three nodes.
+// The orientation is defined by the order of its nodes.
+type Mesh struct {
+	Nodes      []Point3D
+	Faces      []Face
+	Extensions Extensions
+}
+
+// CheckSanity checks if the mesh is well formated.
+func (m *Mesh) CheckSanity() bool {
+	return m.checkFacesSanity()
+}
+
+// IsManifoldAndOriented returns true if the mesh is manifold and oriented.
+func (m *Mesh) IsManifoldAndOriented() bool {
+	if len(m.Nodes) < 3 || len(m.Faces) < 3 || !m.CheckSanity() {
 		return false
 	}
 
-	for _, comp := range c.Components {
-		if !comp.Object.IsValid() {
+	var edgeCounter uint32
+	pairMatching := newPairMatch()
+	for _, face := range m.Faces {
+		for j := uint32(0); j < 3; j++ {
+			n1, n2 := face.NodeIndices[j], face.NodeIndices[(j+1)%3]
+			if _, ok := pairMatching.CheckMatch(n1, n2); !ok {
+				pairMatching.AddMatch(n1, n2, edgeCounter)
+				edgeCounter++
+			}
+		}
+	}
+
+	positive, negative := make([]uint32, edgeCounter), make([]uint32, edgeCounter)
+	for _, face := range m.Faces {
+		for j := uint32(0); j < 3; j++ {
+			n1, n2 := face.NodeIndices[j], face.NodeIndices[(j+1)%3]
+			edgeIndex, _ := pairMatching.CheckMatch(n1, n2)
+			if n1 <= n2 {
+				positive[edgeIndex]++
+			} else {
+				negative[edgeIndex]++
+			}
+		}
+	}
+
+	for i := uint32(0); i < edgeCounter; i++ {
+		if positive[i] != 1 || negative[i] != 1 {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (m *Mesh) checkFacesSanity() bool {
+	nodeCount := uint32(len(m.Nodes))
+	for _, face := range m.Faces {
+		i0, i1, i2 := face.NodeIndices[0], face.NodeIndices[1], face.NodeIndices[2]
+		if i0 == i1 || i0 == i2 || i1 == i2 {
+			return false
+		}
+		if i0 >= nodeCount || i1 >= nodeCount || i2 >= nodeCount {
 			return false
 		}
 	}
 	return true
 }
 
-// A MeshResource is an in memory representation of the 3MF mesh object.
-type MeshResource struct {
-	ObjectResource
-	Mesh                  *geo.Mesh
-	BeamLatticeAttributes BeamLatticeAttributes
+// MeshBuilder is a helper that creates mesh following a configurable criteria.
+// It must be instantiated using NewMeshBuilder.
+type MeshBuilder struct {
+	// True to automatically check if a node with the same coordinates already exists in the mesh
+	// when calling AddNode. If it exists, the return value will be the existing node and no node will be added.
+	// Using this option produces an speed penalty.
+	CalculateConnectivity bool
+	// Do not modify the pointer to Mesh once the build process has started.
+	Mesh       *Mesh
+	vectorTree vectorTree
 }
 
-// IsValid checks if the mesh resource are valid.
-func (c *MeshResource) IsValid() bool {
-	if c.Mesh == nil {
-		return false
+// NewMeshBuilder returns a new MeshBuilder.
+func NewMeshBuilder(m *Mesh) *MeshBuilder {
+	return &MeshBuilder{
+		Mesh:                  m,
+		CalculateConnectivity: true,
+		vectorTree:            vectorTree{},
 	}
-	switch c.ObjectType {
-	case ObjectTypeModel:
-		return c.Mesh.IsManifoldAndOriented()
-	case ObjectTypeSupport:
-		return len(c.Mesh.Beams) == 0
-	case ObjectTypeSolidSupport:
-		return c.Mesh.IsManifoldAndOriented()
-	case ObjectTypeSurface:
-		return len(c.Mesh.Beams) == 0
-	}
+}
 
-	return false
+// AddNode adds a node the the mesh at the target position.
+func (mb *MeshBuilder) AddNode(node Point3D) uint32 {
+	if mb.CalculateConnectivity {
+		if index, ok := mb.vectorTree.FindVector(node); ok {
+			return index
+		}
+	}
+	mb.Mesh.Nodes = append(mb.Mesh.Nodes, node)
+	index := uint32(len(mb.Mesh.Nodes)) - 1
+	if mb.CalculateConnectivity {
+		mb.vectorTree.AddVector(node, index)
+	}
+	return index
+}
+
+func newObjectType(s string) (o ObjectType, ok bool) {
+	o, ok = map[string]ObjectType{
+		"model":        ObjectTypeModel,
+		"other":        ObjectTypeOther,
+		"support":      ObjectTypeSupport,
+		"solidsupport": ObjectTypeSolidSupport,
+		"surface":      ObjectTypeSurface,
+	}[s]
+	return
+}
+
+func newUnits(s string) (u Units, ok bool) {
+	u, ok = map[string]Units{
+		"millimeter": UnitMillimeter,
+		"micron":     UnitMicrometer,
+		"centimeter": UnitCentimeter,
+		"inch":       UnitInch,
+		"foot":       UnitFoot,
+		"meter":      UnitMeter,
+	}[s]
+	return
 }
