@@ -23,6 +23,7 @@ The 3D Manufacturing Format (3MF) is a 3D printing format that allows design app
   * [x] Read from ASCII and Binary STL.
 * Robust implementation with full coverage and validated against real cases.
 * Extensions
+  * [x] Support custom and private extensions.
   * [x] spec_production.
   * [x] spec_slice.
   * [x] spec_beamlattice.
