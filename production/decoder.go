@@ -23,7 +23,7 @@ func decodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
 			if err := validateUUID(attr.Value); err != nil {
 				s.InvalidRequiredAttr(attr.Name.Local, attr.Value)
 			}
-			ExtensionBuild(t).UUID = attr.Value
+			SetBuildUUID(t, UUID(attr.Value))
 		}
 	case *go3mf.Item:
 		switch attr.Name.Local {
@@ -31,16 +31,16 @@ func decodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
 			if err := validateUUID(attr.Value); err != nil {
 				s.InvalidRequiredAttr(attr.Name.Local, attr.Value)
 			}
-			ExtensionItem(t).UUID = attr.Value
+			SetItemdUUID(t, UUID(attr.Value))
 		case attrPath:
-			ExtensionItem(t).Path = attr.Value
+			t.Path = attr.Value
 		}
 	case *go3mf.ObjectResource:
 		if attr.Name.Local == attrProdUUID {
 			if err := validateUUID(attr.Value); err != nil {
 				s.InvalidRequiredAttr(attr.Name.Local, attr.Value)
 			}
-			ExtensionObject(t).UUID = attr.Value
+			SetObjectUUID(t, UUID(attr.Value))
 		}
 	case *go3mf.Component:
 		switch attr.Name.Local {
@@ -48,9 +48,9 @@ func decodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
 			if err := validateUUID(attr.Value); err != nil {
 				s.InvalidRequiredAttr(attr.Name.Local, attr.Value)
 			}
-			ExtensionComponent(t).UUID = attr.Value
+			SetComponentUUID(t, UUID(attr.Value))
 		case attrPath:
-			ExtensionComponent(t).Path = attr.Value
+			t.Path = attr.Value
 		}
 	}
 }

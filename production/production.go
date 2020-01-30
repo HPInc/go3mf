@@ -1,3 +1,8 @@
+// Package production handles new non-object resources, 
+// as well as attributes to the build section for uniquely identifying parts within a particular 3MF package
+// Despite item and component paths are production attributes, they are also handled by
+// the core package, to avoid duplications they won't be stored in the Extension map
+// but the core properties will be updated.
 package production
 
 import "github.com/qmuntal/go3mf"
@@ -5,82 +10,78 @@ import "github.com/qmuntal/go3mf"
 // ExtensionName is the canonical name of this extension.
 const ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/production/2015/06"
 
-// BuildAttr contains the production attributes of a build.
-type BuildAttr struct {
-	UUID string
-}
+// UUID must be any of the four UUID variants described in IETF RFC 4122,
+// which includes Microsoft GUIDs as well as time-based UUIDs.
+type UUID string
 
-// ItemAttr contains the production attributes of a build item.
-type ItemAttr struct {
-	Path string
-	UUID string
-}
-
-// ComponentAttr contains the production attributes of a component.
-type ComponentAttr struct {
-	Path string
-	UUID string
-}
-
-// ObjectAttr contains the production attributes of a build.
-type ObjectAttr struct {
-	UUID string
-}
-
-// ExtensionBuild extracts the BuildAttr attributes from a Build.
-// If it does not exist a new one is added.
-func ExtensionBuild(b *go3mf.Build) *BuildAttr {
-	if attr, ok := b.Extensions[ExtensionName]; ok {
-		return attr.(*BuildAttr)
+func extractUUID(ext map[string]interface{}) UUID {
+	if attr, ok := ext[ExtensionName]; ok {
+		return attr.(UUID)
 	}
+	return UUID("")
+}
+
+func setUUID(ext map[string]interface{}, u UUID) {
+	if ext == nil {
+		ext = make(map[string]interface{})
+	}
+	ext[ExtensionName] = &u
+}
+
+// BuildUUID extracts the UUID attributes from a Build.
+// Returns an empty UUID if it does not exist.
+func BuildUUID(b *go3mf.Build) UUID {
+	return extractUUID(b.Extensions)
+}
+
+// SetBuildUUID sets the UUID.
+func SetBuildUUID(b *go3mf.Build, u UUID) {
 	if b.Extensions == nil {
 		b.Extensions = make(map[string]interface{})
 	}
-	attr := &BuildAttr{}
-	b.Extensions[ExtensionName] = attr
-	return attr
+	b.Extensions[ExtensionName] = u
 }
 
-// ExtensionItem extracts the ItemAttr attributes from an Item.
-// If it does not exist a new one is added.
-func ExtensionItem(o *go3mf.Item) *ItemAttr {
-	if attr, ok := o.Extensions[ExtensionName]; ok {
-		return attr.(*ItemAttr)
+// ItemUUID extracts the UUID attributes from an Item.
+// Returns an empty UUID if it does not exist.
+func ItemUUID(o *go3mf.Item) UUID {
+	return extractUUID(o.Extensions)
+}
+
+// SetItemdUUID sets the UUID.
+func SetItemdUUID(i *go3mf.Item, u UUID) {
+	if i.Extensions == nil {
+		i.Extensions = make(map[string]interface{})
 	}
+	i.Extensions[ExtensionName] = u
+}
+
+// ComponentUUID extracts the UUID attributes from a Component.
+// Returns an empty UUID if it does not exist.
+func ComponentUUID(c *go3mf.Component) UUID {
+	return extractUUID(c.Extensions)
+}
+
+// SetComponentUUID sets the UUID.
+func SetComponentUUID(c *go3mf.Component, u UUID) {
+	if c.Extensions == nil {
+		c.Extensions = make(map[string]interface{})
+	}
+	c.Extensions[ExtensionName] = u
+}
+
+// ObjectUUID extracts the UUID attributes from a ObjectResource.
+// Returns an empty UUID if it does not exist.
+func ObjectUUID(o *go3mf.ObjectResource) UUID {
+	return extractUUID(o.Extensions)
+}
+
+// SetObjectUUID sets the UUID.
+func SetObjectUUID(o *go3mf.ObjectResource, u UUID) {
 	if o.Extensions == nil {
 		o.Extensions = make(map[string]interface{})
 	}
-	attr := &ItemAttr{}
-	o.Extensions[ExtensionName] = attr
-	return attr
-}
-
-// ExtensionComponent extracts the ComponentAttr attributes from a Component.
-// If it does not exist a new one is added.
-func ExtensionComponent(o *go3mf.Component) *ComponentAttr {
-	if attr, ok := o.Extensions[ExtensionName]; ok {
-		return attr.(*ComponentAttr)
-	}
-	if o.Extensions == nil {
-		o.Extensions = make(map[string]interface{})
-	}
-	attr := &ComponentAttr{}
-	o.Extensions[ExtensionName] = attr
-	return attr
-}
-
-// ExtensionObject extracts the ObjectResource attributes from a Component.
-// If it does not exist a new one is added.
-func ExtensionObject(o *go3mf.ObjectResource) *ObjectAttr {
-	if attr, ok := o.Extensions[ExtensionName]; ok {
-		return attr.(*ObjectAttr)
-	}
-	if o.Extensions == nil {
-		o.Extensions = make(map[string]interface{})
-	}
-	attr := &ObjectAttr{}
-	o.Extensions[ExtensionName] = attr
-	return attr
+	o.Extensions[ExtensionName] = u
 }
 
 const (

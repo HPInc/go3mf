@@ -173,6 +173,7 @@ func (ms *BaseMaterialsResource) Identify() (string, uint32) {
 // A Item is an in memory representation of the 3MF build item.
 type Item struct {
 	ObjectID   uint32
+	Path       string
 	Transform  Matrix
 	PartNumber string
 	Metadata   []Metadata
@@ -195,8 +196,8 @@ type ObjectResource struct {
 	DefaultPropertyIndex uint32
 	ObjectType           ObjectType
 	Metadata             []Metadata
-	Mesh *Mesh
-	Components 			 []*Component
+	Mesh                 *Mesh
+	Components           []*Component
 	Extensions           map[string]interface{}
 }
 
@@ -222,8 +223,6 @@ func (o *ObjectResource) Type() ObjectType {
 	return o.ObjectType
 }
 
-
-
 // IsValid checks if the mesh resource are valid.
 func (o *ObjectResource) IsValid() bool {
 	if o.Mesh == nil && o.Components == nil {
@@ -238,10 +237,10 @@ func (o *ObjectResource) IsValid() bool {
 			isValid = o.Mesh.IsManifoldAndOriented()
 		case ObjectTypeSolidSupport:
 			isValid = o.Mesh.IsManifoldAndOriented()
-		//case ObjectTypeSupport:
-		//	return len(c.Mesh.Beams) == 0
-		//case ObjectTypeSurface:
-		//	return len(c.Mesh.Beams) == 0
+			//case ObjectTypeSupport:
+			//	return len(c.Mesh.Beams) == 0
+			//case ObjectTypeSurface:
+			//	return len(c.Mesh.Beams) == 0
 		}
 	}
 
@@ -251,6 +250,7 @@ func (o *ObjectResource) IsValid() bool {
 // A Component is an in memory representation of the 3MF component.
 type Component struct {
 	ObjectID   uint32
+	Path       string
 	Transform  Matrix
 	Extensions map[string]interface{}
 }

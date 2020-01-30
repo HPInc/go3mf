@@ -6,6 +6,15 @@ import (
 	"strings"
 )
 
+// MustNewUUID returns a pointer to a UUID created from a string.
+// Panics if the string is not a valid UUID.
+func MustNewUUID(s string) UUID {
+	if err := validateUUID(s); err != nil {
+		panic(err)
+	}
+	return UUID(s)
+}
+
 // xvalues returns the value of a byte as a hexadecimal digit or 255.
 var xvalues = [256]byte{
 	255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
@@ -48,7 +57,7 @@ func validateUUID(s string) error {
 	// urn:uuid:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 	case 36 + 9:
 		if strings.ToLower(s[:9]) != "urn:uuid:" {
-			return fmt.Errorf("invalid urn prefix: %q", s[:9])
+			return fmt.Errorf("production: invalid urn prefix: %q", s[:9])
 		}
 		s = s[9:]
 
@@ -62,17 +71,17 @@ func validateUUID(s string) error {
 		for i := range uuid {
 			uuid[i], ok = xtob(s[i*2], s[i*2+1])
 			if !ok {
-				return errors.New("invalid UUID format")
+				return errors.New("production: invalid UUID format")
 			}
 		}
 		return nil
 	default:
-		return fmt.Errorf("invalid UUID length: %d", len(s))
+		return fmt.Errorf("production: invalid UUID length: %d", len(s))
 	}
 	// s is now at least 36 bytes long
 	// it must be of the form  xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 	if s[8] != '-' || s[13] != '-' || s[18] != '-' || s[23] != '-' {
-		return errors.New("invalid UUID format")
+		return errors.New("production: invalid UUID format")
 	}
 	for i, x := range [16]int{
 		0, 2, 4, 6,
@@ -82,7 +91,7 @@ func validateUUID(s string) error {
 		24, 26, 28, 30, 32, 34} {
 		v, ok := xtob(s[x], s[x+1])
 		if !ok {
-			return errors.New("invalid UUID format")
+			return errors.New("production: invalid UUID format")
 		}
 		uuid[i] = v
 	}
