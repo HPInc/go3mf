@@ -22,7 +22,7 @@ func TestDecode(t *testing.T) {
 	want := &go3mf.Model{Path: "/3d/3dmodel.model"}
 	otherMesh := &go3mf.ObjectResource{Mesh: new(go3mf.Mesh), ID: 8, ModelPath: "/3d/other.model"}
 	want.Resources = append(want.Resources, otherMesh, components)
-	SetBuildUUID(&want.Build, MustNewUUID("e9e25302-6428-402e-8633-cc95528d0ed3"))
+	SetBuildUUID(&want.Build, "e9e25302-6428-402e-8633-cc95528d0ed3")
 	want.Build.Items = append(want.Build.Items, &go3mf.Item{ObjectID: 20,
 		Extensions: map[string]interface{}{ExtensionName: UUID("e9e25302-6428-402e-8633-cc95528d0ed2")},
 		Transform:  go3mf.Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},

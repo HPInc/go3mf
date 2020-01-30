@@ -6,15 +6,6 @@ import (
 	"strings"
 )
 
-// MustNewUUID returns a pointer to a UUID created from a string.
-// Panics if the string is not a valid UUID.
-func MustNewUUID(s string) UUID {
-	if err := validateUUID(s); err != nil {
-		panic(err)
-	}
-	return UUID(s)
-}
-
 // xvalues returns the value of a byte as a hexadecimal digit or 255.
 var xvalues = [256]byte{
 	255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
