@@ -31,16 +31,17 @@ func (d *modelDecoder) Child(name xml.Name) (child NodeDecoder) {
 }
 
 func (d *modelDecoder) Attributes(attrs []xml.Attr) {
+	if !d.Scanner.IsRoot {
+		return
+	}
 	var requiredExts string
 	for _, a := range attrs {
 		if a.Name.Space == "" {
 			switch a.Name.Local {
 			case attrUnit:
-				if d.Scanner.IsRoot {
-					var ok bool
-					if d.model.Units, ok = newUnits(a.Value); !ok {
-						d.Scanner.InvalidOptionalAttr(attrUnit, a.Value)
-					}
+				var ok bool
+				if d.model.Units, ok = newUnits(a.Value); !ok {
+					d.Scanner.InvalidOptionalAttr(attrUnit, a.Value)
 				}
 			case attrThumbnail:
 				d.model.Thumbnail = a.Value
@@ -353,7 +354,7 @@ func (d *vertexDecoder) Attributes(attrs []xml.Attr) {
 
 type trianglesDecoder struct {
 	BaseDecoder
-	resource            *ObjectResource
+	resource        *ObjectResource
 	triangleDecoder triangleDecoder
 }
 
@@ -376,7 +377,7 @@ func (d *trianglesDecoder) Child(name xml.Name) (child NodeDecoder) {
 
 type triangleDecoder struct {
 	BaseDecoder
-	mesh *Mesh
+	mesh                                    *Mesh
 	defaultPropertyIndex, defaultPropertyID uint32
 }
 

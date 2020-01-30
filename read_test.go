@@ -252,7 +252,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 	}}
 	meshRes := &ObjectResource{
 		Mesh: new(Mesh),
-		ID: 8, Name: "Box 1", ModelPath: "/3d/3dmodel.model", Thumbnail: "/a.png", DefaultPropertyID: 5, PartNumber: "11111111-1111-1111-1111-111111111111",
+		ID:   8, Name: "Box 1", ModelPath: "/3d/3dmodel.model", Thumbnail: "/a.png", DefaultPropertyID: 5, PartNumber: "11111111-1111-1111-1111-111111111111",
 	}
 	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []Point3D{
 		{0, 0, 0},
@@ -280,9 +280,8 @@ func TestDecoder_processRootModel(t *testing.T) {
 	}...)
 
 	components := &ObjectResource{
-			ID: 20, ModelPath: "/3d/3dmodel.model",
-			Metadata: []Metadata{{Name: "fake_ext:CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: "fake_ext:CustomMetadata4", Type: "xs:boolean", Value: "2"},
-		},
+		ID: 20, ModelPath: "/3d/3dmodel.model",
+		Metadata:   []Metadata{{Name: "fake_ext:CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: "fake_ext:CustomMetadata4", Type: "xs:boolean", Value: "2"}},
 		Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
 	}
 
@@ -397,7 +396,7 @@ func TestDecoder_processNonRootModels(t *testing.T) {
 				</resources>
 			`).build("3d/other.model"),
 		}}, false, &Model{
-			Thumbnail: "/thumbnail.png", Resources: []Resource{
+			Resources: []Resource{
 				&BaseMaterialsResource{ID: 5, ModelPath: "3d/new.model", Materials: []BaseMaterial{
 					{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 					{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
