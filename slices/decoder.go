@@ -30,10 +30,10 @@ func decodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
 func objectAttrDecoder(scanner *go3mf.Scanner, o *go3mf.ObjectResource, attr xml.Attr) {
 	switch attr.Name.Local {
 	case attrSliceRefID:
-		ExtensionObjectResource(o).SliceStackID = scanner.ParseUint32Required(attrSliceRefID, attr.Value)
+		ObjectSliceStackInfo(o).SliceStackID = scanner.ParseUint32Required(attrSliceRefID, attr.Value)
 	case attrMeshRes:
 		var ok bool
-		ExtensionObjectResource(o).SliceResolution, ok = newSliceResolution(attr.Value)
+		ObjectSliceStackInfo(o).SliceResolution, ok = newSliceResolution(attr.Value)
 		if !ok {
 			scanner.InvalidOptionalAttr(attrMeshRes, attr.Value)
 		}

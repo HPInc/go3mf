@@ -125,22 +125,22 @@ func (s *SliceStackResource) Identify() (string, uint32) {
 	return s.ModelPath, s.ID
 }
 
-// ObjectAttr defines the attributes added to <object>.
-type ObjectAttr struct {
+// SliceStackInfo defines the attributes added to <object>.
+type SliceStackInfo struct {
 	SliceStackID    uint32
 	SliceResolution SliceResolution
 }
 
-// ExtensionObjectResource extracts the ObjectAttr attributes from an ObjectResource.
+// ObjectSliceStackInfo extracts the SliceStackInfo attributes from an ObjectResource.
 // If it does not exist a new one is added.
-func ExtensionObjectResource(o *go3mf.ObjectResource) *ObjectAttr {
+func ObjectSliceStackInfo(o *go3mf.ObjectResource) *SliceStackInfo {
 	if attr, ok := o.Extensions[ExtensionName]; ok {
-		return attr.(*ObjectAttr)
+		return attr.(*SliceStackInfo)
 	}
 	if o.Extensions == nil {
-		o.Extensions = make(map[string]interface{})
+		o.Extensions = make(go3mf.Extensions)
 	}
-	attr := &ObjectAttr{}
+	attr := &SliceStackInfo{}
 	o.Extensions[ExtensionName] = attr
 	return attr
 }

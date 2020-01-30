@@ -7,6 +7,10 @@ import (
 	"sort"
 )
 
+// Extensions is an extension point containing <any> and <anyAttribute> information.
+// The key should be the extension namespace.
+type Extensions map[string]interface{}
+
 // Units define the allowed model units.
 type Units uint8
 
@@ -77,7 +81,7 @@ type Attachment struct {
 // Build contains one or more items to manufacture as part of processing the job.
 type Build struct {
 	Items      []*Item
-	Extensions map[string]interface{}
+	Extensions Extensions
 }
 
 // A Model is an in memory representation of the 3MF file.
@@ -182,7 +186,7 @@ type Item struct {
 	Transform  Matrix
 	PartNumber string
 	Metadata   []Metadata
-	Extensions map[string]interface{}
+	Extensions Extensions
 }
 
 // HasTransform returns true if the transform is different than the identity.
@@ -203,7 +207,7 @@ type ObjectResource struct {
 	Metadata             []Metadata
 	Mesh                 *Mesh
 	Components           []*Component
-	Extensions           map[string]interface{}
+	Extensions           Extensions
 }
 
 // NewMeshResource returns a new object resource
@@ -257,7 +261,7 @@ type Component struct {
 	ObjectID   uint32
 	Path       string
 	Transform  Matrix
-	Extensions map[string]interface{}
+	Extensions Extensions
 }
 
 // HasTransform returns true if the transform is different than the identity.
@@ -279,7 +283,7 @@ type Face struct {
 type Mesh struct {
 	Nodes      []Point3D
 	Faces      []Face
-	Extensions map[string]interface{}
+	Extensions Extensions
 }
 
 // CheckSanity checks if the mesh is well formated.

@@ -25,7 +25,7 @@ type beamLatticeDecoder struct {
 
 func (d *beamLatticeDecoder) Attributes(attrs []xml.Attr) {
 	var hasRadius, hasMinLength bool
-	beamLattice := ExtensionBeamLattice(d.mesh)
+	beamLattice := MeshBeamLattice(d.mesh)
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
@@ -101,7 +101,7 @@ func (d *beamDecoder) Attributes(attrs []xml.Attr) {
 	var (
 		hasV1, hasV2, hasCap1, hasCap2 bool
 	)
-	beamLattice := ExtensionBeamLattice(d.mesh)
+	beamLattice := MeshBeamLattice(d.mesh)
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
@@ -176,7 +176,7 @@ func (d *beamSetDecoder) Open() {
 }
 
 func (d *beamSetDecoder) Close() {
-	ext := ExtensionBeamLattice(d.mesh)
+	ext := MeshBeamLattice(d.mesh)
 	ext.BeamSets = append(ext.BeamSets, d.beamSet)
 }
 

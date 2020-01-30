@@ -11,12 +11,12 @@ import (
 func TestDecode(t *testing.T) {
 	meshLattice := &go3mf.ObjectResource{
 		ID: 15, Name: "Box", ModelPath: "/3d/3dmodel.model",
-		Mesh: &go3mf.Mesh {
-		Extensions: map[string]interface{}{
-			ExtensionName: &BeamLattice{ClipMode: ClipInside, ClippingMeshID: 8, RepresentationMeshID: 8},
-		}},
+		Mesh: &go3mf.Mesh{
+			Extensions: go3mf.Extensions{
+				ExtensionName: &BeamLattice{ClipMode: ClipInside, ClippingMeshID: 8, RepresentationMeshID: 8},
+			}},
 	}
-	beamLattice := ExtensionBeamLattice(meshLattice.Mesh)
+	beamLattice := MeshBeamLattice(meshLattice.Mesh)
 	beamLattice.MinLength = 0.0001
 	beamLattice.CapMode = CapModeHemisphere
 	beamLattice.DefaultRadius = 1
@@ -65,6 +65,7 @@ func TestDecode(t *testing.T) {
 						<vertex x="55.00000" y="45.00000" z="55.00000"/>
 						<vertex x="55.00000" y="45.00000" z="45.00000"/>
 					</vertices>
+					<b:other/>
 					<b:beamlattice radius="1" minlength="0.0001" cap="hemisphere" clippingmode="inside" clippingmesh="8" representationmesh="8">
 						<b:beams>
 							<b:beam v1="0" v2="1" r1="1.50000" r2="1.60000" cap1="sphere" cap2="butt"/>
