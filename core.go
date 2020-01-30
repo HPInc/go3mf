@@ -116,9 +116,27 @@ func (m *Model) UnusedID() uint32 {
 	return uint32(lowest)
 }
 
-// FindResourcePath returns the resource with the target path and unique ID.
+// MustFindObject returns the object with the target path and unique ID.
+// It is guaranteed not to panic if the Model has not been modified from the last validation.
 // If path is empty the resource will be searched in the root model.
-func (m *Model) FindResourcePath(path string, id uint32) (r Resource, ok bool) {
+func (m *Model) MustFindObject(path string, id uint32) *ObjectResource {
+	return m.MustFindResource(path, id).(*ObjectResource)
+}
+
+// MustFindResource returns the resource with the target path and unique ID.
+// It is guaranteed not to panic if the Model has not been modified from the last validation.
+// If path is empty the resource will be searched in the root model.
+func (m *Model) MustFindResource(path string, id uint32) Resource {
+	r, ok := m.FindResource(path, id)
+	if !ok {
+		panic("go3mf: object does not exist")
+	}
+	return r
+}
+
+// FindResource returns the resource with the target path and unique ID.
+// If path is empty the resource will be searched in the root model.
+func (m *Model) FindResource(path string, id uint32) (r Resource, ok bool) {
 	if path == "" {
 		path = m.Path
 	}
@@ -130,19 +148,6 @@ func (m *Model) FindResourcePath(path string, id uint32) (r Resource, ok bool) {
 		}
 	}
 	return
-}
-
-// FindResource returns the resource with the target unique ID.
-// Use the FindResourcePath method when searching resources
-// that could live in a child model, which is not supported by the core spec
-// but could be enabled by some extensions (ex: production or slices).
-func (m *Model) FindResource(id uint32) (Resource, bool) {
-	for _, val := range m.Resources {
-		if _, rID := val.Identify(); rID == id {
-			return val, true
-		}
-	}
-	return nil, false
 }
 
 // BaseMaterial defines the Model Base Material Resource.

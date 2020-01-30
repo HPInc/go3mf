@@ -27,7 +27,7 @@ func (o *MockObject) Type() ObjectType {
 	return ObjectTypeOther
 }
 
-func TestModel_FindResourcePath(t *testing.T) {
+func TestModel_FindResource(t *testing.T) {
 	model := &Model{Path: "/3D/model.model"}
 	id1 := &ObjectResource{ID: 0, ModelPath: ""}
 	id2 := &ObjectResource{ID: 1, ModelPath: "/3D/model.model"}
@@ -50,40 +50,7 @@ func TestModel_FindResourcePath(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotR, gotOk := tt.m.FindResourcePath(tt.args.path, tt.args.id)
-			if !reflect.DeepEqual(gotR, tt.wantR) {
-				t.Errorf("Model.FindResourcePath() gotR = %v, want %v", gotR, tt.wantR)
-			}
-			if gotOk != tt.wantOk {
-				t.Errorf("Model.FindResourcePath() gotOk = %v, want %v", gotOk, tt.wantOk)
-			}
-		})
-	}
-}
-
-func TestModel_FindResource(t *testing.T) {
-	model := &Model{Path: "/3D/model.model"}
-	id1 := &ObjectResource{ID: 0, ModelPath: ""}
-	id2 := &ObjectResource{ID: 1, ModelPath: "/3D/model.model"}
-	model.Resources = append(model.Resources, id1, id2, &ObjectResource{ID: 1, ModelPath: "/3D/other.model"})
-	type args struct {
-		id uint32
-	}
-	tests := []struct {
-		name   string
-		m      *Model
-		args   args
-		wantR  Resource
-		wantOk bool
-	}{
-		{"emptyPathExist", model, args{1}, id2, true},
-		{"exsist1", model, args{0}, id1, true},
-		{"exsist2", model, args{1}, id2, true},
-		{"noexist", model, args{100}, nil, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotR, gotOk := tt.m.FindResource(tt.args.id)
+			gotR, gotOk := tt.m.FindResource(tt.args.path, tt.args.id)
 			if !reflect.DeepEqual(gotR, tt.wantR) {
 				t.Errorf("Model.FindResource() gotR = %v, want %v", gotR, tt.wantR)
 			}
