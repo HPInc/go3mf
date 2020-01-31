@@ -434,7 +434,7 @@ type fakePackageFile struct {
 	str string
 }
 
-func (f *fakePackageFile) Name() string                                { return "/3d/3dmodel.model" }
+func (f *fakePackageFile) Name() string                                { return uriPackage3DModel }
 func (f *fakePackageFile) FindFileFromRel(string) (packageFile, bool)  { return nil, false }
 func (f *fakePackageFile) FindFileFromName(string) (packageFile, bool) { return nil, false }
 func (f *fakePackageFile) Relationships() []relationship               { return nil }
