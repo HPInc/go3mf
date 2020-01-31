@@ -111,24 +111,18 @@ type Scanner struct {
 	Err              error
 	Warnings         []error
 	Namespaces       map[string]string
-	model            *Model
-	resourcesMap     map[uint32]Resource
 	extensionDecoder map[string]*extensionDecoderWrapper
 }
 
-func newScanner(model *Model) *Scanner {
+func newScanner() *Scanner {
 	return &Scanner{
-		model:            model,
 		Namespaces:       make(map[string]string),
-		resourcesMap:     make(map[uint32]Resource),
 		extensionDecoder: make(map[string]*extensionDecoderWrapper),
 	}
 }
 
 // AddResource adds a new resource to the resource cache.
 func (p *Scanner) AddResource(r Resource) {
-	_, id := r.Identify()
-	p.resourcesMap[id] = r
 	p.Resources = append(p.Resources, r)
 }
 

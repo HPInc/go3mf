@@ -111,7 +111,7 @@ type modelFileDecoder struct {
 }
 
 func (d *modelFileDecoder) Decode(ctx context.Context, x XMLDecoder, model *Model, path string, isRoot, strict bool, extensionDecoder map[string]*extensionDecoderWrapper) error {
-	d.Scanner = newScanner(model)
+	d.Scanner = newScanner()
 	if extensionDecoder != nil {
 		d.Scanner.extensionDecoder = extensionDecoder
 	}
