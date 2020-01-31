@@ -17,6 +17,11 @@ const (
 )
 
 const (
+	uriDefault3DModel  = "/3D/3dmodel.model"
+	contentType3DModel = "application/vnd.ms-package.3dmanufacturing-3dmodel+xml"
+)
+
+const (
 	attrXmlns             = "xmlns"
 	attrID                = "id"
 	attrName              = "name"
@@ -30,7 +35,7 @@ const (
 	attrObject            = "object"
 	attrBaseMaterials     = "basematerials"
 	attrBase              = "base"
-	attrBaseMaterialColor = "displaycolor"
+	attrDisplayColor = "displaycolor"
 	attrPartNumber        = "partnumber"
 	attrItem              = "item"
 	attrModel             = "model"

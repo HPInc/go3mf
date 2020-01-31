@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"image/color"
+	"strconv"
 	"strings"
 )
 
@@ -116,9 +117,7 @@ func (d *metadataDecoder) Attributes(attrs []xml.Attr) {
 		case attrType:
 			d.metadata.Type = a.Value
 		case attrPreserve:
-			if a.Value != "0" {
-				d.metadata.Preserve = true
-			}
+			d.metadata.Preserve, _ = strconv.ParseBool(a.Value)
 		}
 	}
 }
@@ -274,12 +273,12 @@ func (d *baseMaterialDecoder) Attributes(attrs []xml.Attr) {
 		switch a.Name.Local {
 		case attrName:
 			name = a.Value
-		case attrBaseMaterialColor:
+		case attrDisplayColor:
 			var err error
 			baseColor, err = ParseRGB(a.Value)
 			withColor = true
 			if err != nil {
-				d.Scanner.InvalidRequiredAttr(attrBaseMaterialColor, a.Value)
+				d.Scanner.InvalidRequiredAttr(attrDisplayColor, a.Value)
 			}
 		}
 	}
@@ -287,7 +286,7 @@ func (d *baseMaterialDecoder) Attributes(attrs []xml.Attr) {
 		d.Scanner.MissingAttr(attrName)
 	}
 	if !withColor {
-		d.Scanner.MissingAttr(attrBaseMaterialColor)
+		d.Scanner.MissingAttr(attrDisplayColor)
 	}
 	d.resource.Materials = append(d.resource.Materials, BaseMaterial{Name: name, Color: baseColor})
 	return
