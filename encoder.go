@@ -167,8 +167,8 @@ func (e *Encoder) writeMesh(x *xml.Encoder, m *Mesh) error {
 			if v.ResourceIndices[0] != 0 {
 				xv.Attribute(attrP1, strconv.FormatInt(int64(v.ResourceIndices[0]), 10))
 				if v.ResourceIndices[1] != 0 {
-				xv.Attribute(attrP2, strconv.FormatInt(int64(v.ResourceIndices[1]), 10))
-				}				
+					xv.Attribute(attrP2, strconv.FormatInt(int64(v.ResourceIndices[1]), 10))
+				}
 				if v.ResourceIndices[2] != 0 {
 					xv.Attribute(attrP3, strconv.FormatInt(int64(v.ResourceIndices[2]), 10))
 				}
