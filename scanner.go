@@ -232,6 +232,25 @@ func (p *Scanner) ParseFloat32Optional(attr string, s string) float32 {
 	return float32(n)
 }
 
+// FormatMatrix converts a matrix to a string.
+func FormatMatrix(t Matrix) string {
+	sl := []string{
+		strconv.FormatFloat(float64(t[0]), 'f', 3, 32),
+		strconv.FormatFloat(float64(t[1]), 'f', 3, 32),
+		strconv.FormatFloat(float64(t[2]), 'f', 3, 32),
+		strconv.FormatFloat(float64(t[4]), 'f', 3, 32),
+		strconv.FormatFloat(float64(t[5]), 'f', 3, 32),
+		strconv.FormatFloat(float64(t[6]), 'f', 3, 32),
+		strconv.FormatFloat(float64(t[8]), 'f', 3, 32),
+		strconv.FormatFloat(float64(t[9]), 'f', 3, 32),
+		strconv.FormatFloat(float64(t[10]), 'f', 3, 32),
+		strconv.FormatFloat(float64(t[12]), 'f', 3, 32),
+		strconv.FormatFloat(float64(t[13]), 'f', 3, 32),
+		strconv.FormatFloat(float64(t[14]), 'f', 3, 32),
+	}
+	return strings.Join(sl, " ")
+} 
+
 // ParseToMatrix parses s as a Matrix.
 func ParseToMatrix(s string) (Matrix, bool) {
 	values := strings.Fields(s)

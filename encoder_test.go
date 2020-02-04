@@ -28,6 +28,7 @@ func TestEncoder_writeModel(t *testing.T) {
 					{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 					{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
 				}}, &ObjectResource{ID: 8, Name: "Box 1", PartNumber: "11111111-1111-1111-1111-111111111111", Thumbnail: "/a.png",
+					ModelPath: "/3d/3dmodel.model",
 					DefaultPropertyID: 1, DefaultPropertyIndex: 1, ObjectType: ObjectTypeModel, Mesh: &Mesh{
 						Nodes: []Point3D{
 							{0, 0, 0}, {100, 0, 0}, {100, 100, 0},
@@ -72,6 +73,7 @@ func TestEncoder_writeModel(t *testing.T) {
 			d.RegisterNodeDecoderExtension(fakeExtenstion, nil)
 			d.RegisterDecodeAttributeExtension(fakeExtenstion, nil)
 			newModel := new(Model)
+			newModel.Path = tt.args.m.Path
 			if err := d.DecodeRawModel(context.Background(), newModel, tt.args.w.String()); err != nil {
 				t.Errorf("Encoder.writeModel() error decoding = %v, s = %s", err, tt.args.w.String())
 				return

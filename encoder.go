@@ -44,11 +44,15 @@ func (e *Encoder) writeModel(x *xml.Encoder, m *Model) error {
 		{Name: xml.Name{Local: attrUnit}, Value: m.Units.String()},
 		{Name: xml.Name{Space: nsXML, Local: attrLang}, Value: m.Language},
 	}
+	if m.Thumbnail != "" {
+		attrs = append(attrs, xml.Attr{Name: xml.Name{Local: attrThumbnail}, Value: m.Thumbnail})
+	}
 	for _, a := range m.Namespaces {
 		attrs = append(attrs, xml.Attr{Name: xml.Name{Space: a.Space + "/" + a.Local, Local: a.Local}})
 	}
 
-	err := x.EncodeToken(xml.StartElement{Name: xml.Name{Local: attrModel}, Attr: attrs})
+	tm := xml.StartElement{Name: xml.Name{Local: attrModel}, Attr: attrs}
+	err := x.EncodeToken(tm)
 	if err != nil {
 		return err
 	}
@@ -61,11 +65,57 @@ func (e *Encoder) writeModel(x *xml.Encoder, m *Model) error {
 		return err
 	}
 
-	return nil
+	if err = e.writeBuild(x, m); err != nil {
+		return err
+	}
+
+	return x.EncodeToken(tm.End())
+}
+
+func (e *Encoder) writeMetadataGroup(x *xml.Encoder, m []Metadata) error {
+	xm := newXmlNodeEncoder(x, attrMetadataGroup, 0)
+	if err := xm.Close(); err != nil {
+		return err
+	}
+	if err := e.writeMetadata(x, m); err != nil {
+		return err
+	}
+	return xm.End()
+}
+
+func (e *Encoder) writeBuild(x *xml.Encoder, m *Model) error {
+	xb := newXmlNodeEncoder(x, attrBuild, 0)
+	if err := xb.Close(); err != nil {
+		return err
+	}
+	
+	for _, i := range m.Build.Items {
+		xi := newXmlNodeEncoder(x, attrItem, 3)
+		xi.Attribute(attrObjectID, strconv.FormatUint(uint64(i.ObjectID), 10))
+		if i.HasTransform() {
+			xi.Attribute(attrTransform, FormatMatrix(i.Transform))
+		}
+		xi.OptionalAttribute(attrPartNumber, i.PartNumber)
+		if len(i.Metadata) != 0 {
+			if err := xi.Close(); err != nil {
+				return err
+			}
+			if err := e.writeMetadataGroup(x, i.Metadata); err != nil {
+				return err
+			}
+		}
+		
+		xi.End()
+	}
+	
+	return xb.End()
 }
 
 func (e *Encoder) writeResources(x *xml.Encoder, m *Model) error {
 	xt := newXmlNodeEncoder(x, attrResources, 0)
+	if err := xt.Close(); err != nil {
+		return err
+	}
 	for _, r := range m.Resources {
 		var err error
 		switch r := r.(type) {
@@ -98,30 +148,25 @@ func (e *Encoder) writeMetadata(x *xml.Encoder, metadata []Metadata) error {
 
 func (e *Encoder) writeObject(x *xml.Encoder, r *ObjectResource) error {
 	xo := newXmlNodeEncoder(x, attrObject, 7)
-	xo.Attribute(attrID, strconv.FormatInt(int64(r.ID), 10))
+	xo.Attribute(attrID, strconv.FormatUint(uint64(r.ID), 10))
 	xo.OptionalAttribute(attrType, r.ObjectType.String())
 	xo.OptionalAttribute(attrThumbnail, r.Thumbnail)
 	xo.OptionalAttribute(attrPartNumber, r.PartNumber)
 	xo.OptionalAttribute(attrName, r.Name)
 	if r.Mesh != nil {
 		if r.DefaultPropertyID != 0 {
-			xo.Attribute(attrPID, strconv.FormatInt(int64(r.DefaultPropertyID), 10))
+			xo.Attribute(attrPID, strconv.FormatUint(uint64(r.DefaultPropertyID), 10))
 		}
 		if r.DefaultPropertyIndex != 0 {
-			xo.Attribute(attrPIndex, strconv.FormatInt(int64(r.DefaultPropertyIndex), 10))
+			xo.Attribute(attrPIndex, strconv.FormatUint(uint64(r.DefaultPropertyIndex), 10))
 		}
 	}
-	xo.Close()
+	if err := xo.Close(); err != nil {
+		return err
+	}
 
-	if len(r.Metadata) > 0 {
-		xm := newXmlNodeEncoder(x, attrMetadataGroup, 0)
-		if err := xm.Close(); err != nil {
-			return err
-		}
-		if err := e.writeMetadata(x, r.Metadata); err != nil {
-			return err
-		}
-		if err := xm.End(); err != nil {
+	if len(r.Metadata) != 0 {
+		if err := e.writeMetadataGroup(x, r.Metadata); err != nil {
 			return err
 		}
 	}
@@ -129,12 +174,32 @@ func (e *Encoder) writeObject(x *xml.Encoder, r *ObjectResource) error {
 	var err error
 	if r.Mesh != nil {
 		err = e.writeMesh(x, r.Mesh)
+	} else {
+		err = e.writeComponents(x, r.Components)
 	}
 
 	if err != nil {
 		return err
 	}
 	return xo.End()
+}
+
+func (e *Encoder) writeComponents(x *xml.Encoder, comps []*Component) error {
+	xcs := newXmlNodeEncoder(x, attrComponents, 0)
+	if err := xcs.Close(); err != nil {
+		return err
+	}
+	
+	for _, c := range comps {
+		xc := newXmlNodeEncoder(x, attrComponent, 2)
+		xc.Attribute(attrObjectID, strconv.FormatUint(uint64(c.ObjectID), 10))
+		if c.HasTransform() {
+			xc.Attribute(attrTransform, FormatMatrix(c.Transform))
+		}
+		xc.End()
+	}
+	
+	return xcs.End()
 }
 
 func (e *Encoder) writeMesh(x *xml.Encoder, m *Mesh) error {
@@ -163,19 +228,19 @@ func (e *Encoder) writeMesh(x *xml.Encoder, m *Mesh) error {
 		return err
 	}
 	for _, v := range m.Faces {
-		xv := newXmlNodeEncoder(x, attrVertex, 3)
-		xv.Attribute(attrV1, strconv.FormatInt(int64(v.NodeIndices[0]), 10))
-		xv.Attribute(attrV2, strconv.FormatInt(int64(v.NodeIndices[1]), 10))
-		xv.Attribute(attrV3, strconv.FormatInt(int64(v.NodeIndices[2]), 10))
+		xv := newXmlNodeEncoder(x, attrTriangle, 3)
+		xv.Attribute(attrV1, strconv.FormatUint(uint64(v.NodeIndices[0]), 10))
+		xv.Attribute(attrV2, strconv.FormatUint(uint64(v.NodeIndices[1]), 10))
+		xv.Attribute(attrV3, strconv.FormatUint(uint64(v.NodeIndices[2]), 10))
 		if v.Resource != 0 {
-			xv.Attribute(attrPID, strconv.FormatInt(int64(v.Resource), 10))
+			xv.Attribute(attrPID, strconv.FormatUint(uint64(v.Resource), 10))
 			if v.ResourceIndices[0] != 0 {
-				xv.Attribute(attrP1, strconv.FormatInt(int64(v.ResourceIndices[0]), 10))
+				xv.Attribute(attrP1, strconv.FormatUint(uint64(v.ResourceIndices[0]), 10))
 				if v.ResourceIndices[1] != 0 {
-					xv.Attribute(attrP2, strconv.FormatInt(int64(v.ResourceIndices[1]), 10))
+					xv.Attribute(attrP2, strconv.FormatUint(uint64(v.ResourceIndices[1]), 10))
 				}
 				if v.ResourceIndices[2] != 0 {
-					xv.Attribute(attrP3, strconv.FormatInt(int64(v.ResourceIndices[2]), 10))
+					xv.Attribute(attrP3, strconv.FormatUint(uint64(v.ResourceIndices[2]), 10))
 				}
 			}
 		}
@@ -191,7 +256,10 @@ func (e *Encoder) writeMesh(x *xml.Encoder, m *Mesh) error {
 
 func (e *Encoder) writeBaseMaterial(x *xml.Encoder, r *BaseMaterialsResource) error {
 	xt := newXmlNodeEncoder(x, attrBaseMaterials, 1)
-	xt.Attribute(attrID, strconv.FormatInt(int64(r.ID), 10))
+	xt.Attribute(attrID, strconv.FormatUint(uint64(r.ID), 10))
+	if err := xt.Close(); err != nil {
+		return err
+	} 
 	for _, ma := range r.Materials {
 		xn := newXmlNodeEncoder(x, attrBase, 2)
 		xn.Attribute(attrName, ma.Name)
