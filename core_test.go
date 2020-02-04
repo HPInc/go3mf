@@ -68,6 +68,10 @@ func TestBaseMaterial_ColotString(t *testing.T) {
 		want string
 	}{
 		{"base", &BaseMaterial{Color: color.RGBA{200, 250, 60, 80}}, "#c8fa3c50"},
+		{"red", &BaseMaterial{Color: color.RGBA{255, 0, 0, 255}}, "#ff0000ff"},
+		{"green", &BaseMaterial{Color: color.RGBA{0, 255, 0, 255}}, "#00ff00ff"},
+		{"blue", &BaseMaterial{Color: color.RGBA{0, 0, 255, 255}}, "#0000ffff"},
+		{"transparent", &BaseMaterial{Color: color.RGBA{0, 0, 0, 0}}, "#00000000"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
