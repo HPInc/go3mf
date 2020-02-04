@@ -39,11 +39,16 @@ func (e *Encoder) Encode(ctx context.Context, m *Model) error {
 }
 
 func (e *Encoder) writeModel(x *xml.Encoder, m *Model) error {
-	err := x.EncodeToken(xml.StartElement{Name: xml.Name{Local: attrModel}, Attr: []xml.Attr{
+	attrs := []xml.Attr{
 		{Name: xml.Name{Local: attrXmlns}, Value: ExtensionName},
 		{Name: xml.Name{Local: attrUnit}, Value: m.Units.String()},
 		{Name: xml.Name{Space: nsXML, Local: attrLang}, Value: m.Language},
-	}})
+	}
+	for _, a := range m.Namespaces {
+		attrs = append(attrs, xml.Attr{Name: xml.Name{Space: a.Space + "/" + a.Local, Local: a.Local}})
+	}
+
+	err := x.EncodeToken(xml.StartElement{Name: xml.Name{Local: attrModel}, Attr: attrs})
 	if err != nil {
 		return err
 	}

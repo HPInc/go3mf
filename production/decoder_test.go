@@ -2,6 +2,7 @@ package production
 
 import (
 	"context"
+	"encoding/xml"
 	"testing"
 
 	"github.com/go-test/deep"
@@ -19,7 +20,7 @@ func TestDecode(t *testing.T) {
 		},
 	}
 
-	want := &go3mf.Model{Path: "/3d/3dmodel.model"}
+	want := &go3mf.Model{Path: "/3d/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "p"}}}
 	otherMesh := &go3mf.ObjectResource{Mesh: new(go3mf.Mesh), ID: 8, ModelPath: "/3d/other.model"}
 	want.Resources = append(want.Resources, otherMesh, components)
 	SetBuildUUID(&want.Build, "e9e25302-6428-402e-8633-cc95528d0ed3")

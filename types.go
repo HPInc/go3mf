@@ -10,6 +10,7 @@ const (
 const (
 	// ExtensionName is the canonical name of this extension.
 	ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/core/2015/02"
+	fakeExtenstion = "http://dummy.com/fake_ext"
 	// RelTypeModel3D is the canonical 3D model  relationship type.
 	RelTypeModel3D     = "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"
 	relTypeThumbnail   = "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail"

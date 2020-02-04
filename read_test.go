@@ -68,7 +68,7 @@ func (m *modelBuilder) withDefaultModel() *modelBuilder {
 func (m *modelBuilder) withModel(unit string, lang string, thumbnail string) *modelBuilder {
 	m.str.WriteString(`<model `)
 	m.addAttr("", "unit", unit).addAttr("xml", "lang", lang)
-	m.addAttr("", "xmlns", ExtensionName).addAttr("xmlns", "qm", "fake_ext")
+	m.addAttr("", "xmlns", ExtensionName).addAttr("xmlns", "qm", fakeExtenstion)
 	m.addAttr("", "requiredextensions", "qm")
 	if thumbnail != "" {
 		m.addAttr("", "thumbnail", thumbnail)
@@ -281,19 +281,22 @@ func TestDecoder_processRootModel(t *testing.T) {
 
 	components := &ObjectResource{
 		ID: 20, ModelPath: "/3d/3dmodel.model",
-		Metadata:   []Metadata{{Name: "fake_ext:CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: "fake_ext:CustomMetadata4", Type: "xs:boolean", Value: "2"}},
+		Metadata:   []Metadata{{Name: "qm:CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: "qm:CustomMetadata4", Type: "xs:boolean", Value: "2"}},
 		Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
 	}
 
-	want := &Model{Units: UnitMillimeter, Language: "en-US", Path: "/3d/3dmodel.model", Thumbnail: "/thumbnail.png"}
+	want := &Model{
+		Units: UnitMillimeter, Language: "en-US", Path: "/3d/3dmodel.model", Thumbnail: "/thumbnail.png",
+		Namespaces: []xml.Name{{Space: fakeExtenstion, Local: "qm"}},
+	}
 	want.Resources = append(want.Resources, baseMaterials, meshRes, components)
 	want.Build.Items = append(want.Build.Items, &Item{
 		ObjectID: 20, PartNumber: "bob", Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
-		Metadata: []Metadata{{Name: "fake_ext:CustomMetadata3", Type: "xs:boolean", Value: "1"}},
+		Metadata: []Metadata{{Name: "qm:CustomMetadata3", Type: "xs:boolean", Value: "1"}},
 	})
 	want.Metadata = append(want.Metadata, []Metadata{
 		{Name: "Application", Value: "go3mf app"},
-		{Name: "fake_ext:CustomMetadata1", Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},
+		{Name: "qm:CustomMetadata1", Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},
 	}...)
 	got := new(Model)
 	got.Path = "/3d/3dmodel.model"
@@ -355,8 +358,8 @@ func TestDecoder_processRootModel(t *testing.T) {
 
 	t.Run("base", func(t *testing.T) {
 		d := new(Decoder)
-		d.RegisterNodeDecoderExtension("fake_ext", nil)
-		d.RegisterDecodeAttributeExtension("fake_ext", nil)
+		d.RegisterNodeDecoderExtension(fakeExtenstion, nil)
+		d.RegisterDecodeAttributeExtension(fakeExtenstion, nil)
 		d.Strict = true
 		d.SetDecompressor(func(r io.Reader) io.ReadCloser { return flate.NewReader(r) })
 		d.SetXMLDecoder(func(r io.Reader) XMLDecoder { return xml.NewDecoder(r) })
@@ -584,8 +587,8 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 
 	t.Run("base", func(t *testing.T) {
 		d := new(Decoder)
-		d.RegisterNodeDecoderExtension("fake_ext", nil)
-		d.RegisterDecodeAttributeExtension("fake_ext", nil)
+		d.RegisterNodeDecoderExtension(fakeExtenstion, nil)
+		d.RegisterDecodeAttributeExtension(fakeExtenstion, nil)
 		d.Strict = false
 		d.SetDecompressor(func(r io.Reader) io.ReadCloser { return flate.NewReader(r) })
 		d.SetXMLDecoder(func(r io.Reader) XMLDecoder { return xml.NewDecoder(r) })

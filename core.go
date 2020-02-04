@@ -1,6 +1,7 @@
 package go3mf
 
 import (
+	"encoding/xml"
 	"fmt"
 	"image/color"
 	"io"
@@ -94,6 +95,7 @@ type Model struct {
 	Resources   []Resource
 	Build       Build
 	Attachments []*Attachment
+	Namespaces  []xml.Name
 }
 
 // UnusedID returns the lowest unused ID.

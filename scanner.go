@@ -110,30 +110,29 @@ type Scanner struct {
 	ResourceID       uint32
 	Err              error
 	Warnings         []error
-	Namespaces       map[string]string
+	Namespaces       []xml.Name
 	extensionDecoder map[string]*extensionDecoderWrapper
 }
 
 func newScanner() *Scanner {
 	return &Scanner{
-		Namespaces:       make(map[string]string),
 		extensionDecoder: make(map[string]*extensionDecoderWrapper),
 	}
+}
+
+// Namespace returns the space of the associated local, if existing.
+func (s *Scanner) Namespace(local string) (string, bool) {
+	for _, name := range s.Namespaces {
+		if name.Local == local {
+			return name.Space, true
+		}
+	}
+	return "", false
 }
 
 // AddResource adds a new resource to the resource cache.
 func (p *Scanner) AddResource(r Resource) {
 	p.Resources = append(p.Resources, r)
-}
-
-// NamespaceRegistered checks if the namespace is registered.
-func (p *Scanner) NamespaceRegistered(ns string) bool {
-	for _, space := range p.Namespaces {
-		if ns == space {
-			return true
-		}
-	}
-	return false
 }
 
 func (p *Scanner) strictError(err error) {

@@ -2,6 +2,7 @@ package beamlattice
 
 import (
 	"context"
+	"encoding/xml"
 	"testing"
 
 	"github.com/go-test/deep"
@@ -46,7 +47,7 @@ func TestDecode(t *testing.T) {
 		{NodeIndices: [2]uint32{0, 5}, Radius: [2]float32{1.5, 2}, CapMode: [2]CapMode{CapModeHemisphere, CapModeButt}},
 	}...)
 
-	want := &go3mf.Model{Path: "/3d/3dmodel.model"}
+	want := &go3mf.Model{Path: "/3d/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "b"}}}
 	want.Resources = append(want.Resources, meshLattice)
 	got := new(go3mf.Model)
 	got.Path = "/3d/3dmodel.model"

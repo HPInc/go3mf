@@ -2,6 +2,7 @@ package slices
 
 import (
 	"context"
+	"encoding/xml"
 	"testing"
 
 	"github.com/go-test/deep"
@@ -65,7 +66,7 @@ func TestDecode(t *testing.T) {
 		{NodeIndices: [3]uint32{4, 7, 3}},
 	}...)
 
-	want := &go3mf.Model{Path: "/3d/3dmodel.model"}
+	want := &go3mf.Model{Path: "/3d/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "s"}}}
 	want.Resources = append(want.Resources, &SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", Stack: otherSlices})
 	want.Resources = append(want.Resources, sliceStack, sliceStackRef, meshRes)
 	got := new(go3mf.Model)

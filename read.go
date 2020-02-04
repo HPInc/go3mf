@@ -307,6 +307,9 @@ func (d *Decoder) addModelFile(p *Scanner, model *Model) {
 	for _, res := range p.Resources {
 		model.Resources = append(model.Resources, res)
 	}
+	for _, ns := range p.Namespaces {
+		model.Namespaces = append(model.Namespaces, ns)
+	}
 	for _, res := range p.Warnings {
 		d.Warnings = append(d.Warnings, res)
 	}
