@@ -9,19 +9,24 @@ import (
 	"github.com/qmuntal/opc"
 )
 
-type tokenEncoder interface{
+type tokenEncoder interface {
 	EncodeToken(t xml.Token) error
 	Flush() error
 }
 
+type packageWriter interface {
+	Create(name, contentType string) (io.Writer, error)
+	AddRelationship(*relationship)
+	Close() error
+}
 
 type Encoder struct {
-	w *opc.Writer
+	w packageWriter
 }
 
 func NewEncoder(w io.Writer) *Encoder {
 	return &Encoder{
-		w: opc.NewWriter(w),
+		w: &opcWriter{opc.NewWriter(w)},
 	}
 }
 
@@ -45,7 +50,7 @@ func (e *Encoder) Encode(ctx context.Context, m *Model) error {
 	if err = x.Flush(); err != nil {
 		return err
 	}
-	e.w.Relationships = append(e.w.Relationships, &opc.Relationship{
+	e.w.AddRelationship(&relationship{
 		ID: "1", Type: RelTypeModel3D, TargetURI: rootName,
 	})
 	return e.w.Close()

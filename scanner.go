@@ -249,7 +249,7 @@ func FormatMatrix(t Matrix) string {
 		strconv.FormatFloat(float64(t[14]), 'f', 3, 32),
 	}
 	return strings.Join(sl, " ")
-} 
+}
 
 // ParseToMatrix parses s as a Matrix.
 func ParseToMatrix(s string) (Matrix, bool) {

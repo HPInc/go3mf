@@ -7,42 +7,6 @@ import (
 	"github.com/qmuntal/opc"
 )
 
-func Test_opcRelationship_Type(t *testing.T) {
-	tests := []struct {
-		name string
-		o    *opcRelationship
-		want string
-	}{
-		{"empty", &opcRelationship{new(opc.Relationship)}, ""},
-		{"base", &opcRelationship{&opc.Relationship{Type: "application/xml"}}, "application/xml"},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.o.Type(); got != tt.want {
-				t.Errorf("opcRelationship.Type() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_opcRelationship_TargetURI(t *testing.T) {
-	tests := []struct {
-		name string
-		o    *opcRelationship
-		want string
-	}{
-		{"empty", &opcRelationship{new(opc.Relationship)}, ""},
-		{"base", &opcRelationship{&opc.Relationship{TargetURI: "a.xml"}}, "a.xml"},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.o.TargetURI(); got != tt.want {
-				t.Errorf("opcRelationship.TargetURI() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func Test_newRelationships(t *testing.T) {
 	type args struct {
 		rels []*opc.Relationship
@@ -50,9 +14,9 @@ func Test_newRelationships(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want []relationship
+		want []*relationship
 	}{
-		{"base", args{[]*opc.Relationship{{}, {TargetURI: "a.xml"}}}, []relationship{&opcRelationship{new(opc.Relationship)}, &opcRelationship{&opc.Relationship{TargetURI: "a.xml"}}}},
+		{"base", args{[]*opc.Relationship{{}, {TargetURI: "a.xml"}}}, []*relationship{{}, {TargetURI: "a.xml"}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -117,15 +81,15 @@ func Test_opcFile_Relationships(t *testing.T) {
 	tests := []struct {
 		name string
 		o    *opcFile
-		want []relationship
+		want []*relationship
 	}{
-		{"empty", &opcFile{nil, &opc.File{Part: new(opc.Part)}}, []relationship{}},
+		{"empty", &opcFile{nil, &opc.File{Part: new(opc.Part)}}, []*relationship{}},
 		{"base", &opcFile{nil, &opc.File{Part: &opc.Part{Relationships: []*opc.Relationship{
 			{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture", TargetURI: "/a.xml"},
 			{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel", TargetURI: "/b.xml"},
-		}}}}, []relationship{
-			&opcRelationship{&opc.Relationship{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture", TargetURI: "/a.xml"}},
-			&opcRelationship{&opc.Relationship{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel", TargetURI: "/b.xml"}},
+		}}}}, []*relationship{
+			{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture", TargetURI: "/a.xml"},
+			{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel", TargetURI: "/b.xml"},
 		}},
 	}
 	for _, tt := range tests {
