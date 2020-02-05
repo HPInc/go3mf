@@ -23,6 +23,7 @@ const (
 )
 
 const (
+	attrXml         = "xml"
 	attrXmlns         = "xmlns"
 	attrID            = "id"
 	attrName          = "name"
