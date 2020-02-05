@@ -43,8 +43,7 @@ func (e *Encoder) Encode(ctx context.Context, m *Model) error {
 	if err != nil {
 		return err
 	}
-	x := newXmlEncoder(w)
-	if err = e.writeModel(x, m); err != nil {
+	if err = e.writeModel(newXmlEncoder(w), m); err != nil {
 		return err
 	}
 	e.w.AddRelationship(&relationship{
