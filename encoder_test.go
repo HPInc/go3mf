@@ -68,7 +68,6 @@ func TestEncoder_writeModel(t *testing.T) {
 				t.Errorf("Encoder.writeModel() error = %v", err)
 				return
 			}
-			x.Flush()
 			d := NewDecoder(nil, 0)
 			d.RegisterNodeDecoderExtension(fakeExtenstion, nil)
 			d.RegisterDecodeAttributeExtension(fakeExtenstion, nil)
