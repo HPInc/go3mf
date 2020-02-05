@@ -18,7 +18,7 @@ const (
 )
 
 const (
-	uriDefault3DModel  = "/3d/3dmodel.model"
+	uriDefault3DModel  = "/3D/3dmodel.model"
 	contentType3DModel = "application/vnd.ms-package.3dmanufacturing-3dmodel+xml"
 )
 

@@ -21,14 +21,14 @@ func TestEncoder_writeModel(t *testing.T) {
 		args args
 	}{
 		{"base", new(Encoder), args{new(bytes.Buffer), &Model{
-			Units: UnitMillimeter, Language: "en-US", Path: "/3d/3dmodel.model", Thumbnail: "/thumbnail.png",
+			Units: UnitMillimeter, Language: "en-US", Path: "/3D/3dmodel.model", Thumbnail: "/thumbnail.png",
 			Namespaces: []xml.Name{{Space: fakeExtenstion, Local: "qm"}},
 			Resources: []Resource{
-				&BaseMaterialsResource{ID: 5, ModelPath: "/3d/3dmodel.model", Materials: []BaseMaterial{
+				&BaseMaterialsResource{ID: 5, ModelPath: "/3D/3dmodel.model", Materials: []BaseMaterial{
 					{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 					{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
 				}}, &ObjectResource{ID: 8, Name: "Box 1", PartNumber: "11111111-1111-1111-1111-111111111111", Thumbnail: "/a.png",
-					ModelPath: "/3d/3dmodel.model",
+					ModelPath: "/3D/3dmodel.model",
 					DefaultPropertyID: 1, DefaultPropertyIndex: 1, ObjectType: ObjectTypeModel, Mesh: &Mesh{
 						Nodes: []Point3D{
 							{0, 0, 0}, {100, 0, 0}, {100, 100, 0},
@@ -50,7 +50,7 @@ func TestEncoder_writeModel(t *testing.T) {
 						},
 					}},
 				&ObjectResource{
-					ID: 20, ModelPath: "/3d/3dmodel.model",
+					ID: 20, ModelPath: "/3D/3dmodel.model",
 					Metadata:   []Metadata{{Name: "qm:CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: "qm:CustomMetadata4", Type: "xs:boolean", Value: "2"}},
 					Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
 				}}, Build: Build{Items: []*Item{{

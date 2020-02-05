@@ -11,10 +11,10 @@ import (
 )
 
 func TestDecode(t *testing.T) {
-	baseTexture := &Texture2DResource{ID: 6, ModelPath: "/3d/3dmodel.model", Path: "/3D/Texture/msLogo.png", ContentType: TextureTypePNG, TileStyleU: TileWrap, TileStyleV: TileMirror, Filter: TextureFilterAuto}
+	baseTexture := &Texture2DResource{ID: 6, ModelPath: "/3D/3dmodel.model", Path: "/3D/Texture/msLogo.png", ContentType: TextureTypePNG, TileStyleU: TileWrap, TileStyleV: TileMirror, Filter: TextureFilterAuto}
 	meshRes := &go3mf.ObjectResource{
 		Mesh: new(go3mf.Mesh),
-		ID:   8, Name: "Box 1", ModelPath: "/3d/3dmodel.model", Thumbnail: "/a.png", DefaultPropertyID: 5, PartNumber: "11111111-1111-1111-1111-111111111111",
+		ID:   8, Name: "Box 1", ModelPath: "/3D/3dmodel.model", Thumbnail: "/a.png", DefaultPropertyID: 5, PartNumber: "11111111-1111-1111-1111-111111111111",
 	}
 	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []go3mf.Point3D{
 		{0, 0, 0},
@@ -41,14 +41,14 @@ func TestDecode(t *testing.T) {
 		{NodeIndices: [3]uint32{4, 7, 3}, Resource: 5},
 	}...)
 
-	want := &go3mf.Model{Path: "/3d/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "m"}}}
-	colorGroup := &ColorGroupResource{ID: 1, ModelPath: "/3d/3dmodel.model", Colors: []color.RGBA{{R: 255, G: 255, B: 255, A: 255}, {R: 0, G: 0, B: 0, A: 255}, {R: 26, G: 181, B: 103, A: 255}, {R: 223, G: 4, B: 90, A: 255}}}
-	texGroup := &Texture2DGroupResource{ID: 2, ModelPath: "/3d/3dmodel.model", TextureID: 6, Coords: []TextureCoord{{0.3, 0.5}, {0.3, 0.8}, {0.5, 0.8}, {0.5, 0.5}}}
-	compositeGroup := &CompositeMaterialsResource{ID: 4, ModelPath: "/3d/3dmodel.model", MaterialID: 5, Indices: []uint32{1, 2}, Composites: []Composite{{Values: []float32{0.5, 0.5}}, {Values: []float32{0.2, 0.8}}}}
-	multiGroup := &MultiPropertiesResource{ID: 9, ModelPath: "/3d/3dmodel.model", BlendMethods: []BlendMethod{BlendMultiply}, Resources: []uint32{5, 2}, Multis: []Multi{{ResourceIndices: []uint32{0, 0}}, {ResourceIndices: []uint32{1, 0}}, {ResourceIndices: []uint32{2, 3}}}}
+	want := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "m"}}}
+	colorGroup := &ColorGroupResource{ID: 1, ModelPath: "/3D/3dmodel.model", Colors: []color.RGBA{{R: 255, G: 255, B: 255, A: 255}, {R: 0, G: 0, B: 0, A: 255}, {R: 26, G: 181, B: 103, A: 255}, {R: 223, G: 4, B: 90, A: 255}}}
+	texGroup := &Texture2DGroupResource{ID: 2, ModelPath: "/3D/3dmodel.model", TextureID: 6, Coords: []TextureCoord{{0.3, 0.5}, {0.3, 0.8}, {0.5, 0.8}, {0.5, 0.5}}}
+	compositeGroup := &CompositeMaterialsResource{ID: 4, ModelPath: "/3D/3dmodel.model", MaterialID: 5, Indices: []uint32{1, 2}, Composites: []Composite{{Values: []float32{0.5, 0.5}}, {Values: []float32{0.2, 0.8}}}}
+	multiGroup := &MultiPropertiesResource{ID: 9, ModelPath: "/3D/3dmodel.model", BlendMethods: []BlendMethod{BlendMultiply}, Resources: []uint32{5, 2}, Multis: []Multi{{ResourceIndices: []uint32{0, 0}}, {ResourceIndices: []uint32{1, 0}}, {ResourceIndices: []uint32{2, 3}}}}
 	want.Resources = append(want.Resources, baseTexture, colorGroup, texGroup, compositeGroup, multiGroup, meshRes)
 	got := new(go3mf.Model)
-	got.Path = "/3d/3dmodel.model"
+	got.Path = "/3D/3dmodel.model"
 	rootFile := `
 	<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:m="http://schemas.microsoft.com/3dmanufacturing/material/2015/02">
 		<resources>
@@ -119,22 +119,22 @@ func TestDecode(t *testing.T) {
 
 func TestDecode_warns(t *testing.T) {
 	want := []error{
-		go3mf.ParsePropertyError{ResourceID: 0, Element: "texture2d", Name: "id", Value: "b", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
-		go3mf.MissingPropertyError{ResourceID: 0, Element: "texture2d", ModelPath: "/3d/3dmodel.model", Name: "path"},
-		go3mf.MissingPropertyError{ResourceID: 0, Element: "texture2d", ModelPath: "/3d/3dmodel.model", Name: "id"},
-		go3mf.ParsePropertyError{ResourceID: 1, Element: "color", Name: "color", Value: "#FFFFF", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
-		go3mf.ParsePropertyError{ResourceID: 2, Element: "tex2coord", Name: "u", Value: "b", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
-		go3mf.ParsePropertyError{ResourceID: 2, Element: "tex2coord", Name: "v", Value: "c", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
-		go3mf.MissingPropertyError{ResourceID: 4, Element: "compositematerials", ModelPath: "/3d/3dmodel.model", Name: "matid"},
-		go3mf.MissingPropertyError{ResourceID: 4, Element: "compositematerials", ModelPath: "/3d/3dmodel.model", Name: "matindices"},
-		go3mf.MissingPropertyError{ResourceID: 4, Element: "composite", ModelPath: "/3d/3dmodel.model", Name: "values"},
-		go3mf.ParsePropertyError{ResourceID: 4, Element: "composite", Name: "values", Value: "a", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
-		go3mf.ParsePropertyError{ResourceID: 9, Element: "multiproperties", ModelPath: "/3d/3dmodel.model", Name: "pids", Value: "a", Type: go3mf.PropertyRequired},
-		go3mf.MissingPropertyError{ResourceID: 9, Element: "multi", ModelPath: "/3d/3dmodel.model", Name: "pindices"},
-		go3mf.MissingPropertyError{ResourceID: 19, Element: "multiproperties", ModelPath: "/3d/3dmodel.model", Name: "pids"},
+		go3mf.ParsePropertyError{ResourceID: 0, Element: "texture2d", Name: "id", Value: "b", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
+		go3mf.MissingPropertyError{ResourceID: 0, Element: "texture2d", ModelPath: "/3D/3dmodel.model", Name: "path"},
+		go3mf.MissingPropertyError{ResourceID: 0, Element: "texture2d", ModelPath: "/3D/3dmodel.model", Name: "id"},
+		go3mf.ParsePropertyError{ResourceID: 1, Element: "color", Name: "color", Value: "#FFFFF", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
+		go3mf.ParsePropertyError{ResourceID: 2, Element: "tex2coord", Name: "u", Value: "b", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
+		go3mf.ParsePropertyError{ResourceID: 2, Element: "tex2coord", Name: "v", Value: "c", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
+		go3mf.MissingPropertyError{ResourceID: 4, Element: "compositematerials", ModelPath: "/3D/3dmodel.model", Name: "matid"},
+		go3mf.MissingPropertyError{ResourceID: 4, Element: "compositematerials", ModelPath: "/3D/3dmodel.model", Name: "matindices"},
+		go3mf.MissingPropertyError{ResourceID: 4, Element: "composite", ModelPath: "/3D/3dmodel.model", Name: "values"},
+		go3mf.ParsePropertyError{ResourceID: 4, Element: "composite", Name: "values", Value: "a", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
+		go3mf.ParsePropertyError{ResourceID: 9, Element: "multiproperties", ModelPath: "/3D/3dmodel.model", Name: "pids", Value: "a", Type: go3mf.PropertyRequired},
+		go3mf.MissingPropertyError{ResourceID: 9, Element: "multi", ModelPath: "/3D/3dmodel.model", Name: "pindices"},
+		go3mf.MissingPropertyError{ResourceID: 19, Element: "multiproperties", ModelPath: "/3D/3dmodel.model", Name: "pids"},
 	}
 	got := new(go3mf.Model)
-	got.Path = "/3d/3dmodel.model"
+	got.Path = "/3D/3dmodel.model"
 	rootFile := `
 	<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:m="http://schemas.microsoft.com/3dmanufacturing/material/2015/02">
 		<resources>

@@ -11,7 +11,7 @@ import (
 
 func TestDecode(t *testing.T) {
 	meshLattice := &go3mf.ObjectResource{
-		ID: 15, Name: "Box", ModelPath: "/3d/3dmodel.model",
+		ID: 15, Name: "Box", ModelPath: "/3D/3dmodel.model",
 		Mesh: &go3mf.Mesh{
 			Extensions: go3mf.Extensions{
 				ExtensionName: &BeamLattice{ClipMode: ClipInside, ClippingMeshID: 8, RepresentationMeshID: 8},
@@ -47,10 +47,10 @@ func TestDecode(t *testing.T) {
 		{NodeIndices: [2]uint32{0, 5}, Radius: [2]float32{1.5, 2}, CapMode: [2]CapMode{CapModeHemisphere, CapModeButt}},
 	}...)
 
-	want := &go3mf.Model{Path: "/3d/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "b"}}}
+	want := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "b"}}}
 	want.Resources = append(want.Resources, meshLattice)
 	got := new(go3mf.Model)
-	got.Path = "/3d/3dmodel.model"
+	got.Path = "/3D/3dmodel.model"
 	rootFile := `
 		<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:b="http://schemas.microsoft.com/3dmanufacturing/beamlattice/2017/02">
 		<resources>
@@ -115,17 +115,17 @@ func TestDecode(t *testing.T) {
 
 func TestDecode_warns(t *testing.T) {
 	want := []error{
-		go3mf.MissingPropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3d/3dmodel.model", Name: "radius"},
-		go3mf.MissingPropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3d/3dmodel.model", Name: "minlength"},
-		go3mf.ParsePropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3d/3dmodel.model", Name: "cap", Value: "invalid", Type: go3mf.PropertyOptional},
-		go3mf.ParsePropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3d/3dmodel.model", Name: "clippingmode", Value: "invalid2", Type: go3mf.PropertyOptional},
-		go3mf.MissingPropertyError{ResourceID: 15, Element: "beam", ModelPath: "/3d/3dmodel.model", Name: "v1"},
-		go3mf.MissingPropertyError{ResourceID: 15, Element: "beam", ModelPath: "/3d/3dmodel.model", Name: "v2"},
-		go3mf.MissingPropertyError{ResourceID: 15, Element: "ref", ModelPath: "/3d/3dmodel.model", Name: "index"},
-		go3mf.ParsePropertyError{ResourceID: 15, Element: "ref", Name: "index", Value: "a", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
+		go3mf.MissingPropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3D/3dmodel.model", Name: "radius"},
+		go3mf.MissingPropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3D/3dmodel.model", Name: "minlength"},
+		go3mf.ParsePropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3D/3dmodel.model", Name: "cap", Value: "invalid", Type: go3mf.PropertyOptional},
+		go3mf.ParsePropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3D/3dmodel.model", Name: "clippingmode", Value: "invalid2", Type: go3mf.PropertyOptional},
+		go3mf.MissingPropertyError{ResourceID: 15, Element: "beam", ModelPath: "/3D/3dmodel.model", Name: "v1"},
+		go3mf.MissingPropertyError{ResourceID: 15, Element: "beam", ModelPath: "/3D/3dmodel.model", Name: "v2"},
+		go3mf.MissingPropertyError{ResourceID: 15, Element: "ref", ModelPath: "/3D/3dmodel.model", Name: "index"},
+		go3mf.ParsePropertyError{ResourceID: 15, Element: "ref", Name: "index", Value: "a", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
 	}
 	got := new(go3mf.Model)
-	got.Path = "/3d/3dmodel.model"
+	got.Path = "/3D/3dmodel.model"
 	rootFile := `
 		<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:b="http://schemas.microsoft.com/3dmanufacturing/beamlattice/2017/02">
 		<resources>

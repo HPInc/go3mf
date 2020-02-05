@@ -12,39 +12,39 @@ import (
 func TestDecode(t *testing.T) {
 	components := &go3mf.ObjectResource{
 		Extensions: go3mf.Extensions{ExtensionName: UUID("cb828680-8895-4e08-a1fc-be63e033df15")},
-		ID:         20, ModelPath: "/3d/3dmodel.model",
+		ID:         20, ModelPath: "/3D/3dmodel.model",
 		Components: []*go3mf.Component{{
-			Path:       "/3d/other.model",
+			Path:       "/3D/other.model",
 			Extensions: go3mf.Extensions{ExtensionName: UUID("cb828680-8895-4e08-a1fc-be63e033df16")},
 			ObjectID:   8, Transform: go3mf.Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}},
 		},
 	}
 
-	want := &go3mf.Model{Path: "/3d/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "p"}}}
-	otherMesh := &go3mf.ObjectResource{Mesh: new(go3mf.Mesh), ID: 8, ModelPath: "/3d/other.model"}
+	want := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "p"}}}
+	otherMesh := &go3mf.ObjectResource{Mesh: new(go3mf.Mesh), ID: 8, ModelPath: "/3D/other.model"}
 	want.Resources = append(want.Resources, otherMesh, components)
 	SetBuildUUID(&want.Build, "e9e25302-6428-402e-8633-cc95528d0ed3")
 	want.Build.Items = append(want.Build.Items, &go3mf.Item{ObjectID: 20,
 		Extensions: go3mf.Extensions{ExtensionName: UUID("e9e25302-6428-402e-8633-cc95528d0ed2")},
 		Transform:  go3mf.Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
-	}, &go3mf.Item{ObjectID: 8, Path: "/3d/other.model",
+	}, &go3mf.Item{ObjectID: 8, Path: "/3D/other.model",
 		Extensions: go3mf.Extensions{ExtensionName: UUID("e9e25302-6428-402e-8633-cc95528d0ed4")},
 	})
 	got := new(go3mf.Model)
-	got.Path = "/3d/3dmodel.model"
+	got.Path = "/3D/3dmodel.model"
 	got.Resources = append(got.Resources, otherMesh)
 	rootFile := `
 		<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:p="http://schemas.microsoft.com/3dmanufacturing/production/2015/06">
 		<resources>
 			<object id="20" p:UUID="cb828680-8895-4e08-a1fc-be63e033df15">
 				<components>
-					<component objectid="8" p:UUID="cb828680-8895-4e08-a1fc-be63e033df16" p:path="/3d/other.model" transform="3 0 0 0 1 0 0 0 2 -66.4 -87.1 8.8"/>
+					<component objectid="8" p:UUID="cb828680-8895-4e08-a1fc-be63e033df16" p:path="/3D/other.model" transform="3 0 0 0 1 0 0 0 2 -66.4 -87.1 8.8"/>
 				</components>
 			</object>
 		</resources>
 		<build p:UUID="e9e25302-6428-402e-8633-cc95528d0ed3">
 			<item objectid="20" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed2" transform="1 0 0 0 2 0 0 0 3 -66.4 -87.1 8.8" />
-			<item objectid="8" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed4" p:path="/3d/other.model" />
+			<item objectid="8" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed4" p:path="/3D/other.model" />
 		</build>
 		</model>
 		`
@@ -67,16 +67,16 @@ func TestDecode(t *testing.T) {
 
 func TestDecode_warns(t *testing.T) {
 	want := []error{
-		go3mf.ParsePropertyError{ResourceID: 20, Element: "object", ModelPath: "/3d/3dmodel.model", Name: "UUID", Value: "cb8286808895-4e08-a1fc-be63e033df15", Type: go3mf.PropertyRequired},
-		go3mf.ParsePropertyError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Name: "UUID", Value: "cb8286808895-4e08-a1fc-be63e033df16", Type: go3mf.PropertyRequired},
-		//go3mf.MissingPropertyError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
-		//go3mf.MissingPropertyError{ResourceID: 0, Element: "build", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
-		//go3mf.MissingPropertyError{ResourceID: 8, Element: "item", ModelPath: "/3d/3dmodel.model", Name: "UUID"},
-		go3mf.ParsePropertyError{ResourceID: 0, Element: "build", Name: "UUID", Value: "e9e25302-6428-402e-8633ed2", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
-		go3mf.ParsePropertyError{ResourceID: 20, Element: "item", ModelPath: "/3d/3dmodel.model", Name: "UUID", Value: "invalid-uuid", Type: go3mf.PropertyRequired},
+		go3mf.ParsePropertyError{ResourceID: 20, Element: "object", ModelPath: "/3D/3dmodel.model", Name: "UUID", Value: "cb8286808895-4e08-a1fc-be63e033df15", Type: go3mf.PropertyRequired},
+		go3mf.ParsePropertyError{ResourceID: 20, Element: "component", ModelPath: "/3D/3dmodel.model", Name: "UUID", Value: "cb8286808895-4e08-a1fc-be63e033df16", Type: go3mf.PropertyRequired},
+		//go3mf.MissingPropertyError{ResourceID: 20, Element: "component", ModelPath: "/3D/3dmodel.model", Name: "UUID"},
+		//go3mf.MissingPropertyError{ResourceID: 0, Element: "build", ModelPath: "/3D/3dmodel.model", Name: "UUID"},
+		//go3mf.MissingPropertyError{ResourceID: 8, Element: "item", ModelPath: "/3D/3dmodel.model", Name: "UUID"},
+		go3mf.ParsePropertyError{ResourceID: 0, Element: "build", Name: "UUID", Value: "e9e25302-6428-402e-8633ed2", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
+		go3mf.ParsePropertyError{ResourceID: 20, Element: "item", ModelPath: "/3D/3dmodel.model", Name: "UUID", Value: "invalid-uuid", Type: go3mf.PropertyRequired},
 	}
 	got := new(go3mf.Model)
-	got.Path = "/3d/3dmodel.model"
+	got.Path = "/3D/3dmodel.model"
 	rootFile := `
 		<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:p="http://schemas.microsoft.com/3dmanufacturing/production/2015/06">
 		<resources>
@@ -90,7 +90,7 @@ func TestDecode_warns(t *testing.T) {
 		</resources>
 		<build p:UUID="e9e25302-6428-402e-8633ed2">
 			<item partnumber="bob" objectid="20" p:UUID="invalid-uuid" />
-			<item objectid="8" p:path="/3d/other.model"/>
+			<item objectid="8" p:path="/3D/other.model"/>
 			<item objectid="5" p:UUID="e9e25302-6428-402e-8633-cc95528d0ed4"/>
 		</build>
 		</model>`

@@ -12,7 +12,7 @@ func TestTexture2DResource_Identify(t *testing.T) {
 		want  string
 		want1 uint32
 	}{
-		{"base", &Texture2DResource{ID: 1, ModelPath: "3d/3dmodel.model"}, "3d/3dmodel.model", 1},
+		{"base", &Texture2DResource{ID: 1, ModelPath: "/3D/3dmodel.model"}, "/3D/3dmodel.model", 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -68,7 +68,7 @@ func TestTexture2DGroupResource_Identify(t *testing.T) {
 		want  string
 		want1 uint32
 	}{
-		{"base", &Texture2DGroupResource{ID: 1, ModelPath: "3d/3dmodel"}, "3d/3dmodel", 1},
+		{"base", &Texture2DGroupResource{ID: 1, ModelPath: "/3D/3dmodel"}, "/3D/3dmodel", 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -90,7 +90,7 @@ func TestColorGroupResource_Identify(t *testing.T) {
 		want  string
 		want1 uint32
 	}{
-		{"base", &ColorGroupResource{ID: 1, ModelPath: "3d/3dmodel"}, "3d/3dmodel", 1},
+		{"base", &ColorGroupResource{ID: 1, ModelPath: "/3D/3dmodel"}, "/3D/3dmodel", 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -112,7 +112,7 @@ func TestCompositeMaterialsResource_Identify(t *testing.T) {
 		want  string
 		want1 uint32
 	}{
-		{"base", &CompositeMaterialsResource{ID: 1, ModelPath: "3d/3dmodel.model"}, "3d/3dmodel.model", 1},
+		{"base", &CompositeMaterialsResource{ID: 1, ModelPath: "/3D/3dmodel.model"}, "/3D/3dmodel.model", 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -205,7 +205,7 @@ func TestMultiPropertiesResource_Identify(t *testing.T) {
 		want  string
 		want1 uint32
 	}{
-		{"base", &MultiPropertiesResource{ID: 1, ModelPath: "3d/3dmodel.model"}, "3d/3dmodel.model", 1},
+		{"base", &MultiPropertiesResource{ID: 1, ModelPath: "/3D/3dmodel.model"}, "/3D/3dmodel.model", 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

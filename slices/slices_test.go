@@ -160,7 +160,7 @@ func TestSliceStackResource_Identify(t *testing.T) {
 		want  string
 		want1 uint32
 	}{
-		{"base", &SliceStackResource{ID: 1, ModelPath: "3d/3dmodel.model"}, "3d/3dmodel.model", 1},
+		{"base", &SliceStackResource{ID: 1, ModelPath: "/3D/3dmodel.model"}, "/3D/3dmodel.model", 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

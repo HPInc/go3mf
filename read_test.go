@@ -86,7 +86,7 @@ func (m *modelBuilder) withEncoding(encode string) *modelBuilder {
 
 func (m *modelBuilder) build(name string) *mockFile {
 	if name == "" {
-		name = "/3d/3dmodel.model"
+		name = "/3D/3dmodel.model"
 	}
 	if m.hasModel {
 		m.str.WriteString("</model>\n")
@@ -246,13 +246,13 @@ func TestDecoder_processRootModel_Fail(t *testing.T) {
 }
 
 func TestDecoder_processRootModel(t *testing.T) {
-	baseMaterials := &BaseMaterialsResource{ID: 5, ModelPath: "/3d/3dmodel.model", Materials: []BaseMaterial{
+	baseMaterials := &BaseMaterialsResource{ID: 5, ModelPath: "/3D/3dmodel.model", Materials: []BaseMaterial{
 		{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 		{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
 	}}
 	meshRes := &ObjectResource{
 		Mesh: new(Mesh),
-		ID:   8, Name: "Box 1", ModelPath: "/3d/3dmodel.model", Thumbnail: "/a.png", DefaultPropertyID: 5, PartNumber: "11111111-1111-1111-1111-111111111111",
+		ID:   8, Name: "Box 1", ModelPath: "/3D/3dmodel.model", Thumbnail: "/a.png", DefaultPropertyID: 5, PartNumber: "11111111-1111-1111-1111-111111111111",
 	}
 	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []Point3D{
 		{0, 0, 0},
@@ -280,13 +280,13 @@ func TestDecoder_processRootModel(t *testing.T) {
 	}...)
 
 	components := &ObjectResource{
-		ID: 20, ModelPath: "/3d/3dmodel.model",
+		ID: 20, ModelPath: "/3D/3dmodel.model",
 		Metadata:   []Metadata{{Name: "qm:CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: "qm:CustomMetadata4", Type: "xs:boolean", Value: "2"}},
 		Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
 	}
 
 	want := &Model{
-		Units: UnitMillimeter, Language: "en-US", Path: "/3d/3dmodel.model", Thumbnail: "/thumbnail.png",
+		Units: UnitMillimeter, Language: "en-US", Path: "/3D/3dmodel.model", Thumbnail: "/thumbnail.png",
 		Namespaces: []xml.Name{{Space: fakeExtenstion, Local: "qm"}},
 	}
 	want.Resources = append(want.Resources, baseMaterials, meshRes, components)
@@ -299,7 +299,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 		{Name: "qm:CustomMetadata1", Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},
 	}...)
 	got := new(Model)
-	got.Path = "/3d/3dmodel.model"
+	got.Path = "/3D/3dmodel.model"
 	rootFile := new(modelBuilder).withDefaultModel().withElement(`
 		<resources>
 			<basematerials id="5">
@@ -392,19 +392,19 @@ func TestDecoder_processNonRootModels(t *testing.T) {
 						<base name="Red ABS" displaycolor="#FF0000" />
 					</basematerials>
 				</resources>
-			`).build("3d/new.model"),
+			`).build("/3D/new.model"),
 			new(modelBuilder).withDefaultModel().withElement(`
 				<resources>
 					<basematerials id="6" />
 				</resources>
-			`).build("3d/other.model"),
+			`).build("/3D/other.model"),
 		}}, false, &Model{
 			Resources: []Resource{
-				&BaseMaterialsResource{ID: 5, ModelPath: "3d/new.model", Materials: []BaseMaterial{
+				&BaseMaterialsResource{ID: 5, ModelPath: "/3D/new.model", Materials: []BaseMaterial{
 					{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 					{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
 				}},
-				&BaseMaterialsResource{ID: 6, ModelPath: "3d/other.model"},
+				&BaseMaterialsResource{ID: 6, ModelPath: "/3D/other.model"},
 			},
 		}},
 		{"noAtt", new(Model), new(Decoder), false, new(Model)},
@@ -504,27 +504,27 @@ func TestNewDecoder(t *testing.T) {
 
 func TestDecoder_processRootModel_warns(t *testing.T) {
 	want := []error{
-		ParsePropertyError{ResourceID: 0, Element: "base", Name: "displaycolor", Value: "0000FF", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
-		MissingPropertyError{ResourceID: 0, Element: "base", ModelPath: "/3d/3dmodel.model", Name: "name"},
-		MissingPropertyError{ResourceID: 0, Element: "base", ModelPath: "/3d/3dmodel.model", Name: "displaycolor"},
-		MissingPropertyError{ResourceID: 0, Element: "basematerials", ModelPath: "/3d/3dmodel.model", Name: "id"},
-		ParsePropertyError{ResourceID: 0, Element: "basematerials", Name: "id", Value: "a", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
-		MissingPropertyError{ResourceID: 0, Element: "basematerials", ModelPath: "/3d/3dmodel.model", Name: "id"},
-		GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3d/3dmodel.model", Message: "duplicated triangle indices"},
-		GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3d/3dmodel.model", Message: "triangle indices are out of range"},
-		ParsePropertyError{ResourceID: 22, Element: "object", ModelPath: "/3d/3dmodel.model", Name: "type", Value: "invalid", Type: PropertyOptional},
-		GenericError{ResourceID: 20, Element: "object", ModelPath: "/3d/3dmodel.model", Message: "default PID is not supported for component objects"},
-		ParsePropertyError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Name: "transform", Value: "0 0 0 1 0 0 0 2 -66.4 -87.1 8.8", Type: PropertyOptional},
-		//GenericError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced object"},
-		//GenericError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Message: "non-object referenced resource"},
-		ParsePropertyError{ResourceID: 20, Element: "item", Name: "transform", Value: "1 0 0 0 2 0 0 0 3 -66.4 -87.1", ModelPath: "/3d/3dmodel.model", Type: PropertyOptional},
-		//GenericError{ResourceID: 20, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "referenced object cannot be have OTHER type"},
-		//GenericError{ResourceID: 8, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced object"},
-		//GenericError{ResourceID: 5, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "non-object referenced resource"},
-		GenericError{ResourceID: 0, Element: "metadata", ModelPath: "/3d/3dmodel.model", Message: "unregistered namespace"},
+		ParsePropertyError{ResourceID: 0, Element: "base", Name: "displaycolor", Value: "0000FF", ModelPath: "/3D/3dmodel.model", Type: PropertyRequired},
+		MissingPropertyError{ResourceID: 0, Element: "base", ModelPath: "/3D/3dmodel.model", Name: "name"},
+		MissingPropertyError{ResourceID: 0, Element: "base", ModelPath: "/3D/3dmodel.model", Name: "displaycolor"},
+		MissingPropertyError{ResourceID: 0, Element: "basematerials", ModelPath: "/3D/3dmodel.model", Name: "id"},
+		ParsePropertyError{ResourceID: 0, Element: "basematerials", Name: "id", Value: "a", ModelPath: "/3D/3dmodel.model", Type: PropertyRequired},
+		MissingPropertyError{ResourceID: 0, Element: "basematerials", ModelPath: "/3D/3dmodel.model", Name: "id"},
+		GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3D/3dmodel.model", Message: "duplicated triangle indices"},
+		GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3D/3dmodel.model", Message: "triangle indices are out of range"},
+		ParsePropertyError{ResourceID: 22, Element: "object", ModelPath: "/3D/3dmodel.model", Name: "type", Value: "invalid", Type: PropertyOptional},
+		GenericError{ResourceID: 20, Element: "object", ModelPath: "/3D/3dmodel.model", Message: "default PID is not supported for component objects"},
+		ParsePropertyError{ResourceID: 20, Element: "component", ModelPath: "/3D/3dmodel.model", Name: "transform", Value: "0 0 0 1 0 0 0 2 -66.4 -87.1 8.8", Type: PropertyOptional},
+		//GenericError{ResourceID: 20, Element: "component", ModelPath: "/3D/3dmodel.model", Message: "non-existent referenced object"},
+		//GenericError{ResourceID: 20, Element: "component", ModelPath: "/3D/3dmodel.model", Message: "non-object referenced resource"},
+		ParsePropertyError{ResourceID: 20, Element: "item", Name: "transform", Value: "1 0 0 0 2 0 0 0 3 -66.4 -87.1", ModelPath: "/3D/3dmodel.model", Type: PropertyOptional},
+		//GenericError{ResourceID: 20, Element: "item", ModelPath: "/3D/3dmodel.model", Message: "referenced object cannot be have OTHER type"},
+		//GenericError{ResourceID: 8, Element: "item", ModelPath: "/3D/3dmodel.model", Message: "non-existent referenced object"},
+		//GenericError{ResourceID: 5, Element: "item", ModelPath: "/3D/3dmodel.model", Message: "non-object referenced resource"},
+		GenericError{ResourceID: 0, Element: "metadata", ModelPath: "/3D/3dmodel.model", Message: "unregistered namespace"},
 	}
 	got := new(Model)
-	got.Path = "/3d/3dmodel.model"
+	got.Path = "/3D/3dmodel.model"
 	rootFile := new(modelBuilder).withDefaultModel().withElement(`
 		<resources>
 			<basematerials>

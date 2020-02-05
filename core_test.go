@@ -167,7 +167,7 @@ func TestBaseMaterialsResource_Identify(t *testing.T) {
 		want  string
 		want1 uint32
 	}{
-		{"base", &BaseMaterialsResource{ID: 1, ModelPath: "3d/3dmodel.model"}, "3d/3dmodel.model", 1},
+		{"base", &BaseMaterialsResource{ID: 1, ModelPath: "/3D/3dmodel.model"}, "/3D/3dmodel.model", 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -189,7 +189,7 @@ func TestObjectResource_Identify(t *testing.T) {
 		want  string
 		want1 uint32
 	}{
-		{"base", &ObjectResource{ID: 1, ModelPath: "3d/3dmodel.model"}, "3d/3dmodel.model", 1},
+		{"base", &ObjectResource{ID: 1, ModelPath: "/3D/3dmodel.model"}, "/3D/3dmodel.model", 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
