@@ -42,7 +42,13 @@ func (e *Encoder) Encode(ctx context.Context, m *Model) error {
 	if err = e.writeModel(x, m); err != nil {
 		return err
 	}
-	return x.Flush()
+	if err = x.Flush(); err != nil {
+		return err
+	}
+	e.w.Relationships = append(e.w.Relationships, &opc.Relationship{
+		ID: "1", Type: RelTypeModel3D, TargetURI: rootName,
+	})
+	return e.w.Close()
 }
 
 func (e *Encoder) writeModel(x tokenEncoder, m *Model) error {
