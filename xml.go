@@ -59,12 +59,6 @@ func (p *printer) createAttrPrefix(name xml.Name) string {
 	return name.Space
 }
 
-// return the bufio Writer's cached write error
-func (p *printer) cachedWriteError() error {
-	_, err := p.Write(nil)
-	return err
-}
-
 // EscapeString writes to p the properly escaped XML equivalent
 // of the plain text data s.
 func (p *printer) EscapeString(s string) {
