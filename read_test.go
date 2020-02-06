@@ -265,7 +265,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 	}...)
 
 	components := &ObjectResource{
-		ID: 20, ModelPath: "/3D/3dmodel.model",
+		ID: 20, ModelPath: "/3D/3dmodel.model", ObjectType: ObjectTypeSupport,
 		Metadata:   []Metadata{{Name: "qm:CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: "qm:CustomMetadata4", Type: "xs:boolean", Value: "2"}},
 		Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
 	}
@@ -319,7 +319,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 					</triangles>
 				</mesh>
 			</object>
-			<object id="20">
+			<object id="20" type="support">
 				<metadatagroup>
 					<metadata name="qm:CustomMetadata3" type="xs:boolean">1</metadata>
 					<metadata name="qm:CustomMetadata4" type="xs:boolean">2</metadata>

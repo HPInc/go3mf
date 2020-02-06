@@ -50,7 +50,7 @@ func TestEncoder_writeModel(t *testing.T) {
 						},
 					}},
 				&ObjectResource{
-					ID: 20, ModelPath: "/3D/3dmodel.model",
+					ID: 20, ModelPath: "/3D/3dmodel.model", ObjectType: ObjectTypeSupport,
 					Metadata:   []Metadata{{Name: "qm:CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: "qm:CustomMetadata4", Type: "xs:boolean", Value: "2"}},
 					Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
 				}}, Build: Build{Items: []*Item{{
