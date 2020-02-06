@@ -2,11 +2,14 @@ package go3mf
 
 import (
 	"bytes"
+	"io"
+	"errors"
 	"encoding/xml"
 	"image/color"
 	"testing"
 
 	"github.com/go-test/deep"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestEncoder_writeModel(t *testing.T) {
@@ -79,6 +82,38 @@ func TestEncoder_writeModel(t *testing.T) {
 			if diff := deep.Equal(tt.args.m, newModel); diff != nil {
 				t.Errorf("Encoder.writeModel() = %v", diff)
 			}
+		})
+	}
+}
+
+func TestEncoder_writeAttachements(t *testing.T) {
+	type args struct {
+		m *Model
+		f io.Writer
+	}
+	tests := []struct {
+		name    string
+		e       *Encoder
+		args    args
+		wantErr bool
+	}{
+		{"empty", &Encoder{}, args{new(Model), nil}, false},
+		{"err-create", &Encoder{}, args{&Model{Attachments: []*Attachment{{}}}, new(bytes.Buffer)}, true},
+		{"base", &Encoder{}, args{&Model{Attachments: []*Attachment{{Stream: new(bytes.Buffer)}}}, new(bytes.Buffer)}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {			
+			var argErr error
+			if tt.wantErr {
+				argErr = errors.New("")
+			}
+			m := new(mockPackage)
+			m.On("Create", mock.Anything, mock.Anything).Return(tt.args.f, argErr)
+			m.On("AddRelationship", mock.Anything).Return()
+			tt.e.w = m
+			if err := tt.e.writeAttachements(tt.args.m); (err != nil) != tt.wantErr {
+				t.Errorf("Encoder.writeAttachements() error = %v, wantErr %v", err, tt.wantErr)
+			}			
 		})
 	}
 }

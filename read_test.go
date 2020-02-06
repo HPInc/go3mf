@@ -132,9 +132,24 @@ type mockPackage struct {
 func newMockPackage(other *mockFile) *mockPackage {
 	m := new(mockPackage)
 	m.On("Open", mock.Anything).Return(nil).Maybe()
+	m.On("Create", mock.Anything, mock.Anything).Return(nil, nil).Maybe()
 	m.On("FindFileFromRel", mock.Anything).Return(other, other != nil).Maybe()
 	m.On("FindFileFromName", mock.Anything).Return(other, other != nil).Maybe()
 	return m
+}
+
+func (m *mockPackage) Close() error {
+	args := m.Called()
+	return args.Error(0)
+}
+
+func (m *mockPackage) AddRelationship(args0 *relationship) {
+	m.Called(args0)
+}
+
+func (m *mockPackage) Create(args0, args1 string) (io.Writer, error) {
+	args := m.Called(args0, args1)
+	return args.Get(0).(io.Writer), args.Error(1)
 }
 
 func (m *mockPackage) Open(f func(r io.Reader) io.ReadCloser) error {
