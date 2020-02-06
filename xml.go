@@ -6,6 +6,8 @@ import (
 	"io"
 )
 
+// xmlEncoder is based on the encoding/xml.Encoder implementation.
+// It is modified to allow custom local namespaces and selfclosing nodes.
 type xmlEncoder struct {
 	p printer
 }
