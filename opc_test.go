@@ -154,3 +154,20 @@ func Test_opcReader_FindFileFromName(t *testing.T) {
 		})
 	}
 }
+
+func Test_opcFile_ContentType(t *testing.T) {
+	tests := []struct {
+		name string
+		o    *opcFile
+		want string
+	}{
+		{"base", &opcFile{f: &opc.File{Part: &opc.Part{ContentType: "fake_type"}}}, "fake_type"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.o.ContentType(); got != tt.want {
+				t.Errorf("opcFile.ContentType() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
