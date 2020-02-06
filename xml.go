@@ -37,7 +37,6 @@ type printer struct {
 	*bufio.Writer
 	encoder    *xmlEncoder
 	attrPrefix map[string]string // map name space -> prefix
-	tags       []xml.Name
 }
 
 // createAttrPrefix finds the name space prefix attribute to use for the given name space,
@@ -74,8 +73,6 @@ func (p *printer) EscapeString(s string) {
 
 // writeStart writes the given start element.
 func (p *printer) writeStart(start *xml.StartElement) {
-	p.tags = append(p.tags, start.Name)
-
 	p.WriteByte('<')
 	p.WriteString(start.Name.Local)
 
