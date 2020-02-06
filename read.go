@@ -55,6 +55,7 @@ type relationship struct {
 
 type packageFile interface {
 	Name() string
+	ContentType() string
 	FindFileFromRel(string) (packageFile, bool)
 	FindFileFromName(string) (packageFile, bool)
 	Relationships() []*relationship
@@ -403,9 +404,10 @@ func (d *Decoder) addAttachment(attachments []*Attachment, file packageFile, rel
 	buff, err := copyFile(file)
 	if err == nil {
 		return append(attachments, &Attachment{
-			RelationshipType: relType,
 			Path:             file.Name(),
 			Stream:           buff,
+			RelationshipType: relType,
+			ContentType:      file.ContentType(),
 		})
 	}
 	return attachments
@@ -439,6 +441,7 @@ type fakePackageFile struct {
 }
 
 func (f *fakePackageFile) Name() string                                { return uriDefault3DModel }
+func (f *fakePackageFile) ContentType() string                         { return contentType3DModel }
 func (f *fakePackageFile) FindFileFromRel(string) (packageFile, bool)  { return nil, false }
 func (f *fakePackageFile) FindFileFromName(string) (packageFile, bool) { return nil, false }
 func (f *fakePackageFile) Relationships() []*relationship              { return nil }

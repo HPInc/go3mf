@@ -2,6 +2,7 @@ package go3mf
 
 import (
 	"context"
+	"fmt"
 	"encoding/xml"
 	"io"
 	"strconv"
@@ -47,9 +48,31 @@ func (e *Encoder) Encode(ctx context.Context, m *Model) error {
 		return err
 	}
 	e.w.AddRelationship(&relationship{
-		ID: "1", Type: RelTypeModel3D, TargetURI: rootName,
+		ID: "rel0", Type: RelTypeModel3D, TargetURI: rootName,
 	})
+
+	if err = e.writeAttachements(m); err != nil {
+		return err
+	}
+
 	return e.w.Close()
+}
+
+func (e *Encoder) writeAttachements(m *Model) error {
+	for i, a := range m.Attachments {
+		w, err := e.w.Create(a.Path, a.ContentType)
+		if err != nil {
+			return err
+		}
+		_, err = io.Copy(w, a.Stream)
+		if err != nil {
+			return err
+		}
+		e.w.AddRelationship(&relationship{
+			ID: fmt.Sprintf("rel%d", i+1), Type: a.RelationshipType, TargetURI: a.Path,
+		})
+	}
+	return nil
 }
 
 func (e *Encoder) writeModel(x tokenEncoder, m *Model) error {

@@ -83,6 +83,7 @@ type mockFile struct {
 func newMockFile(name string, relationships []*relationship, other *mockFile, openErr bool) *mockFile {
 	m := new(mockFile)
 	m.On("Name").Return(name).Maybe()
+	m.On("ContentType").Return("").Maybe()
 	m.On("Relationships").Return(relationships).Maybe()
 	m.On("FindFileFromRel", mock.Anything).Return(other, other != nil).Maybe()
 	m.On("FindFileFromName", mock.Anything).Return(other, other != nil).Maybe()
@@ -100,6 +101,11 @@ func (m *mockFile) Open() (io.ReadCloser, error) {
 }
 
 func (m *mockFile) Name() string {
+	args := m.Called()
+	return args.String(0)
+}
+
+func (m *mockFile) ContentType() string {
 	args := m.Called()
 	return args.String(0)
 }

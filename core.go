@@ -75,8 +75,9 @@ type Metadata struct {
 // Attachment defines the Model Attachment.
 type Attachment struct {
 	Stream           io.Reader
-	RelationshipType string
 	Path             string
+	RelationshipType string
+	ContentType      string
 }
 
 // Build contains one or more items to manufacture as part of processing the job.
