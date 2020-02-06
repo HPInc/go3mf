@@ -2,8 +2,8 @@ package go3mf
 
 import (
 	"context"
-	"fmt"
 	"encoding/xml"
+	"fmt"
 	"io"
 	"strconv"
 
@@ -13,6 +13,7 @@ import (
 type tokenEncoder interface {
 	EncodeToken(t xml.Token)
 	Flush() error
+	SetAutoClose(bool)
 }
 
 type packageWriter interface {
@@ -103,37 +104,45 @@ func (e *Encoder) writeModel(x tokenEncoder, m *Model) error {
 }
 
 func (e *Encoder) writeMetadataGroup(x tokenEncoder, m []Metadata) {
-	xm := newXmlNodeEncoder(x, attrMetadataGroup, 0)
-	xm.Close()
+	xm := xml.StartElement{Name: xml.Name{Local: attrMetadataGroup}}
+	x.EncodeToken(xm)
 	e.writeMetadata(x, m)
-	xm.End()
+	x.EncodeToken(xm.End())
 }
 
 func (e *Encoder) writeBuild(x tokenEncoder, m *Model) {
-	xb := newXmlNodeEncoder(x, attrBuild, 0)
-	xb.Close()
-
-	for _, i := range m.Build.Items {
-		xi := newXmlNodeEncoder(x, attrItem, 3)
-		xi.Attribute(attrObjectID, strconv.FormatUint(uint64(i.ObjectID), 10))
-		if i.HasTransform() {
-			xi.Attribute(attrTransform, FormatMatrix(i.Transform))
+	xb := xml.StartElement{Name: xml.Name{Local: attrBuild}}
+	x.EncodeToken(xb)
+	x.SetAutoClose(true)
+	for _, item := range m.Build.Items {
+		xi := xml.StartElement{Name: xml.Name{Local: attrItem}, Attr: []xml.Attr{
+			{Name: xml.Name{Local: attrObjectID}, Value: strconv.FormatUint(uint64(item.ObjectID), 10)},
+		}}
+		if item.HasTransform() {
+			xi.Attr = append(xi.Attr, xml.Attr{
+				Name: xml.Name{Local: attrTransform}, Value: FormatMatrix(item.Transform),
+			})
 		}
-		xi.OptionalAttribute(attrPartNumber, i.PartNumber)
-		if len(i.Metadata) != 0 {
-			xi.Close()
-			e.writeMetadataGroup(x, i.Metadata)
+		if item.PartNumber != "" {
+			xi.Attr = append(xi.Attr, xml.Attr{
+				Name: xml.Name{Local: attrPartNumber}, Value: item.PartNumber,
+			})
 		}
-
-		xi.End()
+		if len(item.Metadata) != 0 {
+			x.SetAutoClose(false)
+			x.EncodeToken(xi)
+			e.writeMetadataGroup(x, item.Metadata)
+			x.EncodeToken(xi.End())
+			x.SetAutoClose(true)
+		}
 	}
-
-	xb.End()
+	x.SetAutoClose(false)
+	x.EncodeToken(xb.End())
 }
 
 func (e *Encoder) writeResources(x tokenEncoder, m *Model) error {
-	xt := newXmlNodeEncoder(x, attrResources, 0)
-	xt.Close()
+	xt := xml.StartElement{Name: xml.Name{Local: attrResources}}
+	x.EncodeToken(xt)
 	for _, r := range m.Resources {
 		switch r := r.(type) {
 		case *BaseMaterialsResource:
@@ -146,38 +155,60 @@ func (e *Encoder) writeResources(x tokenEncoder, m *Model) error {
 			return err
 		}
 	}
-	xt.End()
+	x.EncodeToken(xt.End())
 	return nil
 }
 
 func (e *Encoder) writeMetadata(x tokenEncoder, metadata []Metadata) {
 	for _, md := range metadata {
-		xn := newXmlNodeEncoder(x, attrMetadata, 3)
-		xn.Attribute(attrName, md.Name)
+		xn := xml.StartElement{Name: xml.Name{Local: attrMetadata}, Attr: []xml.Attr{
+			{Name: xml.Name{Local: attrName}, Value: md.Name},
+		}}
 		if md.Preserve {
-			xn.Attribute(attrPreserve, strconv.FormatBool(md.Preserve))
+			xn.Attr = append(xn.Attr, xml.Attr{
+				Name: xml.Name{Local: attrPreserve}, Value: strconv.FormatBool(md.Preserve),
+			})
 		}
-		xn.OptionalAttribute(attrType, md.Type)
-		xn.TextEnd(md.Value)
+		if md.Type != "" {
+			xn.Attr = append(xn.Attr, xml.Attr{
+				Name: xml.Name{Local: attrType}, Value: md.Type,
+			})
+		}
+		x.EncodeToken(xn)
+		x.EncodeToken(xml.CharData(md.Value))
+		x.EncodeToken(xn.End())
 	}
 }
 
 func (e *Encoder) writeObject(x tokenEncoder, r *ObjectResource) {
-	xo := newXmlNodeEncoder(x, attrObject, 7)
-	xo.Attribute(attrID, strconv.FormatUint(uint64(r.ID), 10))
-	xo.OptionalAttribute(attrType, r.ObjectType.String())
-	xo.OptionalAttribute(attrThumbnail, r.Thumbnail)
-	xo.OptionalAttribute(attrPartNumber, r.PartNumber)
-	xo.OptionalAttribute(attrName, r.Name)
+	xo := xml.StartElement{Name: xml.Name{Local: attrObject}, Attr: []xml.Attr{
+		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(r.ID), 10)},
+	}}
+	if r.ObjectType != ObjectTypeModel {
+		xo.Attr = append(xo.Attr, xml.Attr{Name: xml.Name{Local: attrType}, Value: r.ObjectType.String()})
+	}
+	if r.Thumbnail != "" {
+		xo.Attr = append(xo.Attr, xml.Attr{Name: xml.Name{Local: attrThumbnail}, Value: r.Thumbnail})
+	}
+	if r.PartNumber != "" {
+		xo.Attr = append(xo.Attr, xml.Attr{Name: xml.Name{Local: attrPartNumber}, Value: r.PartNumber})
+	}
+	if r.Name != "" {
+		xo.Attr = append(xo.Attr, xml.Attr{Name: xml.Name{Local: attrName}, Value: r.Name})
+	}
 	if r.Mesh != nil {
 		if r.DefaultPropertyID != 0 {
-			xo.Attribute(attrPID, strconv.FormatUint(uint64(r.DefaultPropertyID), 10))
+			xo.Attr = append(xo.Attr, xml.Attr{
+				Name: xml.Name{Local: attrPID}, Value: strconv.FormatUint(uint64(r.DefaultPropertyID), 10),
+			})
 		}
 		if r.DefaultPropertyIndex != 0 {
-			xo.Attribute(attrPIndex, strconv.FormatUint(uint64(r.DefaultPropertyIndex), 10))
+			xo.Attr = append(xo.Attr, xml.Attr{
+				Name: xml.Name{Local: attrPIndex}, Value: strconv.FormatUint(uint64(r.DefaultPropertyIndex), 10),
+			})
 		}
 	}
-	xo.Close()
+	x.EncodeToken(xo)
 
 	if len(r.Metadata) != 0 {
 		e.writeMetadataGroup(x, r.Metadata)
@@ -188,118 +219,101 @@ func (e *Encoder) writeObject(x tokenEncoder, r *ObjectResource) {
 	} else {
 		e.writeComponents(x, r.Components)
 	}
-	xo.End()
+	x.EncodeToken(xo.End())
 }
 
 func (e *Encoder) writeComponents(x tokenEncoder, comps []*Component) {
-	xcs := newXmlNodeEncoder(x, attrComponents, 0)
-	xcs.Close()
-
+	xcs := xml.StartElement{Name: xml.Name{Local: attrComponents}}
+	x.EncodeToken(xcs)
+	x.SetAutoClose(true)
 	for _, c := range comps {
-		xc := newXmlNodeEncoder(x, attrComponent, 2)
-		xc.Attribute(attrObjectID, strconv.FormatUint(uint64(c.ObjectID), 10))
-		if c.HasTransform() {
-			xc.Attribute(attrTransform, FormatMatrix(c.Transform))
+		t := xml.StartElement{
+			Name: xml.Name{Local: attrComponent}, Attr: []xml.Attr{
+				{Name: xml.Name{Local: attrObjectID}, Value: strconv.FormatUint(uint64(c.ObjectID), 10)},
+			},
 		}
-		xc.End()
+		if c.HasTransform() {
+			t.Attr = append(t.Attr, xml.Attr{Name: xml.Name{Local: attrTransform}, Value: FormatMatrix(c.Transform)})
+		}
+		x.EncodeToken(t)
 	}
-	xcs.End()
+	x.SetAutoClose(false)
+	x.EncodeToken(xcs.End())
 }
 
 func (e *Encoder) writeMesh(x tokenEncoder, m *Mesh) {
-	xm := newXmlNodeEncoder(x, attrMesh, 0)
-	xm.Close()
-	xvs := newXmlNodeEncoder(x, attrVertices, 0)
-	xvs.Close()
+	xm := xml.StartElement{Name: xml.Name{Local: attrMesh}}
+	x.EncodeToken(xm)
+	xvs := xml.StartElement{Name: xml.Name{Local: attrVertices}}
+	x.EncodeToken(xvs)
+	x.SetAutoClose(true)
 	for _, v := range m.Nodes {
-		xv := newXmlNodeEncoder(x, attrVertex, 3)
-		xv.Attribute(attrX, strconv.FormatFloat(float64(v.X()), 'f', 3, 32))
-		xv.Attribute(attrY, strconv.FormatFloat(float64(v.Y()), 'f', 3, 32))
-		xv.Attribute(attrZ, strconv.FormatFloat(float64(v.Z()), 'f', 3, 32))
-		xv.End()
+		x.EncodeToken(xml.StartElement{
+			Name: xml.Name{Local: attrVertex},
+			Attr: []xml.Attr{
+				{Name: xml.Name{Local: attrX}, Value: strconv.FormatFloat(float64(v.X()), 'f', 3, 32)},
+				{Name: xml.Name{Local: attrY}, Value: strconv.FormatFloat(float64(v.Y()), 'f', 3, 32)},
+				{Name: xml.Name{Local: attrZ}, Value: strconv.FormatFloat(float64(v.Z()), 'f', 3, 32)},
+			},
+		})
 	}
-	xvs.End()
-	xvt := newXmlNodeEncoder(x, attrTriangles, 0)
-	xvt.Close()
+	x.SetAutoClose(false)
+	x.EncodeToken(xvs.End())
+
+	xvt := xml.StartElement{Name: xml.Name{Local: attrTriangles}}
+	x.EncodeToken(xvt)
+	x.SetAutoClose(true)
 	for _, v := range m.Faces {
-		xv := newXmlNodeEncoder(x, attrTriangle, 3)
-		xv.Attribute(attrV1, strconv.FormatUint(uint64(v.NodeIndices[0]), 10))
-		xv.Attribute(attrV2, strconv.FormatUint(uint64(v.NodeIndices[1]), 10))
-		xv.Attribute(attrV3, strconv.FormatUint(uint64(v.NodeIndices[2]), 10))
+		t := xml.StartElement{
+			Name: xml.Name{Local: attrTriangle},
+			Attr: []xml.Attr{
+				{Name: xml.Name{Local: attrV1}, Value: strconv.FormatUint(uint64(v.NodeIndices[0]), 10)},
+				{Name: xml.Name{Local: attrV2}, Value: strconv.FormatUint(uint64(v.NodeIndices[1]), 10)},
+				{Name: xml.Name{Local: attrV3}, Value: strconv.FormatUint(uint64(v.NodeIndices[2]), 10)},
+			},
+		}
 		if v.Resource != 0 {
-			xv.Attribute(attrPID, strconv.FormatUint(uint64(v.Resource), 10))
+			t.Attr = append(t.Attr, xml.Attr{
+				Name: xml.Name{Local: attrPID}, Value: strconv.FormatUint(uint64(v.Resource), 10),
+			})
 			if v.ResourceIndices[0] != 0 {
-				xv.Attribute(attrP1, strconv.FormatUint(uint64(v.ResourceIndices[0]), 10))
+				t.Attr = append(t.Attr, xml.Attr{
+					Name: xml.Name{Local: attrP1}, Value: strconv.FormatUint(uint64(v.ResourceIndices[0]), 10),
+				})
 				if v.ResourceIndices[1] != 0 {
-					xv.Attribute(attrP2, strconv.FormatUint(uint64(v.ResourceIndices[1]), 10))
+					t.Attr = append(t.Attr, xml.Attr{
+						Name: xml.Name{Local: attrP2}, Value: strconv.FormatUint(uint64(v.ResourceIndices[1]), 10),
+					})
 				}
 				if v.ResourceIndices[2] != 0 {
-					xv.Attribute(attrP3, strconv.FormatUint(uint64(v.ResourceIndices[2]), 10))
+					t.Attr = append(t.Attr, xml.Attr{
+						Name: xml.Name{Local: attrP3}, Value: strconv.FormatUint(uint64(v.ResourceIndices[2]), 10),
+					})
 				}
 			}
 		}
-		xv.End()
+		x.EncodeToken(t)
 	}
-	xvt.End()
-	xm.End()
+	x.SetAutoClose(false)
+	x.EncodeToken(xvt.End())
+	x.EncodeToken(xm.End())
 }
 
 func (e *Encoder) writeBaseMaterial(x tokenEncoder, r *BaseMaterialsResource) {
-	xt := newXmlNodeEncoder(x, attrBaseMaterials, 1)
-	xt.Attribute(attrID, strconv.FormatUint(uint64(r.ID), 10))
-	xt.Close()
+	xt := xml.StartElement{Name: xml.Name{Local: attrBaseMaterials}, Attr: []xml.Attr{
+		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(r.ID), 10)},
+	}}
+	x.EncodeToken(xt)
+	x.SetAutoClose(true)
 	for _, ma := range r.Materials {
-		xn := newXmlNodeEncoder(x, attrBase, 2)
-		xn.Attribute(attrName, ma.Name)
-		xn.Attribute(attrDisplayColor, ma.ColorString())
-		xn.End()
+		x.EncodeToken(xml.StartElement{
+			Name: xml.Name{Local: attrBase},
+			Attr: []xml.Attr{
+				{Name: xml.Name{Local: attrName}, Value: ma.Name},
+				{Name: xml.Name{Local: attrDisplayColor}, Value: ma.ColorString()},
+			},
+		})
 	}
-	xt.End()
-}
-
-type xmlNodeEncoder struct {
-	x      tokenEncoder
-	start  xml.StartElement
-	closed bool
-}
-
-func newXmlNodeEncoder(x tokenEncoder, name string, cap int) *xmlNodeEncoder {
-	return &xmlNodeEncoder{
-		x: x,
-		start: xml.StartElement{
-			Name: xml.Name{Local: name},
-			Attr: make([]xml.Attr, 0, cap),
-		},
-	}
-}
-
-func (e *xmlNodeEncoder) Attribute(name string, value string) {
-	e.start.Attr = append(e.start.Attr, xml.Attr{
-		Name:  xml.Name{Local: name},
-		Value: value,
-	})
-}
-
-func (e *xmlNodeEncoder) OptionalAttribute(name string, value string) {
-	if value != "" {
-		e.Attribute(name, value)
-	}
-}
-
-func (e *xmlNodeEncoder) TextEnd(txt string) {
-	e.Close()
-	e.x.EncodeToken(xml.CharData(txt))
-	e.x.EncodeToken(e.start.End())
-}
-
-func (e *xmlNodeEncoder) Close() {
-	if !e.closed {
-		e.closed = true
-		e.x.EncodeToken(e.start)
-	}
-}
-
-func (e *xmlNodeEncoder) End() {
-	e.Close()
-	e.x.EncodeToken(e.start.End())
+	x.SetAutoClose(false)
+	x.EncodeToken(xt.End())
 }

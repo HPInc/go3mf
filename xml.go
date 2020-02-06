@@ -33,10 +33,15 @@ func (enc *xmlEncoder) Flush() error {
 	return enc.p.Flush()
 }
 
+func (enc *xmlEncoder) SetAutoClose(autoClose bool) {
+	enc.p.autoClose = autoClose
+}
+
 type printer struct {
 	*bufio.Writer
 	encoder    *xmlEncoder
 	attrPrefix map[string]string // map name space -> prefix
+	autoClose  bool
 }
 
 // createAttrPrefix finds the name space prefix attribute to use for the given name space,
@@ -85,6 +90,9 @@ func (p *printer) writeStart(start *xml.StartElement) {
 		p.WriteString(`="`)
 		p.EscapeString(attr.Value)
 		p.WriteByte('"')
+	}
+	if p.autoClose {
+		p.WriteByte('/')
 	}
 	p.WriteByte('>')
 }
