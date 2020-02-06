@@ -18,27 +18,6 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type mockRelationship struct {
-	mock.Mock
-}
-
-func newMockRelationship(relType, targetURI string) *mockRelationship {
-	m := new(mockRelationship)
-	m.On("Type").Return(relType).Maybe()
-	m.On("TargetURI").Return(targetURI).Maybe()
-	return m
-}
-
-func (m *mockRelationship) Type() string {
-	args := m.Called()
-	return args.String(0)
-}
-
-func (m *mockRelationship) TargetURI() string {
-	args := m.Called()
-	return args.String(0)
-}
-
 type modelBuilder struct {
 	str      strings.Builder
 	hasModel bool
@@ -68,7 +47,7 @@ func (m *modelBuilder) withDefaultModel() *modelBuilder {
 func (m *modelBuilder) withModel(unit string, lang string, thumbnail string) *modelBuilder {
 	m.str.WriteString(`<model `)
 	m.addAttr("", "unit", unit).addAttr("xml", "lang", lang)
-	m.addAttr("", "xmlns", ExtensionName).addAttr("xmlns", "qm", "fake_ext")
+	m.addAttr("", "xmlns", ExtensionName).addAttr("xmlns", "qm", fakeExtenstion)
 	m.addAttr("", "requiredextensions", "qm")
 	if thumbnail != "" {
 		m.addAttr("", "thumbnail", thumbnail)
@@ -86,7 +65,7 @@ func (m *modelBuilder) withEncoding(encode string) *modelBuilder {
 
 func (m *modelBuilder) build(name string) *mockFile {
 	if name == "" {
-		name = "/3d/3dmodel.model"
+		name = "/3D/3dmodel.model"
 	}
 	if m.hasModel {
 		m.str.WriteString("</model>\n")
@@ -101,9 +80,10 @@ type mockFile struct {
 	mock.Mock
 }
 
-func newMockFile(name string, relationships []relationship, other *mockFile, openErr bool) *mockFile {
+func newMockFile(name string, relationships []*relationship, other *mockFile, openErr bool) *mockFile {
 	m := new(mockFile)
 	m.On("Name").Return(name).Maybe()
+	m.On("ContentType").Return("").Maybe()
 	m.On("Relationships").Return(relationships).Maybe()
 	m.On("FindFileFromRel", mock.Anything).Return(other, other != nil).Maybe()
 	m.On("FindFileFromName", mock.Anything).Return(other, other != nil).Maybe()
@@ -125,6 +105,11 @@ func (m *mockFile) Name() string {
 	return args.String(0)
 }
 
+func (m *mockFile) ContentType() string {
+	args := m.Called()
+	return args.String(0)
+}
+
 func (m *mockFile) FindFileFromRel(args0 string) (packageFile, bool) {
 	args := m.Called(args0)
 	return args.Get(0).(packageFile), args.Bool(1)
@@ -135,9 +120,9 @@ func (m *mockFile) FindFileFromName(args0 string) (packageFile, bool) {
 	return args.Get(0).(packageFile), args.Bool(1)
 }
 
-func (m *mockFile) Relationships() []relationship {
+func (m *mockFile) Relationships() []*relationship {
 	args := m.Called()
-	return args.Get(0).([]relationship)
+	return args.Get(0).([]*relationship)
 }
 
 type mockPackage struct {
@@ -147,9 +132,24 @@ type mockPackage struct {
 func newMockPackage(other *mockFile) *mockPackage {
 	m := new(mockPackage)
 	m.On("Open", mock.Anything).Return(nil).Maybe()
+	m.On("Create", mock.Anything, mock.Anything).Return(nil, nil).Maybe()
 	m.On("FindFileFromRel", mock.Anything).Return(other, other != nil).Maybe()
 	m.On("FindFileFromName", mock.Anything).Return(other, other != nil).Maybe()
 	return m
+}
+
+func (m *mockPackage) Close() error {
+	args := m.Called()
+	return args.Error(0)
+}
+
+func (m *mockPackage) AddRelationship(args0 *relationship) {
+	m.Called(args0)
+}
+
+func (m *mockPackage) Create(args0, args1 string) (io.Writer, error) {
+	args := m.Called(args0, args1)
+	return args.Get(0).(io.Writer), args.Error(1)
 }
 
 func (m *mockPackage) Open(f func(r io.Reader) io.ReadCloser) error {
@@ -180,28 +180,28 @@ func TestDecoder_processOPC(t *testing.T) {
 		{"noRoot", &Decoder{p: newMockPackage(nil)}, &Model{}, nil, true},
 		{"noRels", &Decoder{p: newMockPackage(newMockFile("/a.model", nil, nil, false))}, &Model{Path: "/a.model"}, nil, false},
 		{"withThumb", &Decoder{
-			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypeThumbnail, "/a.png")}, newMockFile("/a.png", nil, nil, false), false)),
+			p: newMockPackage(newMockFile("/a.model", []*relationship{{Type: relTypeThumbnail, TargetURI: "/a.png"}}, newMockFile("/a.png", nil, nil, false), false)),
 		}, &Model{
 			Path:        "/a.model",
 			Attachments: []*Attachment{{RelationshipType: relTypeThumbnail, Path: "/a.png", Stream: new(bytes.Buffer)}},
 		}, nil, false},
 		{"withPrintTicket", &Decoder{
-			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(relTypePrintTicket, "/pc.png")}, newMockFile("/pc.png", nil, nil, false), false)),
+			p: newMockPackage(newMockFile("/a.model", []*relationship{{Type: relTypePrintTicket, TargetURI: "/pc.png"}}, newMockFile("/pc.png", nil, nil, false), false)),
 		}, &Model{
 			Path:        "/a.model",
 			Attachments: []*Attachment{{RelationshipType: relTypePrintTicket, Path: "/pc.png", Stream: new(bytes.Buffer)}},
 		}, nil, false},
 		{"withExtRel", &Decoder{
-			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(extType, "/other.png")}, newMockFile("/other.png", nil, nil, false), false)),
+			p: newMockPackage(newMockFile("/a.model", []*relationship{{Type: extType, TargetURI: "/other.png"}}, newMockFile("/other.png", nil, nil, false), false)),
 		}, &Model{
 			Path:        "/a.model",
 			Attachments: []*Attachment{{RelationshipType: extType, Path: "/other.png", Stream: new(bytes.Buffer)}},
 		}, nil, false},
 		{"withOtherRel", &Decoder{
-			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship("other", "/a.png")}, nil, false)),
+			p: newMockPackage(newMockFile("/a.model", []*relationship{{Type: "other", TargetURI: "/a.png"}}, nil, false)),
 		}, &Model{Path: "/a.model"}, nil, false},
 		{"withModelAttachment", &Decoder{
-			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship(RelTypeModel3D, "/other.model")}, otherModel, false)),
+			p: newMockPackage(newMockFile("/a.model", []*relationship{{Type: RelTypeModel3D, TargetURI: "/other.model"}}, otherModel, false)),
 		}, &Model{
 			Path: "/a.model",
 		}, []packageFile{otherModel}, false},
@@ -246,13 +246,13 @@ func TestDecoder_processRootModel_Fail(t *testing.T) {
 }
 
 func TestDecoder_processRootModel(t *testing.T) {
-	baseMaterials := &BaseMaterialsResource{ID: 5, ModelPath: "/3d/3dmodel.model", Materials: []BaseMaterial{
+	baseMaterials := &BaseMaterialsResource{ID: 5, ModelPath: "/3D/3dmodel.model", Materials: []BaseMaterial{
 		{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 		{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
 	}}
 	meshRes := &ObjectResource{
 		Mesh: new(Mesh),
-		ID:   8, Name: "Box 1", ModelPath: "/3d/3dmodel.model", Thumbnail: "/a.png", DefaultPropertyID: 5, PartNumber: "11111111-1111-1111-1111-111111111111",
+		ID:   8, Name: "Box 1", ModelPath: "/3D/3dmodel.model", Thumbnail: "/a.png", DefaultPropertyID: 5, PartNumber: "11111111-1111-1111-1111-111111111111",
 	}
 	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []Point3D{
 		{0, 0, 0},
@@ -280,23 +280,26 @@ func TestDecoder_processRootModel(t *testing.T) {
 	}...)
 
 	components := &ObjectResource{
-		ID: 20, ModelPath: "/3d/3dmodel.model",
-		Metadata:   []Metadata{{Name: "fake_ext:CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: "fake_ext:CustomMetadata4", Type: "xs:boolean", Value: "2"}},
+		ID: 20, ModelPath: "/3D/3dmodel.model", ObjectType: ObjectTypeSupport,
+		Metadata:   []Metadata{{Name: "qm:CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: "qm:CustomMetadata4", Type: "xs:boolean", Value: "2"}},
 		Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
 	}
 
-	want := &Model{Units: UnitMillimeter, Language: "en-US", Path: "/3d/3dmodel.model", Thumbnail: "/thumbnail.png"}
+	want := &Model{
+		Units: UnitMillimeter, Language: "en-US", Path: "/3D/3dmodel.model", Thumbnail: "/thumbnail.png",
+		Namespaces: []xml.Name{{Space: fakeExtenstion, Local: "qm"}},
+	}
 	want.Resources = append(want.Resources, baseMaterials, meshRes, components)
 	want.Build.Items = append(want.Build.Items, &Item{
 		ObjectID: 20, PartNumber: "bob", Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
-		Metadata: []Metadata{{Name: "fake_ext:CustomMetadata3", Type: "xs:boolean", Value: "1"}},
+		Metadata: []Metadata{{Name: "qm:CustomMetadata3", Type: "xs:boolean", Value: "1"}},
 	})
 	want.Metadata = append(want.Metadata, []Metadata{
 		{Name: "Application", Value: "go3mf app"},
-		{Name: "fake_ext:CustomMetadata1", Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},
+		{Name: "qm:CustomMetadata1", Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},
 	}...)
 	got := new(Model)
-	got.Path = "/3d/3dmodel.model"
+	got.Path = "/3D/3dmodel.model"
 	rootFile := new(modelBuilder).withDefaultModel().withElement(`
 		<resources>
 			<basematerials id="5">
@@ -331,7 +334,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 					</triangles>
 				</mesh>
 			</object>
-			<object id="20">
+			<object id="20" type="support">
 				<metadatagroup>
 					<metadata name="qm:CustomMetadata3" type="xs:boolean">1</metadata>
 					<metadata name="qm:CustomMetadata4" type="xs:boolean">2</metadata>
@@ -355,8 +358,8 @@ func TestDecoder_processRootModel(t *testing.T) {
 
 	t.Run("base", func(t *testing.T) {
 		d := new(Decoder)
-		d.RegisterNodeDecoderExtension("fake_ext", nil)
-		d.RegisterDecodeAttributeExtension("fake_ext", nil)
+		d.RegisterNodeDecoderExtension(fakeExtenstion, nil)
+		d.RegisterDecodeAttributeExtension(fakeExtenstion, nil)
 		d.Strict = true
 		d.SetDecompressor(func(r io.Reader) io.ReadCloser { return flate.NewReader(r) })
 		d.SetXMLDecoder(func(r io.Reader) XMLDecoder { return xml.NewDecoder(r) })
@@ -389,19 +392,19 @@ func TestDecoder_processNonRootModels(t *testing.T) {
 						<base name="Red ABS" displaycolor="#FF0000" />
 					</basematerials>
 				</resources>
-			`).build("3d/new.model"),
+			`).build("/3D/new.model"),
 			new(modelBuilder).withDefaultModel().withElement(`
 				<resources>
 					<basematerials id="6" />
 				</resources>
-			`).build("3d/other.model"),
+			`).build("/3D/other.model"),
 		}}, false, &Model{
 			Resources: []Resource{
-				&BaseMaterialsResource{ID: 5, ModelPath: "3d/new.model", Materials: []BaseMaterial{
+				&BaseMaterialsResource{ID: 5, ModelPath: "/3D/new.model", Materials: []BaseMaterial{
 					{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 					{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
 				}},
-				&BaseMaterialsResource{ID: 6, ModelPath: "3d/other.model"},
+				&BaseMaterialsResource{ID: 6, ModelPath: "/3D/other.model"},
 			},
 		}},
 		{"noAtt", new(Model), new(Decoder), false, new(Model)},
@@ -429,7 +432,7 @@ func TestDecoder_Decode(t *testing.T) {
 		wantErr bool
 	}{
 		{"base", &Decoder{
-			p: newMockPackage(newMockFile("/a.model", []relationship{newMockRelationship("b", "/a.xml")}, nil, false)),
+			p: newMockPackage(newMockFile("/a.model", []*relationship{{Type: "b", TargetURI: "/a.xml"}}, nil, false)),
 		}, false},
 	}
 	for _, tt := range tests {
@@ -501,27 +504,27 @@ func TestNewDecoder(t *testing.T) {
 
 func TestDecoder_processRootModel_warns(t *testing.T) {
 	want := []error{
-		ParsePropertyError{ResourceID: 0, Element: "base", Name: "displaycolor", Value: "0000FF", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
-		MissingPropertyError{ResourceID: 0, Element: "base", ModelPath: "/3d/3dmodel.model", Name: "name"},
-		MissingPropertyError{ResourceID: 0, Element: "base", ModelPath: "/3d/3dmodel.model", Name: "displaycolor"},
-		MissingPropertyError{ResourceID: 0, Element: "basematerials", ModelPath: "/3d/3dmodel.model", Name: "id"},
-		ParsePropertyError{ResourceID: 0, Element: "basematerials", Name: "id", Value: "a", ModelPath: "/3d/3dmodel.model", Type: PropertyRequired},
-		MissingPropertyError{ResourceID: 0, Element: "basematerials", ModelPath: "/3d/3dmodel.model", Name: "id"},
-		GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3d/3dmodel.model", Message: "duplicated triangle indices"},
-		GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3d/3dmodel.model", Message: "triangle indices are out of range"},
-		ParsePropertyError{ResourceID: 22, Element: "object", ModelPath: "/3d/3dmodel.model", Name: "type", Value: "invalid", Type: PropertyOptional},
-		GenericError{ResourceID: 20, Element: "object", ModelPath: "/3d/3dmodel.model", Message: "default PID is not supported for component objects"},
-		ParsePropertyError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Name: "transform", Value: "0 0 0 1 0 0 0 2 -66.4 -87.1 8.8", Type: PropertyOptional},
-		//GenericError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced object"},
-		//GenericError{ResourceID: 20, Element: "component", ModelPath: "/3d/3dmodel.model", Message: "non-object referenced resource"},
-		ParsePropertyError{ResourceID: 20, Element: "item", Name: "transform", Value: "1 0 0 0 2 0 0 0 3 -66.4 -87.1", ModelPath: "/3d/3dmodel.model", Type: PropertyOptional},
-		//GenericError{ResourceID: 20, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "referenced object cannot be have OTHER type"},
-		//GenericError{ResourceID: 8, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced object"},
-		//GenericError{ResourceID: 5, Element: "item", ModelPath: "/3d/3dmodel.model", Message: "non-object referenced resource"},
-		GenericError{ResourceID: 0, Element: "metadata", ModelPath: "/3d/3dmodel.model", Message: "unregistered namespace"},
+		ParsePropertyError{ResourceID: 0, Element: "base", Name: "displaycolor", Value: "0000FF", ModelPath: "/3D/3dmodel.model", Type: PropertyRequired},
+		MissingPropertyError{ResourceID: 0, Element: "base", ModelPath: "/3D/3dmodel.model", Name: "name"},
+		MissingPropertyError{ResourceID: 0, Element: "base", ModelPath: "/3D/3dmodel.model", Name: "displaycolor"},
+		MissingPropertyError{ResourceID: 0, Element: "basematerials", ModelPath: "/3D/3dmodel.model", Name: "id"},
+		ParsePropertyError{ResourceID: 0, Element: "basematerials", Name: "id", Value: "a", ModelPath: "/3D/3dmodel.model", Type: PropertyRequired},
+		MissingPropertyError{ResourceID: 0, Element: "basematerials", ModelPath: "/3D/3dmodel.model", Name: "id"},
+		GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3D/3dmodel.model", Message: "duplicated triangle indices"},
+		GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3D/3dmodel.model", Message: "triangle indices are out of range"},
+		ParsePropertyError{ResourceID: 22, Element: "object", ModelPath: "/3D/3dmodel.model", Name: "type", Value: "invalid", Type: PropertyOptional},
+		GenericError{ResourceID: 20, Element: "object", ModelPath: "/3D/3dmodel.model", Message: "default PID is not supported for component objects"},
+		ParsePropertyError{ResourceID: 20, Element: "component", ModelPath: "/3D/3dmodel.model", Name: "transform", Value: "0 0 0 1 0 0 0 2 -66.4 -87.1 8.8", Type: PropertyOptional},
+		//GenericError{ResourceID: 20, Element: "component", ModelPath: "/3D/3dmodel.model", Message: "non-existent referenced object"},
+		//GenericError{ResourceID: 20, Element: "component", ModelPath: "/3D/3dmodel.model", Message: "non-object referenced resource"},
+		ParsePropertyError{ResourceID: 20, Element: "item", Name: "transform", Value: "1 0 0 0 2 0 0 0 3 -66.4 -87.1", ModelPath: "/3D/3dmodel.model", Type: PropertyOptional},
+		//GenericError{ResourceID: 20, Element: "item", ModelPath: "/3D/3dmodel.model", Message: "referenced object cannot be have OTHER type"},
+		//GenericError{ResourceID: 8, Element: "item", ModelPath: "/3D/3dmodel.model", Message: "non-existent referenced object"},
+		//GenericError{ResourceID: 5, Element: "item", ModelPath: "/3D/3dmodel.model", Message: "non-object referenced resource"},
+		GenericError{ResourceID: 0, Element: "metadata", ModelPath: "/3D/3dmodel.model", Message: "unregistered namespace"},
 	}
 	got := new(Model)
-	got.Path = "/3d/3dmodel.model"
+	got.Path = "/3D/3dmodel.model"
 	rootFile := new(modelBuilder).withDefaultModel().withElement(`
 		<resources>
 			<basematerials>
@@ -584,8 +587,8 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 
 	t.Run("base", func(t *testing.T) {
 		d := new(Decoder)
-		d.RegisterNodeDecoderExtension("fake_ext", nil)
-		d.RegisterDecodeAttributeExtension("fake_ext", nil)
+		d.RegisterNodeDecoderExtension(fakeExtenstion, nil)
+		d.RegisterDecodeAttributeExtension(fakeExtenstion, nil)
 		d.Strict = false
 		d.SetDecompressor(func(r io.Reader) io.ReadCloser { return flate.NewReader(r) })
 		d.SetXMLDecoder(func(r io.Reader) XMLDecoder { return xml.NewDecoder(r) })

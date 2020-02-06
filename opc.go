@@ -6,22 +6,30 @@ import (
 	"github.com/qmuntal/opc"
 )
 
-type opcRelationship struct {
-	rel *opc.Relationship
+type opcWriter struct {
+	w *opc.Writer
 }
 
-func (o *opcRelationship) Type() string {
-	return o.rel.Type
+func (o *opcWriter) Create(name, contentType string) (io.Writer, error) {
+	return o.w.Create(name, contentType)
 }
 
-func (o *opcRelationship) TargetURI() string {
-	return o.rel.TargetURI
+func (o *opcWriter) AddRelationship(r *relationship) {
+	o.w.Relationships = append(o.w.Relationships, &opc.Relationship{
+		ID:        r.ID,
+		Type:      r.Type,
+		TargetURI: r.TargetURI,
+	})
 }
 
-func newRelationships(rels []*opc.Relationship) []relationship {
-	pr := make([]relationship, len(rels))
+func (o *opcWriter) Close() error {
+	return o.w.Close()
+}
+
+func newRelationships(rels []*opc.Relationship) []*relationship {
+	pr := make([]*relationship, len(rels))
 	for i, r := range rels {
-		pr[i] = &opcRelationship{r}
+		pr[i] = &relationship{ID: r.ID, TargetURI: r.TargetURI, Type: r.Type}
 	}
 	return pr
 }
@@ -39,6 +47,10 @@ func (o *opcFile) Name() string {
 	return o.f.Name
 }
 
+func (o *opcFile) ContentType() string {
+	return o.f.ContentType
+}
+
 func (o *opcFile) FindFileFromRel(relType string) (packageFile, bool) {
 	name := findOPCFileURIFromRel(relType, o.f.Relationships)
 	return o.FindFileFromName(name)
@@ -49,7 +61,7 @@ func (o *opcFile) FindFileFromName(name string) (packageFile, bool) {
 	return findOPCFileFromName(name, o.r)
 }
 
-func (o *opcFile) Relationships() []relationship {
+func (o *opcFile) Relationships() []*relationship {
 	return newRelationships(o.f.Relationships)
 }
 

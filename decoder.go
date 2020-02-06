@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"image/color"
+	"strconv"
 	"strings"
 )
 
@@ -58,11 +59,8 @@ func (d *modelDecoder) Attributes(attrs []xml.Attr) {
 
 func (d *modelDecoder) checkRequiredExt(requiredExts string) {
 	for _, ext := range strings.Fields(requiredExts) {
-		ext = d.Scanner.Namespaces[ext]
-		if ext != ExtensionName {
-			if _, ok := d.Scanner.extensionDecoder[ext]; !ok {
-				d.Scanner.GenericError(true, fmt.Sprintf("'%s' extension is not supported", ext))
-			}
+		if _, ok := d.Scanner.Namespace(ext); !ok {
+			d.Scanner.GenericError(true, fmt.Sprintf("'%s' extension is not supported", ext))
 		}
 	}
 }
@@ -76,7 +74,7 @@ func (d *modelDecoder) noCoreAttribute(a xml.Attr) {
 			}
 		}
 	case attrXmlns:
-		d.Scanner.Namespaces[a.Name.Local] = a.Value
+		d.Scanner.Namespaces = append(d.Scanner.Namespaces, xml.Name{Space: a.Value, Local: a.Name.Local})
 	}
 }
 
@@ -108,17 +106,15 @@ func (d *metadataDecoder) Attributes(attrs []xml.Attr) {
 			i := strings.IndexByte(a.Value, ':')
 			if i < 0 {
 				d.metadata.Name = a.Value
-			} else if ns, ok := d.Scanner.Namespaces[a.Value[0:i]]; ok {
-				d.metadata.Name = ns + ":" + a.Value[i+1:]
+			} else if _, ok := d.Scanner.Namespace(a.Value[0:i]); ok {
+				d.metadata.Name = a.Value[0:i] + ":" + a.Value[i+1:]
 			} else {
 				d.Scanner.GenericError(true, "unregistered namespace")
 			}
 		case attrType:
 			d.metadata.Type = a.Value
 		case attrPreserve:
-			if a.Value != "0" {
-				d.metadata.Preserve = true
-			}
+			d.metadata.Preserve, _ = strconv.ParseBool(a.Value)
 		}
 	}
 }
@@ -274,12 +270,12 @@ func (d *baseMaterialDecoder) Attributes(attrs []xml.Attr) {
 		switch a.Name.Local {
 		case attrName:
 			name = a.Value
-		case attrBaseMaterialColor:
+		case attrDisplayColor:
 			var err error
 			baseColor, err = ParseRGB(a.Value)
 			withColor = true
 			if err != nil {
-				d.Scanner.InvalidRequiredAttr(attrBaseMaterialColor, a.Value)
+				d.Scanner.InvalidRequiredAttr(attrDisplayColor, a.Value)
 			}
 		}
 	}
@@ -287,7 +283,7 @@ func (d *baseMaterialDecoder) Attributes(attrs []xml.Attr) {
 		d.Scanner.MissingAttr(attrName)
 	}
 	if !withColor {
-		d.Scanner.MissingAttr(attrBaseMaterialColor)
+		d.Scanner.MissingAttr(attrDisplayColor)
 	}
 	d.resource.Materials = append(d.resource.Materials, BaseMaterial{Name: name, Color: baseColor})
 	return

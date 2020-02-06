@@ -47,16 +47,18 @@ type XMLDecoder interface {
 	InputOffset() int64
 }
 
-type relationship interface {
-	Type() string
-	TargetURI() string
+type relationship struct {
+	ID        string
+	TargetURI string
+	Type      string
 }
 
 type packageFile interface {
 	Name() string
+	ContentType() string
 	FindFileFromRel(string) (packageFile, bool)
 	FindFileFromName(string) (packageFile, bool)
-	Relationships() []relationship
+	Relationships() []*relationship
 	Open() (io.ReadCloser, error)
 }
 
@@ -187,7 +189,6 @@ type Decoder struct {
 	x                func(r io.Reader) XMLDecoder
 	flate            func(r io.Reader) io.ReadCloser
 	nonRootModels    []packageFile
-	ctx              context.Context
 	extensionDecoder map[string]*extensionDecoderWrapper
 }
 
@@ -278,9 +279,12 @@ func (d *Decoder) tokenReader(r io.Reader) XMLDecoder {
 	return d.x(r)
 }
 
-// DecodeRawModel fills a model with the raw content of one model file.
-func (d *Decoder) DecodeRawModel(ctx context.Context, model *Model, content string) error {
-	return d.processRootModel(ctx, &fakePackageFile{str: content}, model)
+
+// UnmarshalModel fills a model with the data of a model file.
+// This function does not need a decoder initialized with a reader 
+// so can be initialized as NewDecoder(nil, 0).
+func (d *Decoder) UnmarshalModel(data []byte, model *Model) error {
+	return d.processRootModel(context.Background(), &fakePackageFile{data: data}, model)
 }
 
 func (d *Decoder) processRootModel(ctx context.Context, rootFile packageFile, model *Model) error {
@@ -306,6 +310,9 @@ func (d *Decoder) addModelFile(p *Scanner, model *Model) {
 	}
 	for _, res := range p.Resources {
 		model.Resources = append(model.Resources, res)
+	}
+	for _, ns := range p.Namespaces {
+		model.Namespaces = append(model.Namespaces, ns)
 	}
 	for _, res := range p.Warnings {
 		d.Warnings = append(d.Warnings, res)
@@ -372,7 +379,7 @@ func (d *Decoder) processOPC(model *Model) (packageFile, error) {
 
 func (d *Decoder) extractCoreAttachments(file packageFile, model *Model, isRoot bool) {
 	for _, rel := range file.Relationships() {
-		relType := rel.Type()
+		relType := rel.Type
 		preserve := relType == relTypePrintTicket || relType == relTypeThumbnail
 		if !preserve {
 			for _, ext := range d.extensionDecoder {
@@ -385,7 +392,7 @@ func (d *Decoder) extractCoreAttachments(file packageFile, model *Model, isRoot 
 		if !preserve {
 			continue
 		}
-		if file, ok := file.FindFileFromName(rel.TargetURI()); ok {
+		if file, ok := file.FindFileFromName(rel.TargetURI); ok {
 			if relType == RelTypeModel3D {
 				d.nonRootModels = append(d.nonRootModels, file)
 			} else {
@@ -399,9 +406,10 @@ func (d *Decoder) addAttachment(attachments []*Attachment, file packageFile, rel
 	buff, err := copyFile(file)
 	if err == nil {
 		return append(attachments, &Attachment{
-			RelationshipType: relType,
 			Path:             file.Name(),
 			Stream:           buff,
+			RelationshipType: relType,
+			ContentType:      file.ContentType(),
 		})
 	}
 	return attachments
@@ -431,13 +439,14 @@ func copyFile(file packageFile) (io.Reader, error) {
 }
 
 type fakePackageFile struct {
-	str string
+	data []byte
 }
 
-func (f *fakePackageFile) Name() string                                { return "/3d/3dmodel.model" }
+func (f *fakePackageFile) Name() string                                { return uriDefault3DModel }
+func (f *fakePackageFile) ContentType() string                         { return contentType3DModel }
 func (f *fakePackageFile) FindFileFromRel(string) (packageFile, bool)  { return nil, false }
 func (f *fakePackageFile) FindFileFromName(string) (packageFile, bool) { return nil, false }
-func (f *fakePackageFile) Relationships() []relationship               { return nil }
+func (f *fakePackageFile) Relationships() []*relationship              { return nil }
 func (f *fakePackageFile) Open() (io.ReadCloser, error) {
-	return ioutil.NopCloser(bytes.NewBufferString(f.str)), nil
+	return ioutil.NopCloser(bytes.NewBuffer(f.data)), nil
 }

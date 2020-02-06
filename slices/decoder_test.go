@@ -1,7 +1,7 @@
 package slices
 
 import (
-	"context"
+	"encoding/xml"
 	"testing"
 
 	"github.com/go-test/deep"
@@ -19,7 +19,7 @@ func TestDecode(t *testing.T) {
 			},
 		},
 	}
-	sliceStack := &SliceStackResource{ID: 3, ModelPath: "/3d/3dmodel.model", Stack: SliceStack{
+	sliceStack := &SliceStackResource{ID: 3, ModelPath: "/3D/3dmodel.model", Stack: SliceStack{
 		BottomZ: 1,
 		Slices: []*Slice{
 			{
@@ -34,10 +34,10 @@ func TestDecode(t *testing.T) {
 			},
 		},
 	}}
-	sliceStackRef := &SliceStackResource{ID: 7, ModelPath: "/3d/3dmodel.model", Stack: SliceStack{BottomZ: 1.1, Refs: []SliceRef{{SliceStackID: 10, Path: "/2D/2Dmodel.model"}}}}
+	sliceStackRef := &SliceStackResource{ID: 7, ModelPath: "/3D/3dmodel.model", Stack: SliceStack{BottomZ: 1.1, Refs: []SliceRef{{SliceStackID: 10, Path: "/2D/2Dmodel.model"}}}}
 	meshRes := &go3mf.ObjectResource{
 		Mesh: new(go3mf.Mesh),
-		ID:   8, Name: "Box 1", ModelPath: "/3d/3dmodel.model",
+		ID:   8, Name: "Box 1", ModelPath: "/3D/3dmodel.model",
 		Extensions: go3mf.Extensions{ExtensionName: &SliceStackInfo{SliceStackID: 3, SliceResolution: ResolutionLow}},
 	}
 	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []go3mf.Point3D{
@@ -65,11 +65,11 @@ func TestDecode(t *testing.T) {
 		{NodeIndices: [3]uint32{4, 7, 3}},
 	}...)
 
-	want := &go3mf.Model{Path: "/3d/3dmodel.model"}
+	want := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "s"}}}
 	want.Resources = append(want.Resources, &SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", Stack: otherSlices})
 	want.Resources = append(want.Resources, sliceStack, sliceStackRef, meshRes)
 	got := new(go3mf.Model)
-	got.Path = "/3d/3dmodel.model"
+	got.Path = "/3D/3dmodel.model"
 	got.Resources = append(got.Resources, &SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", Stack: otherSlices})
 	rootFile := `
 	<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:s="http://schemas.microsoft.com/3dmanufacturing/slice/2015/07">
@@ -133,7 +133,7 @@ func TestDecode(t *testing.T) {
 		d := new(go3mf.Decoder)
 		RegisterExtension(d)
 		d.Strict = true
-		if err := d.DecodeRawModel(context.Background(), got, rootFile); err != nil {
+		if err := d.UnmarshalModel([]byte(rootFile), got); err != nil {
 			t.Errorf("DecodeRawModel() unexpected error = %v", err)
 			return
 		}
@@ -148,21 +148,21 @@ func TestDecode(t *testing.T) {
 
 func TestDecode_warns(t *testing.T) {
 	want := []error{
-		go3mf.MissingPropertyError{ResourceID: 3, Element: "slice", ModelPath: "/3d/3dmodel.model", Name: "ztop"},
-		go3mf.ParsePropertyError{ResourceID: 3, Element: "vertex", Name: "x", Value: "a", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
-		go3mf.ParsePropertyError{ResourceID: 3, Element: "vertex", Name: "y", Value: "b", ModelPath: "/3d/3dmodel.model", Type: go3mf.PropertyRequired},
-		go3mf.GenericError{ResourceID: 3, Element: "polygon", ModelPath: "/3d/3dmodel.model", Message: "invalid slice segment index"},
-		go3mf.GenericError{ResourceID: 3, Element: "segment", ModelPath: "/3d/3dmodel.model", Message: "invalid slice segment index"},
-		go3mf.GenericError{ResourceID: 3, Element: "polygon", ModelPath: "/3d/3dmodel.model", Message: "a closed slice polygon is actually a line"},
-		go3mf.GenericError{ResourceID: 3, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Message: "a slicepath is invalid"},
-		//go3mf.GenericError{ResourceID: 3, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced resource"},
-		go3mf.GenericError{ResourceID: 3, Element: "slicestack", ModelPath: "/3d/3dmodel.model", Message: "slicestack contains slices and slicerefs"},
-		go3mf.MissingPropertyError{ResourceID: 7, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Name: "slicestackid"},
-		//go3mf.GenericError{ResourceID: 7, Element: "sliceref", ModelPath: "/3d/3dmodel.model", Message: "non-existent referenced resource"},
-		go3mf.ParsePropertyError{ResourceID: 8, Element: "object", ModelPath: "/3d/3dmodel.model", Name: "meshresolution", Value: "invalid", Type: go3mf.PropertyOptional},
+		go3mf.MissingPropertyError{ResourceID: 3, Element: "slice", ModelPath: "/3D/3dmodel.model", Name: "ztop"},
+		go3mf.ParsePropertyError{ResourceID: 3, Element: "vertex", Name: "x", Value: "a", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
+		go3mf.ParsePropertyError{ResourceID: 3, Element: "vertex", Name: "y", Value: "b", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
+		go3mf.GenericError{ResourceID: 3, Element: "polygon", ModelPath: "/3D/3dmodel.model", Message: "invalid slice segment index"},
+		go3mf.GenericError{ResourceID: 3, Element: "segment", ModelPath: "/3D/3dmodel.model", Message: "invalid slice segment index"},
+		go3mf.GenericError{ResourceID: 3, Element: "polygon", ModelPath: "/3D/3dmodel.model", Message: "a closed slice polygon is actually a line"},
+		go3mf.GenericError{ResourceID: 3, Element: "sliceref", ModelPath: "/3D/3dmodel.model", Message: "a slicepath is invalid"},
+		//go3mf.GenericError{ResourceID: 3, Element: "sliceref", ModelPath: "/3D/3dmodel.model", Message: "non-existent referenced resource"},
+		go3mf.GenericError{ResourceID: 3, Element: "slicestack", ModelPath: "/3D/3dmodel.model", Message: "slicestack contains slices and slicerefs"},
+		go3mf.MissingPropertyError{ResourceID: 7, Element: "sliceref", ModelPath: "/3D/3dmodel.model", Name: "slicestackid"},
+		//go3mf.GenericError{ResourceID: 7, Element: "sliceref", ModelPath: "/3D/3dmodel.model", Message: "non-existent referenced resource"},
+		go3mf.ParsePropertyError{ResourceID: 8, Element: "object", ModelPath: "/3D/3dmodel.model", Name: "meshresolution", Value: "invalid", Type: go3mf.PropertyOptional},
 	}
 	got := new(go3mf.Model)
-	got.Path = "/3d/3dmodel.model"
+	got.Path = "/3D/3dmodel.model"
 	rootFile := `
 		<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:s="http://schemas.microsoft.com/3dmanufacturing/slice/2015/07">
 		<resources>
@@ -184,7 +184,7 @@ func TestDecode_warns(t *testing.T) {
 						<s:segment v2="2"></s:segment> <s:segment v2="1"></s:segment> <s:segment v2="3"></s:segment> <s:segment v2="0"></s:segment>
 					</s:polygon>
 				</s:slice>
-				<s:sliceref slicestackid="10" slicepath="/3d/3dmodel.model" />
+				<s:sliceref slicestackid="10" slicepath="/3D/3dmodel.model" />
 			</s:slicestack>
 			<s:slicestack id="7" zbottom="1.1">
 				<s:sliceref slicepath="/2D/2Dmodel.model" />
@@ -229,7 +229,7 @@ func TestDecode_warns(t *testing.T) {
 		d := new(go3mf.Decoder)
 		RegisterExtension(d)
 		d.Strict = false
-		if err := d.DecodeRawModel(context.Background(), got, rootFile); err != nil {
+		if err := d.UnmarshalModel([]byte(rootFile), got); err != nil {
 			t.Errorf("DecodeRawModel_warn() unexpected error = %v", err)
 			return
 		}

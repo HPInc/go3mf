@@ -110,30 +110,29 @@ type Scanner struct {
 	ResourceID       uint32
 	Err              error
 	Warnings         []error
-	Namespaces       map[string]string
+	Namespaces       []xml.Name
 	extensionDecoder map[string]*extensionDecoderWrapper
 }
 
 func newScanner() *Scanner {
 	return &Scanner{
-		Namespaces:       make(map[string]string),
 		extensionDecoder: make(map[string]*extensionDecoderWrapper),
 	}
+}
+
+// Namespace returns the space of the associated local, if existing.
+func (s *Scanner) Namespace(local string) (string, bool) {
+	for _, name := range s.Namespaces {
+		if name.Local == local {
+			return name.Space, true
+		}
+	}
+	return "", false
 }
 
 // AddResource adds a new resource to the resource cache.
 func (p *Scanner) AddResource(r Resource) {
 	p.Resources = append(p.Resources, r)
-}
-
-// NamespaceRegistered checks if the namespace is registered.
-func (p *Scanner) NamespaceRegistered(ns string) bool {
-	for _, space := range p.Namespaces {
-		if ns == space {
-			return true
-		}
-	}
-	return false
 }
 
 func (p *Scanner) strictError(err error) {
@@ -231,6 +230,25 @@ func (p *Scanner) ParseFloat32Optional(attr string, s string) float32 {
 		p.InvalidOptionalAttr(attr, s)
 	}
 	return float32(n)
+}
+
+// FormatMatrix converts a matrix to a string.
+func FormatMatrix(t Matrix) string {
+	sl := []string{
+		strconv.FormatFloat(float64(t[0]), 'f', 3, 32),
+		strconv.FormatFloat(float64(t[1]), 'f', 3, 32),
+		strconv.FormatFloat(float64(t[2]), 'f', 3, 32),
+		strconv.FormatFloat(float64(t[4]), 'f', 3, 32),
+		strconv.FormatFloat(float64(t[5]), 'f', 3, 32),
+		strconv.FormatFloat(float64(t[6]), 'f', 3, 32),
+		strconv.FormatFloat(float64(t[8]), 'f', 3, 32),
+		strconv.FormatFloat(float64(t[9]), 'f', 3, 32),
+		strconv.FormatFloat(float64(t[10]), 'f', 3, 32),
+		strconv.FormatFloat(float64(t[12]), 'f', 3, 32),
+		strconv.FormatFloat(float64(t[13]), 'f', 3, 32),
+		strconv.FormatFloat(float64(t[14]), 'f', 3, 32),
+	}
+	return strings.Join(sl, " ")
 }
 
 // ParseToMatrix parses s as a Matrix.

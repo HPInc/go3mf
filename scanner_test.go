@@ -6,29 +6,6 @@ import (
 	"testing"
 )
 
-func TestParser_NamespaceRegistered(t *testing.T) {
-	type args struct {
-		ns string
-	}
-	tests := []struct {
-		name string
-		p    *Scanner
-		args args
-		want bool
-	}{
-		{"empty", &Scanner{Namespaces: map[string]string{"p": "http://xml.com"}}, args{""}, false},
-		{"exist", &Scanner{Namespaces: map[string]string{"p": "http://xml.com"}}, args{"http://xml.com"}, true},
-		{"noexist", &Scanner{Namespaces: map[string]string{"p": "http://xml.com"}}, args{"xmls"}, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.NamespaceRegistered(tt.args.ns); got != tt.want {
-				t.Errorf("Parser.NamespaceRegistered() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestParseToMatrixOptional(t *testing.T) {
 	type args struct {
 		s string

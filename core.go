@@ -1,6 +1,7 @@
 package go3mf
 
 import (
+	"encoding/xml"
 	"fmt"
 	"image/color"
 	"io"
@@ -74,8 +75,9 @@ type Metadata struct {
 // Attachment defines the Model Attachment.
 type Attachment struct {
 	Stream           io.Reader
-	RelationshipType string
 	Path             string
+	RelationshipType string
+	ContentType      string
 }
 
 // Build contains one or more items to manufacture as part of processing the job.
@@ -94,6 +96,7 @@ type Model struct {
 	Resources   []Resource
 	Build       Build
 	Attachments []*Attachment
+	Namespaces  []xml.Name
 }
 
 // UnusedID returns the lowest unused ID.
@@ -164,7 +167,7 @@ type BaseMaterial struct {
 
 // ColorString returns the color as a hex string with the format #rrggbbaa.
 func (m *BaseMaterial) ColorString() string {
-	return fmt.Sprintf("#%x%x%x%x", m.Color.R, m.Color.G, m.Color.B, m.Color.A)
+	return fmt.Sprintf("#%02x%02x%02x%02x", m.Color.R, m.Color.G, m.Color.B, m.Color.A)
 }
 
 // BaseMaterialsResource defines a slice of BaseMaterial.
