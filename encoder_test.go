@@ -2,7 +2,6 @@ package go3mf
 
 import (
 	"bytes"
-	"context"
 	"encoding/xml"
 	"image/color"
 	"testing"
@@ -73,7 +72,7 @@ func TestEncoder_writeModel(t *testing.T) {
 			d.RegisterDecodeAttributeExtension(fakeExtenstion, nil)
 			newModel := new(Model)
 			newModel.Path = tt.args.m.Path
-			if err := d.DecodeRawModel(context.Background(), newModel, tt.args.w.String()); err != nil {
+			if err := d.UnmarshalModel(tt.args.w.Bytes(), newModel); err != nil {
 				t.Errorf("Encoder.writeModel() error decoding = %v, s = %s", err, tt.args.w.String())
 				return
 			}
