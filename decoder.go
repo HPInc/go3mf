@@ -42,7 +42,7 @@ func (d *modelDecoder) Attributes(attrs []xml.Attr) {
 			case attrUnit:
 				var ok bool
 				if d.model.Units, ok = newUnits(a.Value); !ok {
-					d.Scanner.InvalidAttrOptional(attrUnit, a.Value)
+					d.Scanner.InvalidAttr(a.Name.Local, a.Value, false)
 				}
 			case attrThumbnail:
 				d.model.Thumbnail = a.Value
@@ -198,7 +198,11 @@ func (d *buildItemDecoder) Attributes(attrs []xml.Attr) {
 func (d *buildItemDecoder) parseCoreAttr(a xml.Attr) {
 	switch a.Name.Local {
 	case attrObjectID:
-		d.item.ObjectID = d.Scanner.ParseUint32(attrObjectID, a.Value)
+		val, err := strconv.ParseUint(a.Value, 10, 32)
+		if err != nil {
+			d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+		}
+		d.item.ObjectID = uint32(val)
 		d.Scanner.ResourceID = d.item.ObjectID
 	case attrPartNumber:
 		d.item.PartNumber = a.Value
@@ -206,7 +210,7 @@ func (d *buildItemDecoder) parseCoreAttr(a xml.Attr) {
 		var ok bool
 		d.item.Transform, ok = ParseMatrix(a.Value)
 		if !ok {
-			d.Scanner.InvalidAttrOptional(a.Name.Local, a.Value)
+			d.Scanner.InvalidAttr(a.Name.Local, a.Value, false)
 		}
 	}
 }
@@ -278,7 +282,7 @@ func (d *baseMaterialDecoder) Attributes(attrs []xml.Attr) {
 			baseColor, err = ParseRGB(a.Value)
 			withColor = true
 			if err != nil {
-				d.Scanner.InvalidAttr(attrDisplayColor, a.Value)
+				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
 			}
 		}
 	}
@@ -339,13 +343,17 @@ type vertexDecoder struct {
 func (d *vertexDecoder) Attributes(attrs []xml.Attr) {
 	var x, y, z float32
 	for _, a := range attrs {
+		val, err := strconv.ParseFloat(a.Value, 32)
+		if err != nil {
+			d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+		}
 		switch a.Name.Local {
 		case attrX:
-			x = d.Scanner.ParseFloat32(attrX, a.Value)
+			x = float32(val)
 		case attrY:
-			y = d.Scanner.ParseFloat32(attrY, a.Value)
+			y = float32(val)
 		case attrZ:
-			z = d.Scanner.ParseFloat32(attrZ, a.Value)
+			z = float32(val)
 		}
 	}
 	d.mesh.Nodes = append(d.mesh.Nodes, Point3D{x, y, z})
@@ -382,34 +390,42 @@ type triangleDecoder struct {
 
 func (d *triangleDecoder) Attributes(attrs []xml.Attr) {
 	var v1, v2, v3, pid, p1, p2, p3 uint32
-	var hasPID, hasP1, hasP2, hasP3 bool
+	var hasP1, hasP2, hasP3 bool
 	for _, a := range attrs {
+		required := true
+		val, err := strconv.ParseUint(a.Value, 10, 32)
 		switch a.Name.Local {
 		case attrV1:
-			v1 = d.Scanner.ParseUint32(attrV1, a.Value)
+			v1 = uint32(val)
 		case attrV2:
-			v2 = d.Scanner.ParseUint32(attrV2, a.Value)
+			v2 = uint32(val)
 		case attrV3:
-			v3 = d.Scanner.ParseUint32(attrV3, a.Value)
+			v3 = uint32(val)
 		case attrPID:
-			pid = d.Scanner.ParseUint32Optional(attrPID, a.Value)
-			hasPID = true
+			pid = uint32(val)
+			required = false
 		case attrP1:
-			p1 = d.Scanner.ParseUint32Optional(attrP1, a.Value)
+			p1 = uint32(val)
 			hasP1 = true
+			required = false
 		case attrP2:
-			p2 = d.Scanner.ParseUint32Optional(attrP2, a.Value)
+			p2 = uint32(val)
 			hasP2 = true
+			required = false
 		case attrP3:
-			p3 = d.Scanner.ParseUint32Optional(attrP3, a.Value)
+			p3 = uint32(val)
 			hasP3 = true
+			required = false
+		}
+		if err != nil {
+			d.Scanner.InvalidAttr(a.Name.Local, a.Value, required)
 		}
 	}
 
 	p1 = applyDefault(p1, d.defaultPropertyIndex, hasP1)
 	p2 = applyDefault(p2, p1, hasP2)
 	p3 = applyDefault(p3, p1, hasP3)
-	pid = applyDefault(pid, d.defaultPropertyID, hasPID)
+	pid = applyDefault(pid, d.defaultPropertyID, pid != 0)
 
 	d.addTriangle(v1, v2, v3, pid, p1, p2, p3)
 }
@@ -483,7 +499,7 @@ func (d *objectDecoder) parseCoreAttr(a xml.Attr) {
 		var ok bool
 		d.resource.ObjectType, ok = newObjectType(a.Value)
 		if !ok {
-			d.Scanner.InvalidAttrOptional(attrType, a.Value)
+			d.Scanner.InvalidAttr(a.Name.Local, a.Value, false)
 		}
 	case attrThumbnail:
 		d.resource.Thumbnail = a.Value
@@ -492,9 +508,17 @@ func (d *objectDecoder) parseCoreAttr(a xml.Attr) {
 	case attrPartNumber:
 		d.resource.PartNumber = a.Value
 	case attrPID:
-		d.resource.DefaultPropertyID = d.Scanner.ParseUint32Optional(attrPID, a.Value)
+		val, err := strconv.ParseUint(a.Value, 10, 32)
+		if err != nil {
+			d.Scanner.InvalidAttr(a.Name.Local, a.Value, false)
+		}
+		d.resource.DefaultPropertyID = uint32(val)
 	case attrPIndex:
-		d.resource.DefaultPropertyIndex = d.Scanner.ParseUint32Optional(attrPIndex, a.Value)
+		val, err := strconv.ParseUint(a.Value, 10, 32)
+		if err != nil {
+			d.Scanner.InvalidAttr(a.Name.Local, a.Value, false)
+		}
+		d.resource.DefaultPropertyIndex = uint32(val)
 	}
 }
 
@@ -526,12 +550,16 @@ func (d *componentDecoder) Attributes(attrs []xml.Attr) {
 	for _, a := range attrs {
 		if a.Name.Space == "" {
 			if a.Name.Local == attrObjectID {
-				component.ObjectID = d.Scanner.ParseUint32(attrObjectID, a.Value)
+				val, err := strconv.ParseUint(a.Value, 10, 32)
+				if err != nil {
+					d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+				}
+				component.ObjectID = uint32(val)
 			} else if a.Name.Local == attrTransform {
 				var ok bool
 				component.Transform, ok = ParseMatrix(a.Value)
 				if !ok {
-					d.Scanner.InvalidAttrOptional(a.Name.Local, a.Value)
+					d.Scanner.InvalidAttr(a.Name.Local, a.Value, false)
 				}
 			}
 		} else if ext, ok := d.Scanner.extensionDecoder[a.Name.Space]; ok {

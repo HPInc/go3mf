@@ -35,7 +35,7 @@ func objectAttrDecoder(scanner *go3mf.Scanner, o *go3mf.ObjectResource, attr xml
 		var ok bool
 		ObjectSliceStackInfo(o).SliceResolution, ok = newSliceResolution(attr.Value)
 		if !ok {
-			scanner.InvalidAttrOptional(attrMeshRes, attr.Value)
+			scanner.InvalidAttr(attrMeshRes, attr.Value, false)
 		}
 	}
 }

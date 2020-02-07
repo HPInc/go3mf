@@ -41,7 +41,7 @@ func (d *beamLatticeDecoder) Attributes(attrs []xml.Attr) {
 			var ok bool
 			beamLattice.ClipMode, ok = newClipMode(a.Value)
 			if !ok {
-				d.Scanner.InvalidAttrOptional(a.Name.Local, a.Value)
+				d.Scanner.InvalidAttr(a.Name.Local, a.Value, false)
 			}
 		case attrClippingMesh:
 			beamLattice.ClippingMeshID = d.Scanner.ParseUint32Optional(attrClippingMesh, a.Value)
@@ -51,7 +51,7 @@ func (d *beamLatticeDecoder) Attributes(attrs []xml.Attr) {
 			var ok bool
 			beamLattice.CapMode, ok = newCapMode(a.Value)
 			if !ok {
-				d.Scanner.InvalidAttrOptional(a.Name.Local, a.Value)
+				d.Scanner.InvalidAttr(a.Name.Local, a.Value, false)
 			}
 		}
 	}

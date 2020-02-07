@@ -74,7 +74,7 @@ func (d *colorDecoder) Attributes(attrs []xml.Attr) {
 		if a.Name.Space == "" && a.Name.Local == attrColor {
 			c, err := go3mf.ParseRGB(a.Value)
 			if err != nil {
-				d.Scanner.InvalidAttr(attrColor, a.Value)
+				d.Scanner.InvalidAttr(attrColor, a.Value, true)
 			}
 			d.resource.Colors = append(d.resource.Colors, c)
 		}

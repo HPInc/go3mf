@@ -133,13 +133,12 @@ func (p *Scanner) GenericError(strict bool, msg string) {
 
 // InvalidAttr adds the error to the warnings.
 // Returns false if scanning cannot continue.
-func (p *Scanner) InvalidAttr(attr string, val string) {
-	p.strictError(ParsePropertyError{ResourceID: p.ResourceID, Element: p.Element, Name: attr, Value: val, ModelPath: p.ModelPath, Type: PropertyRequired})
-}
-
-// InvalidAttrOptional adds the error to the warnings.
-func (p *Scanner) InvalidAttrOptional(attr string, val string) {
-	p.Warnings = append(p.Warnings, ParsePropertyError{ResourceID: p.ResourceID, Element: p.Element, Name: attr, Value: val, ModelPath: p.ModelPath, Type: PropertyOptional})
+func (p *Scanner) InvalidAttr(attr string, val string, required bool) {
+	tp := PropertyRequired
+	if !required {
+		tp = PropertyOptional
+	}
+	p.strictError(ParsePropertyError{ResourceID: p.ResourceID, Element: p.Element, Name: attr, Value: val, ModelPath: p.ModelPath, Type: tp})
 }
 
 // MissingAttr adds the error to the warnings.
@@ -152,7 +151,7 @@ func (p *Scanner) MissingAttr(attr string) {
 func (p *Scanner) ParseResourceID(s string) uint32 {
 	n, err := strconv.ParseUint(s, 10, 32)
 	if err != nil {
-		p.InvalidAttr(attrID, s)
+		p.InvalidAttr(attrID, s, true)
 		return 0
 	}
 	p.ResourceID = uint32(n)
@@ -181,7 +180,7 @@ func (p *Scanner) closeResource() {
 func (p *Scanner) ParseUint32(attr string, s string) uint32 {
 	n, err := strconv.ParseUint(s, 10, 32)
 	if err != nil {
-		p.InvalidAttr(attr, s)
+		p.InvalidAttr(attr, s, true)
 		return 0
 	}
 	return uint32(n)
@@ -192,7 +191,7 @@ func (p *Scanner) ParseUint32(attr string, s string) uint32 {
 func (p *Scanner) ParseUint32Optional(attr string, s string) uint32 {
 	n, err := strconv.ParseUint(s, 10, 32)
 	if err != nil {
-		p.InvalidAttrOptional(attr, s)
+		p.InvalidAttr(attr, s, false)
 	}
 	return uint32(n)
 }
@@ -202,7 +201,7 @@ func (p *Scanner) ParseUint32Optional(attr string, s string) uint32 {
 func (p *Scanner) ParseFloat32(attr string, s string) float32 {
 	n, err := strconv.ParseFloat(s, 32)
 	if err != nil {
-		p.InvalidAttr(attr, s)
+		p.InvalidAttr(attr, s, true)
 		return 0
 	}
 	return float32(n)
@@ -213,7 +212,7 @@ func (p *Scanner) ParseFloat32(attr string, s string) float32 {
 func (p *Scanner) ParseFloat32Optional(attr string, s string) float32 {
 	n, err := strconv.ParseFloat(s, 32)
 	if err != nil {
-		p.InvalidAttrOptional(attr, s)
+		p.InvalidAttr(attr, s, false)
 	}
 	return float32(n)
 }
