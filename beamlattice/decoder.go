@@ -2,6 +2,7 @@ package beamlattice
 
 import (
 	"encoding/xml"
+	"strconv"
 
 	"github.com/qmuntal/go3mf"
 )
@@ -32,10 +33,18 @@ func (d *beamLatticeDecoder) Attributes(attrs []xml.Attr) {
 		}
 		switch a.Name.Local {
 		case attrRadius:
-			beamLattice.DefaultRadius = d.Scanner.ParseFloat32(attrRadius, a.Value)
+			val, err := strconv.ParseFloat(a.Value, 32)
+			if err != nil {
+				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+			}
+			beamLattice.DefaultRadius = float32(val)
 			hasRadius = true
 		case attrMinLength, attrPrecision: // lib3mf legacy
-			beamLattice.MinLength = d.Scanner.ParseFloat32(a.Name.Local, a.Value)
+			val, err := strconv.ParseFloat(a.Value, 32)
+			if err != nil {
+				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+			}
+			beamLattice.MinLength = float32(val)
 			hasMinLength = true
 		case attrClippingMode, attrClipping: // lib3mf legacy
 			var ok bool
@@ -44,9 +53,17 @@ func (d *beamLatticeDecoder) Attributes(attrs []xml.Attr) {
 				d.Scanner.InvalidAttr(a.Name.Local, a.Value, false)
 			}
 		case attrClippingMesh:
-			beamLattice.ClippingMeshID = d.Scanner.ParseUint32Optional(attrClippingMesh, a.Value)
+			val, err := strconv.ParseUint(a.Value, 10, 32)
+			if err != nil {
+				d.Scanner.InvalidAttr(a.Name.Local, a.Value, false)
+			}
+			beamLattice.ClippingMeshID = uint32(val)
 		case attrRepresentationMesh:
-			beamLattice.RepresentationMeshID = d.Scanner.ParseUint32Optional(attrRepresentationMesh, a.Value)
+			val, err := strconv.ParseUint(a.Value, 10, 32)
+			if err != nil {
+				d.Scanner.InvalidAttr(a.Name.Local, a.Value, false)
+			}
+			beamLattice.RepresentationMeshID = uint32(val)
 		case attrCap:
 			var ok bool
 			beamLattice.CapMode, ok = newCapMode(a.Value)
@@ -108,15 +125,31 @@ func (d *beamDecoder) Attributes(attrs []xml.Attr) {
 		}
 		switch a.Name.Local {
 		case attrV1:
-			beam.NodeIndices[0] = d.Scanner.ParseUint32(attrV1, a.Value)
+			val, err := strconv.ParseUint(a.Value, 10, 32)
+			if err != nil {
+				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+			}
+			beam.NodeIndices[0] = uint32(val)
 			hasV1 = true
 		case attrV2:
-			beam.NodeIndices[1] = d.Scanner.ParseUint32(attrV2, a.Value)
+			val, err := strconv.ParseUint(a.Value, 10, 32)
+			if err != nil {
+				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+			}
+			beam.NodeIndices[1] = uint32(val)
 			hasV2 = true
 		case attrR1:
-			beam.Radius[0] = d.Scanner.ParseFloat32Optional(attrR1, a.Value)
+			val, err := strconv.ParseFloat(a.Value, 32)
+			if err != nil {
+				d.Scanner.InvalidAttr(a.Name.Local, a.Value, false)
+			}
+			beam.Radius[0] = float32(val)
 		case attrR2:
-			beam.Radius[1] = d.Scanner.ParseFloat32Optional(attrR2, a.Value)
+			val, err := strconv.ParseFloat(a.Value, 32)
+			if err != nil {
+				d.Scanner.InvalidAttr(a.Name.Local, a.Value, false)
+			}
+			beam.Radius[1] = float32(val)
 		case attrCap1:
 			var ok bool
 			beam.CapMode[0], ok = newCapMode(a.Value)
@@ -208,9 +241,12 @@ type beamRefDecoder struct {
 
 func (d *beamRefDecoder) Attributes(attrs []xml.Attr) {
 	for _, a := range attrs {
-		if a.Name.Space == "" && a.Name.Local == attrIndex {
-			index := d.Scanner.ParseUint32(attrIndex, a.Value)
-			d.beamSet.Refs = append(d.beamSet.Refs, uint32(index))
+		if a.Name.Space == "" && a.Name.Local == attrIndex {			
+			val, err := strconv.ParseUint(a.Value, 10, 32)
+			if err != nil {
+				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+			}
+			d.beamSet.Refs = append(d.beamSet.Refs, uint32(val))
 			return
 		}
 	}

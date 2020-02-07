@@ -2,6 +2,7 @@ package materials
 
 import (
 	"encoding/xml"
+	"strconv"
 	"strings"
 
 	"github.com/qmuntal/go3mf"
@@ -92,14 +93,18 @@ func (d *tex2DCoordDecoder) Attributes(attrs []xml.Attr) {
 		if a.Name.Space != "" {
 			continue
 		}
+		val, err := strconv.ParseFloat(a.Value, 32)
+		if err != nil {
+			d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+		}
 		switch a.Name.Local {
 		case attrU:
-			u = d.Scanner.ParseFloat32(attrU, a.Value)
+			u = float32(val)
 		case attrV:
-			v = d.Scanner.ParseFloat32(attrV, a.Value)
+			v = float32(val)
 		}
 	}
-	d.resource.Coords = append(d.resource.Coords, TextureCoord{float32(u), float32(v)})
+	d.resource.Coords = append(d.resource.Coords, TextureCoord{u, v})
 }
 
 type tex2DGroupDecoder struct {
@@ -132,8 +137,12 @@ func (d *tex2DGroupDecoder) Attributes(attrs []xml.Attr) {
 		switch a.Name.Local {
 		case attrID:
 			d.resource.ID = d.Scanner.ParseResourceID(a.Value)
-		case attrTexID:
-			d.resource.TextureID = d.Scanner.ParseUint32(attrTexID, a.Value)
+		case attrTexID:			
+			val, err := strconv.ParseUint(a.Value, 10, 32)
+			if err != nil {
+				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+			}
+			d.resource.TextureID = uint32(val)
 		}
 	}
 }
@@ -207,11 +216,18 @@ func (d *compositeMaterialsDecoder) Attributes(attrs []xml.Attr) {
 		case attrID:
 			d.resource.ID = d.Scanner.ParseResourceID(a.Value)
 		case attrMatID:
-			d.resource.MaterialID = d.Scanner.ParseUint32(attrMatID, a.Value)
+			val, err := strconv.ParseUint(a.Value, 10, 32)
+			if err != nil {
+				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+			}
+			d.resource.MaterialID =uint32(val)
 		case attrMatIndices:
 			for _, f := range strings.Fields(a.Value) {
-				val := d.Scanner.ParseUint32(attrValues, f)
-				d.resource.Indices = append(d.resource.Indices, val)
+				val, err := strconv.ParseUint(f, 10, 32)
+				if err != nil {
+					d.Scanner.InvalidAttr(a.Name.Local, f, true)
+				}
+				d.resource.Indices = append(d.resource.Indices, uint32(val))
 			}
 		}
 	}
@@ -233,8 +249,11 @@ func (d *compositeDecoder) Attributes(attrs []xml.Attr) {
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrValues {
 			for _, f := range strings.Fields(a.Value) {
-				val := d.Scanner.ParseFloat32(attrValues, f)
-				composite.Values = append(composite.Values, val)
+				val, err := strconv.ParseFloat(f, 32)
+				if err != nil {
+					d.Scanner.InvalidAttr(a.Name.Local, f, true)
+				}
+				composite.Values = append(composite.Values, float32(val))
 			}
 		}
 	}
@@ -281,8 +300,11 @@ func (d *multiPropertiesDecoder) Attributes(attrs []xml.Attr) {
 			}
 		case attrPIDs:
 			for _, f := range strings.Fields(a.Value) {
-				val := d.Scanner.ParseUint32(attrPIDs, f)
-				d.resource.Resources = append(d.resource.Resources, val)
+				val, err := strconv.ParseUint(f, 10, 32)
+				if err != nil {
+					d.Scanner.InvalidAttr(a.Name.Local, f, true)
+				}
+				d.resource.Resources = append(d.resource.Resources, uint32(val))
 			}
 		}
 	}
@@ -301,8 +323,11 @@ func (d *multiDecoder) Attributes(attrs []xml.Attr) {
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrPIndices {
 			for _, f := range strings.Fields(a.Value) {
-				val := d.Scanner.ParseUint32(attrPIndices, f)
-				multi.ResourceIndices = append(multi.ResourceIndices, val)
+				val, err := strconv.ParseUint(f, 10, 32)
+				if err != nil {
+					d.Scanner.InvalidAttr(a.Name.Local, f, true)
+				}
+				multi.ResourceIndices = append(multi.ResourceIndices, uint32(val))
 			}
 		}
 	}
