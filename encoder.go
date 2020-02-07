@@ -310,7 +310,7 @@ func (e *Encoder) writeBaseMaterial(x tokenEncoder, r *BaseMaterialsResource) {
 			Name: xml.Name{Local: attrBase},
 			Attr: []xml.Attr{
 				{Name: xml.Name{Local: attrName}, Value: ma.Name},
-				{Name: xml.Name{Local: attrDisplayColor}, Value: ma.ColorString()},
+				{Name: xml.Name{Local: attrDisplayColor}, Value: FormatRGBA(ma.Color)},
 			},
 		})
 	}

@@ -94,7 +94,7 @@ func (r *ReadCloser) Close() error {
 }
 
 type topLevelDecoder struct {
-	BaseDecoder
+	baseDecoder
 	model  *Model
 	isRoot bool
 }
@@ -279,9 +279,8 @@ func (d *Decoder) tokenReader(r io.Reader) XMLDecoder {
 	return d.x(r)
 }
 
-
 // UnmarshalModel fills a model with the data of a model file.
-// This function does not need a decoder initialized with a reader 
+// This function does not need a decoder initialized with a reader
 // so can be initialized as NewDecoder(nil, 0).
 func (d *Decoder) UnmarshalModel(data []byte, model *Model) error {
 	return d.processRootModel(context.Background(), &fakePackageFile{data: data}, model)

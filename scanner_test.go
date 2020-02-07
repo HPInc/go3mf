@@ -24,9 +24,9 @@ func TestParseToMatrixOptional(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, _ := ParseToMatrix(tt.args.s)
+			got, _ := ParseMatrix(tt.args.s)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Scanner.ParseToMatrix() = %v, want %v", got, tt.want)
+				t.Errorf("Scanner.ParseMatrix() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -61,6 +61,27 @@ func TestReadRGB(t *testing.T) {
 			}
 			if !reflect.DeepEqual(gotC, tt.wantC) {
 				t.Errorf("ParseRGB() = %v, want %v", gotC, tt.wantC)
+			}
+		})
+	}
+}
+
+func TestFormatRGBA(t *testing.T) {
+	tests := []struct {
+		name string
+		c    color.RGBA
+		want string
+	}{
+		{"base", color.RGBA{200, 250, 60, 80}, "#c8fa3c50"},
+		{"red", color.RGBA{255, 0, 0, 255}, "#ff0000ff"},
+		{"green", color.RGBA{0, 255, 0, 255}, "#00ff00ff"},
+		{"blue", color.RGBA{0, 0, 255, 255}, "#0000ffff"},
+		{"transparent", color.RGBA{0, 0, 0, 0}, "#00000000"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := FormatRGBA(tt.c); got != tt.want {
+				t.Errorf("FormatRGBA() = %v, want %v", got, tt.want)
 			}
 		})
 	}

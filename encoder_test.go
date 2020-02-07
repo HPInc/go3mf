@@ -2,10 +2,10 @@ package go3mf
 
 import (
 	"bytes"
-	"io"
-	"errors"
 	"encoding/xml"
+	"errors"
 	"image/color"
+	"io"
 	"testing"
 
 	"github.com/go-test/deep"
@@ -102,7 +102,7 @@ func TestEncoder_writeAttachements(t *testing.T) {
 		{"base", &Encoder{}, args{&Model{Attachments: []*Attachment{{Stream: new(bytes.Buffer)}}}, new(bytes.Buffer)}, false},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {			
+		t.Run(tt.name, func(t *testing.T) {
 			var argErr error
 			if tt.wantErr {
 				argErr = errors.New("")
@@ -113,7 +113,7 @@ func TestEncoder_writeAttachements(t *testing.T) {
 			tt.e.w = m
 			if err := tt.e.writeAttachements(tt.args.m); (err != nil) != tt.wantErr {
 				t.Errorf("Encoder.writeAttachements() error = %v, wantErr %v", err, tt.wantErr)
-			}			
+			}
 		})
 	}
 }

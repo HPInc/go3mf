@@ -19,31 +19,16 @@ type NodeDecoder interface {
 	SetScanner(*Scanner)
 }
 
-// BaseDecoder defines a base class for all decoders.
-// It is not mandatory for a Decoder to embed this struct,
-// but if embedded any struct automatically fulfills the NodeDecoder interface.
-// It is typically used when creating extension decoders.
-type BaseDecoder struct {
+type baseDecoder struct {
 	Scanner *Scanner
 }
 
-// Open do nothing.
-func (d *BaseDecoder) Open() { return }
-
-// Attributes do nothing.
-func (d *BaseDecoder) Attributes([]xml.Attr) { return }
-
-// Text do nothing.
-func (d *BaseDecoder) Text([]byte) { return }
-
-// Child returns nil.
-func (d *BaseDecoder) Child(xml.Name) NodeDecoder { return nil }
-
-// Close do nothing.
-func (d *BaseDecoder) Close() { return }
-
-// SetScanner sets the scanner.
-func (d *BaseDecoder) SetScanner(s *Scanner) { d.Scanner = s }
+func (d *baseDecoder) Open()                      {}
+func (d *baseDecoder) Attributes([]xml.Attr)      {}
+func (d *baseDecoder) Text([]byte)                {}
+func (d *baseDecoder) Child(xml.Name) NodeDecoder { return nil }
+func (d *baseDecoder) Close()                     {}
+func (d *baseDecoder) SetScanner(s *Scanner)      { d.Scanner = s }
 
 // A MissingPropertyError represents a missing required property error.
 // If MissingPropertyError is 0 means that the error took place while parsing the resource property before the ID appeared.
@@ -132,14 +117,8 @@ func (s *Scanner) Namespace(local string) (string, bool) {
 
 // AddResource adds a new resource to the resource cache.
 func (p *Scanner) AddResource(r Resource) {
-	p.Resources = append(p.Resources, r)
-}
-
-func (p *Scanner) strictError(err error) {
-	p.Warnings = append(p.Warnings, err)
-	if p.Strict {
-		p.Err = err
-	}
+	p.Resources = append(p.Resources, r)	
+	p.closeResource()
 }
 
 // GenericError adds the error to the warnings.
@@ -152,14 +131,14 @@ func (p *Scanner) GenericError(strict bool, msg string) {
 	}
 }
 
-// InvalidRequiredAttr adds the error to the warnings.
+// InvalidAttr adds the error to the warnings.
 // Returns false if scanning cannot continue.
-func (p *Scanner) InvalidRequiredAttr(attr string, val string) {
+func (p *Scanner) InvalidAttr(attr string, val string) {
 	p.strictError(ParsePropertyError{ResourceID: p.ResourceID, Element: p.Element, Name: attr, Value: val, ModelPath: p.ModelPath, Type: PropertyRequired})
 }
 
-// InvalidOptionalAttr adds the error to the warnings.
-func (p *Scanner) InvalidOptionalAttr(attr string, val string) {
+// InvalidAttrOptional adds the error to the warnings.
+func (p *Scanner) InvalidAttrOptional(attr string, val string) {
 	p.Warnings = append(p.Warnings, ParsePropertyError{ResourceID: p.ResourceID, Element: p.Element, Name: attr, Value: val, ModelPath: p.ModelPath, Type: PropertyOptional})
 }
 
@@ -173,29 +152,36 @@ func (p *Scanner) MissingAttr(attr string) {
 func (p *Scanner) ParseResourceID(s string) uint32 {
 	n, err := strconv.ParseUint(s, 10, 32)
 	if err != nil {
-		p.InvalidRequiredAttr("id", s)
+		p.InvalidAttr(attrID, s)
 		return 0
 	}
 	p.ResourceID = uint32(n)
 	return p.ResourceID
 }
 
-// CloseResource closes the current resource.
+func (p *Scanner) strictError(err error) {
+	p.Warnings = append(p.Warnings, err)
+	if p.Strict {
+		p.Err = err
+	}
+}
+
+// closeResource closes the current resource.
 // If there is no resource to close MissingPropertyError is added to the warnings.
-func (p *Scanner) CloseResource() {
+func (p *Scanner) closeResource() {
 	if p.ResourceID == 0 {
-		p.MissingAttr("id")
+		p.MissingAttr(attrID)
 		return
 	}
 	p.ResourceID = 0
 }
 
-// ParseUint32Required parses s as a uint32.
+// ParseUint32 parses s as a uint32.
 // If it cannot be parsed a ParsePropertyError is added to the warnings.
-func (p *Scanner) ParseUint32Required(attr string, s string) uint32 {
+func (p *Scanner) ParseUint32(attr string, s string) uint32 {
 	n, err := strconv.ParseUint(s, 10, 32)
 	if err != nil {
-		p.InvalidRequiredAttr(attr, s)
+		p.InvalidAttr(attr, s)
 		return 0
 	}
 	return uint32(n)
@@ -206,17 +192,17 @@ func (p *Scanner) ParseUint32Required(attr string, s string) uint32 {
 func (p *Scanner) ParseUint32Optional(attr string, s string) uint32 {
 	n, err := strconv.ParseUint(s, 10, 32)
 	if err != nil {
-		p.InvalidOptionalAttr(attr, s)
+		p.InvalidAttrOptional(attr, s)
 	}
 	return uint32(n)
 }
 
-// ParseFloat32Required parses s as a float32.
+// ParseFloat32 parses s as a float32.
 // If it cannot be parsed a ParsePropertyError is added to the warnings.
-func (p *Scanner) ParseFloat32Required(attr string, s string) float32 {
+func (p *Scanner) ParseFloat32(attr string, s string) float32 {
 	n, err := strconv.ParseFloat(s, 32)
 	if err != nil {
-		p.InvalidRequiredAttr(attr, s)
+		p.InvalidAttr(attr, s)
 		return 0
 	}
 	return float32(n)
@@ -227,7 +213,7 @@ func (p *Scanner) ParseFloat32Required(attr string, s string) float32 {
 func (p *Scanner) ParseFloat32Optional(attr string, s string) float32 {
 	n, err := strconv.ParseFloat(s, 32)
 	if err != nil {
-		p.InvalidOptionalAttr(attr, s)
+		p.InvalidAttrOptional(attr, s)
 	}
 	return float32(n)
 }
@@ -251,8 +237,8 @@ func FormatMatrix(t Matrix) string {
 	return strings.Join(sl, " ")
 }
 
-// ParseToMatrix parses s as a Matrix.
-func ParseToMatrix(s string) (Matrix, bool) {
+// ParseMatrix parses s as a Matrix.
+func ParseMatrix(s string) (Matrix, bool) {
 	values := strings.Fields(s)
 	if len(values) != 12 {
 		return Matrix{}, false
@@ -307,4 +293,9 @@ func ParseRGB(s string) (c color.RGBA, err error) {
 		err = errInvalidFormat
 	}
 	return
+}
+
+// FormatRGBA returns the color as a hex string with the format #rrggbbaa.
+func FormatRGBA(c color.RGBA) string {
+	return fmt.Sprintf("#%02x%02x%02x%02x", c.R, c.G, c.B, c.A)
 }
