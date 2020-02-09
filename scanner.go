@@ -117,7 +117,7 @@ func (s *Scanner) Namespace(local string) (string, bool) {
 
 // AddResource adds a new resource to the resource cache.
 func (p *Scanner) AddResource(r Resource) {
-	p.Resources = append(p.Resources, r)	
+	p.Resources = append(p.Resources, r)
 	p.closeResource()
 }
 
