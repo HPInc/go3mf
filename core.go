@@ -2,7 +2,6 @@ package go3mf
 
 import (
 	"encoding/xml"
-	"fmt"
 	"image/color"
 	"io"
 	"sort"
@@ -165,11 +164,6 @@ type BaseMaterial struct {
 	Color color.RGBA
 }
 
-// ColorString returns the color as a hex string with the format #rrggbbaa.
-func (m *BaseMaterial) ColorString() string {
-	return fmt.Sprintf("#%02x%02x%02x%02x", m.Color.R, m.Color.G, m.Color.B, m.Color.A)
-}
-
 // BaseMaterialsResource defines a slice of BaseMaterial.
 type BaseMaterialsResource struct {
 	ID        uint32
@@ -228,11 +222,6 @@ func NewComponentsResource() *ObjectResource {
 // Identify returns the unique ID of the resource.
 func (o *ObjectResource) Identify() (string, uint32) {
 	return o.ModelPath, o.ID
-}
-
-// Type returns the type of the object.
-func (o *ObjectResource) Type() ObjectType {
-	return o.ObjectType
 }
 
 // IsValid checks if the mesh resource are valid.

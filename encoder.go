@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"io"
 	"strconv"
-
-	"github.com/qmuntal/opc"
 )
 
 type tokenEncoder interface {
@@ -28,7 +26,7 @@ type Encoder struct {
 
 func NewEncoder(w io.Writer) *Encoder {
 	return &Encoder{
-		w: &opcWriter{opc.NewWriter(w)},
+		w: newOpcWriter(w),
 	}
 }
 
@@ -310,7 +308,7 @@ func (e *Encoder) writeBaseMaterial(x tokenEncoder, r *BaseMaterialsResource) {
 			Name: xml.Name{Local: attrBase},
 			Attr: []xml.Attr{
 				{Name: xml.Name{Local: attrName}, Value: ma.Name},
-				{Name: xml.Name{Local: attrDisplayColor}, Value: ma.ColorString()},
+				{Name: xml.Name{Local: attrDisplayColor}, Value: FormatRGBA(ma.Color)},
 			},
 		})
 	}

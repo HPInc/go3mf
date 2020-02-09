@@ -3,6 +3,7 @@ package materials
 import (
 	"encoding/xml"
 	"image/color"
+	"reflect"
 	"testing"
 
 	"github.com/go-test/deep"
@@ -122,8 +123,10 @@ func TestDecode_warns(t *testing.T) {
 		go3mf.MissingPropertyError{ResourceID: 0, Element: "texture2d", ModelPath: "/3D/3dmodel.model", Name: "path"},
 		go3mf.MissingPropertyError{ResourceID: 0, Element: "texture2d", ModelPath: "/3D/3dmodel.model", Name: "id"},
 		go3mf.ParsePropertyError{ResourceID: 1, Element: "color", Name: "color", Value: "#FFFFF", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
+		go3mf.ParsePropertyError{ResourceID: 2, Element: "texture2dgroup", Name: "texid", Value: "a", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
 		go3mf.ParsePropertyError{ResourceID: 2, Element: "tex2coord", Name: "u", Value: "b", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
 		go3mf.ParsePropertyError{ResourceID: 2, Element: "tex2coord", Name: "v", Value: "c", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
+		go3mf.ParsePropertyError{ResourceID: 4, Element: "compositematerials", Name: "matid", Value: "a", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
 		go3mf.MissingPropertyError{ResourceID: 4, Element: "compositematerials", ModelPath: "/3D/3dmodel.model", Name: "matid"},
 		go3mf.MissingPropertyError{ResourceID: 4, Element: "compositematerials", ModelPath: "/3D/3dmodel.model", Name: "matindices"},
 		go3mf.MissingPropertyError{ResourceID: 4, Element: "composite", ModelPath: "/3D/3dmodel.model", Name: "values"},
@@ -142,10 +145,10 @@ func TestDecode_warns(t *testing.T) {
 			<m:colorgroup id="1">
 				<m:color color="#FFFFF" /> <m:color color="#000000" /> <m:color color="#1AB567" /> <m:color color="#DF045A" />
 			</m:colorgroup>
-			<m:texture2dgroup qm:mq="other" id="2" texid="6">
+			<m:texture2dgroup qm:mq="other" id="2" texid="a">
 				<m:tex2coord qm:mq="other" u="b" v="0.5" /> <m:tex2coord u="0.3" v="c" />	<m:tex2coord u="0.5" v="0.8" />	<m:tex2coord u="0.5" v="0.5" />
 			</m:texture2dgroup>
-			<m:compositematerials id="4" qm:mq="other">
+			<m:compositematerials id="4" matid="a" qm:mq="other">
 				<m:composite/>
 				<m:composite values="a 0.8"/>
 			</m:compositematerials>
@@ -219,6 +222,27 @@ func Test_fileFilter(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := fileFilter(tt.args.relType, true); got != tt.want {
 				t.Errorf("fileFilter() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_baseDecoder_Child(t *testing.T) {
+	type args struct {
+		in0 xml.Name
+	}
+	tests := []struct {
+		name string
+		d    *baseDecoder
+		args args
+		want go3mf.NodeDecoder
+	}{
+		{"base", new(baseDecoder), args{xml.Name{}}, nil},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.d.Child(tt.args.in0); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("baseDecoder.Child() = %v, want %v", got, tt.want)
 			}
 		})
 	}

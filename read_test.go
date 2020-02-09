@@ -510,14 +510,22 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 		MissingPropertyError{ResourceID: 0, Element: "basematerials", ModelPath: "/3D/3dmodel.model", Name: "id"},
 		ParsePropertyError{ResourceID: 0, Element: "basematerials", Name: "id", Value: "a", ModelPath: "/3D/3dmodel.model", Type: PropertyRequired},
 		MissingPropertyError{ResourceID: 0, Element: "basematerials", ModelPath: "/3D/3dmodel.model", Name: "id"},
+		ParsePropertyError{ResourceID: 8, Element: "vertex", Name: "x", ModelPath: "/3D/3dmodel.model", Value: "a", Type: PropertyRequired},
 		GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3D/3dmodel.model", Message: "duplicated triangle indices"},
 		GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3D/3dmodel.model", Message: "triangle indices are out of range"},
+		ParsePropertyError{ResourceID: 8, Element: "triangle", ModelPath: "/3D/3dmodel.model", Name: "v1", Value: "a", Type: PropertyRequired},
+		ParsePropertyError{ResourceID: 22, Element: "object", ModelPath: "/3D/3dmodel.model", Name: "pid", Value: "a", Type: PropertyOptional},
+		ParsePropertyError{ResourceID: 22, Element: "object", ModelPath: "/3D/3dmodel.model", Name: "pindex", Value: "a", Type: PropertyOptional},
 		ParsePropertyError{ResourceID: 22, Element: "object", ModelPath: "/3D/3dmodel.model", Name: "type", Value: "invalid", Type: PropertyOptional},
 		GenericError{ResourceID: 20, Element: "object", ModelPath: "/3D/3dmodel.model", Message: "default PID is not supported for component objects"},
 		ParsePropertyError{ResourceID: 20, Element: "component", ModelPath: "/3D/3dmodel.model", Name: "transform", Value: "0 0 0 1 0 0 0 2 -66.4 -87.1 8.8", Type: PropertyOptional},
+		ParsePropertyError{ResourceID: 20, Element: "component", ModelPath: "/3D/3dmodel.model", Name: "objectid", Value: "a", Type: PropertyRequired},
+		MissingPropertyError{ResourceID: 20, Element: "component", Name: "objectid", ModelPath: "/3D/3dmodel.model"},
 		//GenericError{ResourceID: 20, Element: "component", ModelPath: "/3D/3dmodel.model", Message: "non-existent referenced object"},
 		//GenericError{ResourceID: 20, Element: "component", ModelPath: "/3D/3dmodel.model", Message: "non-object referenced resource"},
 		ParsePropertyError{ResourceID: 20, Element: "item", Name: "transform", Value: "1 0 0 0 2 0 0 0 3 -66.4 -87.1", ModelPath: "/3D/3dmodel.model", Type: PropertyOptional},
+		ParsePropertyError{Element: "item", Name: "objectid", Value: "a", ModelPath: "/3D/3dmodel.model", Type: PropertyRequired},
+		MissingPropertyError{Element: "item", Name: "objectid", ModelPath: "/3D/3dmodel.model"},
 		//GenericError{ResourceID: 20, Element: "item", ModelPath: "/3D/3dmodel.model", Message: "referenced object cannot be have OTHER type"},
 		//GenericError{ResourceID: 8, Element: "item", ModelPath: "/3D/3dmodel.model", Message: "non-existent referenced object"},
 		//GenericError{ResourceID: 5, Element: "item", ModelPath: "/3D/3dmodel.model", Message: "non-object referenced resource"},
@@ -547,6 +555,7 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 						<vertex x="100.00000" y="0" z="100.00000" />
 						<vertex x="100.00000" y="100.00000" z="100.00000" />
 						<vertex x="0" y="100.00000" z="100.00000" />
+						<vertex x="a" y="100.00000" z="100.00000" />
 					</vertices>
 					<triangles>
 						<triangle v1="2" v2="2" v3="1" />
@@ -562,15 +571,15 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 						<triangle v1="2" v2="3" v3="7" />
 						<triangle v1="7" v2="6" v3="2" />
 						<triangle v1="3" v2="0" v3="4" />
-						<triangle v1="4" v2="7" v3="3" />
+						<triangle v1="a" v2="7" v3="3" />
 					</triangles>
 				</mesh>
 			</object>
-			<object id="22" type="invalid" />
+			<object id="22" pid="a" pindex="a" type="invalid" />
 			<object id="20" pid="3" type="other">
 				<components>
 					<component objectid="8" transform="0 0 0 1 0 0 0 2 -66.4 -87.1 8.8"/>
-					<component objectid="5"/>
+					<component objectid="a"/>
 				</components>
 			</object>
 		</resources>
@@ -578,6 +587,7 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 			<item partnumber="bob" objectid="20" transform="1 0 0 0 2 0 0 0 3 -66.4 -87.1" />
 			<item objectid="8"/>
 			<item objectid="5"/>
+			<item objectid="a"/>
 		</build>
 		<metadata name="Application">go3mf app</metadata>
 		<metadata name="qm:CustomMetadata1" type="xs:string" preserve="1">CE8A91FB-C44E-4F00-B634-BAA411465F6A</metadata>

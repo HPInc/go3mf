@@ -21,7 +21,7 @@ func decodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
 	case *go3mf.Build:
 		if attr.Name.Local == attrProdUUID {
 			if err := validateUUID(attr.Value); err != nil {
-				s.InvalidRequiredAttr(attr.Name.Local, attr.Value)
+				s.InvalidAttr(attr.Name.Local, attr.Value, true)
 			}
 			SetBuildUUID(t, UUID(attr.Value))
 		}
@@ -29,7 +29,7 @@ func decodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
 		switch attr.Name.Local {
 		case attrProdUUID:
 			if err := validateUUID(attr.Value); err != nil {
-				s.InvalidRequiredAttr(attr.Name.Local, attr.Value)
+				s.InvalidAttr(attr.Name.Local, attr.Value, true)
 			}
 			SetItemdUUID(t, UUID(attr.Value))
 		case attrPath:
@@ -38,7 +38,7 @@ func decodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
 	case *go3mf.ObjectResource:
 		if attr.Name.Local == attrProdUUID {
 			if err := validateUUID(attr.Value); err != nil {
-				s.InvalidRequiredAttr(attr.Name.Local, attr.Value)
+				s.InvalidAttr(attr.Name.Local, attr.Value, true)
 			}
 			SetObjectUUID(t, UUID(attr.Value))
 		}
@@ -46,7 +46,7 @@ func decodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
 		switch attr.Name.Local {
 		case attrProdUUID:
 			if err := validateUUID(attr.Value); err != nil {
-				s.InvalidRequiredAttr(attr.Name.Local, attr.Value)
+				s.InvalidAttr(attr.Name.Local, attr.Value, true)
 			}
 			SetComponentUUID(t, UUID(attr.Value))
 		case attrPath:

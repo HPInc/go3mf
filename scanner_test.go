@@ -1,6 +1,8 @@
 package go3mf
 
 import (
+	"encoding/xml"
+	"errors"
 	"image/color"
 	"reflect"
 	"testing"
@@ -24,9 +26,9 @@ func TestParseToMatrixOptional(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, _ := ParseToMatrix(tt.args.s)
+			got, _ := ParseMatrix(tt.args.s)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Scanner.ParseToMatrix() = %v, want %v", got, tt.want)
+				t.Errorf("Scanner.ParseMatrix() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -61,6 +63,73 @@ func TestReadRGB(t *testing.T) {
 			}
 			if !reflect.DeepEqual(gotC, tt.wantC) {
 				t.Errorf("ParseRGB() = %v, want %v", gotC, tt.wantC)
+			}
+		})
+	}
+}
+
+func TestFormatRGBA(t *testing.T) {
+	tests := []struct {
+		name string
+		c    color.RGBA
+		want string
+	}{
+		{"base", color.RGBA{200, 250, 60, 80}, "#c8fa3c50"},
+		{"red", color.RGBA{255, 0, 0, 255}, "#ff0000ff"},
+		{"green", color.RGBA{0, 255, 0, 255}, "#00ff00ff"},
+		{"blue", color.RGBA{0, 0, 255, 255}, "#0000ffff"},
+		{"transparent", color.RGBA{0, 0, 0, 0}, "#00000000"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := FormatRGBA(tt.c); got != tt.want {
+				t.Errorf("FormatRGBA() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestScanner_strictError(t *testing.T) {
+	type args struct {
+		err error
+	}
+	tests := []struct {
+		name    string
+		p       *Scanner
+		args    args
+		wantErr bool
+	}{
+		{"empty", new(Scanner), args{errors.New("fake_err")}, false},
+		{"lax", &Scanner{Strict: false}, args{errors.New("fake_err")}, false},
+		{"strict", &Scanner{Strict: true}, args{errors.New("fake_err")}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.p.strictError(tt.args.err)
+			if (tt.p.Err != nil) != tt.wantErr {
+				t.Errorf("Scanner.strictError() error = %v, wantErr %v", tt.p.Err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func Test_baseDecoder_Child(t *testing.T) {
+	type args struct {
+		in0 xml.Name
+	}
+	tests := []struct {
+		name string
+		d    *baseDecoder
+		args args
+		want NodeDecoder
+	}{
+		{"base", new(baseDecoder), args{xml.Name{}}, nil},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.d.Child(tt.args.in0); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("baseDecoder.Child() = %v, want %v", got, tt.want)
 			}
 		})
 	}
