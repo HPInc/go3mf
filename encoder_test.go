@@ -6,6 +6,7 @@ import (
 	"errors"
 	"image/color"
 	"io"
+	"reflect"
 	"testing"
 
 	"github.com/go-test/deep"
@@ -113,6 +114,22 @@ func TestEncoder_writeAttachements(t *testing.T) {
 			tt.e.w = m
 			if err := tt.e.writeAttachements(tt.args.m); (err != nil) != tt.wantErr {
 				t.Errorf("Encoder.writeAttachements() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestNewEncoder(t *testing.T) {
+	tests := []struct {
+		name string
+		want *Encoder
+	}{
+		{"base", &Encoder{w: newOpcWriter(nil)}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewEncoder(nil); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewEncoder() = %+v, want %+v", got, tt.want)
 			}
 		})
 	}

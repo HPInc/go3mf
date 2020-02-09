@@ -10,6 +10,10 @@ type opcWriter struct {
 	w *opc.Writer
 }
 
+func newOpcWriter(w io.Writer) *opcWriter {
+	return &opcWriter{opc.NewWriter(w)}
+}
+
 func (o *opcWriter) Create(name, contentType string) (io.Writer, error) {
 	return o.w.Create(name, contentType)
 }

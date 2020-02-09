@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"io"
 	"strconv"
-
-	"github.com/qmuntal/opc"
 )
 
 type tokenEncoder interface {
@@ -28,7 +26,7 @@ type Encoder struct {
 
 func NewEncoder(w io.Writer) *Encoder {
 	return &Encoder{
-		w: &opcWriter{opc.NewWriter(w)},
+		w: newOpcWriter(w),
 	}
 }
 

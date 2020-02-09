@@ -171,3 +171,27 @@ func Test_opcFile_ContentType(t *testing.T) {
 		})
 	}
 }
+
+func Test_opcWriter_AddRelationship(t *testing.T) {
+	type args struct {
+		r *relationship
+	}
+	tests := []struct {
+		name string
+		o    *opcWriter
+		args args
+		want []*opc.Relationship
+	}{
+		{"base", newOpcWriter(nil), args{&relationship{ID: "id_1", TargetURI: "fake_uri", Type: "fake_type"}}, []*opc.Relationship{
+			{ID: "id_1", TargetURI: "fake_uri", Type: "fake_type"},
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.o.AddRelationship(tt.args.r)
+			if !reflect.DeepEqual(tt.o.w.Relationships, tt.want) {
+				t.Errorf("opcWriter.AddRelationship() = %v, want %v", tt.o.w.Relationships, tt.want)
+			}
+		})
+	}
+}
