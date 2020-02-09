@@ -241,7 +241,7 @@ type beamRefDecoder struct {
 
 func (d *beamRefDecoder) Attributes(attrs []xml.Attr) {
 	for _, a := range attrs {
-		if a.Name.Space == "" && a.Name.Local == attrIndex {			
+		if a.Name.Space == "" && a.Name.Local == attrIndex {
 			val, err := strconv.ParseUint(a.Value, 10, 32)
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)

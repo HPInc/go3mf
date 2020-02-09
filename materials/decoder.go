@@ -137,7 +137,7 @@ func (d *tex2DGroupDecoder) Attributes(attrs []xml.Attr) {
 		switch a.Name.Local {
 		case attrID:
 			d.resource.ID = d.Scanner.ParseResourceID(a.Value)
-		case attrTexID:			
+		case attrTexID:
 			val, err := strconv.ParseUint(a.Value, 10, 32)
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
@@ -220,7 +220,7 @@ func (d *compositeMaterialsDecoder) Attributes(attrs []xml.Attr) {
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
 			}
-			d.resource.MaterialID =uint32(val)
+			d.resource.MaterialID = uint32(val)
 		case attrMatIndices:
 			for _, f := range strings.Fields(a.Value) {
 				val, err := strconv.ParseUint(f, 10, 32)
