@@ -18,6 +18,8 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+const fakeExtenstion = "http://dummy.com/fake_ext"
+
 type modelBuilder struct {
 	str      strings.Builder
 	hasModel bool
@@ -180,16 +182,16 @@ func TestDecoder_processOPC(t *testing.T) {
 		{"noRoot", &Decoder{p: newMockPackage(nil)}, &Model{}, nil, true},
 		{"noRels", &Decoder{p: newMockPackage(newMockFile("/a.model", nil, nil, false))}, &Model{Path: "/a.model"}, nil, false},
 		{"withThumb", &Decoder{
-			p: newMockPackage(newMockFile("/a.model", []*relationship{{Type: relTypeThumbnail, TargetURI: "/a.png"}}, newMockFile("/a.png", nil, nil, false), false)),
+			p: newMockPackage(newMockFile("/a.model", []*relationship{{Type: RelTypeThumbnail, TargetURI: "/a.png"}}, newMockFile("/a.png", nil, nil, false), false)),
 		}, &Model{
 			Path:        "/a.model",
-			Attachments: []*Attachment{{RelationshipType: relTypeThumbnail, Path: "/a.png", Stream: new(bytes.Buffer)}},
+			Attachments: []*Attachment{{RelationshipType: RelTypeThumbnail, Path: "/a.png", Stream: new(bytes.Buffer)}},
 		}, nil, false},
 		{"withPrintTicket", &Decoder{
-			p: newMockPackage(newMockFile("/a.model", []*relationship{{Type: relTypePrintTicket, TargetURI: "/pc.png"}}, newMockFile("/pc.png", nil, nil, false), false)),
+			p: newMockPackage(newMockFile("/a.model", []*relationship{{Type: RelTypePrintTicket, TargetURI: "/pc.png"}}, newMockFile("/pc.png", nil, nil, false), false)),
 		}, &Model{
 			Path:        "/a.model",
-			Attachments: []*Attachment{{RelationshipType: relTypePrintTicket, Path: "/pc.png", Stream: new(bytes.Buffer)}},
+			Attachments: []*Attachment{{RelationshipType: RelTypePrintTicket, Path: "/pc.png", Stream: new(bytes.Buffer)}},
 		}, nil, false},
 		{"withExtRel", &Decoder{
 			p: newMockPackage(newMockFile("/a.model", []*relationship{{Type: extType, TargetURI: "/other.png"}}, newMockFile("/other.png", nil, nil, false), false)),

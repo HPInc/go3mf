@@ -12,6 +12,8 @@ import (
 	"sync"
 )
 
+var checkEveryBytes = int64(4 * 1024 * 1024)
+
 type extensionDecoderWrapper struct {
 	newNodeDecoder  func(interface{}, string) NodeDecoder
 	decodeAttribute func(*Scanner, interface{}, xml.Attr)
@@ -379,7 +381,7 @@ func (d *Decoder) processOPC(model *Model) (packageFile, error) {
 func (d *Decoder) extractCoreAttachments(file packageFile, model *Model, isRoot bool) {
 	for _, rel := range file.Relationships() {
 		relType := rel.Type
-		preserve := relType == relTypePrintTicket || relType == relTypeThumbnail
+		preserve := relType == RelTypePrintTicket || relType == RelTypeThumbnail
 		if !preserve {
 			for _, ext := range d.extensionDecoder {
 				if ext.FileFilter(relType, isRoot) {
