@@ -80,7 +80,7 @@ func (d *sliceStackDecoder) Attributes(attrs []xml.Attr) {
 		case attrZBottom:
 			val, err := strconv.ParseFloat(a.Value, 32)
 			if err != nil {
-				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+				d.Scanner.InvalidAttr(a.Name.Local, a.Value, false)
 			}
 			d.resource.Stack.BottomZ = float32(val)
 		}
@@ -158,7 +158,7 @@ func (d *sliceDecoder) Attributes(attrs []xml.Attr) {
 	var hasTopZ bool
 	for _, a := range attrs {
 		if a.Name.Local == attrZTop {
-			hasTopZ = true			
+			hasTopZ = true
 			val, err := strconv.ParseFloat(a.Value, 32)
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
@@ -264,7 +264,7 @@ type polygonSegmentDecoder struct {
 func (d *polygonSegmentDecoder) Attributes(attrs []xml.Attr) {
 	var v2 uint32
 	for _, a := range attrs {
-		if a.Name.Local == attrV2 {			
+		if a.Name.Local == attrV2 {
 			val, err := strconv.ParseUint(a.Value, 10, 32)
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
