@@ -177,21 +177,8 @@ func (p *Scanner) closeResource() {
 
 // FormatMatrix converts a matrix to a string.
 func FormatMatrix(t Matrix) string {
-	sl := []string{
-		strconv.FormatFloat(float64(t[0]), 'f', 3, 32),
-		strconv.FormatFloat(float64(t[1]), 'f', 3, 32),
-		strconv.FormatFloat(float64(t[2]), 'f', 3, 32),
-		strconv.FormatFloat(float64(t[4]), 'f', 3, 32),
-		strconv.FormatFloat(float64(t[5]), 'f', 3, 32),
-		strconv.FormatFloat(float64(t[6]), 'f', 3, 32),
-		strconv.FormatFloat(float64(t[8]), 'f', 3, 32),
-		strconv.FormatFloat(float64(t[9]), 'f', 3, 32),
-		strconv.FormatFloat(float64(t[10]), 'f', 3, 32),
-		strconv.FormatFloat(float64(t[12]), 'f', 3, 32),
-		strconv.FormatFloat(float64(t[13]), 'f', 3, 32),
-		strconv.FormatFloat(float64(t[14]), 'f', 3, 32),
-	}
-	return strings.Join(sl, " ")
+	return fmt.Sprintf("%.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f",
+		t[0], t[1], t[2], t[4], t[5], t[6], t[8], t[9], t[10], t[12], t[13], t[14])
 }
 
 // ParseMatrix parses s as a Matrix.

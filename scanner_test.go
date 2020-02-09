@@ -134,3 +134,26 @@ func Test_baseDecoder_Child(t *testing.T) {
 		})
 	}
 }
+
+func TestFormatMatrix(t *testing.T) {
+	type args struct {
+		t Matrix
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"base", args{Matrix{
+			1.12345, 2.12345, 3.12345, 4.12345, 5.12345, 6.12345, 7.12345, 8.12345,
+			9.12345, 10.12345, 11.12345, 12.12345, 13.12345, 14.12345, 15.12345, 16.12345,
+		}}, "1.123 2.123 3.123 5.123 6.123 7.123 9.123 10.123 11.123 13.123 14.123 15.123"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := FormatMatrix(tt.args.t); got != tt.want {
+				t.Errorf("FormatMatrix() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
