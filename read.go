@@ -197,8 +197,9 @@ type Decoder struct {
 // NewDecoder returns a new Decoder reading a 3mf file from r.
 func NewDecoder(r io.ReaderAt, size int64) *Decoder {
 	return &Decoder{
-		p:      &opcReader{ra: r, size: size},
-		Strict: true,
+		p:                &opcReader{ra: r, size: size},
+		Strict:           true,
+		extensionDecoder: make(map[string]*extensionDecoderWrapper),
 	}
 }
 
@@ -223,9 +224,6 @@ func (d *Decoder) RegisterNodeDecoderExtension(key string, f func(parentNode int
 	if e, ok := d.extensionDecoder[key]; ok {
 		e.newNodeDecoder = f
 	} else {
-		if d.extensionDecoder == nil {
-			d.extensionDecoder = make(map[string]*extensionDecoderWrapper)
-		}
 		d.extensionDecoder[key] = &extensionDecoderWrapper{newNodeDecoder: f}
 	}
 }
@@ -236,9 +234,6 @@ func (d *Decoder) RegisterDecodeAttributeExtension(key string, f func(s *Scanner
 	if e, ok := d.extensionDecoder[key]; ok {
 		e.decodeAttribute = f
 	} else {
-		if d.extensionDecoder == nil {
-			d.extensionDecoder = make(map[string]*extensionDecoderWrapper)
-		}
 		d.extensionDecoder[key] = &extensionDecoderWrapper{decodeAttribute: f}
 	}
 }
@@ -252,12 +247,6 @@ func (d *Decoder) RegisterFileFilterExtension(key string, f func(relType string,
 	if e, ok := d.extensionDecoder[key]; ok {
 		e.fileFilter = f
 	} else {
-		if d.extensionDecoder == nil {
-			d.extensionDecoder = make(map[string]*extensionDecoderWrapper)
-		}
-		if d.extensionDecoder == nil {
-			d.extensionDecoder = make(map[string]*extensionDecoderWrapper)
-		}
 		d.extensionDecoder[key] = &extensionDecoderWrapper{fileFilter: f}
 	}
 }
