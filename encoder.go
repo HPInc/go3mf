@@ -8,16 +8,20 @@ import (
 	"strconv"
 )
 
-type tokenEncoder interface {
-	EncodeToken(t xml.Token)
-	Flush() error
-	SetAutoClose(bool)
-}
-
 type packageWriter interface {
 	Create(name, contentType string) (io.Writer, error)
 	AddRelationship(*relationship)
 	Close() error
+}
+
+// Marshaler is the interface implemented by objects
+// that can marshal themselves into valid XML elements.
+//
+// Using start as the element tag is not required,
+// but doing so will enable Unmarshal to match the XML elements
+// to the correct struct field if using EncodeElement.
+type Marshaler interface {
+	Marshal3MF(x *XMLEncoder, start xml.StartElement) error
 }
 
 type Encoder struct {
@@ -43,7 +47,7 @@ func (e *Encoder) Encode(ctx context.Context, m *Model) error {
 	if err != nil {
 		return err
 	}
-	if err = e.writeModel(newXmlEncoder(w), m); err != nil {
+	if err = e.writeModel(newXMLEncoder(w), m); err != nil {
 		return err
 	}
 	e.w.AddRelationship(&relationship{
@@ -74,7 +78,7 @@ func (e *Encoder) writeAttachements(m *Model) error {
 	return nil
 }
 
-func (e *Encoder) writeModel(x tokenEncoder, m *Model) error {
+func (e *Encoder) writeModel(x *XMLEncoder, m *Model) error {
 	attrs := []xml.Attr{
 		{Name: xml.Name{Local: attrXmlns}, Value: ExtensionName},
 		{Name: xml.Name{Local: attrUnit}, Value: m.Units.String()},
@@ -101,14 +105,14 @@ func (e *Encoder) writeModel(x tokenEncoder, m *Model) error {
 	return x.Flush()
 }
 
-func (e *Encoder) writeMetadataGroup(x tokenEncoder, m []Metadata) {
+func (e *Encoder) writeMetadataGroup(x *XMLEncoder, m []Metadata) {
 	xm := xml.StartElement{Name: xml.Name{Local: attrMetadataGroup}}
 	x.EncodeToken(xm)
 	e.writeMetadata(x, m)
 	x.EncodeToken(xm.End())
 }
 
-func (e *Encoder) writeBuild(x tokenEncoder, m *Model) {
+func (e *Encoder) writeBuild(x *XMLEncoder, m *Model) {
 	xb := xml.StartElement{Name: xml.Name{Local: attrBuild}}
 	x.EncodeToken(xb)
 	x.SetAutoClose(true)
@@ -138,17 +142,22 @@ func (e *Encoder) writeBuild(x tokenEncoder, m *Model) {
 	x.EncodeToken(xb.End())
 }
 
-func (e *Encoder) writeResources(x tokenEncoder, m *Model) error {
+func (e *Encoder) writeResources(x *XMLEncoder, m *Model) error {
 	xt := xml.StartElement{Name: xml.Name{Local: attrResources}}
 	x.EncodeToken(xt)
 	for _, r := range m.Resources {
+		var err error
 		switch r := r.(type) {
 		case *BaseMaterialsResource:
 			e.writeBaseMaterial(x, r)
 		case *ObjectResource:
 			e.writeObject(x, r)
+		case Marshaler:
+			err = r.Marshal3MF(x, xt)
 		}
-
+		if err != nil {
+			return err
+		}
 		if err := x.Flush(); err != nil {
 			return err
 		}
@@ -157,7 +166,7 @@ func (e *Encoder) writeResources(x tokenEncoder, m *Model) error {
 	return nil
 }
 
-func (e *Encoder) writeMetadata(x tokenEncoder, metadata []Metadata) {
+func (e *Encoder) writeMetadata(x *XMLEncoder, metadata []Metadata) {
 	for _, md := range metadata {
 		xn := xml.StartElement{Name: xml.Name{Local: attrMetadata}, Attr: []xml.Attr{
 			{Name: xml.Name{Local: attrName}, Value: md.Name},
@@ -178,7 +187,7 @@ func (e *Encoder) writeMetadata(x tokenEncoder, metadata []Metadata) {
 	}
 }
 
-func (e *Encoder) writeObject(x tokenEncoder, r *ObjectResource) {
+func (e *Encoder) writeObject(x *XMLEncoder, r *ObjectResource) {
 	xo := xml.StartElement{Name: xml.Name{Local: attrObject}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(r.ID), 10)},
 	}}
@@ -220,7 +229,7 @@ func (e *Encoder) writeObject(x tokenEncoder, r *ObjectResource) {
 	x.EncodeToken(xo.End())
 }
 
-func (e *Encoder) writeComponents(x tokenEncoder, comps []*Component) {
+func (e *Encoder) writeComponents(x *XMLEncoder, comps []*Component) {
 	xcs := xml.StartElement{Name: xml.Name{Local: attrComponents}}
 	x.EncodeToken(xcs)
 	x.SetAutoClose(true)
@@ -239,7 +248,7 @@ func (e *Encoder) writeComponents(x tokenEncoder, comps []*Component) {
 	x.EncodeToken(xcs.End())
 }
 
-func (e *Encoder) writeMesh(x tokenEncoder, m *Mesh) {
+func (e *Encoder) writeMesh(x *XMLEncoder, m *Mesh) {
 	xm := xml.StartElement{Name: xml.Name{Local: attrMesh}}
 	x.EncodeToken(xm)
 	xvs := xml.StartElement{Name: xml.Name{Local: attrVertices}}
@@ -297,7 +306,7 @@ func (e *Encoder) writeMesh(x tokenEncoder, m *Mesh) {
 	x.EncodeToken(xm.End())
 }
 
-func (e *Encoder) writeBaseMaterial(x tokenEncoder, r *BaseMaterialsResource) {
+func (e *Encoder) writeBaseMaterial(x *XMLEncoder, r *BaseMaterialsResource) {
 	xt := xml.StartElement{Name: xml.Name{Local: attrBaseMaterials}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(r.ID), 10)},
 	}}

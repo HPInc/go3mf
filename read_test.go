@@ -493,7 +493,11 @@ func TestNewDecoder(t *testing.T) {
 		args args
 		want *Decoder
 	}{
-		{"base", args{nil, 5}, &Decoder{Strict: true, p: &opcReader{ra: nil, size: 5}}},
+		{"base", args{nil, 5}, &Decoder{
+			Strict:           true,
+			p:                &opcReader{ra: nil, size: 5},
+			extensionDecoder: make(map[string]*extensionDecoderWrapper),
+		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

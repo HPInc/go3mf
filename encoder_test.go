@@ -66,7 +66,7 @@ func TestEncoder_writeModel(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			x := newXmlEncoder(tt.args.w)
+			x := newXMLEncoder(tt.args.w)
 			if err := tt.e.writeModel(x, tt.args.m); err != nil {
 				t.Errorf("Encoder.writeModel() error = %v", err)
 				return

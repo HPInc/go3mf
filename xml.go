@@ -6,20 +6,20 @@ import (
 	"io"
 )
 
-// xmlEncoder is based on the encoding/xml.Encoder implementation.
+// XMLEncoder is based on the encoding/xml.Encoder implementation.
 // It is modified to allow custom local namespaces and selfclosing nodes.
-type xmlEncoder struct {
+type XMLEncoder struct {
 	p printer
 }
 
-// newXmlEncoder returns a new encoder that writes to w.
-func newXmlEncoder(w io.Writer) *xmlEncoder {
-	e := &xmlEncoder{printer{Writer: bufio.NewWriter(w)}}
+// newXMLEncoder returns a new encoder that writes to w.
+func newXMLEncoder(w io.Writer) *XMLEncoder {
+	e := &XMLEncoder{printer{Writer: bufio.NewWriter(w)}}
 	e.p.encoder = e
 	return e
 }
 
-func (enc *xmlEncoder) EncodeToken(t xml.Token) {
+func (enc *XMLEncoder) EncodeToken(t xml.Token) {
 	p := &enc.p
 	switch t := t.(type) {
 	case xml.StartElement:
@@ -31,17 +31,17 @@ func (enc *xmlEncoder) EncodeToken(t xml.Token) {
 	}
 }
 
-func (enc *xmlEncoder) Flush() error {
+func (enc *XMLEncoder) Flush() error {
 	return enc.p.Flush()
 }
 
-func (enc *xmlEncoder) SetAutoClose(autoClose bool) {
+func (enc *XMLEncoder) SetAutoClose(autoClose bool) {
 	enc.p.autoClose = autoClose
 }
 
 type printer struct {
 	*bufio.Writer
-	encoder    *xmlEncoder
+	encoder    *XMLEncoder
 	attrPrefix map[string]string // map name space -> prefix
 	autoClose  bool
 }

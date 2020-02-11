@@ -224,6 +224,9 @@ func (d *Decoder) RegisterNodeDecoderExtension(key string, f func(parentNode int
 	if e, ok := d.extensionDecoder[key]; ok {
 		e.newNodeDecoder = f
 	} else {
+		if d.extensionDecoder == nil {
+			d.extensionDecoder = make(map[string]*extensionDecoderWrapper)
+		}
 		d.extensionDecoder[key] = &extensionDecoderWrapper{newNodeDecoder: f}
 	}
 }
@@ -234,6 +237,9 @@ func (d *Decoder) RegisterDecodeAttributeExtension(key string, f func(s *Scanner
 	if e, ok := d.extensionDecoder[key]; ok {
 		e.decodeAttribute = f
 	} else {
+		if d.extensionDecoder == nil {
+			d.extensionDecoder = make(map[string]*extensionDecoderWrapper)
+		}
 		d.extensionDecoder[key] = &extensionDecoderWrapper{decodeAttribute: f}
 	}
 }
@@ -247,6 +253,9 @@ func (d *Decoder) RegisterFileFilterExtension(key string, f func(relType string,
 	if e, ok := d.extensionDecoder[key]; ok {
 		e.fileFilter = f
 	} else {
+		if d.extensionDecoder == nil {
+			d.extensionDecoder = make(map[string]*extensionDecoderWrapper)
+		}
 		d.extensionDecoder[key] = &extensionDecoderWrapper{fileFilter: f}
 	}
 }
