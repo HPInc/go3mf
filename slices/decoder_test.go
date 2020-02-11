@@ -10,7 +10,8 @@ import (
 )
 
 func TestDecode(t *testing.T) {
-	otherSlices := SliceStack{
+	otherSlices := &SliceStackResource{
+		ID: 10, ModelPath: "/2D/2Dmodel.model",
 		BottomZ: 2,
 		Slices: []*Slice{
 			{
@@ -20,8 +21,7 @@ func TestDecode(t *testing.T) {
 			},
 		},
 	}
-	sliceStack := &SliceStackResource{ID: 3, ModelPath: "/3D/3dmodel.model", Stack: SliceStack{
-		BottomZ: 1,
+	sliceStack := &SliceStackResource{ID: 3, ModelPath: "/3D/3dmodel.model", BottomZ: 1,
 		Slices: []*Slice{
 			{
 				TopZ:     0,
@@ -34,8 +34,8 @@ func TestDecode(t *testing.T) {
 				Polygons: [][]int{{0, 2, 1, 3, 0}},
 			},
 		},
-	}}
-	sliceStackRef := &SliceStackResource{ID: 7, ModelPath: "/3D/3dmodel.model", Stack: SliceStack{BottomZ: 1.1, Refs: []SliceRef{{SliceStackID: 10, Path: "/2D/2Dmodel.model"}}}}
+	}
+	sliceStackRef := &SliceStackResource{ID: 7, ModelPath: "/3D/3dmodel.model", BottomZ: 1.1, Refs: []SliceRef{{SliceStackID: 10, Path: "/2D/2Dmodel.model"}}}
 	meshRes := &go3mf.ObjectResource{
 		Mesh: new(go3mf.Mesh),
 		ID:   8, Name: "Box 1", ModelPath: "/3D/3dmodel.model",
@@ -67,11 +67,11 @@ func TestDecode(t *testing.T) {
 	}...)
 
 	want := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "s"}}}
-	want.Resources = append(want.Resources, &SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", Stack: otherSlices})
+	want.Resources = append(want.Resources, otherSlices)
 	want.Resources = append(want.Resources, sliceStack, sliceStackRef, meshRes)
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"
-	got.Resources = append(got.Resources, &SliceStackResource{ID: 10, ModelPath: "/2D/2Dmodel.model", Stack: otherSlices})
+	got.Resources = append(got.Resources, otherSlices)
 	rootFile := `
 	<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:s="http://schemas.microsoft.com/3dmanufacturing/slice/2015/07">
 		<resources>

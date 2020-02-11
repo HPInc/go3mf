@@ -95,34 +95,28 @@ type SliceRef struct {
 	Path         string
 }
 
-// SliceStack defines an stack of slices.
-// It can either contain Slices or a Refs.
-type SliceStack struct {
-	BottomZ float32
-	Slices  []*Slice
-	Refs    []SliceRef
-}
-
-// AddSlice adds an slice to the stack and returns its index.
-func (s *SliceStack) AddSlice(slice *Slice) (int, error) {
-	if slice.TopZ < s.BottomZ || (len(s.Slices) != 0 && slice.TopZ < s.Slices[0].TopZ) {
-		return 0, errors.New("the z-coordinates of slices within a slicestack are not increasing")
-	}
-	s.Slices = append(s.Slices, slice)
-	return len(s.Slices) - 1, nil
-}
-
 // SliceStackResource defines a slice stack resource.
 // It can either contain a SliceStack or a Refs slice.
 type SliceStackResource struct {
-	Stack     SliceStack
 	ID        uint32
 	ModelPath string
+	BottomZ   float32
+	Slices    []*Slice
+	Refs      []SliceRef
 }
 
 // Identify returns the unique ID of the resource.
 func (s *SliceStackResource) Identify() (string, uint32) {
 	return s.ModelPath, s.ID
+}
+
+// AddSlice adds an slice to the stack and returns its index.
+func (s *SliceStackResource) AddSlice(slice *Slice) (int, error) {
+	if slice.TopZ < s.BottomZ || (len(s.Slices) != 0 && slice.TopZ < s.Slices[0].TopZ) {
+		return 0, errors.New("the z-coordinates of slices within a slicestack are not increasing")
+	}
+	s.Slices = append(s.Slices, slice)
+	return len(s.Slices) - 1, nil
 }
 
 // SliceStackInfo defines the attributes added to <object>.

@@ -55,7 +55,7 @@ func (d *sliceStackDecoder) Open() {
 }
 
 func (d *sliceStackDecoder) Close() {
-	if len(d.resource.Stack.Refs) > 0 && len(d.resource.Stack.Slices) > 0 {
+	if len(d.resource.Refs) > 0 && len(d.resource.Slices) > 0 {
 		d.Scanner.GenericError(true, "slicestack contains slices and slicerefs")
 	}
 	d.Scanner.AddResource(&d.resource)
@@ -82,7 +82,7 @@ func (d *sliceStackDecoder) Attributes(attrs []xml.Attr) {
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, a.Value, false)
 			}
-			d.resource.Stack.BottomZ = float32(val)
+			d.resource.BottomZ = float32(val)
 		}
 	}
 }
@@ -115,7 +115,7 @@ func (d *sliceRefDecoder) Attributes(attrs []xml.Attr) {
 	if path == d.resource.ModelPath {
 		d.Scanner.GenericError(true, "a slicepath is invalid")
 	}
-	d.resource.Stack.Refs = append(d.resource.Stack.Refs, SliceRef{SliceStackID: sliceStackID, Path: path})
+	d.resource.Refs = append(d.resource.Refs, SliceRef{SliceStackID: sliceStackID, Path: path})
 }
 
 // TODO: validate coherency after decoding.
@@ -141,7 +141,7 @@ func (d *sliceDecoder) Open() {
 	d.polygonVerticesDecoder.slice = &d.slice
 }
 func (d *sliceDecoder) Close() {
-	d.resource.Stack.Slices = append(d.resource.Stack.Slices, &d.slice)
+	d.resource.Slices = append(d.resource.Slices, &d.slice)
 }
 func (d *sliceDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	if name.Space == ExtensionName {

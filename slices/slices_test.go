@@ -1,9 +1,10 @@
 package slices
 
 import (
-	"github.com/qmuntal/go3mf"
 	"reflect"
 	"testing"
+
+	"github.com/qmuntal/go3mf"
 )
 
 func TestSlice_BeginPolygon(t *testing.T) {
@@ -124,30 +125,30 @@ func TestSlice_IsPolygonValid(t *testing.T) {
 	}
 }
 
-func TestSliceStack_AddSlice(t *testing.T) {
+func TestSliceStackResource_AddSlice(t *testing.T) {
 	type args struct {
 		slice *Slice
 	}
 	tests := []struct {
 		name    string
-		s       *SliceStack
+		s       *SliceStackResource
 		args    args
 		want    int
 		wantErr bool
 	}{
-		{"lower", &SliceStack{BottomZ: 1}, args{&Slice{TopZ: 0.5}}, 0, true},
-		{"top", &SliceStack{Slices: []*Slice{{TopZ: 1.0}}}, args{&Slice{TopZ: 0.5}}, 0, true},
-		{"ok", &SliceStack{BottomZ: 1, Slices: []*Slice{{TopZ: 1.0}}}, args{&Slice{TopZ: 2.0}}, 1, false},
+		{"lower", &SliceStackResource{BottomZ: 1}, args{&Slice{TopZ: 0.5}}, 0, true},
+		{"top", &SliceStackResource{Slices: []*Slice{{TopZ: 1.0}}}, args{&Slice{TopZ: 0.5}}, 0, true},
+		{"ok", &SliceStackResource{BottomZ: 1, Slices: []*Slice{{TopZ: 1.0}}}, args{&Slice{TopZ: 2.0}}, 1, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := tt.s.AddSlice(tt.args.slice)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("SliceStack.AddSlice() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("SliceStackResource.AddSlice() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("SliceStack.AddSlice() = %v, want %v", got, tt.want)
+				t.Errorf("SliceStackResource.AddSlice() = %v, want %v", got, tt.want)
 			}
 		})
 	}
