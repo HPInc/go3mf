@@ -1,6 +1,7 @@
 package go3mf
 
 import (
+	"bytes"
 	"context"
 	"encoding/xml"
 	"fmt"
@@ -16,12 +17,23 @@ type packageWriter interface {
 
 // Marshaler is the interface implemented by objects
 // that can marshal themselves into valid XML elements.
-//
-// Using start as the element tag is not required,
-// but doing so will enable Unmarshal to match the XML elements
-// to the correct struct field if using EncodeElement.
 type Marshaler interface {
-	Marshal3MF(x *XMLEncoder, start xml.StartElement) error
+	Marshal3MF(x *XMLEncoder) error
+}
+
+// MarshalerAttr is the interface implemented by objects that can marshal
+// themselves into valid XML attributes.
+type MarshalerAttr interface {
+	Marshal3MFAttr() ([]xml.Attr, error)
+}
+
+// Marshal returns the XML encoding of m.
+func MarshalModel(m *Model) ([]byte, error) {
+	var b bytes.Buffer
+	if err := new(Encoder).writeModel(newXMLEncoder(&b), m); err != nil {
+		return nil, err
+	}
+	return b.Bytes(), nil
 }
 
 type Encoder struct {
@@ -153,7 +165,7 @@ func (e *Encoder) writeResources(x *XMLEncoder, m *Model) error {
 		case *ObjectResource:
 			e.writeObject(x, r)
 		case Marshaler:
-			err = r.Marshal3MF(x, xt)
+			err = r.Marshal3MF(x)
 		}
 		if err != nil {
 			return err
@@ -202,6 +214,13 @@ func (e *Encoder) writeObject(x *XMLEncoder, r *ObjectResource) {
 	}
 	if r.Name != "" {
 		xo.Attr = append(xo.Attr, xml.Attr{Name: xml.Name{Local: attrName}, Value: r.Name})
+	}
+	for _, ext := range r.Extensions {
+		if ma, ok := ext.(MarshalerAttr); ok {
+			if att, err := ma.Marshal3MFAttr(); err == nil {
+				xo.Attr = append(xo.Attr, att...)
+			}
+		}
 	}
 	if r.Mesh != nil {
 		if r.DefaultPropertyID != 0 {

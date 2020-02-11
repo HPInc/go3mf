@@ -1,68 +1,35 @@
 package slices
 
 import (
-	"errors"
-
 	"github.com/qmuntal/go3mf"
 )
 
 // ExtensionName is the canonical name of this extension.
 const ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/slice/2015/07"
 
+// A Segment element represents a single line segment (or edge) of a polygon.
+// It runs from the vertex specified by the previous segment
+// (or the startv Polygon attribute for the first segment) to the specified vertex, v2.
+type Segment struct {
+	V2  uint32
+	PID uint32
+	P1  uint32
+	P2  uint32
+}
+
+// The Polygon element contains a set of 1 or more Segment elements
+// to describe a 2D contour. If a Slice contains content,
+// there MUST be at least one Polygon to describe it.
+type Polygon struct {
+	StartV   uint32
+	Segments []Segment
+}
+
 // Slice defines the resource object for slices.
 type Slice struct {
-	Vertices []go3mf.Point2D
-	Polygons [][]int
 	TopZ     float32
-}
-
-// BeginPolygon adds a new polygon and return its index.
-func (s *Slice) BeginPolygon() int {
-	s.Polygons = append(s.Polygons, make([]int, 0))
-	return len(s.Polygons) - 1
-}
-
-// AddVertex adds a new vertex to the slice and returns its index.
-func (s *Slice) AddVertex(x, y float32) int {
-	s.Vertices = append(s.Vertices, go3mf.Point2D{x, y})
-	return len(s.Vertices) - 1
-}
-
-// AddPolygonIndex adds a new index to the polygon.
-func (s *Slice) AddPolygonIndex(polygonIndex, index int) error {
-	if polygonIndex >= len(s.Polygons) {
-		return errors.New("invalid polygon index")
-	}
-
-	if index >= len(s.Vertices) {
-		return errors.New("invalid slice segment index")
-	}
-
-	p := s.Polygons[polygonIndex]
-	if len(p) > 0 && p[len(p)-1] == index {
-		return errors.New("duplicated slice segment index")
-	}
-	s.Polygons[polygonIndex] = append(s.Polygons[polygonIndex], index)
-	return nil
-}
-
-// AllPolygonsAreClosed returns true if all the polygons are closed.
-func (s *Slice) AllPolygonsAreClosed() bool {
-	for _, p := range s.Polygons {
-		if len(p) > 1 && p[0] != p[len(p)-1] {
-			return false
-		}
-	}
-	return true
-}
-
-// IsPolygonValid returns true if the polygon is valid.
-func (s *Slice) IsPolygonValid(index int) bool {
-	if index >= len(s.Polygons) {
-		return false
-	}
-	p := s.Polygons[index]
-	return len(p) > 2
+	Vertices []go3mf.Point2D
+	Polygons []Polygon
 }
 
 // SliceResolution defines the resolutions for a slice.
@@ -110,15 +77,6 @@ func (s *SliceStackResource) Identify() (string, uint32) {
 	return s.ModelPath, s.ID
 }
 
-// AddSlice adds an slice to the stack and returns its index.
-func (s *SliceStackResource) AddSlice(slice *Slice) (int, error) {
-	if slice.TopZ < s.BottomZ || (len(s.Slices) != 0 && slice.TopZ < s.Slices[0].TopZ) {
-		return 0, errors.New("the z-coordinates of slices within a slicestack are not increasing")
-	}
-	s.Slices = append(s.Slices, slice)
-	return len(s.Slices) - 1, nil
-}
-
 // SliceStackInfo defines the attributes added to <object>.
 type SliceStackInfo struct {
 	SliceStackID    uint32
@@ -160,4 +118,7 @@ const (
 	attrSliceRefID = "slicestackid"
 	attrSlicePath  = "slicepath"
 	attrMeshRes    = "meshresolution"
+	attrPID        = "pid"
+	attrP1         = "p1"
+	attrP2         = "p2"
 )

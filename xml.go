@@ -48,11 +48,11 @@ type printer struct {
 
 // createAttrPrefix finds the name space prefix attribute to use for the given name space,
 // defining a new prefix if necessary. It returns the prefix.
-func (p *printer) createAttrPrefix(name xml.Name) string {
-	if prefix := p.attrPrefix[name.Space]; prefix != "" {
+func (p *printer) createAttrPrefix(attr *xml.Attr) string {
+	if prefix := p.attrPrefix[attr.Name.Space]; prefix != "" {
 		return prefix
 	}
-	if name.Space == nsXML {
+	if attr.Name.Space == nsXML {
 		return attrXml
 	}
 
@@ -61,9 +61,13 @@ func (p *printer) createAttrPrefix(name xml.Name) string {
 		p.attrPrefix = make(map[string]string)
 	}
 
-	p.attrPrefix[name.Space] = name.Local
+	ns, prefix := attr.Name.Space, attr.Name.Local
+	if attr.Name.Space == attrXmlns {
+		ns, prefix = attr.Value, attr.Name.Local
+	}
+	p.attrPrefix[ns] = prefix
 
-	return name.Space
+	return attr.Name.Space
 }
 
 // EscapeString writes to p the properly escaped XML equivalent
@@ -75,6 +79,12 @@ func (p *printer) EscapeString(s string) {
 // writeStart writes the given start element.
 func (p *printer) writeStart(start *xml.StartElement) {
 	p.WriteByte('<')
+	if start.Name.Space != "" {
+		if prefix := p.attrPrefix[start.Name.Space]; prefix != "" {
+			p.WriteString(prefix)
+			p.WriteByte(':')
+		}
+	}
 	p.WriteString(start.Name.Local)
 
 	// Attributes
@@ -85,7 +95,7 @@ func (p *printer) writeStart(start *xml.StartElement) {
 		}
 		p.WriteByte(' ')
 		if name.Space != "" {
-			p.WriteString(p.createAttrPrefix(name))
+			p.WriteString(p.createAttrPrefix(&attr))
 			p.WriteByte(':')
 		}
 		p.WriteString(name.Local)
@@ -102,6 +112,12 @@ func (p *printer) writeStart(start *xml.StartElement) {
 func (p *printer) writeEnd(name xml.Name) {
 	p.WriteByte('<')
 	p.WriteByte('/')
+	if name.Space != "" {
+		if prefix := p.attrPrefix[name.Space]; prefix != "" {
+			p.WriteString(prefix)
+			p.WriteByte(':')
+		}
+	}
 	p.WriteString(name.Local)
 	p.WriteByte('>')
 }
