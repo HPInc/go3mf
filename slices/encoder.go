@@ -70,7 +70,7 @@ func marshalPolygons(x *go3mf.XMLEncoder, ply []Polygon) {
 				xs.Attr = append(xs.Attr, xml.Attr{Name: xml.Name{Local: attrP1}, Value: strconv.FormatUint(uint64(s.P1), 10)})
 			}
 			if s.P2 != 0 {
-				xs.Attr = append(xs.Attr, xml.Attr{Name: xml.Name{Local: attrP1}, Value: strconv.FormatUint(uint64(s.P1), 10)})
+				xs.Attr = append(xs.Attr, xml.Attr{Name: xml.Name{Local: attrP2}, Value: strconv.FormatUint(uint64(s.P2), 10)})
 			}
 			x.EncodeToken(xs)
 		}

@@ -26,7 +26,7 @@ func TestDecode(t *testing.T) {
 			{
 				TopZ:     0,
 				Vertices: []go3mf.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
-				Polygons: []Polygon{{StartV: 0, Segments: []Segment{{V2: 1}, {V2: 2}, {V2: 3}, {V2: 0}}}},
+				Polygons: []Polygon{{StartV: 0, Segments: []Segment{{V2: 1, PID: 1, P1: 2, P2: 3}, {V2: 2}, {V2: 3}, {V2: 0}}}},
 			},
 			{
 				TopZ:     0.1,
@@ -57,7 +57,7 @@ func TestDecode(t *testing.T) {
 						<s:vertex x="1.01" y="1.02" /> <s:vertex x="9.03" y="1.04" /> <s:vertex x="9.05" y="9.06" /> <s:vertex x="1.07" y="9.08" />
 					</s:vertices>
 					<s:polygon startv="0">
-						<s:segment v2="1"></s:segment> <s:segment v2="2"></s:segment> <s:segment v2="3"></s:segment> <s:segment v2="0"></s:segment>
+						<s:segment v2="1" pid="1" p1="2" p2="3"></s:segment> <s:segment v2="2"></s:segment> <s:segment v2="3"></s:segment> <s:segment v2="0"></s:segment>
 					</s:polygon>
 				</s:slice>
 				<s:slice ztop="0.1">
