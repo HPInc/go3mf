@@ -135,6 +135,7 @@ func (e *Encoder) writeMetadataGroup(x *XMLEncoder, m []Metadata) {
 
 func (e *Encoder) writeBuild(x *XMLEncoder, m *Model) {
 	xb := xml.StartElement{Name: xml.Name{Local: attrBuild}}
+	m.Build.Extensions.encode(x, &xb)
 	x.EncodeToken(xb)
 	x.SetAutoClose(true)
 	for _, item := range m.Build.Items {
@@ -151,12 +152,15 @@ func (e *Encoder) writeBuild(x *XMLEncoder, m *Model) {
 				Name: xml.Name{Local: attrPartNumber}, Value: item.PartNumber,
 			})
 		}
+		item.Extensions.encode(x, &xi)
 		if len(item.Metadata) != 0 {
 			x.SetAutoClose(false)
 			x.EncodeToken(xi)
 			e.writeMetadataGroup(x, item.Metadata)
 			x.EncodeToken(xi.End())
 			x.SetAutoClose(true)
+		} else {
+			x.EncodeToken(xi)
 		}
 	}
 	x.SetAutoClose(false)
@@ -224,13 +228,6 @@ func (e *Encoder) writeObject(x *XMLEncoder, r *ObjectResource) {
 	if r.Name != "" {
 		xo.Attr = append(xo.Attr, xml.Attr{Name: xml.Name{Local: attrName}, Value: r.Name})
 	}
-	for _, ext := range r.Extensions {
-		if ma, ok := ext.(MarshalerAttr); ok {
-			if att, err := ma.Marshal3MFAttr(); err == nil {
-				xo.Attr = append(xo.Attr, att...)
-			}
-		}
-	}
 	if r.Mesh != nil {
 		if r.DefaultPropertyID != 0 {
 			xo.Attr = append(xo.Attr, xml.Attr{
@@ -243,6 +240,7 @@ func (e *Encoder) writeObject(x *XMLEncoder, r *ObjectResource) {
 			})
 		}
 	}
+	r.Extensions.encode(x, &xo)
 	x.EncodeToken(xo)
 
 	if len(r.Metadata) != 0 {
@@ -262,15 +260,16 @@ func (e *Encoder) writeComponents(x *XMLEncoder, comps []*Component) {
 	x.EncodeToken(xcs)
 	x.SetAutoClose(true)
 	for _, c := range comps {
-		t := xml.StartElement{
+		xt := xml.StartElement{
 			Name: xml.Name{Local: attrComponent}, Attr: []xml.Attr{
 				{Name: xml.Name{Local: attrObjectID}, Value: strconv.FormatUint(uint64(c.ObjectID), 10)},
 			},
 		}
 		if c.HasTransform() {
-			t.Attr = append(t.Attr, xml.Attr{Name: xml.Name{Local: attrTransform}, Value: FormatMatrix(c.Transform)})
+			xt.Attr = append(xt.Attr, xml.Attr{Name: xml.Name{Local: attrTransform}, Value: FormatMatrix(c.Transform)})
 		}
-		x.EncodeToken(t)
+		c.Extensions.encode(x, &xt)
+		x.EncodeToken(xt)
 	}
 	x.SetAutoClose(false)
 	x.EncodeToken(xcs.End())

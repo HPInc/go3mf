@@ -47,10 +47,13 @@ func TestMarshalModel(t *testing.T) {
 				ID: 20, ModelPath: "/3D/3dmodel.model", ObjectType: ObjectTypeSupport,
 				Metadata:   []Metadata{{Name: "qm:CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: "qm:CustomMetadata4", Type: "xs:boolean", Value: "2"}},
 				Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
-			}}, Build: Build{Items: []*Item{{
-			ObjectID: 20, PartNumber: "bob", Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
-			Metadata: []Metadata{{Name: "qm:CustomMetadata3", Type: "xs:boolean", Value: "1"}},
-		}}}, Metadata: []Metadata{
+			}}, Build: Build{Items: []*Item{
+			{
+				ObjectID: 20, PartNumber: "bob", Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
+				Metadata: []Metadata{{Name: "qm:CustomMetadata3", Type: "xs:boolean", Value: "1"}},
+			},
+			{ObjectID: 21},
+		}}, Metadata: []Metadata{
 			{Name: "Application", Value: "go3mf app"},
 			{Name: "qm:CustomMetadata1", Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},
 		}}

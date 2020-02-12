@@ -11,6 +11,16 @@ import (
 // The key should be the extension namespace.
 type Extensions map[string]interface{}
 
+func (e Extensions) encode(x *XMLEncoder, start *xml.StartElement) {
+	for _, ext := range e {
+		if ma, ok := ext.(MarshalerAttr); ok {
+			if att, err := ma.Marshal3MFAttr(); err == nil {
+				start.Attr = append(start.Attr, att...)
+			}
+		}
+	}
+}
+
 // Units define the allowed model units.
 type Units uint8
 
