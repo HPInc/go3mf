@@ -269,7 +269,7 @@ type Face struct {
 }
 
 // A Mesh is an in memory representation of the 3MF mesh object.
-// Each node,  and face have a ID, which allows to identify them. Each face have an
+// Each node and face have an ID, which allows to identify them. Each face have an
 // orientation (i.e. the face can look up or look down) and have three nodes.
 // The orientation is defined by the order of its nodes.
 type Mesh struct {
