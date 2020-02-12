@@ -113,7 +113,7 @@ func TestNewEncoder(t *testing.T) {
 		name string
 		want *Encoder
 	}{
-		{"base", &Encoder{w: newOpcWriter(nil)}},
+		{"base", &Encoder{FloatPrecision: defaultFloatPrecision, w: newOpcWriter(nil)}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

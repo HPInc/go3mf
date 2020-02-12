@@ -9,6 +9,8 @@ import (
 	"strconv"
 )
 
+const defaultFloatPrecision = 6
+
 type packageWriter interface {
 	Create(name, contentType string) (io.Writer, error)
 	AddRelationship(*relationship)
@@ -27,22 +29,24 @@ type MarshalerAttr interface {
 	Marshal3MFAttr() ([]xml.Attr, error)
 }
 
-// Marshal returns the XML encoding of m.
+// MarshalModel returns the XML encoding of m.
 func MarshalModel(m *Model) ([]byte, error) {
 	var b bytes.Buffer
-	if err := new(Encoder).writeModel(newXMLEncoder(&b), m); err != nil {
+	if err := new(Encoder).writeModel(newXMLEncoder(&b, defaultFloatPrecision), m); err != nil {
 		return nil, err
 	}
 	return b.Bytes(), nil
 }
 
 type Encoder struct {
-	w packageWriter
+	FloatPrecision int
+	w              packageWriter
 }
 
 func NewEncoder(w io.Writer) *Encoder {
 	return &Encoder{
-		w: newOpcWriter(w),
+		FloatPrecision: defaultFloatPrecision,
+		w:              newOpcWriter(w),
 	}
 }
 
@@ -59,7 +63,7 @@ func (e *Encoder) Encode(ctx context.Context, m *Model) error {
 	if err != nil {
 		return err
 	}
-	if err = e.writeModel(newXMLEncoder(w), m); err != nil {
+	if err = e.writeModel(newXMLEncoder(w, e.FloatPrecision), m); err != nil {
 		return err
 	}
 	e.w.AddRelationship(&relationship{
@@ -277,9 +281,9 @@ func (e *Encoder) writeMesh(x *XMLEncoder, r *ObjectResource, m *Mesh) {
 		x.EncodeToken(xml.StartElement{
 			Name: xml.Name{Local: attrVertex},
 			Attr: []xml.Attr{
-				{Name: xml.Name{Local: attrX}, Value: strconv.FormatFloat(float64(v.X()), 'f', 3, 32)},
-				{Name: xml.Name{Local: attrY}, Value: strconv.FormatFloat(float64(v.Y()), 'f', 3, 32)},
-				{Name: xml.Name{Local: attrZ}, Value: strconv.FormatFloat(float64(v.Z()), 'f', 3, 32)},
+				{Name: xml.Name{Local: attrX}, Value: strconv.FormatFloat(float64(v.X()), 'f', x.FloatPresicion, 32)},
+				{Name: xml.Name{Local: attrY}, Value: strconv.FormatFloat(float64(v.Y()), 'f', x.FloatPresicion, 32)},
+				{Name: xml.Name{Local: attrZ}, Value: strconv.FormatFloat(float64(v.Z()), 'f', x.FloatPresicion, 32)},
 			},
 		})
 	}
