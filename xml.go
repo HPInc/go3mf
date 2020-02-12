@@ -21,6 +21,7 @@ func newXMLEncoder(w io.Writer, floatPresicion int) *XMLEncoder {
 	}
 }
 
+// EncodeToken writes the given XML token to the stream.
 func (enc *XMLEncoder) EncodeToken(t xml.Token) {
 	p := &enc.p
 	switch t := t.(type) {
@@ -33,10 +34,14 @@ func (enc *XMLEncoder) EncodeToken(t xml.Token) {
 	}
 }
 
+// Flush flushes any buffered XML to the underlying writer.
 func (enc *XMLEncoder) Flush() error {
 	return enc.p.Flush()
 }
 
+// SetAutoClose define if a start token will be self closed.
+// Callers should not end the start token if the encode is in
+// auto close mode.
 func (enc *XMLEncoder) SetAutoClose(autoClose bool) {
 	enc.p.autoClose = autoClose
 }
@@ -54,7 +59,7 @@ func (p *printer) createAttrPrefix(attr *xml.Attr) string {
 		return prefix
 	}
 	if attr.Name.Space == nsXML {
-		return attrXml
+		return attrXML
 	}
 
 	// Need to define a new name space.

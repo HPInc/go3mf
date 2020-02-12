@@ -116,63 +116,63 @@ func (s *Scanner) Namespace(local string) (string, bool) {
 }
 
 // AddResource adds a new resource to the resource cache.
-func (p *Scanner) AddResource(r Resource) {
-	p.Resources = append(p.Resources, r)
-	p.closeResource()
+func (s *Scanner) AddResource(r Resource) {
+	s.Resources = append(s.Resources, r)
+	s.closeResource()
 }
 
 // GenericError adds the error to the warnings.
 // Returns false if scanning cannot continue.
-func (p *Scanner) GenericError(strict bool, msg string) {
-	err := GenericError{ResourceID: p.ResourceID, Element: p.Element, ModelPath: p.ModelPath, Message: msg}
-	p.Warnings = append(p.Warnings, err)
-	if strict && p.Strict {
-		p.Err = err
+func (s *Scanner) GenericError(strict bool, msg string) {
+	err := GenericError{ResourceID: s.ResourceID, Element: s.Element, ModelPath: s.ModelPath, Message: msg}
+	s.Warnings = append(s.Warnings, err)
+	if strict && s.Strict {
+		s.Err = err
 	}
 }
 
 // InvalidAttr adds the error to the warnings.
 // Returns false if scanning cannot continue.
-func (p *Scanner) InvalidAttr(attr string, val string, required bool) {
+func (s *Scanner) InvalidAttr(attr string, val string, required bool) {
 	tp := PropertyRequired
 	if !required {
 		tp = PropertyOptional
 	}
-	p.strictError(ParsePropertyError{ResourceID: p.ResourceID, Element: p.Element, Name: attr, Value: val, ModelPath: p.ModelPath, Type: tp})
+	s.strictError(ParsePropertyError{ResourceID: s.ResourceID, Element: s.Element, Name: attr, Value: val, ModelPath: s.ModelPath, Type: tp})
 }
 
 // MissingAttr adds the error to the warnings.
-func (p *Scanner) MissingAttr(attr string) {
-	p.strictError(MissingPropertyError{ResourceID: p.ResourceID, Element: p.Element, Name: attr, ModelPath: p.ModelPath})
+func (s *Scanner) MissingAttr(attr string) {
+	s.strictError(MissingPropertyError{ResourceID: s.ResourceID, Element: s.Element, Name: attr, ModelPath: s.ModelPath})
 }
 
 // ParseResourceID parses the ID as a uint32.
 // If it cannot be parsed a ParsePropertyError is added to the warnings.
-func (p *Scanner) ParseResourceID(s string) uint32 {
-	n, err := strconv.ParseUint(s, 10, 32)
+func (s *Scanner) ParseResourceID(v string) uint32 {
+	n, err := strconv.ParseUint(v, 10, 32)
 	if err != nil {
-		p.InvalidAttr(attrID, s, true)
+		s.InvalidAttr(attrID, v, true)
 		return 0
 	}
-	p.ResourceID = uint32(n)
-	return p.ResourceID
+	s.ResourceID = uint32(n)
+	return s.ResourceID
 }
 
-func (p *Scanner) strictError(err error) {
-	p.Warnings = append(p.Warnings, err)
-	if p.Strict {
-		p.Err = err
+func (s *Scanner) strictError(err error) {
+	s.Warnings = append(s.Warnings, err)
+	if s.Strict {
+		s.Err = err
 	}
 }
 
 // closeResource closes the current resource.
 // If there is no resource to close MissingPropertyError is added to the warnings.
-func (p *Scanner) closeResource() {
-	if p.ResourceID == 0 {
-		p.MissingAttr(attrID)
+func (s *Scanner) closeResource() {
+	if s.ResourceID == 0 {
+		s.MissingAttr(attrID)
 		return
 	}
-	p.ResourceID = 0
+	s.ResourceID = 0
 }
 
 // FormatMatrix converts a matrix to a string.

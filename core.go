@@ -418,7 +418,7 @@ const (
 )
 
 const (
-	attrXml           = "xml"
+	attrXML           = "xml"
 	attrXmlns         = "xmlns"
 	attrID            = "id"
 	attrName          = "name"

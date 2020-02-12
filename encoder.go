@@ -38,11 +38,15 @@ func MarshalModel(m *Model) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
+// An Encoder writes Model data to an output stream.
+//
+// See the documentation for strconv.FormatFloat for details about the FloatPrecision behaviour.
 type Encoder struct {
 	FloatPrecision int
 	w              packageWriter
 }
 
+// NewEncoder returns a new encoder that writes to w.
 func NewEncoder(w io.Writer) *Encoder {
 	return &Encoder{
 		FloatPrecision: defaultFloatPrecision,
@@ -50,6 +54,7 @@ func NewEncoder(w io.Writer) *Encoder {
 	}
 }
 
+// Encode writes the XML encoding of m to the stream.
 func (e *Encoder) Encode(ctx context.Context, m *Model) error {
 	rootName := m.Path
 	if rootName == "" {
