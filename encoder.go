@@ -298,18 +298,18 @@ func (e *Encoder) writeMesh(x *XMLEncoder, r *ObjectResource, m *Mesh) {
 				{Name: xml.Name{Local: attrV3}, Value: strconv.FormatUint(uint64(v.NodeIndices[2]), 10)},
 			},
 		}
-		if v.Resource != 0 {
+		if v.PID != 0 {
 			p1, p2, p3 := v.ResourceIndices[0], v.ResourceIndices[1], v.ResourceIndices[2]
 			if (p1 != p2) || (p1 != p3) {
 				t.Attr = append(t.Attr,
-					xml.Attr{Name: xml.Name{Local: attrPID}, Value: strconv.FormatUint(uint64(v.Resource), 10)},
+					xml.Attr{Name: xml.Name{Local: attrPID}, Value: strconv.FormatUint(uint64(v.PID), 10)},
 					xml.Attr{Name: xml.Name{Local: attrP1}, Value: strconv.FormatUint(uint64(p1), 10)},
 					xml.Attr{Name: xml.Name{Local: attrP2}, Value: strconv.FormatUint(uint64(p2), 10)},
 					xml.Attr{Name: xml.Name{Local: attrP3}, Value: strconv.FormatUint(uint64(p3), 10)},
 				)
-			} else if (v.Resource != r.DefaultPropertyID) || (p1 != r.DefaultPropertyIndex) {
+			} else if (v.PID != r.DefaultPropertyID) || (p1 != r.DefaultPropertyIndex) {
 				t.Attr = append(t.Attr,
-					xml.Attr{Name: xml.Name{Local: attrPID}, Value: strconv.FormatUint(uint64(v.Resource), 10)},
+					xml.Attr{Name: xml.Name{Local: attrPID}, Value: strconv.FormatUint(uint64(v.PID), 10)},
 					xml.Attr{Name: xml.Name{Local: attrP1}, Value: strconv.FormatUint(uint64(p1), 10)},
 				)
 			}

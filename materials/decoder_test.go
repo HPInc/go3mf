@@ -27,18 +27,18 @@ func TestDecode(t *testing.T) {
 		{0, 100, 100},
 	}...)
 	meshRes.Mesh.Faces = append(meshRes.Mesh.Faces, []go3mf.Face{
-		{NodeIndices: [3]uint32{3, 2, 1}, Resource: 5},
-		{NodeIndices: [3]uint32{1, 0, 3}, Resource: 5},
-		{NodeIndices: [3]uint32{4, 5, 6}, Resource: 5, ResourceIndices: [3]uint32{1, 1, 1}},
-		{NodeIndices: [3]uint32{6, 7, 4}, Resource: 5, ResourceIndices: [3]uint32{1, 1, 1}},
-		{NodeIndices: [3]uint32{0, 1, 5}, Resource: 2, ResourceIndices: [3]uint32{0, 1, 2}},
-		{NodeIndices: [3]uint32{5, 4, 0}, Resource: 2, ResourceIndices: [3]uint32{3, 0, 2}},
-		{NodeIndices: [3]uint32{1, 2, 6}, Resource: 1, ResourceIndices: [3]uint32{0, 1, 2}},
-		{NodeIndices: [3]uint32{6, 5, 1}, Resource: 1, ResourceIndices: [3]uint32{2, 1, 3}},
-		{NodeIndices: [3]uint32{2, 3, 7}, Resource: 5},
-		{NodeIndices: [3]uint32{7, 6, 2}, Resource: 5},
-		{NodeIndices: [3]uint32{3, 0, 4}, Resource: 5},
-		{NodeIndices: [3]uint32{4, 7, 3}, Resource: 5},
+		{NodeIndices: [3]uint32{3, 2, 1}, PID: 5},
+		{NodeIndices: [3]uint32{1, 0, 3}, PID: 5},
+		{NodeIndices: [3]uint32{4, 5, 6}, PID: 5, ResourceIndices: [3]uint32{1, 1, 1}},
+		{NodeIndices: [3]uint32{6, 7, 4}, PID: 5, ResourceIndices: [3]uint32{1, 1, 1}},
+		{NodeIndices: [3]uint32{0, 1, 5}, PID: 2, ResourceIndices: [3]uint32{0, 1, 2}},
+		{NodeIndices: [3]uint32{5, 4, 0}, PID: 2, ResourceIndices: [3]uint32{3, 0, 2}},
+		{NodeIndices: [3]uint32{1, 2, 6}, PID: 1, ResourceIndices: [3]uint32{0, 1, 2}},
+		{NodeIndices: [3]uint32{6, 5, 1}, PID: 1, ResourceIndices: [3]uint32{2, 1, 3}},
+		{NodeIndices: [3]uint32{2, 3, 7}, PID: 5},
+		{NodeIndices: [3]uint32{7, 6, 2}, PID: 5},
+		{NodeIndices: [3]uint32{3, 0, 4}, PID: 5},
+		{NodeIndices: [3]uint32{4, 7, 3}, PID: 5},
 	}...)
 
 	want := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "m"}}}

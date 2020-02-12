@@ -264,7 +264,7 @@ func (c *Component) HasTransform() bool {
 // Face defines a triangle of a mesh.
 type Face struct {
 	NodeIndices     [3]uint32 // Coordinates of the three nodes that defines the face.
-	Resource        uint32
+	PID             uint32
 	ResourceIndices [3]uint32 // Resource subindex of the three nodes that defines the face.
 }
 

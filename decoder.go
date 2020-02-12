@@ -441,7 +441,7 @@ func (d *triangleDecoder) addTriangle(v1, v2, v3, pid, p1, p2, p3 uint32) {
 	}
 	d.mesh.Faces = append(d.mesh.Faces, Face{
 		NodeIndices:     [3]uint32{v1, v2, v3},
-		Resource:        pid,
+		PID:             pid,
 		ResourceIndices: [3]uint32{p1, p2, p3},
 	})
 }
