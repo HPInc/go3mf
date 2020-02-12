@@ -1,8 +1,3 @@
-// Package production handles new non-object resources,
-// as well as attributes to the build section for uniquely identifying parts within a particular 3MF package
-// Despite item and component paths are production attributes, they are also handled by
-// the core package, to avoid duplications they won't be stored in the Extension map
-// but the core properties will be updated.
 package production
 
 import "github.com/qmuntal/go3mf"
@@ -14,67 +9,76 @@ const ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/production/2
 // which includes Microsoft GUIDs as well as time-based UUIDs.
 type UUID string
 
-func extractUUID(ext go3mf.Extensions) UUID {
-	if attr, ok := ext[ExtensionName]; ok {
-		return attr.(UUID)
+// Sets asigns a new value to UUID.
+func (u *UUID) Set(v string) error {
+	if err := validateUUID(v); err != nil {
+		return err
 	}
-	return UUID("")
+	if u == nil {
+		u = new(UUID)
+	}
+	*u = UUID(v)
+	return nil
 }
 
-// BuildUUID extracts the UUID attributes from a Build.
-// Returns an empty UUID if it does not exist.
-func BuildUUID(b *go3mf.Build) UUID {
-	return extractUUID(b.Extensions)
+type PathUUID struct {
+	UUID *UUID
+	Path string
 }
 
-// SetBuildUUID sets the UUID.
-func SetBuildUUID(b *go3mf.Build, u UUID) {
+func extractUUID(ext go3mf.Extensions) *UUID {
+	if attr, ok := ext[ExtensionName]; ok {
+		return attr.(*UUID)
+	}
+	attr := UUID("")
+	pa := &attr
+	ext[ExtensionName] = pa
+	return pa
+}
+
+func extractPathUUID(ext go3mf.Extensions) *PathUUID {
+	if attr, ok := ext[ExtensionName]; ok {
+		return attr.(*PathUUID)
+	}
+	attr := &PathUUID{UUID: new(UUID)}
+	ext[ExtensionName] = attr
+	return attr
+}
+
+// BuildAttr extracts the UUID attributes from a Build.
+// Returns an empty UUID if it does not exist, never nil.
+func BuildAttr(b *go3mf.Build) *UUID {
 	if b.Extensions == nil {
 		b.Extensions = make(go3mf.Extensions)
 	}
-	b.Extensions[ExtensionName] = u
+	return extractUUID(b.Extensions)
 }
 
-// ItemUUID extracts the UUID attributes from an Item.
-// Returns an empty UUID if it does not exist.
-func ItemUUID(o *go3mf.Item) UUID {
-	return extractUUID(o.Extensions)
-}
-
-// SetItemdUUID sets the UUID.
-func SetItemdUUID(i *go3mf.Item, u UUID) {
-	if i.Extensions == nil {
-		i.Extensions = make(go3mf.Extensions)
+// ItemAttr extracts the Path and UUID attributes from an Item.
+// Returns an empty PathUUID if it does not exist, never nil.
+func ItemAttr(item *go3mf.Item) *PathUUID {
+	if item.Extensions == nil {
+		item.Extensions = make(go3mf.Extensions)
 	}
-	i.Extensions[ExtensionName] = u
+	return extractPathUUID(item.Extensions)
 }
 
-// ComponentUUID extracts the UUID attributes from a Component.
-// Returns an empty UUID if it does not exist.
-func ComponentUUID(c *go3mf.Component) UUID {
-	return extractUUID(c.Extensions)
-}
-
-// SetComponentUUID sets the UUID.
-func SetComponentUUID(c *go3mf.Component, u UUID) {
+// ComponentAttr extracts the Pathn and UUID attributes from a Component.
+// Returns an empty PathUUID if it does not exist, never nil.
+func ComponentAttr(c *go3mf.Component) *PathUUID {
 	if c.Extensions == nil {
 		c.Extensions = make(go3mf.Extensions)
 	}
-	c.Extensions[ExtensionName] = u
+	return extractPathUUID(c.Extensions)
 }
 
-// ObjectUUID extracts the UUID attributes from a ObjectResource.
-// Returns an empty UUID if it does not exist.
-func ObjectUUID(o *go3mf.ObjectResource) UUID {
-	return extractUUID(o.Extensions)
-}
-
-// SetObjectUUID sets the UUID.
-func SetObjectUUID(o *go3mf.ObjectResource, u UUID) {
+// ObjectAttr extracts the UUID attributes from a ObjectResource.
+// Returns an empty UUID if it does not exist, never nil.
+func ObjectAttr(o *go3mf.ObjectResource) *UUID {
 	if o.Extensions == nil {
 		o.Extensions = make(go3mf.Extensions)
 	}
-	o.Extensions[ExtensionName] = u
+	return extractUUID(o.Extensions)
 }
 
 const (
