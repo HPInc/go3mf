@@ -20,7 +20,7 @@ func TestDecode(t *testing.T) {
 		Components: []*go3mf.Component{{
 			Extensions: go3mf.Extensions{ExtensionName: &PathUUID{
 				Path: "/3D/other.model",
-				UUID: mustUUID("cb828680-8895-4e08-a1fc-be63e033df16"),
+				UUID: UUID("cb828680-8895-4e08-a1fc-be63e033df16"),
 			}},
 			ObjectID: 8, Transform: go3mf.Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}},
 		},
@@ -29,14 +29,14 @@ func TestDecode(t *testing.T) {
 	want := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "p"}}}
 	otherMesh := &go3mf.ObjectResource{Mesh: new(go3mf.Mesh), ID: 8, ModelPath: "/3D/other.model"}
 	want.Resources = append(want.Resources, otherMesh, components)
-	BuildAttr(&want.Build).Set("e9e25302-6428-402e-8633-cc95528d0ed3")
+	*BuildAttr(&want.Build) = UUID("e9e25302-6428-402e-8633-cc95528d0ed3")
 	want.Build.Items = append(want.Build.Items, &go3mf.Item{ObjectID: 20,
-		Extensions: go3mf.Extensions{ExtensionName: &PathUUID{UUID: mustUUID("e9e25302-6428-402e-8633-cc95528d0ed2")}},
+		Extensions: go3mf.Extensions{ExtensionName: &PathUUID{UUID: UUID("e9e25302-6428-402e-8633-cc95528d0ed2")}},
 		Transform:  go3mf.Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
 	}, &go3mf.Item{ObjectID: 8,
 		Extensions: go3mf.Extensions{ExtensionName: &PathUUID{
 			Path: "/3D/other.model",
-			UUID: mustUUID("e9e25302-6428-402e-8633-cc95528d0ed4"),
+			UUID: UUID("e9e25302-6428-402e-8633-cc95528d0ed4"),
 		}},
 	})
 	got := new(go3mf.Model)

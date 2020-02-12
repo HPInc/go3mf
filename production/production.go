@@ -9,20 +9,16 @@ const ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/production/2
 // which includes Microsoft GUIDs as well as time-based UUIDs.
 type UUID string
 
-// Sets asigns a new value to UUID.
-func (u *UUID) Set(v string) error {
-	if err := validateUUID(v); err != nil {
-		return err
+// NewUUID creates a UUID from s.
+func NewUUID(s string) (UUID, error) {
+	if err := validateUUID(s); err != nil {
+		return UUID(""), err
 	}
-	if u == nil {
-		u = new(UUID)
-	}
-	*u = UUID(v)
-	return nil
+	return UUID(s), nil
 }
 
 type PathUUID struct {
-	UUID *UUID
+	UUID UUID
 	Path string
 }
 
@@ -40,7 +36,7 @@ func extractPathUUID(ext go3mf.Extensions) *PathUUID {
 	if attr, ok := ext[ExtensionName]; ok {
 		return attr.(*PathUUID)
 	}
-	attr := &PathUUID{UUID: new(UUID)}
+	attr := &PathUUID{}
 	ext[ExtensionName] = attr
 	return attr
 }
