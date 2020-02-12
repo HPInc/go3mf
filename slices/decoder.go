@@ -248,7 +248,10 @@ type polygonSegmentDecoder struct {
 }
 
 func (d *polygonSegmentDecoder) Attributes(attrs []xml.Attr) {
-	var segment Segment
+	var (
+		segment      Segment
+		hasP1, hasP2 bool
+	)
 	for _, a := range attrs {
 		var required bool
 		val, err := strconv.ParseUint(a.Value, 10, 32)
@@ -260,8 +263,13 @@ func (d *polygonSegmentDecoder) Attributes(attrs []xml.Attr) {
 			segment.PID = uint32(val)
 		case attrP1:
 			segment.P1 = uint32(val)
+			hasP1 = true
 		case attrP2:
 			segment.P2 = uint32(val)
+			hasP2 = true
+		}
+		if hasP1 && !hasP2 {
+			segment.P2 = segment.P1
 		}
 		if err != nil {
 			d.Scanner.InvalidAttr(a.Name.Local, a.Value, required)

@@ -241,7 +241,7 @@ func (e *Encoder) writeObject(x *XMLEncoder, r *ObjectResource) {
 	}
 
 	if r.Mesh != nil {
-		e.writeMesh(x, r.Mesh)
+		e.writeMesh(x, r, r.Mesh)
 	} else {
 		e.writeComponents(x, r.Components)
 	}
@@ -267,7 +267,7 @@ func (e *Encoder) writeComponents(x *XMLEncoder, comps []*Component) {
 	x.EncodeToken(xcs.End())
 }
 
-func (e *Encoder) writeMesh(x *XMLEncoder, m *Mesh) {
+func (e *Encoder) writeMesh(x *XMLEncoder, r *ObjectResource, m *Mesh) {
 	xm := xml.StartElement{Name: xml.Name{Local: attrMesh}}
 	x.EncodeToken(xm)
 	xvs := xml.StartElement{Name: xml.Name{Local: attrVertices}}
@@ -299,23 +299,19 @@ func (e *Encoder) writeMesh(x *XMLEncoder, m *Mesh) {
 			},
 		}
 		if v.Resource != 0 {
-			t.Attr = append(t.Attr, xml.Attr{
-				Name: xml.Name{Local: attrPID}, Value: strconv.FormatUint(uint64(v.Resource), 10),
-			})
-			if v.ResourceIndices[0] != 0 {
-				t.Attr = append(t.Attr, xml.Attr{
-					Name: xml.Name{Local: attrP1}, Value: strconv.FormatUint(uint64(v.ResourceIndices[0]), 10),
-				})
-				if v.ResourceIndices[1] != 0 {
-					t.Attr = append(t.Attr, xml.Attr{
-						Name: xml.Name{Local: attrP2}, Value: strconv.FormatUint(uint64(v.ResourceIndices[1]), 10),
-					})
-				}
-				if v.ResourceIndices[2] != 0 {
-					t.Attr = append(t.Attr, xml.Attr{
-						Name: xml.Name{Local: attrP3}, Value: strconv.FormatUint(uint64(v.ResourceIndices[2]), 10),
-					})
-				}
+			p1, p2, p3 := v.ResourceIndices[0], v.ResourceIndices[1], v.ResourceIndices[2]
+			if (p1 != p2) || (p1 != p3) {
+				t.Attr = append(t.Attr,
+					xml.Attr{Name: xml.Name{Local: attrPID}, Value: strconv.FormatUint(uint64(v.Resource), 10)},
+					xml.Attr{Name: xml.Name{Local: attrP1}, Value: strconv.FormatUint(uint64(p1), 10)},
+					xml.Attr{Name: xml.Name{Local: attrP2}, Value: strconv.FormatUint(uint64(p2), 10)},
+					xml.Attr{Name: xml.Name{Local: attrP3}, Value: strconv.FormatUint(uint64(p3), 10)},
+				)
+			} else if (v.Resource != r.DefaultPropertyID) || (p1 != r.DefaultPropertyIndex) {
+				t.Attr = append(t.Attr,
+					xml.Attr{Name: xml.Name{Local: attrPID}, Value: strconv.FormatUint(uint64(v.Resource), 10)},
+					xml.Attr{Name: xml.Name{Local: attrP1}, Value: strconv.FormatUint(uint64(p1), 10)},
+				)
 			}
 		}
 		x.EncodeToken(t)

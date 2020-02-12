@@ -64,13 +64,18 @@ func marshalPolygons(x *go3mf.XMLEncoder, ply []Polygon) {
 				{Name: xml.Name{Local: attrV2}, Value: strconv.FormatUint(uint64(s.V2), 10)},
 			}}
 			if s.PID != 0 {
-				xs.Attr = append(xs.Attr, xml.Attr{Name: xml.Name{Local: attrPID}, Value: strconv.FormatUint(uint64(s.PID), 10)})
-			}
-			if s.P1 != 0 {
-				xs.Attr = append(xs.Attr, xml.Attr{Name: xml.Name{Local: attrP1}, Value: strconv.FormatUint(uint64(s.P1), 10)})
-			}
-			if s.P2 != 0 {
-				xs.Attr = append(xs.Attr, xml.Attr{Name: xml.Name{Local: attrP2}, Value: strconv.FormatUint(uint64(s.P2), 10)})
+				if s.P1 != s.P2 {
+					xs.Attr = append(xs.Attr,
+						xml.Attr{Name: xml.Name{Local: attrPID}, Value: strconv.FormatUint(uint64(s.PID), 10)},
+						xml.Attr{Name: xml.Name{Local: attrP1}, Value: strconv.FormatUint(uint64(s.P1), 10)},
+						xml.Attr{Name: xml.Name{Local: attrP2}, Value: strconv.FormatUint(uint64(s.P2), 10)},
+					)
+				} else {
+					xs.Attr = append(xs.Attr,
+						xml.Attr{Name: xml.Name{Local: attrPID}, Value: strconv.FormatUint(uint64(s.PID), 10)},
+						xml.Attr{Name: xml.Name{Local: attrP1}, Value: strconv.FormatUint(uint64(s.P1), 10)},
+					)
+				}
 			}
 			x.EncodeToken(xs)
 		}
