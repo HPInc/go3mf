@@ -179,7 +179,6 @@ func (ms *BaseMaterialsResource) Identify() (string, uint32) {
 // A Item is an in memory representation of the 3MF build item.
 type Item struct {
 	ObjectID   uint32
-	Path       string
 	Transform  Matrix
 	PartNumber string
 	Metadata   []Metadata
@@ -251,7 +250,6 @@ func (o *ObjectResource) IsValid() bool {
 // A Component is an in memory representation of the 3MF component.
 type Component struct {
 	ObjectID   uint32
-	Path       string
 	Transform  Matrix
 	Extensions Extensions
 }
