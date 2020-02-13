@@ -185,28 +185,26 @@ func (e *Encoder) writeBuild(x *XMLEncoder, m *Model) {
 func (e *Encoder) writeResources(x *XMLEncoder, m *Model) error {
 	xt := xml.StartElement{Name: xml.Name{Local: attrResources}}
 	x.EncodeToken(xt)
-	for _, rs := range m.Resources {
-		for _, r := range rs.Assets {
-			var err error
-			switch r := r.(type) {
-			case *BaseMaterialsResource:
-				e.writeBaseMaterial(x, r)
-			case Marshaler:
-				err = r.Marshal3MF(x)
-			}
-			if err != nil {
-				return err
-			}
-			if err := x.Flush(); err != nil {
-				return err
-			}
+	for _, r := range m.Resources.Assets {
+		var err error
+		switch r := r.(type) {
+		case *BaseMaterialsResource:
+			e.writeBaseMaterial(x, r)
+		case Marshaler:
+			err = r.Marshal3MF(x)
 		}
+		if err != nil {
+			return err
+		}
+		if err := x.Flush(); err != nil {
+			return err
+		}
+	}
 
-		for _, o := range rs.Objects {
-			e.writeObject(x, o)
-			if err := x.Flush(); err != nil {
-				return err
-			}
+	for _, o := range m.Resources.Objects {
+		e.writeObject(x, o)
+		if err := x.Flush(); err != nil {
+			return err
 		}
 	}
 	x.EncodeToken(xt.End())

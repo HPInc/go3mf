@@ -303,11 +303,23 @@ func (d *Decoder) processRootModel(ctx context.Context, rootFile packageFile, mo
 	return err
 }
 
+func (d *Decoder) addChildModelFile(p *Scanner, model *Model) {
+	if model.Childs == nil {
+		model.Childs = make(map[string]ChildModel)
+	}
+	model.Childs[p.ModelPath] = ChildModel{
+		Resources: p.Resources,
+	}
+	for _, res := range p.Warnings {
+		d.Warnings = append(d.Warnings, res)
+	}
+}
+
 func (d *Decoder) addModelFile(p *Scanner, model *Model) {
 	for _, bi := range p.BuildItems {
 		model.Build.Items = append(model.Build.Items, bi)
 	}
-	model.Resources = append(model.Resources, &p.Resources)
+	model.Resources = p.Resources
 	for _, ns := range p.Namespaces {
 		model.Namespaces = append(model.Namespaces, ns)
 	}
@@ -351,7 +363,7 @@ func (d *Decoder) processNonRootModels(ctx context.Context, model *Model) (err e
 	sort.Ints(indices)
 	for _, index := range indices {
 		f, _ := files.Load(index)
-		d.addModelFile(f.(*Scanner), model)
+		d.addChildModelFile(f.(*Scanner), model)
 	}
 	return nil
 }

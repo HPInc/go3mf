@@ -80,7 +80,7 @@ func (o ObjectType) String() string {
 
 // Resource defines build resource.
 type Resource interface {
-	Identify() (string, uint32)
+	Identify() uint32
 }
 
 // Metadata item is an in memory representation of the 3MF metadata,
@@ -109,7 +109,6 @@ type Build struct {
 // The Resources element acts as the root element of a library of constituent
 // pieces of the overall 3D object definition.
 type Resources struct {
-	Path          string
 	Assets        []Resource
 	Objects       []*ObjectResource
 	ExtensionAttr ExtensionAttr
@@ -123,7 +122,7 @@ func (rs *Resources) UnusedID() uint32 {
 	ids := make([]int, len(rs.Assets)+len(rs.Objects)+1)
 	ids[0] = 0
 	for i, r := range rs.Assets {
-		_, id := r.Identify()
+		id := r.Identify()
 		ids[i+1] = int(id)
 	}
 	for i, o := range rs.Objects {
@@ -155,11 +154,18 @@ func (rs *Resources) FindObject(id uint32) (*ObjectResource, bool) {
 // FindAsset returns the resource with the target ID.
 func (rs *Resources) FindAsset(id uint32) (Resource, bool) {
 	for _, value := range rs.Assets {
-		if _, rID := value.Identify(); rID == id {
+		if rID := value.Identify(); rID == id {
 			return value, true
 		}
 	}
 	return nil, false
+}
+
+type ChildModel struct {
+	Resources     Resources
+	Attachments   []*Attachment
+	Extension     Extension
+	ExtensionAttr ExtensionAttr
 }
 
 // A Model is an in memory representation of the 3MF file.
@@ -169,37 +175,34 @@ type Model struct {
 	Units              Units
 	Thumbnail          string
 	Metadata           []Metadata
-	Resources          []*Resources
+	Resources          Resources
 	Build              Build
 	Attachments        []*Attachment
 	Namespaces         []xml.Name
 	RequiredExtensions []string
+	Childs             map[string]ChildModel
 	Extension          Extension
 	ExtensionAttr      ExtensionAttr
 }
 
 // FindAsset returns the resource with the target path and ID.
 func (m *Model) FindAsset(path string, id uint32) (Resource, bool) {
-	if path == "" {
-		path = m.Path
+	if path == "" || path == m.Path {
+		return m.Resources.FindAsset(id)
 	}
-	for _, rs := range m.Resources {
-		if rs.Path == path {
-			return rs.FindAsset(id)
-		}
+	if child, ok := m.Childs[path]; ok {
+		return child.Resources.FindAsset(id)
 	}
 	return nil, false
 }
 
 // FindObject returns the object with the target path and ID.
 func (m *Model) FindObject(path string, id uint32) (*ObjectResource, bool) {
-	if path == "" {
-		path = m.Path
+	if path == "" || path == m.Path {
+		return m.Resources.FindObject(id)
 	}
-	for _, rs := range m.Resources {
-		if rs.Path == path {
-			return rs.FindObject(id)
-		}
+	if child, ok := m.Childs[path]; ok {
+		return child.Resources.FindObject(id)
 	}
 	return nil, false
 }
@@ -215,13 +218,12 @@ type BaseMaterial struct {
 // BaseMaterialsResource defines a slice of BaseMaterial.
 type BaseMaterialsResource struct {
 	ID        uint32
-	ModelPath string
 	Materials []BaseMaterial
 }
 
 // Identify returns the unique ID of the resource.
-func (ms *BaseMaterialsResource) Identify() (string, uint32) {
-	return ms.ModelPath, ms.ID
+func (ms *BaseMaterialsResource) Identify() uint32 {
+	return ms.ID
 }
 
 // A Item is an in memory representation of the 3MF build item.
@@ -241,7 +243,6 @@ func (b *Item) HasTransform() bool {
 // An ObjectResource is an in memory representation of the 3MF model object.
 type ObjectResource struct {
 	ID                   uint32
-	ModelPath            string
 	Name                 string
 	PartNumber           string
 	Thumbnail            string

@@ -18,15 +18,14 @@ func TestMarshalModel(t *testing.T) {
 		Units: UnitMillimeter, Language: "en-US", Path: "/3D/3dmodel.model", Thumbnail: "/thumbnail.png",
 		Namespaces:         []xml.Name{{Space: fakeExtension, Local: "qm"}},
 		RequiredExtensions: []string{fakeExtension},
-		Resources: []*Resources{{
-			Assets: []Resource{&BaseMaterialsResource{ID: 5, ModelPath: "/3D/3dmodel.model", Materials: []BaseMaterial{
+		Resources: Resources{
+			Assets: []Resource{&BaseMaterialsResource{ID: 5, Materials: []BaseMaterial{
 				{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 				{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
 			}}},
 			Objects: []*ObjectResource{
 				{
 					ID: 8, Name: "Box 1", PartNumber: "11111111-1111-1111-1111-111111111111", Thumbnail: "/a.png",
-					ModelPath:         "/3D/3dmodel.model",
 					DefaultPropertyID: 1, DefaultPropertyIndex: 1, ObjectType: ObjectTypeModel, Mesh: &Mesh{
 						Nodes: []Point3D{
 							{0, 0, 0}, {100, 0, 0}, {100, 100, 0},
@@ -48,12 +47,12 @@ func TestMarshalModel(t *testing.T) {
 						},
 					}},
 				{
-					ID: 20, ModelPath: "/3D/3dmodel.model", ObjectType: ObjectTypeSupport,
+					ID: 20, ObjectType: ObjectTypeSupport,
 					Metadata:   []Metadata{{Name: "qm:CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: "qm:CustomMetadata4", Type: "xs:boolean", Value: "2"}},
 					Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
 				},
 			},
-		}},
+		},
 		Build: Build{Items: []*Item{
 			{
 				ObjectID: 20, PartNumber: "bob", Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},

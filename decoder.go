@@ -247,7 +247,6 @@ type baseMaterialsDecoder struct {
 }
 
 func (d *baseMaterialsDecoder) Open() {
-	d.resource.ModelPath = d.Scanner.ModelPath
 	d.baseMaterialDecoder.resource = &d.resource
 }
 
@@ -463,10 +462,6 @@ func applyDefault(val, defVal uint32, noDef bool) uint32 {
 type objectDecoder struct {
 	baseDecoder
 	resource ObjectResource
-}
-
-func (d *objectDecoder) Open() {
-	d.resource.ModelPath = d.Scanner.ModelPath
 }
 
 func (d *objectDecoder) Close() {
