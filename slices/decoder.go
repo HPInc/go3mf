@@ -58,7 +58,7 @@ func (d *sliceStackDecoder) Close() {
 	if len(d.resource.Refs) > 0 && len(d.resource.Slices) > 0 {
 		d.Scanner.GenericError(true, "slicestack contains slices and slicerefs")
 	}
-	d.Scanner.AddResource(&d.resource)
+	d.Scanner.AddAsset(&d.resource)
 }
 
 func (d *sliceStackDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {

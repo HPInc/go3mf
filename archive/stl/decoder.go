@@ -49,8 +49,12 @@ func (d *Decoder) DecodeContext(ctx context.Context, m *go3mf.Model) error {
 	}
 	if err == nil {
 		newMesh.ModelPath = m.Path
-		newMesh.ID = m.UnusedID()
-		m.Resources = append(m.Resources, newMesh)
+		if len(m.Resources) == 0 {
+			m.Resources = []*go3mf.Resources{new(go3mf.Resources)}
+		}
+		rs := m.Resources[len(m.Resources)-1]
+		newMesh.ID = rs.UnusedID()
+		rs.Objects = append(rs.Objects, newMesh)
 	}
 	return err
 }

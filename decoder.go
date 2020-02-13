@@ -252,7 +252,7 @@ func (d *baseMaterialsDecoder) Open() {
 }
 
 func (d *baseMaterialsDecoder) Close() {
-	d.Scanner.AddResource(&d.resource)
+	d.Scanner.AddAsset(&d.resource)
 }
 
 func (d *baseMaterialsDecoder) Child(name xml.Name) (child NodeDecoder) {
@@ -470,7 +470,7 @@ func (d *objectDecoder) Open() {
 }
 
 func (d *objectDecoder) Close() {
-	d.Scanner.AddResource(&d.resource)
+	d.Scanner.AddObject(&d.resource)
 }
 
 func (d *objectDecoder) Attributes(attrs []xml.Attr) {

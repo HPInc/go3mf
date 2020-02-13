@@ -86,7 +86,7 @@ func (e GenericError) Error() string {
 
 // A Scanner is a 3mf model file scanning state machine.
 type Scanner struct {
-	Resources        []Resource
+	Resources        Resources
 	BuildItems       []*Item
 	Strict           bool
 	ModelPath        string
@@ -115,9 +115,15 @@ func (s *Scanner) Namespace(local string) (string, bool) {
 	return "", false
 }
 
-// AddResource adds a new resource to the resource cache.
-func (s *Scanner) AddResource(r Resource) {
-	s.Resources = append(s.Resources, r)
+// AddAsset adds a new resource to the resource cache.
+func (s *Scanner) AddAsset(r Resource) {
+	s.Resources.Assets = append(s.Resources.Assets, r)
+	s.closeResource()
+}
+
+// AddObject adds a new resource to the resource cache.
+func (s *Scanner) AddObject(r *ObjectResource) {
+	s.Resources.Objects = append(s.Resources.Objects, r)
 	s.closeResource()
 }
 

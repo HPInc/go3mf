@@ -42,11 +42,13 @@ func TestDecode(t *testing.T) {
 		ExtensionAttr: go3mf.ExtensionAttr{ExtensionName: &SliceStackInfo{SliceStackID: 3, SliceResolution: ResolutionLow}},
 	}
 
-	want := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "s"}}}
-	want.Resources = append(want.Resources, otherSlices, sliceStack, sliceStackRef, meshRes)
+	want := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "s"}}, Resources: []*go3mf.Resources{
+		{Assets: []go3mf.Resource{otherSlices}},
+		{Assets: []go3mf.Resource{sliceStack, sliceStackRef}, Objects: []*go3mf.ObjectResource{meshRes}},
+	}}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"
-	got.Resources = append(got.Resources, otherSlices)
+	got.Resources = append(got.Resources, &go3mf.Resources{Assets: []go3mf.Resource{otherSlices}})
 	rootFile := `
 	<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:s="http://schemas.microsoft.com/3dmanufacturing/slice/2015/07">
 		<resources>

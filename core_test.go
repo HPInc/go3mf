@@ -26,11 +26,14 @@ func (o *MockObject) Type() ObjectType {
 	return ObjectTypeOther
 }
 
-func TestModel_FindResource(t *testing.T) {
+func TestModel_FindObject(t *testing.T) {
 	model := &Model{Path: "/3D/model.model"}
 	id1 := &ObjectResource{ID: 0, ModelPath: ""}
 	id2 := &ObjectResource{ID: 1, ModelPath: "/3D/model.model"}
-	model.Resources = append(model.Resources, id1, id2)
+	model.Resources = append(model.Resources,
+		&Resources{Path: "", Objects: []*ObjectResource{id1}},
+		&Resources{Path: "/3D/model.model", Objects: []*ObjectResource{id2}},
+	)
 	type args struct {
 		path string
 		id   uint32
@@ -39,7 +42,7 @@ func TestModel_FindResource(t *testing.T) {
 		name   string
 		m      *Model
 		args   args
-		wantR  Resource
+		wantR  *ObjectResource
 		wantOk bool
 	}{
 		{"emptyPathExist", model, args{"", 1}, id2, true},
@@ -49,12 +52,12 @@ func TestModel_FindResource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotR, gotOk := tt.m.FindResource(tt.args.path, tt.args.id)
+			gotR, gotOk := tt.m.FindObject(tt.args.path, tt.args.id)
 			if !reflect.DeepEqual(gotR, tt.wantR) {
-				t.Errorf("Model.FindResource() gotR = %v, want %v", gotR, tt.wantR)
+				t.Errorf("Model.FindObject() gotR = %v, want %v", gotR, tt.wantR)
 			}
 			if gotOk != tt.wantOk {
-				t.Errorf("Model.FindResource() gotOk = %v, want %v", gotOk, tt.wantOk)
+				t.Errorf("Model.FindObject() gotOk = %v, want %v", gotOk, tt.wantOk)
 			}
 		})
 	}
@@ -143,44 +146,23 @@ func TestBaseMaterialsResource_Identify(t *testing.T) {
 	}
 }
 
-func TestObjectResource_Identify(t *testing.T) {
-	tests := []struct {
-		name  string
-		o     *ObjectResource
-		want  string
-		want1 uint32
-	}{
-		{"base", &ObjectResource{ID: 1, ModelPath: "/3D/3dmodel.model"}, "/3D/3dmodel.model", 1},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := tt.o.Identify()
-			if got != tt.want {
-				t.Errorf("ObjectResource.Identify() got = %v, want %v", got, tt.want)
-			}
-			if got1 != tt.want1 {
-				t.Errorf("ObjectResource.Identify() got = %v, want %v", got1, tt.want1)
-			}
-		})
-	}
-}
-
-func TestModel_UnusedID(t *testing.T) {
+func TestResources_UnusedID(t *testing.T) {
 	tests := []struct {
 		name string
-		m    *Model
+		m    *Resources
 		want uint32
 	}{
-		{"empty", new(Model), 1},
-		{"one", &Model{Resources: []Resource{&ObjectResource{ID: 2}}}, 1},
-		{"two", &Model{Resources: []Resource{&ObjectResource{ID: 1}}}, 2},
-		{"sequence", &Model{Resources: []Resource{&ObjectResource{ID: 1}, &ObjectResource{ID: 2}}}, 3},
-		{"sparce", &Model{Resources: []Resource{&ObjectResource{ID: 1}, &ObjectResource{ID: 3}}}, 2},
+		{"empty", new(Resources), 1},
+		{"one-asset", &Resources{Assets: []Resource{&BaseMaterialsResource{ID: 2}}}, 1},
+		{"one-object", &Resources{Objects: []*ObjectResource{{ID: 2}}}, 1},
+		{"two", &Resources{Assets: []Resource{&BaseMaterialsResource{ID: 1}}}, 2},
+		{"sequence", &Resources{Assets: []Resource{&BaseMaterialsResource{ID: 1}}, Objects: []*ObjectResource{{ID: 2}}}, 3},
+		{"sparce", &Resources{Assets: []Resource{&BaseMaterialsResource{ID: 1}}, Objects: []*ObjectResource{{ID: 3}}}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.m.UnusedID(); got != tt.want {
-				t.Errorf("Model.UnusedID() = %v, want %v", got, tt.want)
+				t.Errorf("Resources.UnusedID() = %v, want %v", got, tt.want)
 			}
 		})
 	}

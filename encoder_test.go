@@ -18,37 +18,43 @@ func TestMarshalModel(t *testing.T) {
 		Units: UnitMillimeter, Language: "en-US", Path: "/3D/3dmodel.model", Thumbnail: "/thumbnail.png",
 		Namespaces:         []xml.Name{{Space: fakeExtension, Local: "qm"}},
 		RequiredExtensions: []string{fakeExtension},
-		Resources: []Resource{
-			&BaseMaterialsResource{ID: 5, ModelPath: "/3D/3dmodel.model", Materials: []BaseMaterial{
+		Resources: []*Resources{{
+			Assets: []Resource{&BaseMaterialsResource{ID: 5, ModelPath: "/3D/3dmodel.model", Materials: []BaseMaterial{
 				{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 				{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
-			}}, &ObjectResource{ID: 8, Name: "Box 1", PartNumber: "11111111-1111-1111-1111-111111111111", Thumbnail: "/a.png",
-				ModelPath:         "/3D/3dmodel.model",
-				DefaultPropertyID: 1, DefaultPropertyIndex: 1, ObjectType: ObjectTypeModel, Mesh: &Mesh{
-					Nodes: []Point3D{
-						{0, 0, 0}, {100, 0, 0}, {100, 100, 0},
-						{0, 100, 0}, {0, 0, 100}, {100, 0, 100},
-						{100, 100, 100}, {0, 100, 100}},
-					Faces: []Face{
-						{NodeIndices: [3]uint32{3, 2, 1}, PID: 5},
-						{NodeIndices: [3]uint32{1, 0, 3}, PID: 5},
-						{NodeIndices: [3]uint32{4, 5, 6}, PID: 5, ResourceIndices: [3]uint32{1, 1, 1}},
-						{NodeIndices: [3]uint32{6, 7, 4}, PID: 5, ResourceIndices: [3]uint32{1, 1, 1}},
-						{NodeIndices: [3]uint32{0, 1, 5}, PID: 5, ResourceIndices: [3]uint32{0, 1, 2}},
-						{NodeIndices: [3]uint32{5, 4, 0}, PID: 5, ResourceIndices: [3]uint32{3, 0, 2}},
-						{NodeIndices: [3]uint32{1, 2, 6}, PID: 5, ResourceIndices: [3]uint32{0, 1, 2}},
-						{NodeIndices: [3]uint32{6, 5, 1}, PID: 5, ResourceIndices: [3]uint32{2, 1, 3}},
-						{NodeIndices: [3]uint32{2, 3, 7}, PID: 5},
-						{NodeIndices: [3]uint32{7, 6, 2}, PID: 5},
-						{NodeIndices: [3]uint32{3, 0, 4}, PID: 5},
-						{NodeIndices: [3]uint32{4, 7, 3}, PID: 5},
-					},
-				}},
-			&ObjectResource{
-				ID: 20, ModelPath: "/3D/3dmodel.model", ObjectType: ObjectTypeSupport,
-				Metadata:   []Metadata{{Name: "qm:CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: "qm:CustomMetadata4", Type: "xs:boolean", Value: "2"}},
-				Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
-			}}, Build: Build{Items: []*Item{
+			}}},
+			Objects: []*ObjectResource{
+				{
+					ID: 8, Name: "Box 1", PartNumber: "11111111-1111-1111-1111-111111111111", Thumbnail: "/a.png",
+					ModelPath:         "/3D/3dmodel.model",
+					DefaultPropertyID: 1, DefaultPropertyIndex: 1, ObjectType: ObjectTypeModel, Mesh: &Mesh{
+						Nodes: []Point3D{
+							{0, 0, 0}, {100, 0, 0}, {100, 100, 0},
+							{0, 100, 0}, {0, 0, 100}, {100, 0, 100},
+							{100, 100, 100}, {0, 100, 100}},
+						Faces: []Face{
+							{NodeIndices: [3]uint32{3, 2, 1}, PID: 5},
+							{NodeIndices: [3]uint32{1, 0, 3}, PID: 5},
+							{NodeIndices: [3]uint32{4, 5, 6}, PID: 5, ResourceIndices: [3]uint32{1, 1, 1}},
+							{NodeIndices: [3]uint32{6, 7, 4}, PID: 5, ResourceIndices: [3]uint32{1, 1, 1}},
+							{NodeIndices: [3]uint32{0, 1, 5}, PID: 5, ResourceIndices: [3]uint32{0, 1, 2}},
+							{NodeIndices: [3]uint32{5, 4, 0}, PID: 5, ResourceIndices: [3]uint32{3, 0, 2}},
+							{NodeIndices: [3]uint32{1, 2, 6}, PID: 5, ResourceIndices: [3]uint32{0, 1, 2}},
+							{NodeIndices: [3]uint32{6, 5, 1}, PID: 5, ResourceIndices: [3]uint32{2, 1, 3}},
+							{NodeIndices: [3]uint32{2, 3, 7}, PID: 5},
+							{NodeIndices: [3]uint32{7, 6, 2}, PID: 5},
+							{NodeIndices: [3]uint32{3, 0, 4}, PID: 5},
+							{NodeIndices: [3]uint32{4, 7, 3}, PID: 5},
+						},
+					}},
+				{
+					ID: 20, ModelPath: "/3D/3dmodel.model", ObjectType: ObjectTypeSupport,
+					Metadata:   []Metadata{{Name: "qm:CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: "qm:CustomMetadata4", Type: "xs:boolean", Value: "2"}},
+					Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
+				},
+			},
+		}},
+		Build: Build{Items: []*Item{
 			{
 				ObjectID: 20, PartNumber: "bob", Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
 				Metadata: []Metadata{{Name: "qm:CustomMetadata3", Type: "xs:boolean", Value: "1"}},

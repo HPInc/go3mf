@@ -26,9 +26,11 @@ func TestDecode(t *testing.T) {
 		},
 	}
 
-	want := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "p"}}}
 	otherMesh := &go3mf.ObjectResource{Mesh: new(go3mf.Mesh), ID: 8, ModelPath: "/3D/other.model"}
-	want.Resources = append(want.Resources, otherMesh, components)
+	want := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "p"}}, Resources: []*go3mf.Resources{
+		{Objects: []*go3mf.ObjectResource{otherMesh}},
+		{Objects: []*go3mf.ObjectResource{components}},
+	}}
 	*BuildAttr(&want.Build) = UUID("e9e25302-6428-402e-8633-cc95528d0ed3")
 	want.Build.Items = append(want.Build.Items, &go3mf.Item{ObjectID: 20,
 		ExtensionAttr: go3mf.ExtensionAttr{ExtensionName: &PathUUID{UUID: UUID("e9e25302-6428-402e-8633-cc95528d0ed2")}},
@@ -41,7 +43,7 @@ func TestDecode(t *testing.T) {
 	})
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"
-	got.Resources = append(got.Resources, otherMesh)
+	got.Resources = append(got.Resources, &go3mf.Resources{Objects: []*go3mf.ObjectResource{otherMesh}})
 	rootFile := `
 		<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:p="http://schemas.microsoft.com/3dmanufacturing/production/2015/06">
 		<resources>

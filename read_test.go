@@ -291,8 +291,10 @@ func TestDecoder_processRootModel(t *testing.T) {
 		Units: UnitMillimeter, Language: "en-US", Path: "/3D/3dmodel.model", Thumbnail: "/thumbnail.png",
 		Namespaces:         []xml.Name{{Space: fakeExtension, Local: "qm"}},
 		RequiredExtensions: []string{fakeExtension},
+		Resources: []*Resources{
+			{Assets: []Resource{baseMaterials}, Objects: []*ObjectResource{meshRes, components}},
+		},
 	}
-	want.Resources = append(want.Resources, baseMaterials, meshRes, components)
 	want.Build.Items = append(want.Build.Items, &Item{
 		ObjectID: 20, PartNumber: "bob", Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
 		Metadata: []Metadata{{Name: "qm:CustomMetadata3", Type: "xs:boolean", Value: "1"}},
@@ -402,12 +404,16 @@ func TestDecoder_processNonRootModels(t *testing.T) {
 				</resources>
 			`).build("/3D/other.model"),
 		}}, false, &Model{
-			Resources: []Resource{
-				&BaseMaterialsResource{ID: 5, ModelPath: "/3D/new.model", Materials: []BaseMaterial{
-					{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
-					{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
-				}},
-				&BaseMaterialsResource{ID: 6, ModelPath: "/3D/other.model"},
+			Resources: []*Resources{
+				{
+					Assets: []Resource{
+						&BaseMaterialsResource{ID: 5, ModelPath: "/3D/new.model", Materials: []BaseMaterial{
+							{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
+							{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
+						}}},
+				}, {
+					Assets: []Resource{&BaseMaterialsResource{ID: 6, ModelPath: "/3D/other.model"}},
+				},
 			},
 		}},
 		{"noAtt", new(Model), new(Decoder), false, new(Model)},

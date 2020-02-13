@@ -106,32 +106,28 @@ type Build struct {
 	ExtensionAttr ExtensionAttr
 }
 
-// A Model is an in memory representation of the 3MF file.
-type Model struct {
-	Path               string
-	Language           string
-	Units              Units
-	Thumbnail          string
-	Metadata           []Metadata
-	Resources          []Resource
-	Build              Build
-	Attachments        []*Attachment
-	Namespaces         []xml.Name
-	RequiredExtensions []string
-	Extension          Extension
-	ExtensionAttr      ExtensionAttr
+// The Resources element acts as the root element of a library of constituent
+// pieces of the overall 3D object definition.
+type Resources struct {
+	Path          string
+	Assets        []Resource
+	Objects       []*ObjectResource
+	ExtensionAttr ExtensionAttr
 }
 
 // UnusedID returns the lowest unused ID.
-func (m *Model) UnusedID() uint32 {
-	if len(m.Resources) == 0 {
+func (rs *Resources) UnusedID() uint32 {
+	if len(rs.Assets) == 0 && len(rs.Objects) == 0 {
 		return 1
 	}
-	ids := make([]int, len(m.Resources)+1)
+	ids := make([]int, len(rs.Assets)+len(rs.Objects)+1)
 	ids[0] = 0
-	for i, r := range m.Resources {
+	for i, r := range rs.Assets {
 		_, id := r.Identify()
 		ids[i+1] = int(id)
+	}
+	for i, o := range rs.Objects {
+		ids[len(rs.Assets)+i+1] = int(o.ID)
 	}
 	sort.Ints(ids)
 	lowest := 0
@@ -146,38 +142,66 @@ func (m *Model) UnusedID() uint32 {
 	return uint32(lowest)
 }
 
-// MustFindObject returns the object with the target path and unique ID.
-// It is guaranteed not to panic if the Model has not been modified from the last validation.
-// If path is empty the resource will be searched in the root model.
-func (m *Model) MustFindObject(path string, id uint32) *ObjectResource {
-	return m.MustFindResource(path, id).(*ObjectResource)
-}
-
-// MustFindResource returns the resource with the target path and unique ID.
-// It is guaranteed not to panic if the Model has not been modified from the last validation.
-// If path is empty the resource will be searched in the root model.
-func (m *Model) MustFindResource(path string, id uint32) Resource {
-	r, ok := m.FindResource(path, id)
-	if !ok {
-		panic("go3mf: object does not exist")
+// FindObject returns the resource with the target ID.
+func (rs *Resources) FindObject(id uint32) (*ObjectResource, bool) {
+	for _, value := range rs.Objects {
+		if value.ID == id {
+			return value, true
+		}
 	}
-	return r
+	return nil, false
 }
 
-// FindResource returns the resource with the target path and unique ID.
-// If path is empty the resource will be searched in the root model.
-func (m *Model) FindResource(path string, id uint32) (r Resource, ok bool) {
+// FindAsset returns the resource with the target ID.
+func (rs *Resources) FindAsset(id uint32) (Resource, bool) {
+	for _, value := range rs.Assets {
+		if _, rID := value.Identify(); rID == id {
+			return value, true
+		}
+	}
+	return nil, false
+}
+
+// A Model is an in memory representation of the 3MF file.
+type Model struct {
+	Path               string
+	Language           string
+	Units              Units
+	Thumbnail          string
+	Metadata           []Metadata
+	Resources          []*Resources
+	Build              Build
+	Attachments        []*Attachment
+	Namespaces         []xml.Name
+	RequiredExtensions []string
+	Extension          Extension
+	ExtensionAttr      ExtensionAttr
+}
+
+// FindAsset returns the resource with the target path and ID.
+func (m *Model) FindAsset(path string, id uint32) (Resource, bool) {
 	if path == "" {
 		path = m.Path
 	}
-	for _, value := range m.Resources {
-		if rPath, rID := value.Identify(); rID == id && rPath == path {
-			r = value
-			ok = true
-			break
+	for _, rs := range m.Resources {
+		if rs.Path == path {
+			return rs.FindAsset(id)
 		}
 	}
-	return
+	return nil, false
+}
+
+// FindObject returns the object with the target path and ID.
+func (m *Model) FindObject(path string, id uint32) (*ObjectResource, bool) {
+	if path == "" {
+		path = m.Path
+	}
+	for _, rs := range m.Resources {
+		if rs.Path == path {
+			return rs.FindObject(id)
+		}
+	}
+	return nil, false
 }
 
 // BaseMaterial defines the Model Base Material Resource.
@@ -240,11 +264,6 @@ func NewMeshResource() *ObjectResource {
 // with an initialized components.
 func NewComponentsResource() *ObjectResource {
 	return &ObjectResource{Components: make([]*Component, 0)}
-}
-
-// Identify returns the unique ID of the resource.
-func (o *ObjectResource) Identify() (string, uint32) {
-	return o.ModelPath, o.ID
 }
 
 // IsValid checks if the mesh resource are valid.

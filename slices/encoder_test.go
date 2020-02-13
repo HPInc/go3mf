@@ -10,7 +10,7 @@ import (
 
 func TestMarshalModel(t *testing.T) {
 	otherSlices := &SliceStackResource{
-		ID: 10, ModelPath: "/3D/3dmodel.model",
+		ID: 10, ModelPath: "/2D/2dmodel.model",
 		BottomZ: 2,
 		Slices: []*Slice{
 			{
@@ -34,15 +34,17 @@ func TestMarshalModel(t *testing.T) {
 			},
 		},
 	}
-	sliceStackRef := &SliceStackResource{ID: 7, ModelPath: "/3D/3dmodel.model", BottomZ: 1.1, Refs: []SliceRef{{SliceStackID: 10, Path: "/3D/3dmodel.model"}}}
+	sliceStackRef := &SliceStackResource{ID: 7, ModelPath: "/3D/3dmodel.model", BottomZ: 1.1, Refs: []SliceRef{{SliceStackID: 10, Path: "/2D/2dmodel.model"}}}
 	meshRes := &go3mf.ObjectResource{
 		Mesh: new(go3mf.Mesh),
 		ID:   8, Name: "Box 1", ModelPath: "/3D/3dmodel.model",
 		ExtensionAttr: go3mf.ExtensionAttr{ExtensionName: &SliceStackInfo{SliceStackID: 3, SliceResolution: ResolutionLow}},
 	}
 
-	m := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "s"}}}
-	m.Resources = append(m.Resources, otherSlices, sliceStack, sliceStackRef, meshRes)
+	m := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "s"}}, Resources: []*go3mf.Resources{
+		{Assets: []go3mf.Resource{otherSlices}},
+		{Assets: []go3mf.Resource{sliceStack, sliceStackRef}, Objects: []*go3mf.ObjectResource{meshRes}},
+	}}
 
 	t.Run("base", func(t *testing.T) {
 		b, err := go3mf.MarshalModel(m)
