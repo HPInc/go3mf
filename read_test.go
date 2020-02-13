@@ -210,8 +210,8 @@ func TestDecoder_processOPC(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.d.RegisterFileFilterExtension("", func(relType string, isRoot bool) bool {
-				return relType == extType || (isRoot && relType == RelTypeModel3D)
+			tt.d.RegisterFileFilterExtension("", func(relType string) bool {
+				return relType == extType || relType == RelTypeModel3D
 			})
 			model := new(Model)
 			_, err := tt.d.processOPC(model)

@@ -12,8 +12,8 @@ func RegisterExtension(d *go3mf.Decoder) {
 	d.RegisterFileFilterExtension(ExtensionName, fileFilter)
 }
 
-func fileFilter(relType string, isRootModel bool) bool {
-	return isRootModel && relType == go3mf.RelTypeModel3D
+func fileFilter(relType string) bool {
+	return relType == go3mf.RelTypeModel3D
 }
 
 func decodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {

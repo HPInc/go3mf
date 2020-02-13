@@ -7,7 +7,7 @@ import (
 	"sort"
 )
 
-// ExtensionsAttr is an extension point containing <anyAttribute> information.
+// ExtensionAttr is an extension point containing <anyAttribute> information.
 // The key should be the extension namespace.
 type ExtensionAttr map[string]MarshalerAttr
 

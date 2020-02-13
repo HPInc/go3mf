@@ -17,7 +17,7 @@ var checkEveryBytes = int64(4 * 1024 * 1024)
 type extensionDecoderWrapper struct {
 	newNodeDecoder  func(interface{}, string) NodeDecoder
 	decodeAttribute func(*Scanner, interface{}, xml.Attr)
-	fileFilter      func(string, bool) bool
+	fileFilter      func(string) bool
 }
 
 func (e *extensionDecoderWrapper) NewNodeDecoder(parentNode interface{}, nodeName string) NodeDecoder {
@@ -33,9 +33,9 @@ func (e *extensionDecoderWrapper) DecodeAttribute(s *Scanner, parentNode interfa
 	}
 }
 
-func (e *extensionDecoderWrapper) FileFilter(relType string, isRootModel bool) bool {
+func (e *extensionDecoderWrapper) FileFilter(relType string) bool {
 	if e.fileFilter != nil {
-		return e.fileFilter(relType, isRootModel)
+		return e.fileFilter(relType)
 	}
 	return false
 }
@@ -249,7 +249,7 @@ func (d *Decoder) RegisterDecodeAttributeExtension(key string, f func(s *Scanner
 // should be preserved as an attachment or not. If the file is accepted and it is a 3dmodel
 // it will processed decoded. It can happen that a file is preserved even if this method is
 // not called or it is discarded as other packages could accept it.
-func (d *Decoder) RegisterFileFilterExtension(key string, f func(relType string, isRootModel bool) bool) {
+func (d *Decoder) RegisterFileFilterExtension(key string, f func(relType string) bool) {
 	if e, ok := d.extensionDecoder[key]; ok {
 		e.fileFilter = f
 	} else {
@@ -382,7 +382,7 @@ func (d *Decoder) extractCoreAttachments(file packageFile, model *Model, isRoot 
 		preserve := relType == RelTypePrintTicket || relType == RelTypeThumbnail
 		if !preserve {
 			for _, ext := range d.extensionDecoder {
-				if ext.FileFilter(relType, isRoot) {
+				if ext.FileFilter(relType) {
 					preserve = true
 					break
 				}
@@ -392,7 +392,7 @@ func (d *Decoder) extractCoreAttachments(file packageFile, model *Model, isRoot 
 			continue
 		}
 		if file, ok := file.FindFileFromName(rel.TargetURI); ok {
-			if relType == RelTypeModel3D {
+			if isRoot && relType == RelTypeModel3D {
 				d.nonRootModels = append(d.nonRootModels, file)
 			} else {
 				model.Attachments = d.addAttachment(model.Attachments, file, relType)

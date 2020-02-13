@@ -14,7 +14,7 @@ func RegisterExtension(d *go3mf.Decoder) {
 	d.RegisterFileFilterExtension(ExtensionName, fileFilter)
 }
 
-func fileFilter(relType string, _ bool) bool {
+func fileFilter(relType string) bool {
 	return relType == RelTypeTexture3D
 }
 

@@ -122,21 +122,19 @@ func TestDecode_warns(t *testing.T) {
 
 func Test_fileFilter(t *testing.T) {
 	type args struct {
-		relType     string
-		isRootModel bool
+		relType string
 	}
 	tests := []struct {
 		name string
 		args args
 		want bool
 	}{
-		{"accepted", args{go3mf.RelTypeModel3D, true}, true},
-		{"rejected-noroot", args{go3mf.RelTypeModel3D, false}, false},
-		{"rejected-nomodel3d", args{"other", true}, false},
+		{"accepted", args{go3mf.RelTypeModel3D}, true},
+		{"rejected-nomodel3d", args{"other"}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := fileFilter(tt.args.relType, tt.args.isRootModel); got != tt.want {
+			if got := fileFilter(tt.args.relType); got != tt.want {
 				t.Errorf("fileFilter() = %v, want %v", got, tt.want)
 			}
 		})

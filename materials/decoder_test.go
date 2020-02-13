@@ -220,7 +220,7 @@ func Test_fileFilter(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := fileFilter(tt.args.relType, true); got != tt.want {
+			if got := fileFilter(tt.args.relType); got != tt.want {
 				t.Errorf("fileFilter() = %v, want %v", got, tt.want)
 			}
 		})
