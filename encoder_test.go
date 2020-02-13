@@ -16,7 +16,8 @@ import (
 func TestMarshalModel(t *testing.T) {
 	m := &Model{
 		Units: UnitMillimeter, Language: "en-US", Path: "/3D/3dmodel.model", Thumbnail: "/thumbnail.png",
-		Namespaces: []xml.Name{{Space: fakeExtension, Local: "qm"}},
+		Namespaces:         []xml.Name{{Space: fakeExtension, Local: "qm"}},
+		RequiredExtensions: []string{fakeExtension},
 		Resources: []Resource{
 			&BaseMaterialsResource{ID: 5, ModelPath: "/3D/3dmodel.model", Materials: []BaseMaterial{
 				{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},

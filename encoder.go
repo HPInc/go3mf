@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"strings"
 )
 
 const defaultFloatPrecision = 6
@@ -110,6 +111,21 @@ func (e *Encoder) writeModel(x *XMLEncoder, m *Model) error {
 	}
 	for _, a := range m.Namespaces {
 		attrs = append(attrs, xml.Attr{Name: xml.Name{Space: attrXmlns, Local: a.Local}, Value: a.Space})
+	}
+	if len(m.RequiredExtensions) != 0 {
+		exts := make([]string, len(m.RequiredExtensions))
+		for i, ns := range m.RequiredExtensions {
+			for _, a := range m.Namespaces {
+				if a.Space == ns {
+					exts[i] = a.Local
+					break
+				}
+			}
+			if exts[i] == "" {
+				return fmt.Errorf("go3mf: cannot encode model with undefined required extension '%s'", ns)
+			}
+		}
+		attrs = append(attrs, xml.Attr{Name: xml.Name{Local: attrReqExt}, Value: strings.Join(exts, " ")})
 	}
 
 	tm := xml.StartElement{Name: xml.Name{Local: attrModel}, Attr: attrs}
