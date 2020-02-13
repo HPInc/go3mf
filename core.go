@@ -97,15 +97,16 @@ type Build struct {
 
 // A Model is an in memory representation of the 3MF file.
 type Model struct {
-	Path        string
-	Language    string
-	Units       Units
-	Thumbnail   string
-	Metadata    []Metadata
-	Resources   []Resource
-	Build       Build
-	Attachments []*Attachment
-	Namespaces  []xml.Name
+	Path               string
+	Language           string
+	Units              Units
+	Thumbnail          string
+	Metadata           []Metadata
+	Resources          []Resource
+	Build              Build
+	Attachments        []*Attachment
+	Namespaces         []xml.Name
+	RequiredExtensions []string
 }
 
 // UnusedID returns the lowest unused ID.

@@ -35,7 +35,7 @@ func (d *modelDecoder) Attributes(attrs []xml.Attr) {
 	if !d.Scanner.IsRoot {
 		return
 	}
-	var requiredExts string
+
 	for _, a := range attrs {
 		if a.Name.Space == "" {
 			switch a.Name.Local {
@@ -47,20 +47,21 @@ func (d *modelDecoder) Attributes(attrs []xml.Attr) {
 			case attrThumbnail:
 				d.model.Thumbnail = a.Value
 			case attrReqExt:
-				requiredExts = a.Value
+				d.model.RequiredExtensions = strings.Fields(a.Value)
 			}
 		} else {
 			d.noCoreAttribute(a)
 		}
 	}
 
-	d.checkRequiredExt(requiredExts)
-}
-
-func (d *modelDecoder) checkRequiredExt(requiredExts string) {
-	for _, ext := range strings.Fields(requiredExts) {
-		if _, ok := d.Scanner.Namespace(ext); !ok {
-			d.Scanner.GenericError(true, fmt.Sprintf("'%s' extension is not supported", ext))
+	for i, ext := range d.model.RequiredExtensions {
+		if ns, ok := d.Scanner.Namespace(ext); ok {
+			d.model.RequiredExtensions[i] = ns
+			if _, ok := d.Scanner.extensionDecoder[ns]; !ok {
+				d.Scanner.GenericError(true, fmt.Sprintf("'%s' extension is not supported", ext))
+			}
+		} else {
+			d.Scanner.GenericError(true, fmt.Sprintf("'%s' extension is not defined", ext))
 		}
 	}
 }

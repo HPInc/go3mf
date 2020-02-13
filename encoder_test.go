@@ -16,7 +16,7 @@ import (
 func TestMarshalModel(t *testing.T) {
 	m := &Model{
 		Units: UnitMillimeter, Language: "en-US", Path: "/3D/3dmodel.model", Thumbnail: "/thumbnail.png",
-		Namespaces: []xml.Name{{Space: fakeExtenstion, Local: "qm"}},
+		Namespaces: []xml.Name{{Space: fakeExtension, Local: "qm"}},
 		Resources: []Resource{
 			&BaseMaterialsResource{ID: 5, ModelPath: "/3D/3dmodel.model", Materials: []BaseMaterial{
 				{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
@@ -65,8 +65,8 @@ func TestMarshalModel(t *testing.T) {
 			return
 		}
 		d := NewDecoder(nil, 0)
-		d.RegisterNodeDecoderExtension(fakeExtenstion, nil)
-		d.RegisterDecodeAttributeExtension(fakeExtenstion, nil)
+		d.RegisterNodeDecoderExtension(fakeExtension, nil)
+		d.RegisterDecodeAttributeExtension(fakeExtension, nil)
 		newModel := new(Model)
 		newModel.Path = m.Path
 		if err := d.UnmarshalModel(b, newModel); err != nil {

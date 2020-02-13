@@ -18,7 +18,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-const fakeExtenstion = "http://dummy.com/fake_ext"
+const fakeExtension = "http://dummy.com/fake_ext"
 
 type modelBuilder struct {
 	str      strings.Builder
@@ -49,7 +49,7 @@ func (m *modelBuilder) withDefaultModel() *modelBuilder {
 func (m *modelBuilder) withModel(unit string, lang string, thumbnail string) *modelBuilder {
 	m.str.WriteString(`<model `)
 	m.addAttr("", "unit", unit).addAttr("xml", "lang", lang)
-	m.addAttr("", "xmlns", ExtensionName).addAttr("xmlns", "qm", fakeExtenstion)
+	m.addAttr("", "xmlns", ExtensionName).addAttr("xmlns", "qm", fakeExtension)
 	m.addAttr("", "requiredextensions", "qm")
 	if thumbnail != "" {
 		m.addAttr("", "thumbnail", thumbnail)
@@ -289,7 +289,8 @@ func TestDecoder_processRootModel(t *testing.T) {
 
 	want := &Model{
 		Units: UnitMillimeter, Language: "en-US", Path: "/3D/3dmodel.model", Thumbnail: "/thumbnail.png",
-		Namespaces: []xml.Name{{Space: fakeExtenstion, Local: "qm"}},
+		Namespaces:         []xml.Name{{Space: fakeExtension, Local: "qm"}},
+		RequiredExtensions: []string{fakeExtension},
 	}
 	want.Resources = append(want.Resources, baseMaterials, meshRes, components)
 	want.Build.Items = append(want.Build.Items, &Item{
@@ -360,8 +361,8 @@ func TestDecoder_processRootModel(t *testing.T) {
 
 	t.Run("base", func(t *testing.T) {
 		d := new(Decoder)
-		d.RegisterNodeDecoderExtension(fakeExtenstion, nil)
-		d.RegisterDecodeAttributeExtension(fakeExtenstion, nil)
+		d.RegisterNodeDecoderExtension(fakeExtension, nil)
+		d.RegisterDecodeAttributeExtension(fakeExtension, nil)
 		d.Strict = true
 		d.SetDecompressor(func(r io.Reader) io.ReadCloser { return flate.NewReader(r) })
 		d.SetXMLDecoder(func(r io.Reader) XMLDecoder { return xml.NewDecoder(r) })
@@ -510,6 +511,7 @@ func TestNewDecoder(t *testing.T) {
 
 func TestDecoder_processRootModel_warns(t *testing.T) {
 	want := []error{
+		GenericError{Element: "model", ModelPath: "/3D/3dmodel.model", Message: "'other' extension is not defined"},
 		ParsePropertyError{ResourceID: 0, Element: "base", Name: "displaycolor", Value: "0000FF", ModelPath: "/3D/3dmodel.model", Type: PropertyRequired},
 		MissingPropertyError{ResourceID: 0, Element: "base", ModelPath: "/3D/3dmodel.model", Name: "name"},
 		MissingPropertyError{ResourceID: 0, Element: "base", ModelPath: "/3D/3dmodel.model", Name: "displaycolor"},
@@ -539,7 +541,9 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 	}
 	got := new(Model)
 	got.Path = "/3D/3dmodel.model"
-	rootFile := new(modelBuilder).withDefaultModel().withElement(`
+	rootFile := new(modelBuilder).withElement(`
+		<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" 
+		xmlns:qm="http://dummy.com/fake_ext" requiredextensions="qm other">
 		<resources>
 			<basematerials>
 				<base name="Blue PLA" displaycolor="0000FF" />
@@ -599,12 +603,13 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 		<metadata name="qm:CustomMetadata1" type="xs:string" preserve="1">CE8A91FB-C44E-4F00-B634-BAA411465F6A</metadata>
 		<metadata name="unknown:CustomMetadata1" type="xs:string" preserve="1">CE8A91FB-C44E-4F00-B634-BAA411465F6A</metadata>
 		<other />
+		</model>
 		`).build("")
 
 	t.Run("base", func(t *testing.T) {
 		d := new(Decoder)
-		d.RegisterNodeDecoderExtension(fakeExtenstion, nil)
-		d.RegisterDecodeAttributeExtension(fakeExtenstion, nil)
+		d.RegisterNodeDecoderExtension(fakeExtension, nil)
+		d.RegisterDecodeAttributeExtension(fakeExtension, nil)
 		d.Strict = false
 		d.SetDecompressor(func(r io.Reader) io.ReadCloser { return flate.NewReader(r) })
 		d.SetXMLDecoder(func(r io.Reader) XMLDecoder { return xml.NewDecoder(r) })
