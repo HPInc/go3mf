@@ -22,7 +22,7 @@ type PathUUID struct {
 	Path string
 }
 
-func extractUUID(ext go3mf.Extensions) *UUID {
+func extractUUID(ext go3mf.ExtensionAttr) *UUID {
 	if attr, ok := ext[ExtensionName]; ok {
 		return attr.(*UUID)
 	}
@@ -32,7 +32,7 @@ func extractUUID(ext go3mf.Extensions) *UUID {
 	return pa
 }
 
-func extractPathUUID(ext go3mf.Extensions) *PathUUID {
+func extractPathUUID(ext go3mf.ExtensionAttr) *PathUUID {
 	if attr, ok := ext[ExtensionName]; ok {
 		return attr.(*PathUUID)
 	}
@@ -44,37 +44,37 @@ func extractPathUUID(ext go3mf.Extensions) *PathUUID {
 // BuildAttr extracts the UUID attributes from a Build.
 // Returns an empty UUID if it does not exist, never nil.
 func BuildAttr(b *go3mf.Build) *UUID {
-	if b.Extensions == nil {
-		b.Extensions = make(go3mf.Extensions)
+	if b.ExtensionAttr == nil {
+		b.ExtensionAttr = make(go3mf.ExtensionAttr)
 	}
-	return extractUUID(b.Extensions)
+	return extractUUID(b.ExtensionAttr)
 }
 
 // ItemAttr extracts the Path and UUID attributes from an Item.
 // Returns an empty PathUUID if it does not exist, never nil.
 func ItemAttr(item *go3mf.Item) *PathUUID {
-	if item.Extensions == nil {
-		item.Extensions = make(go3mf.Extensions)
+	if item.ExtensionAttr == nil {
+		item.ExtensionAttr = make(go3mf.ExtensionAttr)
 	}
-	return extractPathUUID(item.Extensions)
+	return extractPathUUID(item.ExtensionAttr)
 }
 
 // ComponentAttr extracts the Pathn and UUID attributes from a Component.
 // Returns an empty PathUUID if it does not exist, never nil.
 func ComponentAttr(c *go3mf.Component) *PathUUID {
-	if c.Extensions == nil {
-		c.Extensions = make(go3mf.Extensions)
+	if c.ExtensionAttr == nil {
+		c.ExtensionAttr = make(go3mf.ExtensionAttr)
 	}
-	return extractPathUUID(c.Extensions)
+	return extractPathUUID(c.ExtensionAttr)
 }
 
 // ObjectAttr extracts the UUID attributes from a ObjectResource.
 // Returns an empty UUID if it does not exist, never nil.
 func ObjectAttr(o *go3mf.ObjectResource) *UUID {
-	if o.Extensions == nil {
-		o.Extensions = make(go3mf.Extensions)
+	if o.ExtensionAttr == nil {
+		o.ExtensionAttr = make(go3mf.ExtensionAttr)
 	}
-	return extractUUID(o.Extensions)
+	return extractUUID(o.ExtensionAttr)
 }
 
 const (

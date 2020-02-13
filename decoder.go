@@ -27,6 +27,8 @@ func (d *modelDecoder) Child(name xml.Name) (child NodeDecoder) {
 				child = &metadataDecoder{metadatas: &d.model.Metadata}
 			}
 		}
+	} else if ext, ok := d.Scanner.extensionDecoder[name.Space]; ok {
+		child = ext.NewNodeDecoder(d.model, name.Local)
 	}
 	return
 }
@@ -76,6 +78,10 @@ func (d *modelDecoder) noCoreAttribute(a xml.Attr) {
 		}
 	case attrXmlns:
 		d.Scanner.Namespaces = append(d.Scanner.Namespaces, xml.Name{Space: a.Value, Local: a.Name.Local})
+	default:
+		if ext, ok := d.Scanner.extensionDecoder[a.Name.Space]; ok {
+			ext.DecodeAttribute(d.Scanner, d.model, a)
+		}
 	}
 }
 

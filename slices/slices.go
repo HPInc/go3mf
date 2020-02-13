@@ -86,14 +86,14 @@ type SliceStackInfo struct {
 // ObjectSliceStackInfo extracts the SliceStackInfo attributes from an ObjectResource.
 // If it does not exist a new one is added.
 func ObjectSliceStackInfo(o *go3mf.ObjectResource) *SliceStackInfo {
-	if attr, ok := o.Extensions[ExtensionName]; ok {
+	if attr, ok := o.ExtensionAttr[ExtensionName]; ok {
 		return attr.(*SliceStackInfo)
 	}
-	if o.Extensions == nil {
-		o.Extensions = make(go3mf.Extensions)
+	if o.ExtensionAttr == nil {
+		o.ExtensionAttr = make(go3mf.ExtensionAttr)
 	}
 	attr := &SliceStackInfo{}
-	o.Extensions[ExtensionName] = attr
+	o.ExtensionAttr[ExtensionName] = attr
 	return attr
 }
 

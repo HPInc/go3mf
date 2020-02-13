@@ -10,10 +10,10 @@ import (
 
 func TestMarshalModel(t *testing.T) {
 	components := &go3mf.ObjectResource{
-		Extensions: go3mf.Extensions{ExtensionName: mustUUID("cb828680-8895-4e08-a1fc-be63e033df15")},
-		ID:         20, ModelPath: "/3D/3dmodel.model",
+		ExtensionAttr: go3mf.ExtensionAttr{ExtensionName: mustUUID("cb828680-8895-4e08-a1fc-be63e033df15")},
+		ID:            20, ModelPath: "/3D/3dmodel.model",
 		Components: []*go3mf.Component{{
-			Extensions: go3mf.Extensions{ExtensionName: &PathUUID{
+			ExtensionAttr: go3mf.ExtensionAttr{ExtensionName: &PathUUID{
 				Path: "/3D/other.model",
 				UUID: UUID("cb828680-8895-4e08-a1fc-be63e033df16"),
 			}},
@@ -25,10 +25,10 @@ func TestMarshalModel(t *testing.T) {
 	m.Resources = append(m.Resources, components)
 	*BuildAttr(&m.Build) = UUID("e9e25302-6428-402e-8633-cc95528d0ed3")
 	m.Build.Items = append(m.Build.Items, &go3mf.Item{ObjectID: 20,
-		Extensions: go3mf.Extensions{ExtensionName: &PathUUID{UUID: UUID("e9e25302-6428-402e-8633-cc95528d0ed2")}},
-		Transform:  go3mf.Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
+		ExtensionAttr: go3mf.ExtensionAttr{ExtensionName: &PathUUID{UUID: UUID("e9e25302-6428-402e-8633-cc95528d0ed2")}},
+		Transform:     go3mf.Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
 	}, &go3mf.Item{ObjectID: 8,
-		Extensions: go3mf.Extensions{ExtensionName: &PathUUID{
+		ExtensionAttr: go3mf.ExtensionAttr{ExtensionName: &PathUUID{
 			Path: "/3D/other.model",
 			UUID: UUID("e9e25302-6428-402e-8633-cc95528d0ed4"),
 		}},

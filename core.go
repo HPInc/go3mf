@@ -7,18 +7,29 @@ import (
 	"sort"
 )
 
-// Extensions is an extension point containing <any> and <anyAttribute> information.
+// ExtensionsAttr is an extension point containing <anyAttribute> information.
 // The key should be the extension namespace.
-type Extensions map[string]interface{}
+type ExtensionAttr map[string]MarshalerAttr
 
-func (e Extensions) encode(x *XMLEncoder, start *xml.StartElement) {
+func (e ExtensionAttr) encode(x *XMLEncoder, start *xml.StartElement) {
 	for _, ext := range e {
-		if ma, ok := ext.(MarshalerAttr); ok {
-			if att, err := ma.Marshal3MFAttr(); err == nil {
-				start.Attr = append(start.Attr, att...)
-			}
+		if att, err := ext.Marshal3MFAttr(); err == nil {
+			start.Attr = append(start.Attr, att...)
 		}
 	}
+}
+
+// Extension is an extension point containing <any> information.
+// The key should be the extension namespace.
+type Extension map[string]Marshaler
+
+func (e Extension) encode(x *XMLEncoder) error {
+	for _, ext := range e {
+		if err := ext.Marshal3MF(x); err == nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Units define the allowed model units.
@@ -91,8 +102,8 @@ type Attachment struct {
 
 // Build contains one or more items to manufacture as part of processing the job.
 type Build struct {
-	Items      []*Item
-	Extensions Extensions
+	Items         []*Item
+	ExtensionAttr ExtensionAttr
 }
 
 // A Model is an in memory representation of the 3MF file.
@@ -107,6 +118,8 @@ type Model struct {
 	Attachments        []*Attachment
 	Namespaces         []xml.Name
 	RequiredExtensions []string
+	Extension          Extension
+	ExtensionAttr      ExtensionAttr
 }
 
 // UnusedID returns the lowest unused ID.
@@ -189,11 +202,11 @@ func (ms *BaseMaterialsResource) Identify() (string, uint32) {
 
 // A Item is an in memory representation of the 3MF build item.
 type Item struct {
-	ObjectID   uint32
-	Transform  Matrix
-	PartNumber string
-	Metadata   []Metadata
-	Extensions Extensions
+	ObjectID      uint32
+	Transform     Matrix
+	PartNumber    string
+	Metadata      []Metadata
+	ExtensionAttr ExtensionAttr
 }
 
 // HasTransform returns true if the transform is different than the identity.
@@ -214,7 +227,7 @@ type ObjectResource struct {
 	Metadata             []Metadata
 	Mesh                 *Mesh
 	Components           []*Component
-	Extensions           Extensions
+	ExtensionAttr        ExtensionAttr
 }
 
 // NewMeshResource returns a new object resource
@@ -260,9 +273,9 @@ func (o *ObjectResource) IsValid() bool {
 
 // A Component is an in memory representation of the 3MF component.
 type Component struct {
-	ObjectID   uint32
-	Transform  Matrix
-	Extensions Extensions
+	ObjectID      uint32
+	Transform     Matrix
+	ExtensionAttr ExtensionAttr
 }
 
 // HasTransform returns true if the transform is different than the identity.
@@ -282,9 +295,10 @@ type Face struct {
 // orientation (i.e. the face can look up or look down) and have three nodes.
 // The orientation is defined by the order of its nodes.
 type Mesh struct {
-	Nodes      []Point3D
-	Faces      []Face
-	Extensions Extensions
+	ExtensionAttr ExtensionAttr
+	Nodes         []Point3D
+	Faces         []Face
+	Extension     Extension
 }
 
 // CheckSanity checks if the mesh is well formated.

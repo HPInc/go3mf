@@ -127,17 +127,16 @@ func (e *Encoder) writeModel(x *XMLEncoder, m *Model) error {
 		}
 		attrs = append(attrs, xml.Attr{Name: xml.Name{Local: attrReqExt}, Value: strings.Join(exts, " ")})
 	}
-
 	tm := xml.StartElement{Name: xml.Name{Local: attrModel}, Attr: attrs}
+	m.ExtensionAttr.encode(x, &tm)
 	x.EncodeToken(tm)
 
 	e.writeMetadata(x, m.Metadata)
-
 	if err := e.writeResources(x, m); err != nil {
 		return err
 	}
-
 	e.writeBuild(x, m)
+	m.Extension.encode(x)
 	x.EncodeToken(tm.End())
 	return x.Flush()
 }
@@ -151,7 +150,7 @@ func (e *Encoder) writeMetadataGroup(x *XMLEncoder, m []Metadata) {
 
 func (e *Encoder) writeBuild(x *XMLEncoder, m *Model) {
 	xb := xml.StartElement{Name: xml.Name{Local: attrBuild}}
-	m.Build.Extensions.encode(x, &xb)
+	m.Build.ExtensionAttr.encode(x, &xb)
 	x.EncodeToken(xb)
 	x.SetAutoClose(true)
 	for _, item := range m.Build.Items {
@@ -168,7 +167,7 @@ func (e *Encoder) writeBuild(x *XMLEncoder, m *Model) {
 				Name: xml.Name{Local: attrPartNumber}, Value: item.PartNumber,
 			})
 		}
-		item.Extensions.encode(x, &xi)
+		item.ExtensionAttr.encode(x, &xi)
 		if len(item.Metadata) != 0 {
 			x.SetAutoClose(false)
 			x.EncodeToken(xi)
@@ -256,7 +255,7 @@ func (e *Encoder) writeObject(x *XMLEncoder, r *ObjectResource) {
 			})
 		}
 	}
-	r.Extensions.encode(x, &xo)
+	r.ExtensionAttr.encode(x, &xo)
 	x.EncodeToken(xo)
 
 	if len(r.Metadata) != 0 {
@@ -284,7 +283,7 @@ func (e *Encoder) writeComponents(x *XMLEncoder, comps []*Component) {
 		if c.HasTransform() {
 			xt.Attr = append(xt.Attr, xml.Attr{Name: xml.Name{Local: attrTransform}, Value: FormatMatrix(c.Transform)})
 		}
-		c.Extensions.encode(x, &xt)
+		c.ExtensionAttr.encode(x, &xt)
 		x.EncodeToken(xt)
 	}
 	x.SetAutoClose(false)
@@ -293,6 +292,7 @@ func (e *Encoder) writeComponents(x *XMLEncoder, comps []*Component) {
 
 func (e *Encoder) writeMesh(x *XMLEncoder, r *ObjectResource, m *Mesh) {
 	xm := xml.StartElement{Name: xml.Name{Local: attrMesh}}
+	m.ExtensionAttr.encode(x, &xm)
 	x.EncodeToken(xm)
 	xvs := xml.StartElement{Name: xml.Name{Local: attrVertices}}
 	x.EncodeToken(xvs)
@@ -342,6 +342,7 @@ func (e *Encoder) writeMesh(x *XMLEncoder, r *ObjectResource, m *Mesh) {
 	}
 	x.SetAutoClose(false)
 	x.EncodeToken(xvt.End())
+	m.Extension.encode(x)
 	x.EncodeToken(xm.End())
 }
 

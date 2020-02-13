@@ -39,7 +39,7 @@ func TestDecode(t *testing.T) {
 	meshRes := &go3mf.ObjectResource{
 		Mesh: new(go3mf.Mesh),
 		ID:   8, Name: "Box 1", ModelPath: "/3D/3dmodel.model",
-		Extensions: go3mf.Extensions{ExtensionName: &SliceStackInfo{SliceStackID: 3, SliceResolution: ResolutionLow}},
+		ExtensionAttr: go3mf.ExtensionAttr{ExtensionName: &SliceStackInfo{SliceStackID: 3, SliceResolution: ResolutionLow}},
 	}
 
 	want := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "s"}}}
