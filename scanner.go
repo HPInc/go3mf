@@ -122,7 +122,7 @@ func (s *Scanner) AddAsset(r Asset) {
 }
 
 // AddObject adds a new resource to the resource cache.
-func (s *Scanner) AddObject(r *ObjectResource) {
+func (s *Scanner) AddObject(r *Object) {
 	s.Resources.Objects = append(s.Resources.Objects, r)
 	s.closeResource()
 }

@@ -304,7 +304,7 @@ func (d *baseMaterialDecoder) Attributes(attrs []xml.Attr) {
 
 type meshDecoder struct {
 	baseDecoder
-	resource *ObjectResource
+	resource *Object
 }
 
 func (d *meshDecoder) Open() {
@@ -367,7 +367,7 @@ func (d *vertexDecoder) Attributes(attrs []xml.Attr) {
 
 type trianglesDecoder struct {
 	baseDecoder
-	resource        *ObjectResource
+	resource        *Object
 	triangleDecoder triangleDecoder
 }
 
@@ -461,7 +461,7 @@ func applyDefault(val, defVal uint32, noDef bool) uint32 {
 
 type objectDecoder struct {
 	baseDecoder
-	resource ObjectResource
+	resource Object
 }
 
 func (d *objectDecoder) Close() {
@@ -527,7 +527,7 @@ func (d *objectDecoder) parseCoreAttr(a xml.Attr) {
 
 type componentsDecoder struct {
 	baseDecoder
-	resource         *ObjectResource
+	resource         *Object
 	componentDecoder componentDecoder
 }
 
@@ -545,7 +545,7 @@ func (d *componentsDecoder) Child(name xml.Name) (child NodeDecoder) {
 
 type componentDecoder struct {
 	baseDecoder
-	resource *ObjectResource
+	resource *Object
 }
 
 func (d *componentDecoder) Attributes(attrs []xml.Attr) {

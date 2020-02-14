@@ -68,9 +68,9 @@ func ComponentAttr(c *go3mf.Component) *PathUUID {
 	return extractPathUUID(c.ExtensionAttr)
 }
 
-// ObjectAttr extracts the UUID attributes from a ObjectResource.
+// ObjectAttr extracts the UUID attributes from a Object.
 // Returns an empty UUID if it does not exist, never nil.
-func ObjectAttr(o *go3mf.ObjectResource) *UUID {
+func ObjectAttr(o *go3mf.Object) *UUID {
 	if o.ExtensionAttr == nil {
 		o.ExtensionAttr = make(go3mf.ExtensionAttr)
 	}

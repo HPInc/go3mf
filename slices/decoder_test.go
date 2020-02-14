@@ -25,14 +25,14 @@ func TestDecode(t *testing.T) {
 		},
 	}
 	sliceStackRef := &SliceStackResource{ID: 7, BottomZ: 1.1, Refs: []SliceRef{{SliceStackID: 10, Path: "/2D/2Dmodel.model"}}}
-	meshRes := &go3mf.ObjectResource{
+	meshRes := &go3mf.Object{
 		Mesh: new(go3mf.Mesh),
 		ID:   8, Name: "Box 1",
 		ExtensionAttr: go3mf.ExtensionAttr{ExtensionName: &SliceStackInfo{SliceStackID: 3, SliceResolution: ResolutionLow}},
 	}
 
 	want := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "s"}}, Resources: go3mf.Resources{
-		Assets: []go3mf.Asset{sliceStack, sliceStackRef}, Objects: []*go3mf.ObjectResource{meshRes},
+		Assets: []go3mf.Asset{sliceStack, sliceStackRef}, Objects: []*go3mf.Object{meshRes},
 	}}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"

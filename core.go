@@ -110,7 +110,7 @@ type Build struct {
 // pieces of the overall 3D object definition.
 type Resources struct {
 	Assets        []Asset
-	Objects       []*ObjectResource
+	Objects       []*Object
 	ExtensionAttr ExtensionAttr
 }
 
@@ -142,7 +142,7 @@ func (rs *Resources) UnusedID() uint32 {
 }
 
 // FindObject returns the resource with the target ID.
-func (rs *Resources) FindObject(id uint32) (*ObjectResource, bool) {
+func (rs *Resources) FindObject(id uint32) (*Object, bool) {
 	for _, value := range rs.Objects {
 		if value.ID == id {
 			return value, true
@@ -199,7 +199,7 @@ func (m *Model) FindAsset(path string, id uint32) (Asset, bool) {
 }
 
 // FindObject returns the object with the target path and ID.
-func (m *Model) FindObject(path string, id uint32) (*ObjectResource, bool) {
+func (m *Model) FindObject(path string, id uint32) (*Object, bool) {
 	if path == "" || path == m.Path {
 		return m.Resources.FindObject(id)
 	}
@@ -242,8 +242,8 @@ func (b *Item) HasTransform() bool {
 	return b.Transform != Matrix{} && b.Transform != Identity()
 }
 
-// An ObjectResource is an in memory representation of the 3MF model object.
-type ObjectResource struct {
+// An Object is an in memory representation of the 3MF model object.
+type Object struct {
 	ID            uint32
 	Name          string
 	PartNumber    string
@@ -257,20 +257,20 @@ type ObjectResource struct {
 	ExtensionAttr ExtensionAttr
 }
 
-// NewMeshResource returns a new object resource
+// NewMeshObject returns a new object resource
 // with an initialized mesh.
-func NewMeshResource() *ObjectResource {
-	return &ObjectResource{Mesh: new(Mesh)}
+func NewMeshObject() *Object {
+	return &Object{Mesh: new(Mesh)}
 }
 
-// NewComponentsResource returns a new object resource
+// NewComponentsObject returns a new object resource
 // with an initialized components.
-func NewComponentsResource() *ObjectResource {
-	return &ObjectResource{Components: make([]*Component, 0)}
+func NewComponentsObject() *Object {
+	return &Object{Components: make([]*Component, 0)}
 }
 
 // IsValid checks if the mesh resource are valid.
-func (o *ObjectResource) IsValid() bool {
+func (o *Object) IsValid() bool {
 	if o.Mesh == nil && o.Components == nil {
 		return false
 	} else if o.Mesh != nil && o.Components != nil {

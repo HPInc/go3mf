@@ -23,7 +23,7 @@ func TestMarshalModel(t *testing.T) {
 				{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 				{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
 			}}},
-			Objects: []*ObjectResource{
+			Objects: []*Object{
 				{
 					ID: 8, Name: "Box 1", PartNumber: "11111111-1111-1111-1111-111111111111", Thumbnail: "/a.png",
 					DefaultPID: 1, DefaultPIndex: 1, ObjectType: ObjectTypeModel, Mesh: &Mesh{

@@ -9,7 +9,7 @@ import (
 )
 
 func TestDecode(t *testing.T) {
-	meshLattice := &go3mf.ObjectResource{
+	meshLattice := &go3mf.Object{
 		ID: 15, Name: "Box",
 		Mesh: &go3mf.Mesh{
 			Extension: go3mf.Extension{
@@ -47,7 +47,7 @@ func TestDecode(t *testing.T) {
 	}...)
 
 	want := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "b"}}, Resources: go3mf.Resources{
-		Objects: []*go3mf.ObjectResource{meshLattice},
+		Objects: []*go3mf.Object{meshLattice},
 	}}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"

@@ -12,7 +12,7 @@ import (
 
 func TestDecode(t *testing.T) {
 	baseTexture := &Texture2DResource{ID: 6, Path: "/3D/Texture/msLogo.png", ContentType: TextureTypePNG, TileStyleU: TileWrap, TileStyleV: TileMirror, Filter: TextureFilterAuto}
-	meshRes := &go3mf.ObjectResource{
+	meshRes := &go3mf.Object{
 		Mesh: new(go3mf.Mesh),
 		ID:   8, Name: "Box 1", Thumbnail: "/a.png", DefaultPID: 5, PartNumber: "11111111-1111-1111-1111-111111111111",
 	}

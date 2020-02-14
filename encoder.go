@@ -232,7 +232,7 @@ func (e *Encoder) writeMetadata(x *XMLEncoder, metadata []Metadata) {
 	}
 }
 
-func (e *Encoder) writeObject(x *XMLEncoder, r *ObjectResource) {
+func (e *Encoder) writeObject(x *XMLEncoder, r *Object) {
 	xo := xml.StartElement{Name: xml.Name{Local: attrObject}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(r.ID), 10)},
 	}}
@@ -295,7 +295,7 @@ func (e *Encoder) writeComponents(x *XMLEncoder, comps []*Component) {
 	x.EncodeToken(xcs.End())
 }
 
-func (e *Encoder) writeMesh(x *XMLEncoder, r *ObjectResource, m *Mesh) {
+func (e *Encoder) writeMesh(x *XMLEncoder, r *Object, m *Mesh) {
 	xm := xml.StartElement{Name: xml.Name{Local: attrMesh}}
 	m.ExtensionAttr.encode(x, &xm)
 	x.EncodeToken(xm)

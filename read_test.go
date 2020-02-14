@@ -249,7 +249,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 		{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 		{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
 	}}
-	meshRes := &ObjectResource{
+	meshRes := &Object{
 		Mesh: new(Mesh),
 		ID:   8, Name: "Box 1", Thumbnail: "/a.png", DefaultPID: 5, PartNumber: "11111111-1111-1111-1111-111111111111",
 	}
@@ -278,7 +278,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 		{NodeIndices: [3]uint32{4, 7, 3}, PID: 5},
 	}...)
 
-	components := &ObjectResource{
+	components := &Object{
 		ID: 20, ObjectType: ObjectTypeSupport,
 		Metadata:   []Metadata{{Name: "qm:CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: "qm:CustomMetadata4", Type: "xs:boolean", Value: "2"}},
 		Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
@@ -289,7 +289,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 		Namespaces:         []xml.Name{{Space: fakeExtension, Local: "qm"}},
 		RequiredExtensions: []string{fakeExtension},
 		Resources: Resources{
-			Assets: []Asset{baseMaterials}, Objects: []*ObjectResource{meshRes, components},
+			Assets: []Asset{baseMaterials}, Objects: []*Object{meshRes, components},
 		},
 	}
 	want.Build.Items = append(want.Build.Items, &Item{

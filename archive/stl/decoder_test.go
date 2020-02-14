@@ -41,7 +41,7 @@ func TestDecoder_Decode(t *testing.T) {
 	tests := []struct {
 		name    string
 		d       *Decoder
-		want    *go3mf.ObjectResource
+		want    *go3mf.Object
 		wantErr bool
 	}{
 		{"empty", NewDecoder(new(bytes.Buffer)), nil, true},

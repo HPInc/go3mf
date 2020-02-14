@@ -22,23 +22,23 @@ func nodeDecoder(_ interface{}, nodeName string) go3mf.NodeDecoder {
 
 func decodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
 	switch t := parentNode.(type) {
-	case *go3mf.ObjectResource:
+	case *go3mf.Object:
 		objectAttrDecoder(s, t, attr)
 	}
 }
 
 // objectAttrDecoder decodes the slice attributes of an ObjectReosurce.
-func objectAttrDecoder(scanner *go3mf.Scanner, o *go3mf.ObjectResource, a xml.Attr) {
+func objectAttrDecoder(scanner *go3mf.Scanner, o *go3mf.Object, a xml.Attr) {
 	switch a.Name.Local {
 	case attrSliceRefID:
 		val, err := strconv.ParseUint(a.Value, 10, 32)
 		if err != nil {
 			scanner.InvalidAttr(a.Name.Local, a.Value, true)
 		}
-		ObjectSliceStackInfo(o).SliceStackID = uint32(val)
+		ObjectAttr(o).SliceStackID = uint32(val)
 	case attrMeshRes:
 		var ok bool
-		ObjectSliceStackInfo(o).SliceResolution, ok = newSliceResolution(a.Value)
+		ObjectAttr(o).SliceResolution, ok = newSliceResolution(a.Value)
 		if !ok {
 			scanner.InvalidAttr(attrMeshRes, a.Value, false)
 		}

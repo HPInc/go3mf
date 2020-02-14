@@ -39,7 +39,7 @@ func decodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
 		case attrPath:
 			ItemAttr(t).Path = attr.Value
 		}
-	case *go3mf.ObjectResource:
+	case *go3mf.Object:
 		if attr.Name.Local == attrProdUUID {
 			if uuid, err = NewUUID(attr.Value); err != nil {
 				s.InvalidAttr(attr.Name.Local, attr.Value, true)

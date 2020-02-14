@@ -28,12 +28,12 @@ func (o *MockObject) Type() ObjectType {
 
 func TestModel_FindObject(t *testing.T) {
 	model := &Model{Path: "/3D/model.model"}
-	id1 := &ObjectResource{ID: 0}
-	id2 := &ObjectResource{ID: 1}
-	id3 := &ObjectResource{ID: 1}
-	model.Resources = Resources{Objects: []*ObjectResource{id1, id2}}
+	id1 := &Object{ID: 0}
+	id2 := &Object{ID: 1}
+	id3 := &Object{ID: 1}
+	model.Resources = Resources{Objects: []*Object{id1, id2}}
 	model.Childs = map[string]*ChildModel{
-		"/3D/other.model": &ChildModel{Resources: Resources{Objects: []*ObjectResource{id3}}},
+		"/3D/other.model": &ChildModel{Resources: Resources{Objects: []*Object{id3}}},
 	}
 	type args struct {
 		path string
@@ -43,7 +43,7 @@ func TestModel_FindObject(t *testing.T) {
 		name   string
 		m      *Model
 		args   args
-		wantR  *ObjectResource
+		wantR  *Object
 		wantOk bool
 	}{
 		{"emptyPath1", model, args{"", 0}, id1, true},
@@ -106,24 +106,22 @@ func TestComponent_HasTransform(t *testing.T) {
 	}
 }
 
-func TestObjectResource_IsValid(t *testing.T) {
+func TestObject_IsValid(t *testing.T) {
 	tests := []struct {
 		name string
-		c    *ObjectResource
+		c    *Object
 		want bool
 	}{
-		{"empty", new(ObjectResource), false},
-		{"both", &ObjectResource{Mesh: new(Mesh), Components: make([]*Component, 0)}, false},
-		{"other", &ObjectResource{Mesh: new(Mesh), ObjectType: ObjectTypeOther}, false},
-		//{"surface", &Mesh{ObjectResource: ObjectResource{ObjectType: ObjectTypeSurface}}, true},
-		//{"support", &Mesh{ObjectResource: ObjectResource{ObjectType: ObjectTypeSupport}}, true},
-		{"solidsupport", &ObjectResource{Mesh: new(Mesh), ObjectType: ObjectTypeSolidSupport}, false},
-		{"model", &ObjectResource{Mesh: new(Mesh), ObjectType: ObjectTypeModel}, false},
+		{"empty", new(Object), false},
+		{"both", &Object{Mesh: new(Mesh), Components: make([]*Component, 0)}, false},
+		{"other", &Object{Mesh: new(Mesh), ObjectType: ObjectTypeOther}, false},
+		{"solidsupport", &Object{Mesh: new(Mesh), ObjectType: ObjectTypeSolidSupport}, false},
+		{"model", &Object{Mesh: new(Mesh), ObjectType: ObjectTypeModel}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.c.IsValid(); got != tt.want {
-				t.Errorf("ObjectResource.IsValid() = %v, want %v", got, tt.want)
+				t.Errorf("Object.IsValid() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -155,10 +153,10 @@ func TestResources_UnusedID(t *testing.T) {
 	}{
 		{"empty", new(Resources), 1},
 		{"one-asset", &Resources{Assets: []Asset{&BaseMaterialsResource{ID: 2}}}, 1},
-		{"one-object", &Resources{Objects: []*ObjectResource{{ID: 2}}}, 1},
+		{"one-object", &Resources{Objects: []*Object{{ID: 2}}}, 1},
 		{"two", &Resources{Assets: []Asset{&BaseMaterialsResource{ID: 1}}}, 2},
-		{"sequence", &Resources{Assets: []Asset{&BaseMaterialsResource{ID: 1}}, Objects: []*ObjectResource{{ID: 2}}}, 3},
-		{"sparce", &Resources{Assets: []Asset{&BaseMaterialsResource{ID: 1}}, Objects: []*ObjectResource{{ID: 3}}}, 2},
+		{"sequence", &Resources{Assets: []Asset{&BaseMaterialsResource{ID: 1}}, Objects: []*Object{{ID: 2}}}, 3},
+		{"sparce", &Resources{Assets: []Asset{&BaseMaterialsResource{ID: 1}}, Objects: []*Object{{ID: 3}}}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -372,33 +370,33 @@ func Test_newUnits(t *testing.T) {
 	}
 }
 
-func TestNewMeshResource(t *testing.T) {
+func TestNewMeshObject(t *testing.T) {
 	tests := []struct {
 		name string
-		want *ObjectResource
+		want *Object
 	}{
-		{"base", &ObjectResource{Mesh: new(Mesh)}},
+		{"base", &Object{Mesh: new(Mesh)}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewMeshResource(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewMeshResource() = %v, want %v", got, tt.want)
+			if got := NewMeshObject(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewMeshObject() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestNewComponentsResource(t *testing.T) {
+func TestNewComponentsObject(t *testing.T) {
 	tests := []struct {
 		name string
-		want *ObjectResource
+		want *Object
 	}{
-		{"base", &ObjectResource{Components: make([]*Component, 0)}},
+		{"base", &Object{Components: make([]*Component, 0)}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewComponentsResource(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewComponentsResource() = %v, want %v", got, tt.want)
+			if got := NewComponentsObject(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewComponentsObject() = %v, want %v", got, tt.want)
 			}
 		})
 	}
