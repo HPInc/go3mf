@@ -65,16 +65,15 @@ type SliceRef struct {
 // SliceStackResource defines a slice stack resource.
 // It can either contain a SliceStack or a Refs slice.
 type SliceStackResource struct {
-	ID        uint32
-	ModelPath string
-	BottomZ   float32
-	Slices    []*Slice
-	Refs      []SliceRef
+	ID      uint32
+	BottomZ float32
+	Slices  []*Slice
+	Refs    []SliceRef
 }
 
 // Identify returns the unique ID of the resource.
-func (s *SliceStackResource) Identify() (string, uint32) {
-	return s.ModelPath, s.ID
+func (s *SliceStackResource) Identify() uint32 {
+	return s.ID
 }
 
 // SliceStackInfo defines the attributes added to <object>.

@@ -7,21 +7,17 @@ import (
 
 func TestSliceStackResource_Identify(t *testing.T) {
 	tests := []struct {
-		name  string
-		s     *SliceStackResource
-		want  string
-		want1 uint32
+		name string
+		s    *SliceStackResource
+		want uint32
 	}{
-		{"base", &SliceStackResource{ID: 1, ModelPath: "/3D/3dmodel.model"}, "/3D/3dmodel.model", 1},
+		{"base", &SliceStackResource{ID: 1}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := tt.s.Identify()
+			got := tt.s.Identify()
 			if got != tt.want {
 				t.Errorf("SliceStackResource.Identify() got = %v, want %v", got, tt.want)
-			}
-			if got1 != tt.want1 {
-				t.Errorf("SliceStackResource.Identify() got = %v, want %v", got1, tt.want1)
 			}
 		})
 	}

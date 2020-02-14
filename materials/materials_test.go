@@ -7,21 +7,17 @@ import (
 
 func TestTexture2DResource_Identify(t *testing.T) {
 	tests := []struct {
-		name  string
-		t     *Texture2DResource
-		want  string
-		want1 uint32
+		name string
+		t    *Texture2DResource
+		want uint32
 	}{
-		{"base", &Texture2DResource{ID: 1, ModelPath: "/3D/3dmodel.model"}, "/3D/3dmodel.model", 1},
+		{"base", &Texture2DResource{ID: 1}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := tt.t.Identify()
+			got := tt.t.Identify()
 			if got != tt.want {
 				t.Errorf("Texture2DResource.Identify() got = %v, want %v", got, tt.want)
-			}
-			if got1 != tt.want1 {
-				t.Errorf("Texture2DResource.Identify() got = %v, want %v", got1, tt.want1)
 			}
 		})
 	}
@@ -63,21 +59,17 @@ func TestTextureCoord_V(t *testing.T) {
 
 func TestTexture2DGroupResource_Identify(t *testing.T) {
 	tests := []struct {
-		name  string
-		t     *Texture2DGroupResource
-		want  string
-		want1 uint32
+		name string
+		t    *Texture2DGroupResource
+		want uint32
 	}{
-		{"base", &Texture2DGroupResource{ID: 1, ModelPath: "/3D/3dmodel"}, "/3D/3dmodel", 1},
+		{"base", &Texture2DGroupResource{ID: 1}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := tt.t.Identify()
+			got := tt.t.Identify()
 			if got != tt.want {
 				t.Errorf("Texture2DGroupResource.Identify() got = %v, want %v", got, tt.want)
-			}
-			if got1 != tt.want1 {
-				t.Errorf("Texture2DGroupResource.Identify() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}
@@ -85,21 +77,17 @@ func TestTexture2DGroupResource_Identify(t *testing.T) {
 
 func TestColorGroupResource_Identify(t *testing.T) {
 	tests := []struct {
-		name  string
-		c     *ColorGroupResource
-		want  string
-		want1 uint32
+		name string
+		c    *ColorGroupResource
+		want uint32
 	}{
-		{"base", &ColorGroupResource{ID: 1, ModelPath: "/3D/3dmodel"}, "/3D/3dmodel", 1},
+		{"base", &ColorGroupResource{ID: 1}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := tt.c.Identify()
+			got := tt.c.Identify()
 			if got != tt.want {
 				t.Errorf("ColorGroupResource.Identify() got = %v, want %v", got, tt.want)
-			}
-			if got1 != tt.want1 {
-				t.Errorf("ColorGroupResource.Identify() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}
@@ -107,21 +95,17 @@ func TestColorGroupResource_Identify(t *testing.T) {
 
 func TestCompositeMaterialsResource_Identify(t *testing.T) {
 	tests := []struct {
-		name  string
-		c     *CompositeMaterialsResource
-		want  string
-		want1 uint32
+		name string
+		c    *CompositeMaterialsResource
+		want uint32
 	}{
-		{"base", &CompositeMaterialsResource{ID: 1, ModelPath: "/3D/3dmodel.model"}, "/3D/3dmodel.model", 1},
+		{"base", &CompositeMaterialsResource{ID: 1}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := tt.c.Identify()
+			got := tt.c.Identify()
 			if got != tt.want {
 				t.Errorf("CompositeMaterialsResource.Identify() got = %v, want %v", got, tt.want)
-			}
-			if got1 != tt.want1 {
-				t.Errorf("CompositeMaterialsResource.Identify() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}
@@ -200,21 +184,17 @@ func TestTextureFilter_String(t *testing.T) {
 
 func TestMultiPropertiesResource_Identify(t *testing.T) {
 	tests := []struct {
-		name  string
-		c     *MultiPropertiesResource
-		want  string
-		want1 uint32
+		name string
+		c    *MultiPropertiesResource
+		want uint32
 	}{
-		{"base", &MultiPropertiesResource{ID: 1, ModelPath: "/3D/3dmodel.model"}, "/3D/3dmodel.model", 1},
+		{"base", &MultiPropertiesResource{ID: 1}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := tt.c.Identify()
+			got := tt.c.Identify()
 			if got != tt.want {
 				t.Errorf("MultiPropertiesResource.Identify() got = %v, want %v", got, tt.want)
-			}
-			if got1 != tt.want1 {
-				t.Errorf("MultiPropertiesResource.Identify() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}

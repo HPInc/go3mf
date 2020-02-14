@@ -41,12 +41,11 @@ type colorGroupDecoder struct {
 }
 
 func (d *colorGroupDecoder) Open() {
-	d.resource.ModelPath = d.Scanner.ModelPath
 	d.colorDecoder.resource = &d.resource
 }
 
 func (d *colorGroupDecoder) Close() {
-	d.Scanner.AddResource(&d.resource)
+	d.Scanner.AddAsset(&d.resource)
 }
 
 func (d *colorGroupDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
@@ -114,12 +113,11 @@ type tex2DGroupDecoder struct {
 }
 
 func (d *tex2DGroupDecoder) Open() {
-	d.resource.ModelPath = d.Scanner.ModelPath
 	d.tex2DCoordDecoder.resource = &d.resource
 }
 
 func (d *tex2DGroupDecoder) Close() {
-	d.Scanner.AddResource(&d.resource)
+	d.Scanner.AddAsset(&d.resource)
 }
 
 func (d *tex2DGroupDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
@@ -152,12 +150,8 @@ type texture2DDecoder struct {
 	resource Texture2DResource
 }
 
-func (d *texture2DDecoder) Open() {
-	d.resource.ModelPath = d.Scanner.ModelPath
-}
-
 func (d *texture2DDecoder) Close() {
-	d.Scanner.AddResource(&d.resource)
+	d.Scanner.AddAsset(&d.resource)
 }
 
 func (d *texture2DDecoder) Attributes(attrs []xml.Attr) {
@@ -192,12 +186,11 @@ type compositeMaterialsDecoder struct {
 }
 
 func (d *compositeMaterialsDecoder) Open() {
-	d.resource.ModelPath = d.Scanner.ModelPath
 	d.compositeDecoder.resource = &d.resource
 }
 
 func (d *compositeMaterialsDecoder) Close() {
-	d.Scanner.AddResource(&d.resource)
+	d.Scanner.AddAsset(&d.resource)
 }
 
 func (d *compositeMaterialsDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
@@ -270,12 +263,11 @@ type multiPropertiesDecoder struct {
 }
 
 func (d *multiPropertiesDecoder) Open() {
-	d.resource.ModelPath = d.Scanner.ModelPath
 	d.multiDecoder.resource = &d.resource
 }
 
 func (d *multiPropertiesDecoder) Close() {
-	d.Scanner.AddResource(&d.resource)
+	d.Scanner.AddAsset(&d.resource)
 }
 
 func (d *multiPropertiesDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {

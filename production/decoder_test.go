@@ -16,7 +16,7 @@ func mustUUID(u string) *UUID {
 func TestDecode(t *testing.T) {
 	components := &go3mf.ObjectResource{
 		ExtensionAttr: go3mf.ExtensionAttr{ExtensionName: mustUUID("cb828680-8895-4e08-a1fc-be63e033df15")},
-		ID:            20, ModelPath: "/3D/3dmodel.model",
+		ID:            20,
 		Components: []*go3mf.Component{{
 			ExtensionAttr: go3mf.ExtensionAttr{ExtensionName: &PathUUID{
 				Path: "/3D/other.model",
@@ -26,10 +26,8 @@ func TestDecode(t *testing.T) {
 		},
 	}
 
-	otherMesh := &go3mf.ObjectResource{Mesh: new(go3mf.Mesh), ID: 8, ModelPath: "/3D/other.model"}
-	want := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "p"}}, Resources: []*go3mf.Resources{
-		{Objects: []*go3mf.ObjectResource{otherMesh}},
-		{Objects: []*go3mf.ObjectResource{components}},
+	want := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "p"}}, Resources: go3mf.Resources{
+		Objects: []*go3mf.ObjectResource{components},
 	}}
 	*BuildAttr(&want.Build) = UUID("e9e25302-6428-402e-8633-cc95528d0ed3")
 	want.Build.Items = append(want.Build.Items, &go3mf.Item{ObjectID: 20,
@@ -43,7 +41,6 @@ func TestDecode(t *testing.T) {
 	})
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"
-	got.Resources = append(got.Resources, &go3mf.Resources{Objects: []*go3mf.ObjectResource{otherMesh}})
 	rootFile := `
 		<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:p="http://schemas.microsoft.com/3dmanufacturing/production/2015/06">
 		<resources>

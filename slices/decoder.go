@@ -50,10 +50,6 @@ type sliceStackDecoder struct {
 	resource SliceStackResource
 }
 
-func (d *sliceStackDecoder) Open() {
-	d.resource.ModelPath = d.Scanner.ModelPath
-}
-
 func (d *sliceStackDecoder) Close() {
 	if len(d.resource.Refs) > 0 && len(d.resource.Slices) > 0 {
 		d.Scanner.GenericError(true, "slicestack contains slices and slicerefs")
