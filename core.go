@@ -187,24 +187,29 @@ type Model struct {
 	ExtensionAttr      ExtensionAttr
 }
 
-// FindAsset returns the resource with the target path and ID.
-func (m *Model) FindAsset(path string, id uint32) (Asset, bool) {
+// FindResources returns the resource associated with path.
+func (m *Model) FindResources(path string) (*Resources, bool) {
 	if path == "" || path == m.Path {
-		return m.Resources.FindAsset(id)
+		return &m.Resources, true
 	}
 	if child, ok := m.Childs[path]; ok {
-		return child.Resources.FindAsset(id)
+		return &child.Resources, true
+	}
+	return nil, false
+}
+
+// FindAsset returns the resource with the target path and ID.
+func (m *Model) FindAsset(path string, id uint32) (Asset, bool) {
+	if rs, ok := m.FindResources(path); ok {
+		return rs.FindAsset(id)
 	}
 	return nil, false
 }
 
 // FindObject returns the object with the target path and ID.
 func (m *Model) FindObject(path string, id uint32) (*Object, bool) {
-	if path == "" || path == m.Path {
-		return m.Resources.FindObject(id)
-	}
-	if child, ok := m.Childs[path]; ok {
-		return child.Resources.FindObject(id)
+	if rs, ok := m.FindResources(path); ok {
+		return rs.FindObject(id)
 	}
 	return nil, false
 }
