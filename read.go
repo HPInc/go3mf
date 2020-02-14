@@ -386,19 +386,6 @@ func (d *Decoder) processOPC(model *Model) (packageFile, error) {
 	return rootFile, nil
 }
 
-func (d *Decoder) preserveAttachment(relType string) bool {
-	if relType == RelTypePrintTicket || relType == RelTypeThumbnail {
-		//core attachment
-		return true
-	}
-	for _, ext := range d.extensionDecoder {
-		if ext.FileFilter(relType) {
-			return true
-		}
-	}
-	return false
-}
-
 func (d *Decoder) extractCoreAttachments(modelFile packageFile, model *Model, isRoot bool) {
 	for _, rel := range modelFile.Relationships() {
 		relType := rel.Type
@@ -426,6 +413,19 @@ func (d *Decoder) extractCoreAttachments(modelFile packageFile, model *Model, is
 			}
 		}
 	}
+}
+
+func (d *Decoder) preserveAttachment(relType string) bool {
+	if relType == RelTypePrintTicket || relType == RelTypeThumbnail {
+		//core attachment
+		return true
+	}
+	for _, ext := range d.extensionDecoder {
+		if ext.FileFilter(relType) {
+			return true
+		}
+	}
+	return false
 }
 
 func (d *Decoder) addAttachment(attachments []*Attachment, file packageFile, relType string) []*Attachment {
