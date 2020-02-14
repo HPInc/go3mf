@@ -14,8 +14,12 @@ func newOpcWriter(w io.Writer) *opcWriter {
 	return &opcWriter{opc.NewWriter(w)}
 }
 
-func (o *opcWriter) Create(name, contentType string) (io.Writer, error) {
-	return o.w.Create(name, contentType)
+func (o *opcWriter) Create(name, contentType string, rels []*relationship) (io.Writer, error) {
+	p := opc.Part{Name: name, ContentType: contentType, Relationships: make([]*opc.Relationship, len(rels))}
+	for i, r := range rels {
+		p.Relationships[i] = &opc.Relationship{ID: r.ID, TargetURI: r.TargetURI, Type: r.Type}
+	}
+	return o.w.CreatePart(&p, opc.CompressionNormal)
 }
 
 func (o *opcWriter) AddRelationship(r *relationship) {

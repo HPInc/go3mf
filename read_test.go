@@ -134,7 +134,7 @@ type mockPackage struct {
 func newMockPackage(other *mockFile) *mockPackage {
 	m := new(mockPackage)
 	m.On("Open", mock.Anything).Return(nil).Maybe()
-	m.On("Create", mock.Anything, mock.Anything).Return(nil, nil).Maybe()
+	m.On("Create", mock.Anything, mock.Anything, mock.Anything).Return(nil, nil).Maybe()
 	m.On("FindFileFromRel", mock.Anything).Return(other, other != nil).Maybe()
 	m.On("FindFileFromName", mock.Anything).Return(other, other != nil).Maybe()
 	return m
@@ -149,8 +149,8 @@ func (m *mockPackage) AddRelationship(args0 *relationship) {
 	m.Called(args0)
 }
 
-func (m *mockPackage) Create(args0, args1 string) (io.Writer, error) {
-	args := m.Called(args0, args1)
+func (m *mockPackage) Create(args0, args1 string, args2 []*relationship) (io.Writer, error) {
+	args := m.Called(args0, args1, args2)
 	return args.Get(0).(io.Writer), args.Error(1)
 }
 

@@ -13,7 +13,7 @@ import (
 const defaultFloatPrecision = 6
 
 type packageWriter interface {
-	Create(name, contentType string) (io.Writer, error)
+	Create(name, contentType string, rels []*relationship) (io.Writer, error)
 	AddRelationship(*relationship)
 	Close() error
 }
@@ -45,6 +45,7 @@ func MarshalModel(m *Model) ([]byte, error) {
 type Encoder struct {
 	FloatPrecision int
 	w              packageWriter
+	relID          int
 }
 
 // NewEncoder returns a new encoder that writes to w.
@@ -61,52 +62,83 @@ func (e *Encoder) Encode(ctx context.Context, m *Model) error {
 	if rootName == "" {
 		rootName = uriDefault3DModel
 	}
-	w, err := e.w.Create(rootName, contentType3DModel)
-	if err != nil {
-		return err
-	}
-	_, err = w.Write([]byte(xml.Header))
-	if err != nil {
-		return err
-	}
-	if err = e.writeModel(newXMLEncoder(w, e.FloatPrecision), m); err != nil {
-		return err
-	}
 	e.w.AddRelationship(&relationship{
-		ID: "rel0", Type: RelTypeModel3D, TargetURI: rootName,
+		ID: e.nextRelID(), Type: RelTypeModel3D, TargetURI: rootName,
 	})
-
-	if err = e.writeAttachements(m); err != nil {
+	rootRels := e.attachmentRels(m.Attachments)
+	for path := range m.Childs {
+		rootRels = append(rootRels, &relationship{
+			ID: e.nextRelID(), Type: RelTypeModel3D, TargetURI: path,
+		})
+	}
+	w, err := e.w.Create(rootName, contentType3DModel, rootRels)
+	if err != nil {
 		return err
+	}
+	if _, err := w.Write([]byte(xml.Header)); err != nil {
+		return err
+	}
+	err = e.writeModel(newXMLEncoder(w, e.FloatPrecision), m)
+
+	if err := e.writeAttachements(m.Attachments); err != nil {
+		return err
+	}
+
+	for path, child := range m.Childs {
+		if w, err = e.w.Create(path, contentType3DModel, e.attachmentRels(child.Attachments)); err != nil {
+			return err
+		}
+		if _, err := w.Write([]byte(xml.Header)); err != nil {
+			return err
+		}
+		if err := e.writeChildModel(newXMLEncoder(w, e.FloatPrecision), m, path); err != nil {
+			return err
+		}
+		if err := e.writeAttachements(child.Attachments); err != nil {
+			return err
+		}
 	}
 
 	return e.w.Close()
 }
 
-func (e *Encoder) writeAttachements(m *Model) error {
-	for i, a := range m.Attachments {
-		w, err := e.w.Create(a.Path, a.ContentType)
+func (e *Encoder) nextRelID() string {
+	s := fmt.Sprintf("rel%d", e.relID)
+	e.relID++
+	return s
+}
+
+func (e *Encoder) attachmentRels(att []*Attachment) []*relationship {
+	rels := make([]*relationship, len(att))
+	for i, a := range att {
+		rels[i] = &relationship{
+			ID: e.nextRelID(), Type: a.RelationshipType, TargetURI: a.Path,
+		}
+	}
+	return rels
+}
+
+func (e *Encoder) writeAttachements(att []*Attachment) error {
+	for _, a := range att {
+		w, err := e.w.Create(a.Path, a.ContentType, nil)
 		if err != nil {
 			return err
 		}
-		_, err = io.Copy(w, a.Stream)
-		if err != nil {
+
+		if _, err = io.Copy(w, a.Stream); err != nil {
 			return err
 		}
-		e.w.AddRelationship(&relationship{
-			ID: fmt.Sprintf("rel%d", i+1), Type: a.RelationshipType, TargetURI: a.Path,
-		})
 	}
 	return nil
 }
 
-func (e *Encoder) writeModel(x *XMLEncoder, m *Model) error {
+func (e *Encoder) modelToken(m *Model, isRoot bool) (xml.StartElement, error) {
 	attrs := []xml.Attr{
 		{Name: xml.Name{Local: attrXmlns}, Value: ExtensionName},
 		{Name: xml.Name{Local: attrUnit}, Value: m.Units.String()},
 		{Name: xml.Name{Space: nsXML, Local: attrLang}, Value: m.Language},
 	}
-	if m.Thumbnail != "" {
+	if isRoot && m.Thumbnail != "" {
 		attrs = append(attrs, xml.Attr{Name: xml.Name{Local: attrThumbnail}, Value: m.Thumbnail})
 	}
 	for _, a := range m.Namespaces {
@@ -122,17 +154,45 @@ func (e *Encoder) writeModel(x *XMLEncoder, m *Model) error {
 				}
 			}
 			if exts[i] == "" {
-				return fmt.Errorf("go3mf: cannot encode model with undefined required extension '%s'", ns)
+				return xml.StartElement{}, fmt.Errorf("go3mf: cannot encode model with undefined required extension '%s'", ns)
 			}
 		}
 		attrs = append(attrs, xml.Attr{Name: xml.Name{Local: attrReqExt}, Value: strings.Join(exts, " ")})
 	}
-	tm := xml.StartElement{Name: xml.Name{Local: attrModel}, Attr: attrs}
+	return xml.StartElement{Name: xml.Name{Local: attrModel}, Attr: attrs}, nil
+}
+
+func (e *Encoder) writeChildModel(x *XMLEncoder, m *Model, path string) error {
+	tm, err := e.modelToken(m, false)
+	if err != nil {
+		return err
+	}
+	m.ExtensionAttr.encode(x, &tm)
+	x.EncodeToken(tm)
+
+	child := m.Childs[path]
+	if err := e.writeResources(x, &child.Resources); err != nil {
+		return err
+	}
+
+	xb := xml.StartElement{Name: xml.Name{Local: attrBuild}}
+	x.EncodeToken(xb)
+	x.EncodeToken(xb.End())
+	child.Extension.encode(x)
+	x.EncodeToken(tm.End())
+	return x.Flush()
+}
+
+func (e *Encoder) writeModel(x *XMLEncoder, m *Model) error {
+	tm, err := e.modelToken(m, true)
+	if err != nil {
+		return err
+	}
 	m.ExtensionAttr.encode(x, &tm)
 	x.EncodeToken(tm)
 
 	e.writeMetadata(x, m.Metadata)
-	if err := e.writeResources(x, m); err != nil {
+	if err := e.writeResources(x, &m.Resources); err != nil {
 		return err
 	}
 	e.writeBuild(x, m)
@@ -182,26 +242,24 @@ func (e *Encoder) writeBuild(x *XMLEncoder, m *Model) {
 	x.EncodeToken(xb.End())
 }
 
-func (e *Encoder) writeResources(x *XMLEncoder, m *Model) error {
+func (e *Encoder) writeResources(x *XMLEncoder, rs *Resources) error {
 	xt := xml.StartElement{Name: xml.Name{Local: attrResources}}
 	x.EncodeToken(xt)
-	for _, r := range m.Resources.Assets {
-		var err error
+	for _, r := range rs.Assets {
 		switch r := r.(type) {
 		case *BaseMaterialsResource:
 			e.writeBaseMaterial(x, r)
 		case Marshaler:
-			err = r.Marshal3MF(x)
-		}
-		if err != nil {
-			return err
+			if err := r.Marshal3MF(x); err != nil {
+				return err
+			}
 		}
 		if err := x.Flush(); err != nil {
 			return err
 		}
 	}
 
-	for _, o := range m.Resources.Objects {
+	for _, o := range rs.Objects {
 		e.writeObject(x, o)
 		if err := x.Flush(); err != nil {
 			return err

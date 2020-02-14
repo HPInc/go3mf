@@ -107,10 +107,10 @@ func TestEncoder_writeAttachements(t *testing.T) {
 				argErr = errors.New("")
 			}
 			m := new(mockPackage)
-			m.On("Create", mock.Anything, mock.Anything).Return(tt.args.f, argErr)
+			m.On("Create", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.f, argErr)
 			m.On("AddRelationship", mock.Anything).Return()
 			tt.e.w = m
-			if err := tt.e.writeAttachements(tt.args.m); (err != nil) != tt.wantErr {
+			if err := tt.e.writeAttachements(tt.args.m.Attachments); (err != nil) != tt.wantErr {
 				t.Errorf("Encoder.writeAttachements() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
