@@ -319,11 +319,11 @@ func (d *multiDecoder) Attributes(attrs []xml.Attr) {
 				if err != nil {
 					d.Scanner.InvalidAttr(a.Name.Local, f, true)
 				}
-				multi.ResourceIndices = append(multi.ResourceIndices, uint32(val))
+				multi.PIndex = append(multi.PIndex, uint32(val))
 			}
 		}
 	}
-	if len(multi.ResourceIndices) == 0 {
+	if len(multi.PIndex) == 0 {
 		d.Scanner.MissingAttr(attrPIndices)
 	}
 	d.resource.Multis = append(d.resource.Multis, multi)

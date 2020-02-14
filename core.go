@@ -78,8 +78,8 @@ func (o ObjectType) String() string {
 	}[o]
 }
 
-// Resource defines build resource.
-type Resource interface {
+// Asset defines build resource.
+type Asset interface {
 	Identify() uint32
 }
 
@@ -109,7 +109,7 @@ type Build struct {
 // The Resources element acts as the root element of a library of constituent
 // pieces of the overall 3D object definition.
 type Resources struct {
-	Assets        []Resource
+	Assets        []Asset
 	Objects       []*ObjectResource
 	ExtensionAttr ExtensionAttr
 }
@@ -152,7 +152,7 @@ func (rs *Resources) FindObject(id uint32) (*ObjectResource, bool) {
 }
 
 // FindAsset returns the resource with the target ID.
-func (rs *Resources) FindAsset(id uint32) (Resource, bool) {
+func (rs *Resources) FindAsset(id uint32) (Asset, bool) {
 	for _, value := range rs.Assets {
 		if rID := value.Identify(); rID == id {
 			return value, true
@@ -188,7 +188,7 @@ type Model struct {
 }
 
 // FindAsset returns the resource with the target path and ID.
-func (m *Model) FindAsset(path string, id uint32) (Resource, bool) {
+func (m *Model) FindAsset(path string, id uint32) (Asset, bool) {
 	if path == "" || path == m.Path {
 		return m.Resources.FindAsset(id)
 	}
@@ -244,17 +244,17 @@ func (b *Item) HasTransform() bool {
 
 // An ObjectResource is an in memory representation of the 3MF model object.
 type ObjectResource struct {
-	ID                   uint32
-	Name                 string
-	PartNumber           string
-	Thumbnail            string
-	DefaultPropertyID    uint32
-	DefaultPropertyIndex uint32
-	ObjectType           ObjectType
-	Metadata             []Metadata
-	Mesh                 *Mesh
-	Components           []*Component
-	ExtensionAttr        ExtensionAttr
+	ID            uint32
+	Name          string
+	PartNumber    string
+	Thumbnail     string
+	DefaultPID    uint32
+	DefaultPIndex uint32
+	ObjectType    ObjectType
+	Metadata      []Metadata
+	Mesh          *Mesh
+	Components    []*Component
+	ExtensionAttr ExtensionAttr
 }
 
 // NewMeshResource returns a new object resource
@@ -307,9 +307,9 @@ func (c *Component) HasTransform() bool {
 
 // Face defines a triangle of a mesh.
 type Face struct {
-	NodeIndices     [3]uint32 // Coordinates of the three nodes that defines the face.
-	PID             uint32
-	ResourceIndices [3]uint32 // Resource subindex of the three nodes that defines the face.
+	NodeIndices [3]uint32 // Coordinates of the three nodes that defines the face.
+	PID         uint32
+	PIndex      [3]uint32 // Resource subindex of the three nodes that defines the face.
 }
 
 // A Mesh is an in memory representation of the 3MF mesh object.

@@ -116,7 +116,7 @@ func (s *Scanner) Namespace(local string) (string, bool) {
 }
 
 // AddAsset adds a new resource to the resource cache.
-func (s *Scanner) AddAsset(r Resource) {
+func (s *Scanner) AddAsset(r Asset) {
 	s.Resources.Assets = append(s.Resources.Assets, r)
 	s.closeResource()
 }

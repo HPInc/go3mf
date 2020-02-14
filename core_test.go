@@ -154,11 +154,11 @@ func TestResources_UnusedID(t *testing.T) {
 		want uint32
 	}{
 		{"empty", new(Resources), 1},
-		{"one-asset", &Resources{Assets: []Resource{&BaseMaterialsResource{ID: 2}}}, 1},
+		{"one-asset", &Resources{Assets: []Asset{&BaseMaterialsResource{ID: 2}}}, 1},
 		{"one-object", &Resources{Objects: []*ObjectResource{{ID: 2}}}, 1},
-		{"two", &Resources{Assets: []Resource{&BaseMaterialsResource{ID: 1}}}, 2},
-		{"sequence", &Resources{Assets: []Resource{&BaseMaterialsResource{ID: 1}}, Objects: []*ObjectResource{{ID: 2}}}, 3},
-		{"sparce", &Resources{Assets: []Resource{&BaseMaterialsResource{ID: 1}}, Objects: []*ObjectResource{{ID: 3}}}, 2},
+		{"two", &Resources{Assets: []Asset{&BaseMaterialsResource{ID: 1}}}, 2},
+		{"sequence", &Resources{Assets: []Asset{&BaseMaterialsResource{ID: 1}}, Objects: []*ObjectResource{{ID: 2}}}, 3},
+		{"sparce", &Resources{Assets: []Asset{&BaseMaterialsResource{ID: 1}}, Objects: []*ObjectResource{{ID: 3}}}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -14,7 +14,7 @@ func TestDecode(t *testing.T) {
 	baseTexture := &Texture2DResource{ID: 6, Path: "/3D/Texture/msLogo.png", ContentType: TextureTypePNG, TileStyleU: TileWrap, TileStyleV: TileMirror, Filter: TextureFilterAuto}
 	meshRes := &go3mf.ObjectResource{
 		Mesh: new(go3mf.Mesh),
-		ID:   8, Name: "Box 1", Thumbnail: "/a.png", DefaultPropertyID: 5, PartNumber: "11111111-1111-1111-1111-111111111111",
+		ID:   8, Name: "Box 1", Thumbnail: "/a.png", DefaultPID: 5, PartNumber: "11111111-1111-1111-1111-111111111111",
 	}
 	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []go3mf.Point3D{
 		{0, 0, 0},
@@ -29,12 +29,12 @@ func TestDecode(t *testing.T) {
 	meshRes.Mesh.Faces = append(meshRes.Mesh.Faces, []go3mf.Face{
 		{NodeIndices: [3]uint32{3, 2, 1}, PID: 5},
 		{NodeIndices: [3]uint32{1, 0, 3}, PID: 5},
-		{NodeIndices: [3]uint32{4, 5, 6}, PID: 5, ResourceIndices: [3]uint32{1, 1, 1}},
-		{NodeIndices: [3]uint32{6, 7, 4}, PID: 5, ResourceIndices: [3]uint32{1, 1, 1}},
-		{NodeIndices: [3]uint32{0, 1, 5}, PID: 2, ResourceIndices: [3]uint32{0, 1, 2}},
-		{NodeIndices: [3]uint32{5, 4, 0}, PID: 2, ResourceIndices: [3]uint32{3, 0, 2}},
-		{NodeIndices: [3]uint32{1, 2, 6}, PID: 1, ResourceIndices: [3]uint32{0, 1, 2}},
-		{NodeIndices: [3]uint32{6, 5, 1}, PID: 1, ResourceIndices: [3]uint32{2, 1, 3}},
+		{NodeIndices: [3]uint32{4, 5, 6}, PID: 5, PIndex: [3]uint32{1, 1, 1}},
+		{NodeIndices: [3]uint32{6, 7, 4}, PID: 5, PIndex: [3]uint32{1, 1, 1}},
+		{NodeIndices: [3]uint32{0, 1, 5}, PID: 2, PIndex: [3]uint32{0, 1, 2}},
+		{NodeIndices: [3]uint32{5, 4, 0}, PID: 2, PIndex: [3]uint32{3, 0, 2}},
+		{NodeIndices: [3]uint32{1, 2, 6}, PID: 1, PIndex: [3]uint32{0, 1, 2}},
+		{NodeIndices: [3]uint32{6, 5, 1}, PID: 1, PIndex: [3]uint32{2, 1, 3}},
 		{NodeIndices: [3]uint32{2, 3, 7}, PID: 5},
 		{NodeIndices: [3]uint32{7, 6, 2}, PID: 5},
 		{NodeIndices: [3]uint32{3, 0, 4}, PID: 5},
@@ -45,7 +45,7 @@ func TestDecode(t *testing.T) {
 	colorGroup := &ColorGroupResource{ID: 1, Colors: []color.RGBA{{R: 255, G: 255, B: 255, A: 255}, {R: 0, G: 0, B: 0, A: 255}, {R: 26, G: 181, B: 103, A: 255}, {R: 223, G: 4, B: 90, A: 255}}}
 	texGroup := &Texture2DGroupResource{ID: 2, TextureID: 6, Coords: []TextureCoord{{0.3, 0.5}, {0.3, 0.8}, {0.5, 0.8}, {0.5, 0.5}}}
 	compositeGroup := &CompositeMaterialsResource{ID: 4, MaterialID: 5, Indices: []uint32{1, 2}, Composites: []Composite{{Values: []float32{0.5, 0.5}}, {Values: []float32{0.2, 0.8}}}}
-	multiGroup := &MultiPropertiesResource{ID: 9, BlendMethods: []BlendMethod{BlendMultiply}, Resources: []uint32{5, 2}, Multis: []Multi{{ResourceIndices: []uint32{0, 0}}, {ResourceIndices: []uint32{1, 0}}, {ResourceIndices: []uint32{2, 3}}}}
+	multiGroup := &MultiPropertiesResource{ID: 9, BlendMethods: []BlendMethod{BlendMultiply}, Resources: []uint32{5, 2}, Multis: []Multi{{PIndex: []uint32{0, 0}}, {PIndex: []uint32{1, 0}}, {PIndex: []uint32{2, 3}}}}
 	want.Resources.Assets = append(want.Resources.Assets, baseTexture, colorGroup, texGroup, compositeGroup, multiGroup)
 	want.Resources.Objects = append(want.Resources.Objects, meshRes)
 	got := new(go3mf.Model)

@@ -31,7 +31,7 @@ func TestMarshalModel(t *testing.T) {
 	}
 
 	m := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "s"}}, Resources: go3mf.Resources{
-		Assets: []go3mf.Resource{sliceStack, sliceStackRef}, Objects: []*go3mf.ObjectResource{meshRes},
+		Assets: []go3mf.Asset{sliceStack, sliceStackRef}, Objects: []*go3mf.ObjectResource{meshRes},
 	}}
 
 	t.Run("base", func(t *testing.T) {

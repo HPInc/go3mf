@@ -19,14 +19,14 @@ func TestMarshalModel(t *testing.T) {
 		Namespaces:         []xml.Name{{Space: fakeExtension, Local: "qm"}},
 		RequiredExtensions: []string{fakeExtension},
 		Resources: Resources{
-			Assets: []Resource{&BaseMaterialsResource{ID: 5, Materials: []BaseMaterial{
+			Assets: []Asset{&BaseMaterialsResource{ID: 5, Materials: []BaseMaterial{
 				{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 				{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
 			}}},
 			Objects: []*ObjectResource{
 				{
 					ID: 8, Name: "Box 1", PartNumber: "11111111-1111-1111-1111-111111111111", Thumbnail: "/a.png",
-					DefaultPropertyID: 1, DefaultPropertyIndex: 1, ObjectType: ObjectTypeModel, Mesh: &Mesh{
+					DefaultPID: 1, DefaultPIndex: 1, ObjectType: ObjectTypeModel, Mesh: &Mesh{
 						Nodes: []Point3D{
 							{0, 0, 0}, {100, 0, 0}, {100, 100, 0},
 							{0, 100, 0}, {0, 0, 100}, {100, 0, 100},
@@ -34,12 +34,12 @@ func TestMarshalModel(t *testing.T) {
 						Faces: []Face{
 							{NodeIndices: [3]uint32{3, 2, 1}, PID: 5},
 							{NodeIndices: [3]uint32{1, 0, 3}, PID: 5},
-							{NodeIndices: [3]uint32{4, 5, 6}, PID: 5, ResourceIndices: [3]uint32{1, 1, 1}},
-							{NodeIndices: [3]uint32{6, 7, 4}, PID: 5, ResourceIndices: [3]uint32{1, 1, 1}},
-							{NodeIndices: [3]uint32{0, 1, 5}, PID: 5, ResourceIndices: [3]uint32{0, 1, 2}},
-							{NodeIndices: [3]uint32{5, 4, 0}, PID: 5, ResourceIndices: [3]uint32{3, 0, 2}},
-							{NodeIndices: [3]uint32{1, 2, 6}, PID: 5, ResourceIndices: [3]uint32{0, 1, 2}},
-							{NodeIndices: [3]uint32{6, 5, 1}, PID: 5, ResourceIndices: [3]uint32{2, 1, 3}},
+							{NodeIndices: [3]uint32{4, 5, 6}, PID: 5, PIndex: [3]uint32{1, 1, 1}},
+							{NodeIndices: [3]uint32{6, 7, 4}, PID: 5, PIndex: [3]uint32{1, 1, 1}},
+							{NodeIndices: [3]uint32{0, 1, 5}, PID: 5, PIndex: [3]uint32{0, 1, 2}},
+							{NodeIndices: [3]uint32{5, 4, 0}, PID: 5, PIndex: [3]uint32{3, 0, 2}},
+							{NodeIndices: [3]uint32{1, 2, 6}, PID: 5, PIndex: [3]uint32{0, 1, 2}},
+							{NodeIndices: [3]uint32{6, 5, 1}, PID: 5, PIndex: [3]uint32{2, 1, 3}},
 							{NodeIndices: [3]uint32{2, 3, 7}, PID: 5},
 							{NodeIndices: [3]uint32{7, 6, 2}, PID: 5},
 							{NodeIndices: [3]uint32{3, 0, 4}, PID: 5},
