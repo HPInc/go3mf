@@ -165,10 +165,9 @@ func (rs *Resources) FindAsset(id uint32) (Resource, bool) {
 // It is not supported by the core spec but a common concept
 // for multiple official specs.
 type ChildModel struct {
-	Resources     Resources
-	Attachments   []*Attachment
-	Extension     Extension
-	ExtensionAttr ExtensionAttr
+	Resources   Resources
+	Attachments []*Attachment
+	Extension   Extension
 }
 
 // A Model is an in memory representation of the 3MF file.
