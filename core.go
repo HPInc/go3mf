@@ -161,6 +161,9 @@ func (rs *Resources) FindAsset(id uint32) (Resource, bool) {
 	return nil, false
 }
 
+// ChildModel repreents de content of a non-root model file.
+// It is not supported by the core spec but a common concept
+// for multiple official specs.
 type ChildModel struct {
 	Resources     Resources
 	Attachments   []*Attachment
@@ -180,7 +183,7 @@ type Model struct {
 	Attachments        []*Attachment
 	Namespaces         []xml.Name
 	RequiredExtensions []string
-	Childs             map[string]ChildModel
+	Childs             map[string]*ChildModel
 	Extension          Extension
 	ExtensionAttr      ExtensionAttr
 }

@@ -32,8 +32,8 @@ func TestModel_FindObject(t *testing.T) {
 	id2 := &ObjectResource{ID: 1}
 	id3 := &ObjectResource{ID: 1}
 	model.Resources = Resources{Objects: []*ObjectResource{id1, id2}}
-	model.Childs = map[string]ChildModel{
-		"/3D/other.model": ChildModel{Resources: Resources{Objects: []*ObjectResource{id3}}},
+	model.Childs = map[string]*ChildModel{
+		"/3D/other.model": &ChildModel{Resources: Resources{Objects: []*ObjectResource{id3}}},
 	}
 	type args struct {
 		path string

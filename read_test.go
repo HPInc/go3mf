@@ -173,40 +173,37 @@ func TestDecoder_processOPC(t *testing.T) {
 	extType := "fake_type"
 	otherModel := newMockFile("/other.model", nil, nil, false)
 	tests := []struct {
-		name          string
-		d             *Decoder
-		want          *Model
-		nonRootModels []packageFile
-		wantErr       bool
+		name    string
+		d       *Decoder
+		want    *Model
+		wantErr bool
 	}{
-		{"noRoot", &Decoder{p: newMockPackage(nil)}, &Model{}, nil, true},
-		{"noRels", &Decoder{p: newMockPackage(newMockFile("/a.model", nil, nil, false))}, &Model{Path: "/a.model"}, nil, false},
+		{"noRoot", &Decoder{p: newMockPackage(nil)}, &Model{}, true},
+		{"noRels", &Decoder{p: newMockPackage(newMockFile("/a.model", nil, nil, false))}, &Model{Path: "/a.model"}, false},
 		{"withThumb", &Decoder{
 			p: newMockPackage(newMockFile("/a.model", []*relationship{{Type: RelTypeThumbnail, TargetURI: "/a.png"}}, newMockFile("/a.png", nil, nil, false), false)),
 		}, &Model{
 			Path:        "/a.model",
 			Attachments: []*Attachment{{RelationshipType: RelTypeThumbnail, Path: "/a.png", Stream: new(bytes.Buffer)}},
-		}, nil, false},
+		}, false},
 		{"withPrintTicket", &Decoder{
 			p: newMockPackage(newMockFile("/a.model", []*relationship{{Type: RelTypePrintTicket, TargetURI: "/pc.png"}}, newMockFile("/pc.png", nil, nil, false), false)),
 		}, &Model{
 			Path:        "/a.model",
 			Attachments: []*Attachment{{RelationshipType: RelTypePrintTicket, Path: "/pc.png", Stream: new(bytes.Buffer)}},
-		}, nil, false},
+		}, false},
 		{"withExtRel", &Decoder{
 			p: newMockPackage(newMockFile("/a.model", []*relationship{{Type: extType, TargetURI: "/other.png"}}, newMockFile("/other.png", nil, nil, false), false)),
 		}, &Model{
 			Path:        "/a.model",
 			Attachments: []*Attachment{{RelationshipType: extType, Path: "/other.png", Stream: new(bytes.Buffer)}},
-		}, nil, false},
+		}, false},
 		{"withOtherRel", &Decoder{
 			p: newMockPackage(newMockFile("/a.model", []*relationship{{Type: "other", TargetURI: "/a.png"}}, nil, false)),
-		}, &Model{Path: "/a.model"}, nil, false},
+		}, &Model{Path: "/a.model"}, false},
 		{"withModelAttachment", &Decoder{
 			p: newMockPackage(newMockFile("/a.model", []*relationship{{Type: RelTypeModel3D, TargetURI: "/other.model"}}, otherModel, false)),
-		}, &Model{
-			Path: "/a.model",
-		}, []packageFile{otherModel}, false},
+		}, &Model{Path: "/a.model"}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -404,9 +401,9 @@ func TestDecoder_processNonRootModels(t *testing.T) {
 				</resources>
 			`).build("/3D/other.model"),
 		}}, false, &Model{
-			Childs: map[string]ChildModel{
-				"/3D/other.model": ChildModel{Resources: Resources{Assets: []Resource{&BaseMaterialsResource{ID: 6}}}},
-				"/3D/new.model": ChildModel{Resources: Resources{Assets: []Resource{
+			Childs: map[string]*ChildModel{
+				"/3D/other.model": &ChildModel{Resources: Resources{Assets: []Resource{&BaseMaterialsResource{ID: 6}}}},
+				"/3D/new.model": &ChildModel{Resources: Resources{Assets: []Resource{
 					&BaseMaterialsResource{ID: 5, Materials: []BaseMaterial{
 						{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 						{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},

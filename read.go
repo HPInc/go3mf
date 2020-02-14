@@ -305,9 +305,9 @@ func (d *Decoder) processRootModel(ctx context.Context, rootFile packageFile, mo
 
 func (d *Decoder) addChildModelFile(p *Scanner, model *Model) {
 	if model.Childs == nil {
-		model.Childs = make(map[string]ChildModel)
+		model.Childs = make(map[string]*ChildModel)
 	}
-	model.Childs[p.ModelPath] = ChildModel{
+	model.Childs[p.ModelPath] = &ChildModel{
 		Resources: p.Resources,
 	}
 	for _, res := range p.Warnings {
@@ -386,26 +386,43 @@ func (d *Decoder) processOPC(model *Model) (packageFile, error) {
 	return rootFile, nil
 }
 
-func (d *Decoder) extractCoreAttachments(file packageFile, model *Model, isRoot bool) {
-	for _, rel := range file.Relationships() {
-		relType := rel.Type
-		preserve := relType == RelTypePrintTicket || relType == RelTypeThumbnail
-		if !preserve {
-			for _, ext := range d.extensionDecoder {
-				if ext.FileFilter(relType) {
-					preserve = true
-					break
-				}
-			}
+func (d *Decoder) preserveAttachment(relType string) bool {
+	if relType == RelTypePrintTicket || relType == RelTypeThumbnail {
+		//core attachment
+		return true
+	}
+	for _, ext := range d.extensionDecoder {
+		if ext.FileFilter(relType) {
+			return true
 		}
-		if !preserve {
+	}
+	return false
+}
+
+func (d *Decoder) extractCoreAttachments(modelFile packageFile, model *Model, isRoot bool) {
+	for _, rel := range modelFile.Relationships() {
+		relType := rel.Type
+		if !d.preserveAttachment(relType) {
 			continue
 		}
-		if file, ok := file.FindFileFromName(rel.TargetURI); ok {
-			if isRoot && relType == RelTypeModel3D {
-				d.nonRootModels = append(d.nonRootModels, file)
+		if file, ok := modelFile.FindFileFromName(rel.TargetURI); ok {
+			if isRoot {
+				if relType == RelTypeModel3D {
+					d.nonRootModels = append(d.nonRootModels, file)
+				} else {
+					model.Attachments = d.addAttachment(model.Attachments, file, relType)
+				}
 			} else {
-				model.Attachments = d.addAttachment(model.Attachments, file, relType)
+				if child, ok := model.Childs[modelFile.Name()]; ok {
+					child.Attachments = d.addAttachment(child.Attachments, file, relType)
+				} else {
+					if model.Childs == nil {
+						model.Childs = make(map[string]*ChildModel)
+					}
+					child = &ChildModel{}
+					d.addAttachment(child.Attachments, file, relType)
+					model.Childs[modelFile.Name()] = child
+				}
 			}
 		}
 	}
