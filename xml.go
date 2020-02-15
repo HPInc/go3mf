@@ -9,16 +9,29 @@ import (
 // XMLEncoder is based on the encoding/xml.Encoder implementation.
 // It is modified to allow custom local namespaces and selfclosing nodes.
 type XMLEncoder struct {
-	FloatPresicion int
+	floatPresicion int
+	relationships  []Relationship
 	p              printer
 }
 
 // newXMLEncoder returns a new encoder that writes to w.
 func newXMLEncoder(w io.Writer, floatPresicion int) *XMLEncoder {
 	return &XMLEncoder{
-		FloatPresicion: floatPresicion,
+		floatPresicion: floatPresicion,
 		p:              printer{Writer: bufio.NewWriter(w)},
 	}
+}
+
+// AddRelationship adds a relationship to the encoded model.
+// Duplicated relationships will be removed before encoding.
+func (enc *XMLEncoder) AddRelationship(r Relationship) {
+	enc.relationships = append(enc.relationships, r)
+}
+
+// FloatPresicion returns the float presicion to use
+// when encoding floats.
+func (enc *XMLEncoder) FloatPresicion() int {
+	return enc.floatPresicion
 }
 
 // EncodeToken writes the given XML token to the stream.
