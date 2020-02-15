@@ -79,21 +79,30 @@ func (e *Encoder) Encode(m *Model) error {
 	if _, err := w.Write([]byte(xml.Header)); err != nil {
 		return err
 	}
-	err = e.writeModel(newXMLEncoder(w, e.FloatPrecision), m)
-
-	for path, child := range m.Childs {
-		if w, err = e.w.Create(path, contentType3DModel, child.Relationships); err != nil {
-			return err
-		}
-		if _, err := w.Write([]byte(xml.Header)); err != nil {
-			return err
-		}
-		if err := e.writeChildModel(newXMLEncoder(w, e.FloatPrecision), m, path); err != nil {
-			return err
-		}
+	if err = e.writeModel(newXMLEncoder(w, e.FloatPrecision), m); err != nil {
+		err = e.writeChildModels(m)
 	}
 
 	return e.w.Close()
+}
+
+func (e *Encoder) writeChildModels(m *Model) error {
+	for path, child := range m.Childs {
+		var (
+			w   io.Writer
+			err error
+		)
+		if w, err = e.w.Create(path, contentType3DModel, child.Relationships); err != nil {
+			return err
+		}
+		if _, err = w.Write([]byte(xml.Header)); err != nil {
+			return err
+		}
+		if err = e.writeChildModel(newXMLEncoder(w, e.FloatPrecision), m, path); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (e *Encoder) writeAttachements(att []Attachment) error {

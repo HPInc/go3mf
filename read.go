@@ -358,9 +358,8 @@ func (d *Decoder) processOPC(model *Model) (packageFile, error) {
 func (d *Decoder) extractCoreAttachments(modelFile packageFile, model *Model, isRoot bool) {
 	for _, rel := range modelFile.Relationships() {
 		if file, ok := modelFile.FindFileFromName(rel.Path); ok {
-			relType := rel.Type
 			if isRoot {
-				if relType == RelTypeModel3D {
+				if rel.Type == RelTypeModel3D {
 					d.nonRootModels = append(d.nonRootModels, file)
 					if model.Childs == nil {
 						model.Childs = make(map[string]*ChildModel)
@@ -368,16 +367,12 @@ func (d *Decoder) extractCoreAttachments(modelFile packageFile, model *Model, is
 					model.Childs[file.Name()] = new(ChildModel)
 				} else {
 					model.Attachments = d.addAttachment(model.Attachments, file)
-					model.Relationships = append(model.Relationships, Relationship{
-						Path: file.Name(), Type: relType,
-					})
+					model.Relationships = append(model.Relationships, rel)
 				}
-			} else if relType != RelTypeModel3D {
+			} else if rel.Type != RelTypeModel3D {
 				if child, ok := model.Childs[modelFile.Name()]; ok {
 					model.Attachments = d.addAttachment(model.Attachments, file)
-					child.Relationships = append(child.Relationships, Relationship{
-						Path: file.Name(), Type: relType,
-					})
+					child.Relationships = append(child.Relationships, rel)
 				}
 			}
 		}
