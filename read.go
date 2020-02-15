@@ -116,14 +116,12 @@ func (d *modelFileDecoder) Decode(ctx context.Context, x XMLDecoder, model *Mode
 	d.Scanner.IsRoot = isRoot
 	d.Scanner.Strict = strict
 	d.Scanner.ModelPath = path
-	state := make([]NodeDecoder, 0, 10)
-	names := make([]xml.Name, 0, 10)
+	state, names := make([]NodeDecoder, 0, 10), make([]xml.Name, 0, 10)
 
 	var (
-		currentDecoder NodeDecoder
-		tmpDecoder     NodeDecoder
-		currentName    xml.Name
-		t              xml.Token
+		currentDecoder, tmpDecoder NodeDecoder
+		currentName                xml.Name
+		t                          xml.Token
 	)
 	nextBytesCheck := checkEveryBytes
 	currentDecoder = &topLevelDecoder{isRoot: isRoot, model: model}
@@ -297,12 +295,7 @@ func (d *Decoder) processRootModel(ctx context.Context, rootFile packageFile, mo
 }
 
 func (d *Decoder) addChildModelFile(p *Scanner, model *Model) {
-	if model.Childs == nil {
-		model.Childs = make(map[string]*ChildModel)
-	}
-	model.Childs[p.ModelPath] = &ChildModel{
-		Resources: p.Resources,
-	}
+	model.Childs[p.ModelPath].Resources = p.Resources
 	for _, res := range p.Warnings {
 		d.Warnings = append(d.Warnings, res)
 	}
@@ -430,8 +423,7 @@ func (d *Decoder) addAttachment(attachments []Attachment, file packageFile) []At
 			return attachments
 		}
 	}
-	buff, err := copyFile(file)
-	if err == nil {
+	if buff, err := copyFile(file); err == nil {
 		return append(attachments, Attachment{
 			Path:        file.Name(),
 			Stream:      buff,

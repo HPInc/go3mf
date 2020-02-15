@@ -389,8 +389,9 @@ func TestDecoder_processNonRootModels(t *testing.T) {
 		wantErr bool
 		want    *Model
 	}{
-		{"base", &Model{}, &Decoder{nonRootModels: []packageFile{
-			new(modelBuilder).withDefaultModel().withElement(`
+		{"base", &Model{Childs: map[string]*ChildModel{"/3D/other.model": new(ChildModel), "/3D/new.model": new(ChildModel)}},
+			&Decoder{nonRootModels: []packageFile{
+				new(modelBuilder).withDefaultModel().withElement(`
 				<resources>
 					<basematerials id="5">
 						<base name="Blue PLA" displaycolor="#0000FF" />
@@ -398,21 +399,21 @@ func TestDecoder_processNonRootModels(t *testing.T) {
 					</basematerials>
 				</resources>
 			`).build("/3D/new.model"),
-			new(modelBuilder).withDefaultModel().withElement(`
+				new(modelBuilder).withDefaultModel().withElement(`
 				<resources>
 					<basematerials id="6" />
 				</resources>
 			`).build("/3D/other.model"),
-		}}, false, &Model{
-			Childs: map[string]*ChildModel{
-				"/3D/other.model": &ChildModel{Resources: Resources{Assets: []Asset{&BaseMaterialsResource{ID: 6}}}},
-				"/3D/new.model": &ChildModel{Resources: Resources{Assets: []Asset{
-					&BaseMaterialsResource{ID: 5, Materials: []BaseMaterial{
-						{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
-						{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
-					}}}}},
-			},
-		}},
+			}}, false, &Model{
+				Childs: map[string]*ChildModel{
+					"/3D/other.model": {Resources: Resources{Assets: []Asset{&BaseMaterialsResource{ID: 6}}}},
+					"/3D/new.model": {Resources: Resources{Assets: []Asset{
+						&BaseMaterialsResource{ID: 5, Materials: []BaseMaterial{
+							{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
+							{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
+						}}}}},
+				},
+			}},
 		{"noAtt", new(Model), new(Decoder), false, new(Model)},
 	}
 	for _, tt := range tests {
