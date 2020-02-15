@@ -97,12 +97,6 @@ type Scanner struct {
 	extensionDecoder map[string]*extensionDecoderWrapper
 }
 
-func newScanner() *Scanner {
-	return &Scanner{
-		extensionDecoder: make(map[string]*extensionDecoderWrapper),
-	}
-}
-
 // Namespace returns the space of the associated local, if existing.
 func (s *Scanner) Namespace(local string) (string, bool) {
 	for _, name := range s.Namespaces {

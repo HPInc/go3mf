@@ -452,19 +452,18 @@ func Test_modelFile_Decode(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		d       *modelFileDecoder
 		args    args
 		wantErr bool
 	}{
-		{"nochild", new(modelFileDecoder), args{context.Background(), xml.NewDecoder(bytes.NewBufferString(`
+		{"nochild", args{context.Background(), xml.NewDecoder(bytes.NewBufferString(`
 			<a></a>
 			<b></b>
 		`))}, false},
-		{"eof", new(modelFileDecoder), args{context.Background(), xml.NewDecoder(bytes.NewBufferString(`
+		{"eof", args{context.Background(), xml.NewDecoder(bytes.NewBufferString(`
 			<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">
 				<build></build>
 		`))}, true},
-		{"canceled", new(modelFileDecoder), args{ctx, xml.NewDecoder(bytes.NewBufferString(`
+		{"canceled", args{ctx, xml.NewDecoder(bytes.NewBufferString(`
 			<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">
 				<build></build>
 			</model>
@@ -472,8 +471,8 @@ func Test_modelFile_Decode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.d.Decode(tt.args.ctx, tt.args.x, new(Model), "", true, false, nil); (err != nil) != tt.wantErr {
-				t.Errorf("modelFile.Decode() error = %v, wantErr %v", err, tt.wantErr)
+			if sc := decodeModelFile(tt.args.ctx, tt.args.x, new(Model), "", true, false, nil); (sc.Err != nil) != tt.wantErr {
+				t.Errorf("modelFile.Decode() error = %v, wantErr %v", sc.Err, tt.wantErr)
 			}
 		})
 	}
