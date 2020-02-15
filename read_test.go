@@ -87,7 +87,6 @@ func newMockFile(name string, relationships []Relationship, other *mockFile, ope
 	m.On("Name").Return(name).Maybe()
 	m.On("ContentType").Return("").Maybe()
 	m.On("Relationships").Return(relationships).Maybe()
-	m.On("FindFileFromRel", mock.Anything).Return(other, other != nil).Maybe()
 	m.On("FindFileFromName", mock.Anything).Return(other, other != nil).Maybe()
 	var err error
 	if openErr {
@@ -112,11 +111,6 @@ func (m *mockFile) ContentType() string {
 	return args.String(0)
 }
 
-func (m *mockFile) FindFileFromRel(args0 string) (packageFile, bool) {
-	args := m.Called(args0)
-	return args.Get(0).(packageFile), args.Bool(1)
-}
-
 func (m *mockFile) FindFileFromName(args0 string) (packageFile, bool) {
 	args := m.Called(args0)
 	return args.Get(0).(packageFile), args.Bool(1)
@@ -135,7 +129,7 @@ func newMockPackage(other *mockFile) *mockPackage {
 	m := new(mockPackage)
 	m.On("Open", mock.Anything).Return(nil).Maybe()
 	m.On("Create", mock.Anything, mock.Anything, mock.Anything).Return(nil, nil).Maybe()
-	m.On("FindFileFromRel", mock.Anything).Return(other, other != nil).Maybe()
+	m.On("Relationships").Return([]Relationship{{Path: uriDefault3DModel, Type: RelTypeModel3D}}).Maybe()
 	m.On("FindFileFromName", mock.Anything).Return(other, other != nil).Maybe()
 	return m
 }
@@ -143,6 +137,11 @@ func newMockPackage(other *mockFile) *mockPackage {
 func (m *mockPackage) Close() error {
 	args := m.Called()
 	return args.Error(0)
+}
+
+func (m *mockPackage) Relationships() []Relationship {
+	args := m.Called()
+	return args.Get(0).([]Relationship)
 }
 
 func (m *mockPackage) AddRelationship(args0 Relationship) {
@@ -160,11 +159,6 @@ func (m *mockPackage) Open(f func(r io.Reader) io.ReadCloser) error {
 }
 
 func (m *mockPackage) FindFileFromName(args0 string) (packageFile, bool) {
-	args := m.Called(args0)
-	return args.Get(0).(packageFile), args.Bool(1)
-}
-
-func (m *mockPackage) FindFileFromRel(args0 string) (packageFile, bool) {
 	args := m.Called(args0)
 	return args.Get(0).(packageFile), args.Bool(1)
 }

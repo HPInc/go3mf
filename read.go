@@ -52,7 +52,6 @@ type XMLDecoder interface {
 type packageFile interface {
 	Name() string
 	ContentType() string
-	FindFileFromRel(string) (packageFile, bool)
 	FindFileFromName(string) (packageFile, bool)
 	Relationships() []Relationship
 	Open() (io.ReadCloser, error)
@@ -60,8 +59,8 @@ type packageFile interface {
 
 type packageReader interface {
 	Open(func(r io.Reader) io.ReadCloser) error
-	FindFileFromRel(string) (packageFile, bool)
 	FindFileFromName(string) (packageFile, bool)
+	Relationships() []Relationship
 }
 
 // ReadCloser wrapps a Decoder than can be closed.
@@ -359,15 +358,26 @@ func (d *Decoder) processOPC(model *Model) (packageFile, error) {
 	if err != nil {
 		return nil, err
 	}
-	rootFile, ok := d.p.FindFileFromRel(RelTypeModel3D)
-	if !ok {
-		return nil, errors.New("go3mf: package does not have root model")
+	var rootFile packageFile
+	for _, r := range d.p.Relationships() {
+		if r.Type == RelTypeModel3D {
+			var ok bool
+			rootFile, ok = d.p.FindFileFromName(r.Path)
+			if !ok {
+				return nil, errors.New("go3mf: package root model points to an unexisting file")
+			}
+			model.Path = rootFile.Name()
+			d.extractCoreAttachments(rootFile, model, true)
+			for _, file := range d.nonRootModels {
+				d.extractCoreAttachments(file, model, false)
+			}
+		} else if att, ok := d.p.FindFileFromName(r.Path); ok {
+			model.RootRelationships = append(model.RootRelationships, r)
+			d.addAttachment(model.Attachments, att)
+		}
 	}
-
-	model.Path = rootFile.Name()
-	d.extractCoreAttachments(rootFile, model, true)
-	for _, file := range d.nonRootModels {
-		d.extractCoreAttachments(file, model, false)
+	if rootFile == nil {
+		return nil, errors.New("go3mf: package does not have root model")
 	}
 	return rootFile, nil
 }

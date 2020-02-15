@@ -59,11 +59,6 @@ func (o *opcFile) ContentType() string {
 	return o.f.ContentType
 }
 
-func (o *opcFile) FindFileFromRel(relType string) (packageFile, bool) {
-	name := findOPCFileURIFromRel(relType, o.f.Relationships)
-	return o.FindFileFromName(name)
-}
-
 func (o *opcFile) FindFileFromName(name string) (packageFile, bool) {
 	name = opc.ResolveRelationship(o.f.Name, name)
 	return findOPCFileFromName(name, o.r)
@@ -87,9 +82,8 @@ func (o *opcReader) Open(f func(r io.Reader) io.ReadCloser) (err error) {
 	return
 }
 
-func (o *opcReader) FindFileFromRel(relType string) (packageFile, bool) {
-	name := findOPCFileURIFromRel(relType, o.r.Relationships)
-	return o.FindFileFromName(name)
+func (o *opcReader) Relationships() []Relationship {
+	return newRelationships(o.r.Relationships)
 }
 
 func (o *opcReader) FindFileFromName(name string) (packageFile, bool) {

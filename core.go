@@ -188,6 +188,7 @@ type ChildModel struct {
 // The relationships are usually managed by the extensions themself,
 // but they are usefull to reference custom attachments.
 // Childs keys cannot be an empty string.
+// RootRelationships are the OPC root relationships.
 type Model struct {
 	Path               string
 	Language           string
@@ -200,6 +201,7 @@ type Model struct {
 	RequiredExtensions []string
 	Metadata           []Metadata
 	Childs             map[string]*ChildModel // path -> child
+	RootRelationships  []Relationship
 	Relationships      []Relationship
 	Extension          Extension
 	ExtensionAttr      ExtensionAttr
