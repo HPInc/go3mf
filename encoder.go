@@ -2,7 +2,6 @@ package go3mf
 
 import (
 	"bytes"
-	"context"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -56,7 +55,7 @@ func NewEncoder(w io.Writer) *Encoder {
 }
 
 // Encode writes the XML encoding of m to the stream.
-func (e *Encoder) Encode(ctx context.Context, m *Model) error {
+func (e *Encoder) Encode(m *Model) error {
 	if err := e.writeAttachements(m.Attachments); err != nil {
 		return err
 	}
