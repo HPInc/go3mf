@@ -9,11 +9,6 @@ import (
 // RegisterExtension registers this extension in the decoder instance.
 func RegisterExtension(d *go3mf.Decoder) {
 	d.RegisterDecodeAttributeExtension(ExtensionName, decodeAttribute)
-	d.RegisterFileFilterExtension(ExtensionName, fileFilter)
-}
-
-func fileFilter(relType string) bool {
-	return relType == go3mf.RelTypeModel3D
 }
 
 func decodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {

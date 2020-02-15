@@ -17,7 +17,6 @@ var checkEveryBytes = int64(4 * 1024 * 1024)
 type extensionDecoderWrapper struct {
 	newNodeDecoder  func(interface{}, string) NodeDecoder
 	decodeAttribute func(*Scanner, interface{}, xml.Attr)
-	fileFilter      func(string) bool
 }
 
 func (e *extensionDecoderWrapper) NewNodeDecoder(parentNode interface{}, nodeName string) NodeDecoder {
@@ -31,13 +30,6 @@ func (e *extensionDecoderWrapper) DecodeAttribute(s *Scanner, parentNode interfa
 	if e.decodeAttribute != nil {
 		e.decodeAttribute(s, parentNode, attr)
 	}
-}
-
-func (e *extensionDecoderWrapper) FileFilter(relType string) bool {
-	if e.fileFilter != nil {
-		return e.fileFilter(relType)
-	}
-	return false
 }
 
 // A XMLDecoder is anything that can decode a stream of XML tokens, including a Decoder.
@@ -234,22 +226,6 @@ func (d *Decoder) RegisterDecodeAttributeExtension(key string, f func(s *Scanner
 	}
 }
 
-// RegisterFileFilterExtension registers a FileFilter function to the associated extension key.
-// The registered function should return true if a file with an specific relationship with a model file
-// should be preserved as an attachment or not. If the file is accepted and it is a 3dmodel
-// it will processed decoded. It can happen that a file is preserved even if this method is
-// not called or it is discarded as other packages could accept it.
-func (d *Decoder) RegisterFileFilterExtension(key string, f func(relType string) bool) {
-	if e, ok := d.extensionDecoder[key]; ok {
-		e.fileFilter = f
-	} else {
-		if d.extensionDecoder == nil {
-			d.extensionDecoder = make(map[string]*extensionDecoderWrapper)
-		}
-		d.extensionDecoder[key] = &extensionDecoderWrapper{fileFilter: f}
-	}
-}
-
 // DecodeContext reads the 3mf file and unmarshall its content into the model.
 func (d *Decoder) DecodeContext(ctx context.Context, model *Model) error {
 	rootFile, err := d.processOPC(model)
@@ -383,11 +359,8 @@ func (d *Decoder) processOPC(model *Model) (packageFile, error) {
 
 func (d *Decoder) extractCoreAttachments(modelFile packageFile, model *Model, isRoot bool) {
 	for _, rel := range modelFile.Relationships() {
-		relType := rel.Type
-		if !d.preserveAttachment(relType) {
-			continue
-		}
 		if file, ok := modelFile.FindFileFromName(rel.Path); ok {
+			relType := rel.Type
 			if isRoot {
 				if relType == RelTypeModel3D {
 					d.nonRootModels = append(d.nonRootModels, file)
@@ -411,19 +384,6 @@ func (d *Decoder) extractCoreAttachments(modelFile packageFile, model *Model, is
 			}
 		}
 	}
-}
-
-func (d *Decoder) preserveAttachment(relType string) bool {
-	if relType == RelTypePrintTicket || relType == RelTypeThumbnail {
-		//core attachment
-		return true
-	}
-	for _, ext := range d.extensionDecoder {
-		if ext.FileFilter(relType) {
-			return true
-		}
-	}
-	return false
 }
 
 func (d *Decoder) addAttachment(attachments []Attachment, file packageFile) []Attachment {

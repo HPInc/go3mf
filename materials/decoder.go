@@ -11,11 +11,6 @@ import (
 // RegisterExtension registers this extension in the decoder instance.
 func RegisterExtension(d *go3mf.Decoder) {
 	d.RegisterNodeDecoderExtension(ExtensionName, nodeDecoder)
-	d.RegisterFileFilterExtension(ExtensionName, fileFilter)
-}
-
-func fileFilter(relType string) bool {
-	return relType == RelTypeTexture3D
 }
 
 func nodeDecoder(_ interface{}, nodeName string) (child go3mf.NodeDecoder) {

@@ -207,27 +207,6 @@ func TestDecode_warns(t *testing.T) {
 	})
 }
 
-func Test_fileFilter(t *testing.T) {
-	type args struct {
-		relType string
-	}
-	tests := []struct {
-		name string
-		args args
-		want bool
-	}{
-		{"accepted", args{RelTypeTexture3D}, true},
-		{"rejected", args{"other"}, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := fileFilter(tt.args.relType); got != tt.want {
-				t.Errorf("fileFilter() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func Test_baseDecoder_Child(t *testing.T) {
 	type args struct {
 		in0 xml.Name
