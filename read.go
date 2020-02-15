@@ -49,18 +49,12 @@ type XMLDecoder interface {
 	InputOffset() int64
 }
 
-type relationship struct {
-	ID        string
-	TargetURI string
-	Type      string
-}
-
 type packageFile interface {
 	Name() string
 	ContentType() string
 	FindFileFromRel(string) (packageFile, bool)
 	FindFileFromName(string) (packageFile, bool)
-	Relationships() []*relationship
+	Relationships() []Relationship
 	Open() (io.ReadCloser, error)
 }
 
@@ -338,7 +332,7 @@ func (d *Decoder) processNonRootModels(ctx context.Context, model *Model) (err e
 	for i := 0; i < nonRootModelsCount; i++ {
 		go func(i int) {
 			defer wg.Done()
-			f, err1 := d.readProductionAttachmentModel(ctx, i, model)
+			f, err1 := d.readChildModel(ctx, i, model)
 			select {
 			case <-ctx.Done():
 				return // Error somewhere, terminate
@@ -392,23 +386,26 @@ func (d *Decoder) extractCoreAttachments(modelFile packageFile, model *Model, is
 		if !d.preserveAttachment(relType) {
 			continue
 		}
-		if file, ok := modelFile.FindFileFromName(rel.TargetURI); ok {
+		if file, ok := modelFile.FindFileFromName(rel.Path); ok {
 			if isRoot {
 				if relType == RelTypeModel3D {
 					d.nonRootModels = append(d.nonRootModels, file)
-				} else {
-					model.Attachments = d.addAttachment(model.Attachments, file, relType)
-				}
-			} else {
-				if child, ok := model.Childs[modelFile.Name()]; ok {
-					child.Attachments = d.addAttachment(child.Attachments, file, relType)
-				} else {
 					if model.Childs == nil {
 						model.Childs = make(map[string]*ChildModel)
 					}
-					child = &ChildModel{}
-					d.addAttachment(child.Attachments, file, relType)
-					model.Childs[modelFile.Name()] = child
+					model.Childs[file.Name()] = new(ChildModel)
+				} else {
+					model.Attachments = d.addAttachment(model.Attachments, file)
+					model.Relationships = append(model.Relationships, Relationship{
+						Path: file.Name(), Type: relType,
+					})
+				}
+			} else if relType != RelTypeModel3D {
+				if child, ok := model.Childs[modelFile.Name()]; ok {
+					model.Attachments = d.addAttachment(model.Attachments, file)
+					child.Relationships = append(child.Relationships, Relationship{
+						Path: file.Name(), Type: relType,
+					})
 				}
 			}
 		}
@@ -428,20 +425,24 @@ func (d *Decoder) preserveAttachment(relType string) bool {
 	return false
 }
 
-func (d *Decoder) addAttachment(attachments []*Attachment, file packageFile, relType string) []*Attachment {
+func (d *Decoder) addAttachment(attachments []Attachment, file packageFile) []Attachment {
+	for _, att := range attachments {
+		if att.Path == file.Name() {
+			return attachments
+		}
+	}
 	buff, err := copyFile(file)
 	if err == nil {
-		return append(attachments, &Attachment{
-			Path:             file.Name(),
-			Stream:           buff,
-			RelationshipType: relType,
-			ContentType:      file.ContentType(),
+		return append(attachments, Attachment{
+			Path:        file.Name(),
+			Stream:      buff,
+			ContentType: file.ContentType(),
 		})
 	}
 	return attachments
 }
 
-func (d *Decoder) readProductionAttachmentModel(ctx context.Context, i int, model *Model) (*Scanner, error) {
+func (d *Decoder) readChildModel(ctx context.Context, i int, model *Model) (*Scanner, error) {
 	attachment := d.nonRootModels[i]
 	file, err := attachment.Open()
 	if err != nil {
@@ -472,7 +473,7 @@ func (f *fakePackageFile) Name() string                                { return 
 func (f *fakePackageFile) ContentType() string                         { return contentType3DModel }
 func (f *fakePackageFile) FindFileFromRel(string) (packageFile, bool)  { return nil, false }
 func (f *fakePackageFile) FindFileFromName(string) (packageFile, bool) { return nil, false }
-func (f *fakePackageFile) Relationships() []*relationship              { return nil }
+func (f *fakePackageFile) Relationships() []Relationship               { return nil }
 func (f *fakePackageFile) Open() (io.ReadCloser, error) {
 	return ioutil.NopCloser(bytes.NewBuffer(f.data)), nil
 }

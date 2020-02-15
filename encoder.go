@@ -13,8 +13,8 @@ import (
 const defaultFloatPrecision = 6
 
 type packageWriter interface {
-	Create(name, contentType string, rels []*relationship) (io.Writer, error)
-	AddRelationship(*relationship)
+	Create(name, contentType string, rels []Relationship) (io.Writer, error)
+	AddRelationship(Relationship)
 	Close() error
 }
 
@@ -45,7 +45,6 @@ func MarshalModel(m *Model) ([]byte, error) {
 type Encoder struct {
 	FloatPrecision int
 	w              packageWriter
-	relID          int
 }
 
 // NewEncoder returns a new encoder that writes to w.
@@ -62,15 +61,14 @@ func (e *Encoder) Encode(ctx context.Context, m *Model) error {
 	if rootName == "" {
 		rootName = uriDefault3DModel
 	}
-	e.w.AddRelationship(&relationship{
-		ID: e.nextRelID(), Type: RelTypeModel3D, TargetURI: rootName,
-	})
-	rootRels := e.attachmentRels(m.Attachments)
+	e.w.AddRelationship(Relationship{Type: RelTypeModel3D, Path: rootName})
+
+	rootRels := make([]Relationship, len(m.Relationships))
+	copy(rootRels, m.Relationships)
 	for path := range m.Childs {
-		rootRels = append(rootRels, &relationship{
-			ID: e.nextRelID(), Type: RelTypeModel3D, TargetURI: path,
-		})
+		rootRels = append(rootRels, Relationship{Type: RelTypeModel3D, Path: path})
 	}
+
 	w, err := e.w.Create(rootName, contentType3DModel, rootRels)
 	if err != nil {
 		return err
@@ -85,7 +83,7 @@ func (e *Encoder) Encode(ctx context.Context, m *Model) error {
 	}
 
 	for path, child := range m.Childs {
-		if w, err = e.w.Create(path, contentType3DModel, e.attachmentRels(child.Attachments)); err != nil {
+		if w, err = e.w.Create(path, contentType3DModel, child.Relationships); err != nil {
 			return err
 		}
 		if _, err := w.Write([]byte(xml.Header)); err != nil {
@@ -94,31 +92,12 @@ func (e *Encoder) Encode(ctx context.Context, m *Model) error {
 		if err := e.writeChildModel(newXMLEncoder(w, e.FloatPrecision), m, path); err != nil {
 			return err
 		}
-		if err := e.writeAttachements(child.Attachments); err != nil {
-			return err
-		}
 	}
 
 	return e.w.Close()
 }
 
-func (e *Encoder) nextRelID() string {
-	s := fmt.Sprintf("rel%d", e.relID)
-	e.relID++
-	return s
-}
-
-func (e *Encoder) attachmentRels(att []*Attachment) []*relationship {
-	rels := make([]*relationship, len(att))
-	for i, a := range att {
-		rels[i] = &relationship{
-			ID: e.nextRelID(), Type: a.RelationshipType, TargetURI: a.Path,
-		}
-	}
-	return rels
-}
-
-func (e *Encoder) writeAttachements(att []*Attachment) error {
+func (e *Encoder) writeAttachements(att []Attachment) error {
 	for _, a := range att {
 		w, err := e.w.Create(a.Path, a.ContentType, nil)
 		if err != nil {

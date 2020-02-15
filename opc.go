@@ -14,19 +14,19 @@ func newOpcWriter(w io.Writer) *opcWriter {
 	return &opcWriter{opc.NewWriter(w)}
 }
 
-func (o *opcWriter) Create(name, contentType string, rels []*relationship) (io.Writer, error) {
+func (o *opcWriter) Create(name, contentType string, rels []Relationship) (io.Writer, error) {
 	p := opc.Part{Name: name, ContentType: contentType, Relationships: make([]*opc.Relationship, len(rels))}
 	for i, r := range rels {
-		p.Relationships[i] = &opc.Relationship{ID: r.ID, TargetURI: r.TargetURI, Type: r.Type}
+		p.Relationships[i] = &opc.Relationship{ID: r.ID, TargetURI: r.Path, Type: r.Type}
 	}
 	return o.w.CreatePart(&p, opc.CompressionNormal)
 }
 
-func (o *opcWriter) AddRelationship(r *relationship) {
+func (o *opcWriter) AddRelationship(r Relationship) {
 	o.w.Relationships = append(o.w.Relationships, &opc.Relationship{
 		ID:        r.ID,
 		Type:      r.Type,
-		TargetURI: r.TargetURI,
+		TargetURI: r.Path,
 	})
 }
 
@@ -34,10 +34,10 @@ func (o *opcWriter) Close() error {
 	return o.w.Close()
 }
 
-func newRelationships(rels []*opc.Relationship) []*relationship {
-	pr := make([]*relationship, len(rels))
+func newRelationships(rels []*opc.Relationship) []Relationship {
+	pr := make([]Relationship, len(rels))
 	for i, r := range rels {
-		pr[i] = &relationship{ID: r.ID, TargetURI: r.TargetURI, Type: r.Type}
+		pr[i] = Relationship{ID: r.ID, Path: r.TargetURI, Type: r.Type}
 	}
 	return pr
 }
@@ -69,7 +69,7 @@ func (o *opcFile) FindFileFromName(name string) (packageFile, bool) {
 	return findOPCFileFromName(name, o.r)
 }
 
-func (o *opcFile) Relationships() []*relationship {
+func (o *opcFile) Relationships() []Relationship {
 	return newRelationships(o.f.Relationships)
 }
 

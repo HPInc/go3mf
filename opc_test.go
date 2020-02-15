@@ -14,9 +14,9 @@ func Test_newRelationships(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want []*relationship
+		want []Relationship
 	}{
-		{"base", args{[]*opc.Relationship{{}, {TargetURI: "a.xml"}}}, []*relationship{{}, {TargetURI: "a.xml"}}},
+		{"base", args{[]*opc.Relationship{{}, {TargetURI: "a.xml"}}}, []Relationship{{}, {Path: "a.xml"}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -81,15 +81,15 @@ func Test_opcFile_Relationships(t *testing.T) {
 	tests := []struct {
 		name string
 		o    *opcFile
-		want []*relationship
+		want []Relationship
 	}{
-		{"empty", &opcFile{nil, &opc.File{Part: new(opc.Part)}}, []*relationship{}},
+		{"empty", &opcFile{nil, &opc.File{Part: new(opc.Part)}}, []Relationship{}},
 		{"base", &opcFile{nil, &opc.File{Part: &opc.Part{Relationships: []*opc.Relationship{
 			{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture", TargetURI: "/a.xml"},
 			{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel", TargetURI: "/b.xml"},
-		}}}}, []*relationship{
-			{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture", TargetURI: "/a.xml"},
-			{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel", TargetURI: "/b.xml"},
+		}}}}, []Relationship{
+			{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture", Path: "/a.xml"},
+			{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel", Path: "/b.xml"},
 		}},
 	}
 	for _, tt := range tests {
@@ -174,7 +174,7 @@ func Test_opcFile_ContentType(t *testing.T) {
 
 func Test_opcWriter_AddRelationship(t *testing.T) {
 	type args struct {
-		r *relationship
+		r Relationship
 	}
 	tests := []struct {
 		name string
@@ -182,7 +182,7 @@ func Test_opcWriter_AddRelationship(t *testing.T) {
 		args args
 		want []*opc.Relationship
 	}{
-		{"base", newOpcWriter(nil), args{&relationship{ID: "id_1", TargetURI: "fake_uri", Type: "fake_type"}}, []*opc.Relationship{
+		{"base", newOpcWriter(nil), args{Relationship{ID: "id_1", Path: "fake_uri", Type: "fake_type"}}, []*opc.Relationship{
 			{ID: "id_1", TargetURI: "fake_uri", Type: "fake_type"},
 		}},
 	}

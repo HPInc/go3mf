@@ -94,10 +94,19 @@ type Metadata struct {
 
 // Attachment defines the Model Attachment.
 type Attachment struct {
-	Stream           io.Reader
-	Path             string
-	RelationshipType string
-	ContentType      string
+	Stream      io.Reader
+	Path        string
+	ContentType string
+}
+
+// Relationship defines a dependency between
+// the owner of the relationsip and the attachment
+// referenced by path. ID is optional, if not set a random
+// value will be used when encoding.
+type Relationship struct {
+	Path string
+	Type string
+	ID   string
 }
 
 // Build contains one or more items to manufacture as part of processing the job.
@@ -162,27 +171,36 @@ func (rs *Resources) FindAsset(id uint32) (Asset, bool) {
 }
 
 // ChildModel repreents de content of a non-root model file.
+//
 // It is not supported by the core spec but a common concept
 // for multiple official specs.
+// The relationships are usually managed by the extensions themself,
+// but they are usefull to reference custom attachments.
 type ChildModel struct {
-	Resources   Resources
-	Attachments []*Attachment
-	Extension   Extension
+	Resources     Resources
+	Relationships []Relationship
+	Extension     Extension
 }
 
 // A Model is an in memory representation of the 3MF file.
+//
+// If path is empty, the default path '/3D/3dmodel.model' will be used.
+// The relationships are usually managed by the extensions themself,
+// but they are usefull to reference custom attachments.
+// Childs keys cannot be an empty string.
 type Model struct {
 	Path               string
 	Language           string
 	Units              Units
 	Thumbnail          string
-	Metadata           []Metadata
 	Resources          Resources
 	Build              Build
-	Attachments        []*Attachment
+	Attachments        []Attachment
 	Namespaces         []xml.Name
 	RequiredExtensions []string
-	Childs             map[string]*ChildModel
+	Metadata           []Metadata
+	Childs             map[string]*ChildModel // path -> child
+	Relationships      []Relationship
 	Extension          Extension
 	ExtensionAttr      ExtensionAttr
 }

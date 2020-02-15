@@ -97,8 +97,8 @@ func TestEncoder_writeAttachements(t *testing.T) {
 		wantErr bool
 	}{
 		{"empty", &Encoder{}, args{new(Model), nil}, false},
-		{"err-create", &Encoder{}, args{&Model{Attachments: []*Attachment{{}}}, new(bytes.Buffer)}, true},
-		{"base", &Encoder{}, args{&Model{Attachments: []*Attachment{{Stream: new(bytes.Buffer)}}}, new(bytes.Buffer)}, false},
+		{"err-create", &Encoder{}, args{&Model{Attachments: []Attachment{{}}}, new(bytes.Buffer)}, true},
+		{"base", &Encoder{}, args{&Model{Attachments: []Attachment{{Stream: new(bytes.Buffer)}}}, new(bytes.Buffer)}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

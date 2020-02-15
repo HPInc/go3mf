@@ -82,7 +82,7 @@ type mockFile struct {
 	mock.Mock
 }
 
-func newMockFile(name string, relationships []*relationship, other *mockFile, openErr bool) *mockFile {
+func newMockFile(name string, relationships []Relationship, other *mockFile, openErr bool) *mockFile {
 	m := new(mockFile)
 	m.On("Name").Return(name).Maybe()
 	m.On("ContentType").Return("").Maybe()
@@ -122,9 +122,9 @@ func (m *mockFile) FindFileFromName(args0 string) (packageFile, bool) {
 	return args.Get(0).(packageFile), args.Bool(1)
 }
 
-func (m *mockFile) Relationships() []*relationship {
+func (m *mockFile) Relationships() []Relationship {
 	args := m.Called()
-	return args.Get(0).([]*relationship)
+	return args.Get(0).([]Relationship)
 }
 
 type mockPackage struct {
@@ -145,11 +145,11 @@ func (m *mockPackage) Close() error {
 	return args.Error(0)
 }
 
-func (m *mockPackage) AddRelationship(args0 *relationship) {
+func (m *mockPackage) AddRelationship(args0 Relationship) {
 	m.Called(args0)
 }
 
-func (m *mockPackage) Create(args0, args1 string, args2 []*relationship) (io.Writer, error) {
+func (m *mockPackage) Create(args0, args1 string, args2 []Relationship) (io.Writer, error) {
 	args := m.Called(args0, args1, args2)
 	return args.Get(0).(io.Writer), args.Error(1)
 }
@@ -181,29 +181,32 @@ func TestDecoder_processOPC(t *testing.T) {
 		{"noRoot", &Decoder{p: newMockPackage(nil)}, &Model{}, true},
 		{"noRels", &Decoder{p: newMockPackage(newMockFile("/a.model", nil, nil, false))}, &Model{Path: "/a.model"}, false},
 		{"withThumb", &Decoder{
-			p: newMockPackage(newMockFile("/a.model", []*relationship{{Type: RelTypeThumbnail, TargetURI: "/a.png"}}, newMockFile("/a.png", nil, nil, false), false)),
+			p: newMockPackage(newMockFile("/a.model", []Relationship{{Type: RelTypeThumbnail, Path: "/a.png"}}, newMockFile("/a.png", nil, nil, false), false)),
 		}, &Model{
-			Path:        "/a.model",
-			Attachments: []*Attachment{{RelationshipType: RelTypeThumbnail, Path: "/a.png", Stream: new(bytes.Buffer)}},
+			Path:          "/a.model",
+			Relationships: []Relationship{{Path: "/a.png", Type: RelTypeThumbnail}},
+			Attachments:   []Attachment{{Path: "/a.png", Stream: new(bytes.Buffer)}},
 		}, false},
 		{"withPrintTicket", &Decoder{
-			p: newMockPackage(newMockFile("/a.model", []*relationship{{Type: RelTypePrintTicket, TargetURI: "/pc.png"}}, newMockFile("/pc.png", nil, nil, false), false)),
+			p: newMockPackage(newMockFile("/a.model", []Relationship{{Type: RelTypePrintTicket, Path: "/pc.png"}}, newMockFile("/pc.png", nil, nil, false), false)),
 		}, &Model{
-			Path:        "/a.model",
-			Attachments: []*Attachment{{RelationshipType: RelTypePrintTicket, Path: "/pc.png", Stream: new(bytes.Buffer)}},
+			Path:          "/a.model",
+			Relationships: []Relationship{{Path: "/pc.png", Type: RelTypePrintTicket}},
+			Attachments:   []Attachment{{Path: "/pc.png", Stream: new(bytes.Buffer)}},
 		}, false},
 		{"withExtRel", &Decoder{
-			p: newMockPackage(newMockFile("/a.model", []*relationship{{Type: extType, TargetURI: "/other.png"}}, newMockFile("/other.png", nil, nil, false), false)),
+			p: newMockPackage(newMockFile("/a.model", []Relationship{{Type: extType, Path: "/other.png"}}, newMockFile("/other.png", nil, nil, false), false)),
 		}, &Model{
-			Path:        "/a.model",
-			Attachments: []*Attachment{{RelationshipType: extType, Path: "/other.png", Stream: new(bytes.Buffer)}},
+			Path:          "/a.model",
+			Relationships: []Relationship{{Path: "/other.png", Type: extType}},
+			Attachments:   []Attachment{{Path: "/other.png", Stream: new(bytes.Buffer)}},
 		}, false},
 		{"withOtherRel", &Decoder{
-			p: newMockPackage(newMockFile("/a.model", []*relationship{{Type: "other", TargetURI: "/a.png"}}, nil, false)),
+			p: newMockPackage(newMockFile("/a.model", []Relationship{{Type: "other", Path: "/a.png"}}, nil, false)),
 		}, &Model{Path: "/a.model"}, false},
 		{"withModelAttachment", &Decoder{
-			p: newMockPackage(newMockFile("/a.model", []*relationship{{Type: RelTypeModel3D, TargetURI: "/other.model"}}, otherModel, false)),
-		}, &Model{Path: "/a.model"}, false},
+			p: newMockPackage(newMockFile("/a.model", []Relationship{{Type: RelTypeModel3D, Path: "/other.model"}}, otherModel, false)),
+		}, &Model{Path: "/a.model", Childs: map[string]*ChildModel{"/other.model": new(ChildModel)}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -435,7 +438,7 @@ func TestDecoder_Decode(t *testing.T) {
 		wantErr bool
 	}{
 		{"base", &Decoder{
-			p: newMockPackage(newMockFile("/a.model", []*relationship{{Type: "b", TargetURI: "/a.xml"}}, nil, false)),
+			p: newMockPackage(newMockFile("/a.model", []Relationship{{Type: "b", Path: "/a.xml"}}, nil, false)),
 		}, false},
 	}
 	for _, tt := range tests {
