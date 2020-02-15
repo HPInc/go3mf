@@ -33,7 +33,7 @@ func (d *modelDecoder) Child(name xml.Name) (child NodeDecoder) {
 	return
 }
 
-func (d *modelDecoder) Attributes(attrs []xml.Attr) {
+func (d *modelDecoder) Start(attrs []xml.Attr) {
 	if !d.Scanner.IsRoot {
 		return
 	}
@@ -103,7 +103,7 @@ type metadataDecoder struct {
 	metadata  Metadata
 }
 
-func (d *metadataDecoder) Attributes(attrs []xml.Attr) {
+func (d *metadataDecoder) Start(attrs []xml.Attr) {
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
@@ -130,7 +130,7 @@ func (d *metadataDecoder) Text(txt []byte) {
 	d.metadata.Value = string(txt)
 }
 
-func (d *metadataDecoder) Close() {
+func (d *metadataDecoder) End() {
 	*d.metadatas = append(*d.metadatas, d.metadata)
 }
 
@@ -146,7 +146,7 @@ func (d *buildDecoder) Child(name xml.Name) (child NodeDecoder) {
 	return
 }
 
-func (d *buildDecoder) Attributes(attrs []xml.Attr) {
+func (d *buildDecoder) Start(attrs []xml.Attr) {
 	for _, a := range attrs {
 		if ext, ok := d.Scanner.extensionDecoder[a.Name.Space]; ok {
 			ext.DecodeAttribute(d.Scanner, d.build, a)
@@ -159,7 +159,7 @@ type buildItemDecoder struct {
 	item Item
 }
 
-func (d *buildItemDecoder) Close() {
+func (d *buildItemDecoder) End() {
 	d.Scanner.BuildItems = append(d.Scanner.BuildItems, &d.item)
 	d.Scanner.ResourceID = 0
 }
@@ -188,7 +188,7 @@ func (d *buildItemDecoder) Child(name xml.Name) (child NodeDecoder) {
 // 	}
 // }
 
-func (d *buildItemDecoder) Attributes(attrs []xml.Attr) {
+func (d *buildItemDecoder) Start(attrs []xml.Attr) {
 	for _, a := range attrs {
 		if a.Name.Space == "" {
 			d.parseCoreAttr(a)
@@ -246,11 +246,7 @@ type baseMaterialsDecoder struct {
 	baseMaterialDecoder baseMaterialDecoder
 }
 
-func (d *baseMaterialsDecoder) Open() {
-	d.baseMaterialDecoder.resource = &d.resource
-}
-
-func (d *baseMaterialsDecoder) Close() {
+func (d *baseMaterialsDecoder) End() {
 	d.Scanner.AddAsset(&d.resource)
 }
 
@@ -261,7 +257,8 @@ func (d *baseMaterialsDecoder) Child(name xml.Name) (child NodeDecoder) {
 	return
 }
 
-func (d *baseMaterialsDecoder) Attributes(attrs []xml.Attr) {
+func (d *baseMaterialsDecoder) Start(attrs []xml.Attr) {
+	d.baseMaterialDecoder.resource = &d.resource
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrID {
 			d.resource.ID = d.Scanner.ParseResourceID(a.Value)
@@ -275,7 +272,7 @@ type baseMaterialDecoder struct {
 	resource *BaseMaterialsResource
 }
 
-func (d *baseMaterialDecoder) Attributes(attrs []xml.Attr) {
+func (d *baseMaterialDecoder) Start(attrs []xml.Attr) {
 	var name string
 	var withColor bool
 	baseColor := color.RGBA{}
@@ -307,7 +304,7 @@ type meshDecoder struct {
 	resource *Object
 }
 
-func (d *meshDecoder) Open() {
+func (d *meshDecoder) Start(_ []xml.Attr) {
 	d.resource.Mesh = new(Mesh)
 }
 
@@ -330,7 +327,7 @@ type verticesDecoder struct {
 	vertexDecoder vertexDecoder
 }
 
-func (d *verticesDecoder) Open() {
+func (d *verticesDecoder) Start(_ []xml.Attr) {
 	d.vertexDecoder.mesh = d.mesh
 }
 
@@ -346,7 +343,7 @@ type vertexDecoder struct {
 	mesh *Mesh
 }
 
-func (d *vertexDecoder) Attributes(attrs []xml.Attr) {
+func (d *vertexDecoder) Start(attrs []xml.Attr) {
 	var x, y, z float32
 	for _, a := range attrs {
 		val, err := strconv.ParseFloat(a.Value, 32)
@@ -371,7 +368,7 @@ type trianglesDecoder struct {
 	triangleDecoder triangleDecoder
 }
 
-func (d *trianglesDecoder) Open() {
+func (d *trianglesDecoder) Start(_ []xml.Attr) {
 	d.triangleDecoder.mesh = d.resource.Mesh
 	d.triangleDecoder.defaultPropertyID = d.resource.DefaultPID
 	d.triangleDecoder.defaultPropertyIndex = d.resource.DefaultPIndex
@@ -394,7 +391,7 @@ type triangleDecoder struct {
 	defaultPropertyIndex, defaultPropertyID uint32
 }
 
-func (d *triangleDecoder) Attributes(attrs []xml.Attr) {
+func (d *triangleDecoder) Start(attrs []xml.Attr) {
 	var v1, v2, v3, pid, p1, p2, p3 uint32
 	var hasPID, hasP1, hasP2, hasP3 bool
 	for _, a := range attrs {
@@ -464,11 +461,11 @@ type objectDecoder struct {
 	resource Object
 }
 
-func (d *objectDecoder) Close() {
+func (d *objectDecoder) End() {
 	d.Scanner.AddObject(&d.resource)
 }
 
-func (d *objectDecoder) Attributes(attrs []xml.Attr) {
+func (d *objectDecoder) Start(attrs []xml.Attr) {
 	for _, a := range attrs {
 		if a.Name.Space == "" {
 			d.parseCoreAttr(a)
@@ -531,7 +528,7 @@ type componentsDecoder struct {
 	componentDecoder componentDecoder
 }
 
-func (d *componentsDecoder) Open() {
+func (d *componentsDecoder) Start(_ []xml.Attr) {
 	d.resource.Components = make([]*Component, 0)
 	d.componentDecoder.resource = d.resource
 }
@@ -548,7 +545,7 @@ type componentDecoder struct {
 	resource *Object
 }
 
-func (d *componentDecoder) Attributes(attrs []xml.Attr) {
+func (d *componentDecoder) Start(attrs []xml.Attr) {
 	var component Component
 	for _, a := range attrs {
 		if a.Name.Space == "" {

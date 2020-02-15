@@ -11,11 +11,10 @@ import (
 
 // NodeDecoder defines the minimum contract to decode a 3MF node.
 type NodeDecoder interface {
-	Open()
-	Attributes([]xml.Attr)
+	Start([]xml.Attr)
 	Text([]byte)
 	Child(xml.Name) NodeDecoder
-	Close()
+	End()
 	SetScanner(*Scanner)
 }
 
@@ -23,11 +22,10 @@ type baseDecoder struct {
 	Scanner *Scanner
 }
 
-func (d *baseDecoder) Open()                      {}
-func (d *baseDecoder) Attributes([]xml.Attr)      {}
+func (d *baseDecoder) Start([]xml.Attr)           {}
 func (d *baseDecoder) Text([]byte)                {}
 func (d *baseDecoder) Child(xml.Name) NodeDecoder { return nil }
-func (d *baseDecoder) Close()                     {}
+func (d *baseDecoder) End()                       {}
 func (d *baseDecoder) SetScanner(s *Scanner)      { d.Scanner = s }
 
 // A MissingPropertyError represents a missing required property error.

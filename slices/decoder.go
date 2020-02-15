@@ -50,7 +50,7 @@ type sliceStackDecoder struct {
 	resource SliceStackResource
 }
 
-func (d *sliceStackDecoder) Close() {
+func (d *sliceStackDecoder) End() {
 	if len(d.resource.Refs) > 0 && len(d.resource.Slices) > 0 {
 		d.Scanner.GenericError(true, "slicestack contains slices and slicerefs")
 	}
@@ -68,7 +68,7 @@ func (d *sliceStackDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	return
 }
 
-func (d *sliceStackDecoder) Attributes(attrs []xml.Attr) {
+func (d *sliceStackDecoder) Start(attrs []xml.Attr) {
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrID:
@@ -88,7 +88,7 @@ type sliceRefDecoder struct {
 	resource *SliceStackResource
 }
 
-func (d *sliceRefDecoder) Attributes(attrs []xml.Attr) {
+func (d *sliceRefDecoder) Start(attrs []xml.Attr) {
 	var (
 		sliceStackID uint32
 		path         string
@@ -129,11 +129,7 @@ type sliceDecoder struct {
 	polygonVerticesDecoder polygonVerticesDecoder
 }
 
-func (d *sliceDecoder) Open() {
-	d.polygonDecoder.slice = &d.slice
-	d.polygonVerticesDecoder.slice = &d.slice
-}
-func (d *sliceDecoder) Close() {
+func (d *sliceDecoder) End() {
 	d.resource.Slices = append(d.resource.Slices, &d.slice)
 }
 func (d *sliceDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
@@ -147,7 +143,9 @@ func (d *sliceDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	return
 }
 
-func (d *sliceDecoder) Attributes(attrs []xml.Attr) {
+func (d *sliceDecoder) Start(attrs []xml.Attr) {
+	d.polygonDecoder.slice = &d.slice
+	d.polygonVerticesDecoder.slice = &d.slice
 	var hasTopZ bool
 	for _, a := range attrs {
 		if a.Name.Local == attrZTop {
@@ -171,7 +169,7 @@ type polygonVerticesDecoder struct {
 	polygonVertexDecoder polygonVertexDecoder
 }
 
-func (d *polygonVerticesDecoder) Open() {
+func (d *polygonVerticesDecoder) Start(_ []xml.Attr) {
 	d.polygonVertexDecoder.slice = d.slice
 }
 
@@ -187,7 +185,7 @@ type polygonVertexDecoder struct {
 	slice *Slice
 }
 
-func (d *polygonVertexDecoder) Attributes(attrs []xml.Attr) {
+func (d *polygonVertexDecoder) Start(attrs []xml.Attr) {
 	var p go3mf.Point2D
 	for _, a := range attrs {
 		val, err := strconv.ParseFloat(a.Value, 32)
@@ -208,14 +206,7 @@ func (d *polygonVertexDecoder) Attributes(attrs []xml.Attr) {
 type polygonDecoder struct {
 	baseDecoder
 	slice                 *Slice
-	polygonIndex          int
 	polygonSegmentDecoder polygonSegmentDecoder
-}
-
-func (d *polygonDecoder) Open() {
-	d.polygonIndex = len(d.slice.Polygons)
-	d.slice.Polygons = append(d.slice.Polygons, Polygon{})
-	d.polygonSegmentDecoder.polygon = &d.slice.Polygons[d.polygonIndex]
 }
 
 func (d *polygonDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
@@ -225,14 +216,17 @@ func (d *polygonDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	return
 }
 
-func (d *polygonDecoder) Attributes(attrs []xml.Attr) {
+func (d *polygonDecoder) Start(attrs []xml.Attr) {
+	polygonIndex := len(d.slice.Polygons)
+	d.slice.Polygons = append(d.slice.Polygons, Polygon{})
+	d.polygonSegmentDecoder.polygon = &d.slice.Polygons[polygonIndex]
 	for _, a := range attrs {
 		if a.Name.Local == attrStartV {
 			val, err := strconv.ParseUint(a.Value, 10, 32)
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
 			}
-			d.slice.Polygons[d.polygonIndex].StartV = uint32(val)
+			d.slice.Polygons[polygonIndex].StartV = uint32(val)
 			break
 		}
 	}
@@ -243,7 +237,7 @@ type polygonSegmentDecoder struct {
 	polygon *Polygon
 }
 
-func (d *polygonSegmentDecoder) Attributes(attrs []xml.Attr) {
+func (d *polygonSegmentDecoder) Start(attrs []xml.Attr) {
 	var (
 		segment      Segment
 		hasP1, hasP2 bool
@@ -278,9 +272,7 @@ type baseDecoder struct {
 	Scanner *go3mf.Scanner
 }
 
-func (d *baseDecoder) Open()                            {}
-func (d *baseDecoder) Attributes([]xml.Attr)            {}
 func (d *baseDecoder) Text([]byte)                      {}
 func (d *baseDecoder) Child(xml.Name) go3mf.NodeDecoder { return nil }
-func (d *baseDecoder) Close()                           {}
+func (d *baseDecoder) End()                             {}
 func (d *baseDecoder) SetScanner(s *go3mf.Scanner)      { d.Scanner = s }

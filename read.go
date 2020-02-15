@@ -144,8 +144,7 @@ func (d *modelFileDecoder) Decode(ctx context.Context, x XMLDecoder, model *Mode
 				currentName = tp.Name
 				d.Scanner.Element = tp.Name.Local
 				currentDecoder = tmpDecoder
-				currentDecoder.Open()
-				currentDecoder.Attributes(tp.Attr)
+				currentDecoder.Start(tp.Attr)
 			} else {
 				d.Scanner.Err = x.Skip()
 			}
@@ -154,7 +153,7 @@ func (d *modelFileDecoder) Decode(ctx context.Context, x XMLDecoder, model *Mode
 		case xml.EndElement:
 			if currentName == tp.Name {
 				d.Scanner.Element = tp.Name.Local
-				currentDecoder.Close()
+				currentDecoder.End()
 				currentDecoder, state = state[len(state)-1], state[:len(state)-1]
 				currentName, names = names[len(names)-1], names[:len(names)-1]
 			}

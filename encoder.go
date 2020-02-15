@@ -57,6 +57,10 @@ func NewEncoder(w io.Writer) *Encoder {
 
 // Encode writes the XML encoding of m to the stream.
 func (e *Encoder) Encode(ctx context.Context, m *Model) error {
+	if err := e.writeAttachements(m.Attachments); err != nil {
+		return err
+	}
+
 	rootName := m.Path
 	if rootName == "" {
 		rootName = uriDefault3DModel
@@ -78,10 +82,6 @@ func (e *Encoder) Encode(ctx context.Context, m *Model) error {
 	}
 	err = e.writeModel(newXMLEncoder(w, e.FloatPrecision), m)
 
-	if err := e.writeAttachements(m.Attachments); err != nil {
-		return err
-	}
-
 	for path, child := range m.Childs {
 		if w, err = e.w.Create(path, contentType3DModel, child.Relationships); err != nil {
 			return err
@@ -100,11 +100,10 @@ func (e *Encoder) Encode(ctx context.Context, m *Model) error {
 func (e *Encoder) writeAttachements(att []Attachment) error {
 	for _, a := range att {
 		w, err := e.w.Create(a.Path, a.ContentType, nil)
-		if err != nil {
-			return err
+		if err == nil {
+			_, err = io.Copy(w, a.Stream)
 		}
-
-		if _, err = io.Copy(w, a.Stream); err != nil {
+		if err != nil {
 			return err
 		}
 	}
@@ -142,10 +141,7 @@ func (e *Encoder) modelToken(m *Model, isRoot bool) (xml.StartElement, error) {
 }
 
 func (e *Encoder) writeChildModel(x *XMLEncoder, m *Model, path string) error {
-	tm, err := e.modelToken(m, false)
-	if err != nil {
-		return err
-	}
+	tm, _ := e.modelToken(m, false) // error already checked before
 	m.ExtensionAttr.encode(x, &tm)
 	x.EncodeToken(tm)
 
