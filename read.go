@@ -286,12 +286,14 @@ func (d *Decoder) addModelFile(p *Scanner, model *Model) {
 }
 
 func (d *Decoder) processNonRootModels(ctx context.Context, model *Model) (err error) {
-	var wg sync.WaitGroup
+	var (
+		files              sync.Map
+		wg                 sync.WaitGroup
+		nonRootModelsCount = len(d.nonRootModels)
+	)
+	wg.Add(nonRootModelsCount)
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	var files sync.Map
-	nonRootModelsCount := len(d.nonRootModels)
-	wg.Add(nonRootModelsCount)
 	for i := 0; i < nonRootModelsCount; i++ {
 		go func(i int) {
 			defer wg.Done()
