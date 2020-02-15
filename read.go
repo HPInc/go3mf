@@ -354,8 +354,7 @@ func (d *Decoder) processNonRootModels(ctx context.Context, model *Model) (err e
 }
 
 func (d *Decoder) processOPC(model *Model) (packageFile, error) {
-	err := d.p.Open(d.flate)
-	if err != nil {
+	if err := d.p.Open(d.flate); err != nil {
 		return nil, err
 	}
 	var rootFile packageFile
