@@ -26,7 +26,7 @@ type Marshaler interface {
 // MarshalerAttr is the interface implemented by objects that can marshal
 // themselves into valid XML attributes.
 type MarshalerAttr interface {
-	Marshal3MFAttr() ([]xml.Attr, error)
+	Marshal3MFAttr(*XMLEncoder) ([]xml.Attr, error)
 }
 
 // MarshalModel returns the XML encoding of m.

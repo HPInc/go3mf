@@ -7,7 +7,7 @@ import (
 	"github.com/qmuntal/go3mf"
 )
 
-func (s *SliceStackInfo) Marshal3MFAttr() ([]xml.Attr, error) {
+func (s *SliceStackInfo) Marshal3MFAttr(_ *go3mf.XMLEncoder) ([]xml.Attr, error) {
 	return []xml.Attr{
 		{Name: xml.Name{Space: ExtensionName, Local: attrSliceRefID}, Value: strconv.FormatUint(uint64(s.SliceStackID), 10)},
 		{Name: xml.Name{Space: ExtensionName, Local: attrMeshRes}, Value: s.SliceResolution.String()},

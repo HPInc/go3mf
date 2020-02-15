@@ -13,7 +13,7 @@ type ExtensionAttr map[string]MarshalerAttr
 
 func (e ExtensionAttr) encode(x *XMLEncoder, start *xml.StartElement) {
 	for _, ext := range e {
-		if att, err := ext.Marshal3MFAttr(); err == nil {
+		if att, err := ext.Marshal3MFAttr(x); err == nil {
 			start.Attr = append(start.Attr, att...)
 		}
 	}
