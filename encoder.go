@@ -11,8 +11,13 @@ import (
 
 const defaultFloatPrecision = 6
 
+type packagePart interface {
+	io.Writer
+	AddRelationship(Relationship)
+}
+
 type packageWriter interface {
-	Create(name, contentType string, rels []Relationship) (io.Writer, error)
+	Create(name, contentType string) (packagePart, error)
 	AddRelationship(Relationship)
 	Close() error
 }
@@ -59,28 +64,33 @@ func (e *Encoder) Encode(m *Model) error {
 	if err := e.writeAttachements(m.Attachments); err != nil {
 		return err
 	}
-
 	rootName := m.Path
 	if rootName == "" {
 		rootName = uriDefault3DModel
 	}
 	e.w.AddRelationship(Relationship{Type: RelTypeModel3D, Path: rootName})
 
-	rootRels := make([]Relationship, len(m.Relationships))
-	copy(rootRels, m.Relationships)
-	for path := range m.Childs {
-		rootRels = append(rootRels, Relationship{Type: RelTypeModel3D, Path: path})
-	}
-
-	w, err := e.w.Create(rootName, contentType3DModel, rootRels)
+	w, err := e.w.Create(rootName, contentType3DModel)
 	if err != nil {
 		return err
 	}
 	if _, err := w.Write([]byte(xml.Header)); err != nil {
 		return err
 	}
-	if err = e.writeModel(newXMLEncoder(w, e.FloatPrecision), m); err != nil {
-		err = e.writeChildModels(m)
+	enc := newXMLEncoder(w, e.FloatPrecision)
+	enc.relationships = make([]Relationship, len(m.Relationships))
+	copy(enc.relationships, m.Relationships)
+	for path := range m.Childs {
+		enc.AddRelationship(Relationship{Type: RelTypeModel3D, Path: path})
+	}
+	if err = e.writeModel(enc, m); err != nil {
+		return err
+	}
+	for _, r := range enc.relationships {
+		w.AddRelationship(r)
+	}
+	if err = e.writeChildModels(m); err != nil {
+		return err
 	}
 
 	return e.w.Close()
@@ -89,17 +99,22 @@ func (e *Encoder) Encode(m *Model) error {
 func (e *Encoder) writeChildModels(m *Model) error {
 	for path, child := range m.Childs {
 		var (
-			w   io.Writer
+			w   packagePart
 			err error
 		)
-		if w, err = e.w.Create(path, contentType3DModel, child.Relationships); err != nil {
+		if w, err = e.w.Create(path, contentType3DModel); err != nil {
 			return err
 		}
 		if _, err = w.Write([]byte(xml.Header)); err != nil {
 			return err
 		}
-		if err = e.writeChildModel(newXMLEncoder(w, e.FloatPrecision), m, path); err != nil {
+		enc := newXMLEncoder(w, e.FloatPrecision)
+		enc.relationships = child.Relationships
+		if err = e.writeChildModel(enc, m, path); err != nil {
 			return err
+		}
+		for _, r := range enc.relationships {
+			w.AddRelationship(r)
 		}
 	}
 	return nil
@@ -107,7 +122,7 @@ func (e *Encoder) writeChildModels(m *Model) error {
 
 func (e *Encoder) writeAttachements(att []Attachment) error {
 	for _, a := range att {
-		w, err := e.w.Create(a.Path, a.ContentType, nil)
+		w, err := e.w.Create(a.Path, a.ContentType)
 		if err == nil {
 			_, err = io.Copy(w, a.Stream)
 		}

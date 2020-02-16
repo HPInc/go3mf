@@ -6,6 +6,24 @@ import (
 	"github.com/qmuntal/opc"
 )
 
+type opcPart struct {
+	io.Writer
+	Part *opc.Part
+}
+
+func (o *opcPart) AddRelationship(r Relationship) {
+	for _, ro := range o.Part.Relationships {
+		if ro.Type == r.Type && ro.TargetURI == r.Path {
+			return
+		}
+	}
+	o.Part.Relationships = append(o.Part.Relationships, &opc.Relationship{
+		ID:        r.ID,
+		Type:      r.Type,
+		TargetURI: r.Path,
+	})
+}
+
 type opcWriter struct {
 	w *opc.Writer
 }
@@ -14,12 +32,13 @@ func newOpcWriter(w io.Writer) *opcWriter {
 	return &opcWriter{opc.NewWriter(w)}
 }
 
-func (o *opcWriter) Create(name, contentType string, rels []Relationship) (io.Writer, error) {
-	p := opc.Part{Name: opc.NormalizePartName(name), ContentType: contentType, Relationships: make([]*opc.Relationship, len(rels))}
-	for i, r := range rels {
-		p.Relationships[i] = &opc.Relationship{ID: r.ID, TargetURI: r.Path, Type: r.Type}
+func (o *opcWriter) Create(name, contentType string) (packagePart, error) {
+	p := &opc.Part{Name: opc.NormalizePartName(name), ContentType: contentType}
+	w, err := o.w.CreatePart(p, opc.CompressionNormal)
+	if err != nil {
+		return nil, err
 	}
-	return o.w.CreatePart(&p, opc.CompressionNormal)
+	return &opcPart{Writer: w, Part: p}, nil
 }
 
 func (o *opcWriter) AddRelationship(r Relationship) {

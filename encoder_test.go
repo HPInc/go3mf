@@ -5,13 +5,25 @@ import (
 	"encoding/xml"
 	"errors"
 	"image/color"
-	"io"
 	"reflect"
 	"testing"
 
 	"github.com/go-test/deep"
 	"github.com/stretchr/testify/mock"
 )
+
+type mockPackagePart struct {
+	mock.Mock
+}
+
+func (m *mockPackagePart) Write(arg1 []byte) (int, error) {
+	args := m.Called(arg1)
+	return args.Int(0), args.Error(1)
+}
+
+func (m *mockPackagePart) AddRelationship(args0 Relationship) {
+	m.Called(args0)
+}
 
 func TestMarshalModel(t *testing.T) {
 	m := &Model{
@@ -88,7 +100,6 @@ func TestMarshalModel(t *testing.T) {
 func TestEncoder_writeAttachements(t *testing.T) {
 	type args struct {
 		m *Model
-		f io.Writer
 	}
 	tests := []struct {
 		name    string
@@ -96,9 +107,9 @@ func TestEncoder_writeAttachements(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"empty", &Encoder{}, args{new(Model), nil}, false},
-		{"err-create", &Encoder{}, args{&Model{Attachments: []Attachment{{}}}, new(bytes.Buffer)}, true},
-		{"base", &Encoder{}, args{&Model{Attachments: []Attachment{{Stream: new(bytes.Buffer)}}}, new(bytes.Buffer)}, false},
+		{"empty", &Encoder{}, args{new(Model)}, false},
+		{"err-create", &Encoder{}, args{&Model{Attachments: []Attachment{{}}}}, true},
+		{"base", &Encoder{}, args{&Model{Attachments: []Attachment{{Stream: new(bytes.Buffer)}}}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -107,7 +118,9 @@ func TestEncoder_writeAttachements(t *testing.T) {
 				argErr = errors.New("")
 			}
 			m := new(mockPackage)
-			m.On("Create", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.f, argErr)
+			mp := new(mockPackagePart)
+			mp.On("Write", mock.Anything).Return(mock.Anything, mock.Anything)
+			m.On("Create", mock.Anything, mock.Anything).Return(mp, argErr)
 			m.On("AddRelationship", mock.Anything).Return()
 			tt.e.w = m
 			if err := tt.e.writeAttachements(tt.args.m.Attachments); (err != nil) != tt.wantErr {
