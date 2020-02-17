@@ -146,6 +146,68 @@ func TestNewEncoder(t *testing.T) {
 	}
 }
 
+func TestEncoder_Encode_Normalize(t *testing.T) {
+	type args struct {
+		m *Model
+	}
+	tests := []struct {
+		name string
+		args args
+		want *Model
+	}{
+		{"empty", args{new(Model)}, &Model{Path: uriDefault3DModel}},
+		{"withAttrs", args{&Model{Path: "a/other.ml"}}, &Model{Path: "/a/other.ml", Units: UnitMillimeter}},
+		{"withRootRel", args{&Model{
+			RootRelationships: []Relationship{
+				{Path: "Metadata/thumbnail.png", Type: "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail", ID: "2"},
+			},
+			Attachments: []Attachment{
+				{ContentType: "application/vnd.ms-printing.printticket+xml", Path: "/3D/Metadata/pt.xml", Stream: bytes.NewBufferString("other")},
+				{ContentType: "image/png", Path: "/Metadata/thumbnail.png", Stream: bytes.NewBufferString("fake")},
+			}}},
+			&Model{Path: uriDefault3DModel,
+				RootRelationships: []Relationship{
+					{Path: "/Metadata/thumbnail.png", Type: "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail", ID: "2"},
+				},
+				Attachments: []Attachment{
+					{ContentType: "image/png", Path: "/Metadata/thumbnail.png", Stream: bytes.NewBufferString("fake")},
+				}}},
+		{"withChildModel", args{&Model{
+			Childs: map[string]*ChildModel{
+				"empty.model": {},
+				"/other.model": {Relationships: []Relationship{
+					{Path: "/3D/Metadata/pt.xml", Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/printticket", ID: "1"}},
+				},
+			}}}, &Model{Path: uriDefault3DModel,
+			Childs: map[string]*ChildModel{
+				"/empty.model": {},
+				"/other.model": {},
+			},
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			buff := new(bytes.Buffer)
+			if err := NewEncoder(buff).Encode(tt.args.m); err != nil {
+				t.Errorf("Encoder.Encode() error = %v", err)
+				return
+			}
+			newModel := new(Model)
+			err := NewDecoder(bytes.NewReader(buff.Bytes()), int64(buff.Len())).Decode(newModel)
+			if err != nil {
+				t.Errorf("Encoder.Encode() malformed = %v", err)
+				return
+			}
+			if tt.args.m.Path == "" {
+				tt.args.m.Path = uriDefault3DModel
+			}
+			if diff := deep.Equal(newModel, tt.want); diff != nil {
+				t.Errorf("MarshalModel() = %v", diff)
+			}
+		})
+	}
+}
+
 func TestEncoder_Encode_Roundtrip(t *testing.T) {
 	type args struct {
 		m *Model
@@ -198,7 +260,7 @@ func TestEncoder_Encode_Roundtrip(t *testing.T) {
 			if tt.args.m.Path == "" {
 				tt.args.m.Path = uriDefault3DModel
 			}
-			if diff := deep.Equal(tt.args.m, newModel); diff != nil {
+			if diff := deep.Equal(newModel, tt.args.m); diff != nil {
 				t.Errorf("MarshalModel() = %v", diff)
 			}
 		})
