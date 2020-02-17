@@ -69,6 +69,9 @@ func (e *Encoder) Encode(m *Model) error {
 		rootName = uriDefault3DModel
 	}
 	e.w.AddRelationship(Relationship{Type: RelTypeModel3D, Path: rootName})
+	for _, r := range m.RootRelationships {
+		e.w.AddRelationship(r)
+	}
 
 	w, err := e.w.Create(rootName, contentType3DModel)
 	if err != nil {

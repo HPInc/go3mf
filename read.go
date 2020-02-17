@@ -346,7 +346,7 @@ func (d *Decoder) processOPC(model *Model) (packageFile, error) {
 			}
 		} else if att, ok := d.p.FindFileFromName(r.Path); ok {
 			model.RootRelationships = append(model.RootRelationships, r)
-			d.addAttachment(model.Attachments, att)
+			model.Attachments = d.addAttachment(model.Attachments, att)
 		}
 	}
 	if rootFile == nil {
