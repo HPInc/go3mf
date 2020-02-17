@@ -42,6 +42,11 @@ func (o *opcWriter) Create(name, contentType string) (packagePart, error) {
 }
 
 func (o *opcWriter) AddRelationship(r Relationship) {
+	for _, ro := range o.w.Relationships {
+		if ro.Type == r.Type && ro.TargetURI == r.Path {
+			return
+		}
+	}
 	o.w.Relationships = append(o.w.Relationships, &opc.Relationship{
 		ID:        r.ID,
 		Type:      r.Type,

@@ -166,6 +166,7 @@ func TestEncoder_Encode_Normalize(t *testing.T) {
 		{"withRootRel", args{&Model{
 			RootRelationships: []Relationship{
 				{Path: "Metadata/thumbnail.png", Type: RelTypeThumbnail, ID: "2"},
+				{Path: "Metadata/thumbnail.png", Type: RelTypeThumbnail, ID: "2"},
 			},
 			Attachments: []Attachment{
 				{ContentType: "application/vnd.ms-printing.printticket+xml", Path: "/3D/Metadata/pt.xml", Stream: bytes.NewBufferString("other")},
