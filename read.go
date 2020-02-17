@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"os"
 	"sort"
+	"strings"
 	"sync"
 )
 
@@ -381,7 +382,7 @@ func (d *Decoder) extractCoreAttachments(modelFile packageFile, model *Model, is
 
 func (d *Decoder) addAttachment(attachments []Attachment, file packageFile) []Attachment {
 	for _, att := range attachments {
-		if att.Path == file.Name() {
+		if strings.EqualFold(att.Path, file.Name()) {
 			return attachments
 		}
 	}
