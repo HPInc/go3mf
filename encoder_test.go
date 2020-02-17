@@ -156,10 +156,16 @@ func TestEncoder_Encode_Normalize(t *testing.T) {
 		want *Model
 	}{
 		{"empty", args{new(Model)}, &Model{Path: uriDefault3DModel}},
-		{"withAttrs", args{&Model{Path: "a/other.ml"}}, &Model{Path: "/a/other.ml", Units: UnitMillimeter}},
+		{"withAttrs", args{&Model{Path: "a/other.ml", Thumbnail: "/Metadata/thumbnail.png", Attachments: []Attachment{
+			{ContentType: "image/png", Path: "Metadata/thumbnail.png", Stream: bytes.NewBufferString("fake")},
+		}}}, &Model{Path: "/a/other.ml", Units: UnitMillimeter, Thumbnail: "/Metadata/thumbnail.png", Attachments: []Attachment{
+			{ContentType: "image/png", Path: "/Metadata/thumbnail.png", Stream: bytes.NewBufferString("fake")},
+		}, Relationships: []Relationship{
+			{Path: "/Metadata/thumbnail.png", Type: RelTypeThumbnail, ID: "2xKvE9cJ"},
+		}}},
 		{"withRootRel", args{&Model{
 			RootRelationships: []Relationship{
-				{Path: "Metadata/thumbnail.png", Type: "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail", ID: "2"},
+				{Path: "Metadata/thumbnail.png", Type: RelTypeThumbnail, ID: "2"},
 			},
 			Attachments: []Attachment{
 				{ContentType: "application/vnd.ms-printing.printticket+xml", Path: "/3D/Metadata/pt.xml", Stream: bytes.NewBufferString("other")},
@@ -167,7 +173,7 @@ func TestEncoder_Encode_Normalize(t *testing.T) {
 			}}},
 			&Model{Path: uriDefault3DModel,
 				RootRelationships: []Relationship{
-					{Path: "/Metadata/thumbnail.png", Type: "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail", ID: "2"},
+					{Path: "/Metadata/thumbnail.png", Type: RelTypeThumbnail, ID: "2"},
 				},
 				Attachments: []Attachment{
 					{ContentType: "image/png", Path: "/Metadata/thumbnail.png", Stream: bytes.NewBufferString("fake")},

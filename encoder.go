@@ -136,13 +136,14 @@ func (e *Encoder) writeAttachements(att []Attachment) error {
 	return nil
 }
 
-func (e *Encoder) modelToken(m *Model, isRoot bool) (xml.StartElement, error) {
+func (e *Encoder) modelToken(x *XMLEncoder, m *Model, isRoot bool) (xml.StartElement, error) {
 	attrs := []xml.Attr{
 		{Name: xml.Name{Local: attrXmlns}, Value: ExtensionName},
 		{Name: xml.Name{Local: attrUnit}, Value: m.Units.String()},
 		{Name: xml.Name{Space: nsXML, Local: attrLang}, Value: m.Language},
 	}
 	if isRoot && m.Thumbnail != "" {
+		x.AddRelationship(Relationship{Path: m.Thumbnail, Type: RelTypeThumbnail})
 		attrs = append(attrs, xml.Attr{Name: xml.Name{Local: attrThumbnail}, Value: m.Thumbnail})
 	}
 	for _, a := range m.Namespaces {
@@ -163,12 +164,13 @@ func (e *Encoder) modelToken(m *Model, isRoot bool) (xml.StartElement, error) {
 		}
 		attrs = append(attrs, xml.Attr{Name: xml.Name{Local: attrReqExt}, Value: strings.Join(exts, " ")})
 	}
-	return xml.StartElement{Name: xml.Name{Local: attrModel}, Attr: attrs}, nil
+	tm := xml.StartElement{Name: xml.Name{Local: attrModel}, Attr: attrs}
+	m.ExtensionAttr.encode(x, &tm)
+	return tm, nil
 }
 
 func (e *Encoder) writeChildModel(x *XMLEncoder, m *Model, path string) error {
-	tm, _ := e.modelToken(m, false) // error already checked before
-	m.ExtensionAttr.encode(x, &tm)
+	tm, _ := e.modelToken(x, m, false) // error already checked before
 	x.EncodeToken(tm)
 
 	child := m.Childs[path]
@@ -185,11 +187,10 @@ func (e *Encoder) writeChildModel(x *XMLEncoder, m *Model, path string) error {
 }
 
 func (e *Encoder) writeModel(x *XMLEncoder, m *Model) error {
-	tm, err := e.modelToken(m, true)
+	tm, err := e.modelToken(x, m, true)
 	if err != nil {
 		return err
 	}
-	m.ExtensionAttr.encode(x, &tm)
 	x.EncodeToken(tm)
 
 	e.writeMetadata(x, m.Metadata)
@@ -299,6 +300,7 @@ func (e *Encoder) writeObject(x *XMLEncoder, r *Object) {
 		xo.Attr = append(xo.Attr, xml.Attr{Name: xml.Name{Local: attrType}, Value: r.ObjectType.String()})
 	}
 	if r.Thumbnail != "" {
+		x.AddRelationship(Relationship{Path: r.Thumbnail, Type: RelTypeThumbnail})
 		xo.Attr = append(xo.Attr, xml.Attr{Name: xml.Name{Local: attrThumbnail}, Value: r.Thumbnail})
 	}
 	if r.PartNumber != "" {
