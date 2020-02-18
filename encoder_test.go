@@ -6,11 +6,28 @@ import (
 	"errors"
 	"image/color"
 	"reflect"
+	"strconv"
 	"testing"
 
 	"github.com/go-test/deep"
 	"github.com/stretchr/testify/mock"
 )
+
+func (f *fakeAttr) Marshal3MFAttr(_ *XMLEncoder) ([]xml.Attr, error) {
+	return []xml.Attr{
+		{Name: xml.Name{Space: fakeExtension, Local: "value"}, Value: f.Value},
+	}, nil
+}
+
+// Marshal3MF encodes the resource.
+func (f *fakeAsset) Marshal3MF(x *XMLEncoder) error {
+	xs := xml.StartElement{Name: xml.Name{Space: fakeExtension, Local: "fakeasset"}, Attr: []xml.Attr{
+		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(f.ID), 10)},
+	}}
+	x.EncodeToken(xs)
+	x.EncodeToken(xs.End())
+	return nil
+}
 
 type mockPackagePart struct {
 	mock.Mock
@@ -30,15 +47,18 @@ func TestMarshalModel(t *testing.T) {
 		Units: UnitMillimeter, Language: "en-US", Path: "/3D/3dmodel.model", Thumbnail: "/thumbnail.png",
 		Namespaces:         []xml.Name{{Space: fakeExtension, Local: "qm"}},
 		RequiredExtensions: []string{fakeExtension},
+		ExtensionAttr:      ExtensionAttr{fakeExtension: &fakeAttr{Value: "model_fake"}},
 		Resources: Resources{
-			Assets: []Asset{&BaseMaterialsResource{ID: 5, Materials: []BaseMaterial{
-				{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
-				{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
-			}}},
+			Assets: []Asset{
+				&BaseMaterialsResource{ID: 5, Materials: []BaseMaterial{
+					{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
+					{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
+				}}, &fakeAsset{ID: 25}},
 			Objects: []*Object{
 				{
 					ID: 8, Name: "Box 1", PartNumber: "11111111-1111-1111-1111-111111111111", Thumbnail: "/a.png",
-					DefaultPID: 1, DefaultPIndex: 1, ObjectType: ObjectTypeModel, Mesh: &Mesh{
+					ExtensionAttr: ExtensionAttr{fakeExtension: &fakeAttr{Value: "object_fake"}},
+					DefaultPID:    1, DefaultPIndex: 1, ObjectType: ObjectTypeModel, Mesh: &Mesh{
 						Nodes: []Point3D{
 							{0, 0, 0}, {100, 0, 0}, {100, 100, 0},
 							{0, 100, 0}, {0, 0, 100}, {100, 0, 100},
@@ -60,18 +80,21 @@ func TestMarshalModel(t *testing.T) {
 					}},
 				{
 					ID: 20, ObjectType: ObjectTypeSupport,
-					Metadata:   []Metadata{{Name: "qm:CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: "qm:CustomMetadata4", Type: "xs:boolean", Value: "2"}},
-					Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
+					Metadata: []Metadata{{Name: "qm:CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: "qm:CustomMetadata4", Type: "xs:boolean", Value: "2"}},
+					Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1},
+						ExtensionAttr: ExtensionAttr{fakeExtension: &fakeAttr{Value: "component_fake"}}}},
 				},
 			},
 		},
-		Build: Build{Items: []*Item{
-			{
-				ObjectID: 20, PartNumber: "bob", Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
-				Metadata: []Metadata{{Name: "qm:CustomMetadata3", Type: "xs:boolean", Value: "1"}},
-			},
-			{ObjectID: 21},
-		}}, Metadata: []Metadata{
+		Build: Build{
+			ExtensionAttr: ExtensionAttr{fakeExtension: &fakeAttr{Value: "build_fake"}},
+			Items: []*Item{
+				{
+					ObjectID: 20, PartNumber: "bob", Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
+					Metadata: []Metadata{{Name: "qm:CustomMetadata3", Type: "xs:boolean", Value: "1"}},
+				},
+				{ObjectID: 21, ExtensionAttr: ExtensionAttr{fakeExtension: &fakeAttr{Value: "item_fake"}}},
+			}}, Metadata: []Metadata{
 			{Name: "Application", Value: "go3mf app"},
 			{Name: "qm:CustomMetadata1", Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},
 		}}
@@ -83,8 +106,8 @@ func TestMarshalModel(t *testing.T) {
 			return
 		}
 		d := NewDecoder(nil, 0)
-		d.RegisterNodeDecoderExtension(fakeExtension, nil)
-		d.RegisterDecodeAttributeExtension(fakeExtension, nil)
+		d.RegisterNodeDecoderExtension(fakeExtension, nodeDecoder)
+		d.RegisterDecodeAttributeExtension(fakeExtension, decodeAttribute)
 		newModel := new(Model)
 		newModel.Path = m.Path
 		if err := d.UnmarshalModel(b, newModel); err != nil {
@@ -92,7 +115,7 @@ func TestMarshalModel(t *testing.T) {
 			return
 		}
 		if diff := deep.Equal(m, newModel); diff != nil {
-			t.Errorf("MarshalModel() = %v", diff)
+			t.Errorf("MarshalModel() = %v, s = %s", diff, string(b))
 		}
 	})
 }

@@ -11,6 +11,7 @@ import (
 	"io"
 	"io/ioutil"
 	"reflect"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -19,6 +20,62 @@ import (
 )
 
 const fakeExtension = "http://dummy.com/fake_ext"
+
+type fakeAsset struct {
+	ID uint32
+}
+
+func (f *fakeAsset) Identify() uint32 {
+	return f.ID
+}
+
+type fakeAttr struct {
+	Value string
+}
+
+type fakeAssetDecoder struct {
+	baseDecoder
+}
+
+func (f *fakeAssetDecoder) Start(att []xml.Attr) {
+	id, _ := strconv.ParseUint(att[0].Value, 10, 32)
+	f.Scanner.ResourceID = uint32(id)
+	f.Scanner.AddAsset(&fakeAsset{ID: uint32(id)})
+}
+
+func nodeDecoder(_ interface{}, nodeName string) NodeDecoder {
+	return &fakeAssetDecoder{}
+}
+
+func decodeAttribute(s *Scanner, parentNode interface{}, attr xml.Attr) {
+	switch t := parentNode.(type) {
+	case *Object:
+		if t.ExtensionAttr == nil {
+			t.ExtensionAttr = make(ExtensionAttr)
+		}
+		t.ExtensionAttr[fakeExtension] = &fakeAttr{attr.Value}
+	case *Build:
+		if t.ExtensionAttr == nil {
+			t.ExtensionAttr = make(ExtensionAttr)
+		}
+		t.ExtensionAttr[fakeExtension] = &fakeAttr{attr.Value}
+	case *Model:
+		if t.ExtensionAttr == nil {
+			t.ExtensionAttr = make(ExtensionAttr)
+		}
+		t.ExtensionAttr[fakeExtension] = &fakeAttr{attr.Value}
+	case *Item:
+		if t.ExtensionAttr == nil {
+			t.ExtensionAttr = make(ExtensionAttr)
+		}
+		t.ExtensionAttr[fakeExtension] = &fakeAttr{attr.Value}
+	case *Component:
+		if t.ExtensionAttr == nil {
+			t.ExtensionAttr = make(ExtensionAttr)
+		}
+		t.ExtensionAttr[fakeExtension] = &fakeAttr{attr.Value}
+	}
+}
 
 type modelBuilder struct {
 	str      strings.Builder

@@ -3,27 +3,78 @@ package go3mf
 import (
 	"reflect"
 	"testing"
-
-	"github.com/stretchr/testify/mock"
 )
 
-// MockObject is a mock of Object interface
-type MockObject struct {
-	mock.Mock
+func TestResources_FindAsset(t *testing.T) {
+	id1 := &BaseMaterialsResource{ID: 0}
+	id2 := &BaseMaterialsResource{ID: 1}
+	type args struct {
+		id uint32
+	}
+	tests := []struct {
+		name  string
+		rs    *Resources
+		args  args
+		want  Asset
+		want1 bool
+	}{
+		{"exist1", &Resources{Assets: []Asset{id1, id2}}, args{0}, id1, true},
+		{"exist2", &Resources{Assets: []Asset{id1, id2}}, args{1}, id2, true},
+		{"noexistID", &Resources{Assets: []Asset{id1, id2}}, args{100}, nil, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := tt.rs.FindAsset(tt.args.id)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Resources.FindAsset() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("Resources.FindAsset() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
 }
 
-func NewMockObject() *MockObject {
-	o := new(MockObject)
-	return o
-}
-
-func (o *MockObject) Identify() (string, uint32) {
-	args := o.Called()
-	return args.String(0), uint32(args.Int(1))
-}
-
-func (o *MockObject) Type() ObjectType {
-	return ObjectTypeOther
+func TestModel_FindAsset(t *testing.T) {
+	model := &Model{Path: "/3D/model.model"}
+	id1 := &BaseMaterialsResource{ID: 0}
+	id2 := &BaseMaterialsResource{ID: 1}
+	id3 := &BaseMaterialsResource{ID: 1}
+	model.Resources = Resources{Assets: []Asset{id1, id2}}
+	model.Childs = map[string]*ChildModel{
+		"/3D/other.model": {Resources: Resources{Assets: []Asset{id3}}},
+	}
+	type args struct {
+		path string
+		id   uint32
+	}
+	tests := []struct {
+		name   string
+		m      *Model
+		args   args
+		wantR  Asset
+		wantOk bool
+	}{
+		{"emptyPath1", model, args{"", 0}, id1, true},
+		{"emptyPath2", model, args{"", 1}, id2, true},
+		{"exist2", model, args{"/3D/model.model", 1}, id2, true},
+		{"exist3", model, args{"/3D/other.model", 1}, id3, true},
+		{"noexistID", model, args{"/3D/model.model", 100}, nil, false},
+		{"noexistPath", model, args{"/3d.model", 1}, nil, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotR, gotOk := tt.m.FindAsset(tt.args.path, tt.args.id)
+			if !reflect.DeepEqual(gotR, tt.wantR) {
+				t.Errorf("Model.FindAsset() gotR = %v, want %v", gotR, tt.wantR)
+				return
+			}
+			if gotOk != tt.wantOk {
+				t.Errorf("Model.FindAsset() gotOk = %v, want %v", gotOk, tt.wantOk)
+				return
+			}
+		})
+	}
 }
 
 func TestModel_FindObject(t *testing.T) {
