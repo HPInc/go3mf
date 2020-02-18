@@ -17,7 +17,7 @@ The 3D Manufacturing Format (3MF) is a 3D printing format that allows design app
 * Clean API.
 * 3MF i/o
   * [x] Read from io.ReaderAt.
-  * [ ] Save to io.Writer.
+  * [x] Save to io.Writer.
   * [x] Boilerplate to read from disk.
   * [x] Validation and complete non-conformity report.
   * [x] Read from ASCII and Binary STL.
@@ -52,7 +52,6 @@ func main() {
 package main
 
 import (
-    "archive/zip"
     "bytes"
     "fmt"
     "io/ioutil"
@@ -69,5 +68,22 @@ func main() {
     r, _ := go3mf.NewDecoder(bytes.NewReader(body), int64(len(body)))
     r.Decode(model)
     fmt.Println(model)
+}
+```
+### Write to file
+```go
+package main
+
+import (
+  "fmt"
+  "os"
+
+	"github.com/qmuntal/go3mf"
+)
+
+func main() {
+  file := os.Create("/testdata/cube.3mf")
+  model := new(go3mf.Model)
+  go3mf.NewEncoder(file).Encode(model)
 }
 ```
