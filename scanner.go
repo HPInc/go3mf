@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"image/color"
 	"strconv"
-	"strings"
 )
 
 // NodeDecoder defines the minimum contract to decode a 3MF node.
@@ -173,34 +172,8 @@ func (s *Scanner) closeResource() {
 	s.ResourceID = 0
 }
 
-// FormatMatrix converts a matrix to a string.
-func FormatMatrix(t Matrix) string {
-	return fmt.Sprintf("%.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f",
-		t[0], t[1], t[2], t[4], t[5], t[6], t[8], t[9], t[10], t[12], t[13], t[14])
-}
-
-// ParseMatrix parses s as a Matrix.
-func ParseMatrix(s string) (Matrix, bool) {
-	values := strings.Fields(s)
-	if len(values) != 12 {
-		return Matrix{}, false
-	}
-	var t [12]float32
-	for i := 0; i < 12; i++ {
-		val, err := strconv.ParseFloat(values[i], 32)
-		if err != nil {
-			return Matrix{}, false
-		}
-		t[i] = float32(val)
-	}
-	return Matrix{t[0], t[1], t[2], 0.0,
-		t[3], t[4], t[5], 0.0,
-		t[6], t[7], t[8], 0.0,
-		t[9], t[10], t[11], 1.0}, true
-}
-
-// ParseRGB parses s as a RGBA color.
-func ParseRGB(s string) (c color.RGBA, err error) {
+// ParseRGBA parses s as a RGBA color.
+func ParseRGBA(s string) (c color.RGBA, err error) {
 	var errInvalidFormat = errors.New("gltf: invalid color format")
 
 	if len(s) == 0 || s[0] != '#' {

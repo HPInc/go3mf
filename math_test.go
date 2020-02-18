@@ -328,3 +328,49 @@ func TestMatrix_Mul(t *testing.T) {
 		})
 	}
 }
+
+func TestMatrix_String(t *testing.T) {
+	tests := []struct {
+		name string
+		m    Matrix
+		want string
+	}{
+		{"base", Matrix{
+			1.12345, 2.12345, 3.12345, 4.12345, 5.12345, 6.12345, 7.12345, 8.12345,
+			9.12345, 10.12345, 11.12345, 12.12345, 13.12345, 14.12345, 15.12345, 16.12345,
+		}, "1.123 2.123 3.123 5.123 6.123 7.123 9.123 10.123 11.123 13.123 14.123 15.123"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.String(); got != tt.want {
+				t.Errorf("Matrix.String() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestParseToMatrixOptional(t *testing.T) {
+	type args struct {
+		s string
+	}
+	tests := []struct {
+		name string
+		args args
+		want Matrix
+	}{
+		{"empty", args{""}, Matrix{}},
+		{"11values", args{"1 1 1 1 1 1 1 1 1 1 1"}, Matrix{}},
+		{"13values", args{"1 1 1 1 1 1 1 1 1 1 1 1 1"}, Matrix{}},
+		{"char", args{"1 1 a 1 1 1 1 1 1 1 1 1"}, Matrix{}},
+		{"base", args{"1 1 1 1 1 1 1 1 1 1 1 1"}, Matrix{1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1}},
+		{"other", args{"0 1 2 10 11 12 20 21 22 30 31 32"}, Matrix{0, 1, 2, 0, 10, 11, 12, 0, 20, 21, 22, 0, 30, 31, 32, 1}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, _ := ParseMatrix(tt.args.s)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Scanner.ParseMatrix() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

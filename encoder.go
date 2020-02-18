@@ -221,7 +221,7 @@ func (e *Encoder) writeBuild(x *XMLEncoder, m *Model) {
 		}}
 		if item.HasTransform() {
 			xi.Attr = append(xi.Attr, xml.Attr{
-				Name: xml.Name{Local: attrTransform}, Value: FormatMatrix(item.Transform),
+				Name: xml.Name{Local: attrTransform}, Value: item.Transform.String(),
 			})
 		}
 		if item.PartNumber != "" {
@@ -347,7 +347,7 @@ func (e *Encoder) writeComponents(x *XMLEncoder, comps []*Component) {
 			},
 		}
 		if c.HasTransform() {
-			xt.Attr = append(xt.Attr, xml.Attr{Name: xml.Name{Local: attrTransform}, Value: FormatMatrix(c.Transform)})
+			xt.Attr = append(xt.Attr, xml.Attr{Name: xml.Name{Local: attrTransform}, Value: c.Transform.String()})
 		}
 		c.ExtensionAttr.encode(x, &xt)
 		x.EncodeToken(xt)

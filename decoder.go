@@ -282,7 +282,7 @@ func (d *baseMaterialDecoder) Start(attrs []xml.Attr) {
 			name = a.Value
 		case attrDisplayColor:
 			var err error
-			baseColor, err = ParseRGB(a.Value)
+			baseColor, err = ParseRGBA(a.Value)
 			withColor = true
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
