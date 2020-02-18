@@ -299,11 +299,11 @@ func (d *multiPropertiesDecoder) Start(attrs []xml.Attr) {
 				if err != nil {
 					d.Scanner.InvalidAttr(a.Name.Local, f, true)
 				}
-				d.resource.Resources = append(d.resource.Resources, uint32(val))
+				d.resource.PIDs = append(d.resource.PIDs, uint32(val))
 			}
 		}
 	}
-	if len(d.resource.Resources) == 0 {
+	if len(d.resource.PIDs) == 0 {
 		d.Scanner.MissingAttr(attrPIDs)
 	}
 }

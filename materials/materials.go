@@ -157,7 +157,7 @@ type Multi struct {
 // elements which are indexable groups of property indices.
 type MultiPropertiesResource struct {
 	ID           uint32
-	Resources    []uint32
+	PIDs         []uint32
 	BlendMethods []BlendMethod
 	Multis       []Multi
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/qmuntal/go3mf"
 )
 
+// Marshal3MFAttr encodes the resource attributes.
 func (s *SliceStackInfo) Marshal3MFAttr(_ *go3mf.XMLEncoder) ([]xml.Attr, error) {
 	return []xml.Attr{
 		{Name: xml.Name{Space: ExtensionName, Local: attrSliceRefID}, Value: strconv.FormatUint(uint64(s.SliceStackID), 10)},
@@ -14,6 +15,7 @@ func (s *SliceStackInfo) Marshal3MFAttr(_ *go3mf.XMLEncoder) ([]xml.Attr, error)
 	}, nil
 }
 
+// Marshal3MF encodes the resource.
 func (s *SliceStackResource) Marshal3MF(x *go3mf.XMLEncoder) error {
 	xs := xml.StartElement{Name: xml.Name{Space: ExtensionName, Local: attrSliceStack}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(s.ID), 10)},

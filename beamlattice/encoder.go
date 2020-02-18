@@ -7,6 +7,7 @@ import (
 	"github.com/qmuntal/go3mf"
 )
 
+// Marshal3MF encodes the resource.
 func (m *BeamLattice) Marshal3MF(x *go3mf.XMLEncoder) error {
 	xs := xml.StartElement{Name: xml.Name{Space: ExtensionName, Local: attrBeamLattice}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrMinLength}, Value: strconv.FormatFloat(float64(m.MinLength), 'f', x.FloatPresicion(), 32)},
