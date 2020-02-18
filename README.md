@@ -78,7 +78,7 @@ import (
   "fmt"
   "os"
 
-	"github.com/qmuntal/go3mf"
+  "github.com/qmuntal/go3mf"
 )
 
 func main() {
