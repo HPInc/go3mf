@@ -24,7 +24,7 @@ type beamLatticeDecoder struct {
 	mesh *go3mf.Mesh
 }
 
-func (d *beamLatticeDecoder) Attributes(attrs []xml.Attr) {
+func (d *beamLatticeDecoder) Start(attrs []xml.Attr) {
 	var hasRadius, hasMinLength bool
 	beamLattice := MeshBeamLattice(d.mesh)
 	for _, a := range attrs {
@@ -97,7 +97,7 @@ type beamsDecoder struct {
 	beamDecoder beamDecoder
 }
 
-func (d *beamsDecoder) Open() {
+func (d *beamsDecoder) Start(_ []xml.Attr) {
 	d.beamDecoder.mesh = d.mesh
 }
 
@@ -113,7 +113,7 @@ type beamDecoder struct {
 	mesh *go3mf.Mesh
 }
 
-func (d *beamDecoder) Attributes(attrs []xml.Attr) {
+func (d *beamDecoder) Start(attrs []xml.Attr) {
 	beam := Beam{}
 	var (
 		hasV1, hasV2, hasCap1, hasCap2 bool
@@ -204,16 +204,13 @@ type beamSetDecoder struct {
 	beamRefDecoder beamRefDecoder
 }
 
-func (d *beamSetDecoder) Open() {
-	d.beamRefDecoder.beamSet = &d.beamSet
-}
-
-func (d *beamSetDecoder) Close() {
+func (d *beamSetDecoder) End() {
 	ext := MeshBeamLattice(d.mesh)
 	ext.BeamSets = append(ext.BeamSets, d.beamSet)
 }
 
-func (d *beamSetDecoder) Attributes(attrs []xml.Attr) {
+func (d *beamSetDecoder) Start(attrs []xml.Attr) {
+	d.beamRefDecoder.beamSet = &d.beamSet
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
@@ -239,7 +236,7 @@ type beamRefDecoder struct {
 	beamSet *BeamSet
 }
 
-func (d *beamRefDecoder) Attributes(attrs []xml.Attr) {
+func (d *beamRefDecoder) Start(attrs []xml.Attr) {
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrIndex {
 			val, err := strconv.ParseUint(a.Value, 10, 32)
@@ -257,9 +254,8 @@ type baseDecoder struct {
 	Scanner *go3mf.Scanner
 }
 
-func (d *baseDecoder) Open()                            {}
-func (d *baseDecoder) Attributes([]xml.Attr)            {}
+func (d *baseDecoder) Start([]xml.Attr)                 {}
 func (d *baseDecoder) Text([]byte)                      {}
 func (d *baseDecoder) Child(xml.Name) go3mf.NodeDecoder { return nil }
-func (d *baseDecoder) Close()                           {}
+func (d *baseDecoder) End()                             {}
 func (d *baseDecoder) SetScanner(s *go3mf.Scanner)      { d.Scanner = s }

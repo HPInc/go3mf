@@ -8,33 +8,7 @@ import (
 	"testing"
 )
 
-func TestParseToMatrixOptional(t *testing.T) {
-	type args struct {
-		s string
-	}
-	tests := []struct {
-		name string
-		args args
-		want Matrix
-	}{
-		{"empty", args{""}, Matrix{}},
-		{"11values", args{"1 1 1 1 1 1 1 1 1 1 1"}, Matrix{}},
-		{"13values", args{"1 1 1 1 1 1 1 1 1 1 1 1 1"}, Matrix{}},
-		{"char", args{"1 1 a 1 1 1 1 1 1 1 1 1"}, Matrix{}},
-		{"base", args{"1 1 1 1 1 1 1 1 1 1 1 1"}, Matrix{1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1}},
-		{"other", args{"0 1 2 10 11 12 20 21 22 30 31 32"}, Matrix{0, 1, 2, 0, 10, 11, 12, 0, 20, 21, 22, 0, 30, 31, 32, 1}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, _ := ParseMatrix(tt.args.s)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Scanner.ParseMatrix() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestReadRGB(t *testing.T) {
+func TestReadRGBA(t *testing.T) {
 	type args struct {
 		s string
 	}
@@ -56,13 +30,13 @@ func TestReadRGB(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotC, err := ParseRGB(tt.args.s)
+			gotC, err := ParseRGBA(tt.args.s)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("ParseRGB() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("ParseRGBA() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(gotC, tt.wantC) {
-				t.Errorf("ParseRGB() = %v, want %v", gotC, tt.wantC)
+				t.Errorf("ParseRGBA() = %v, want %v", gotC, tt.wantC)
 			}
 		})
 	}

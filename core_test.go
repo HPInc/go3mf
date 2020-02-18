@@ -3,34 +3,47 @@ package go3mf
 import (
 	"reflect"
 	"testing"
-
-	"github.com/stretchr/testify/mock"
 )
 
-// MockObject is a mock of Object interface
-type MockObject struct {
-	mock.Mock
+func TestResources_FindAsset(t *testing.T) {
+	id1 := &BaseMaterialsResource{ID: 0}
+	id2 := &BaseMaterialsResource{ID: 1}
+	type args struct {
+		id uint32
+	}
+	tests := []struct {
+		name  string
+		rs    *Resources
+		args  args
+		want  Asset
+		want1 bool
+	}{
+		{"exist1", &Resources{Assets: []Asset{id1, id2}}, args{0}, id1, true},
+		{"exist2", &Resources{Assets: []Asset{id1, id2}}, args{1}, id2, true},
+		{"noexistID", &Resources{Assets: []Asset{id1, id2}}, args{100}, nil, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := tt.rs.FindAsset(tt.args.id)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Resources.FindAsset() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("Resources.FindAsset() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
 }
 
-func NewMockObject() *MockObject {
-	o := new(MockObject)
-	return o
-}
-
-func (o *MockObject) Identify() (string, uint32) {
-	args := o.Called()
-	return args.String(0), uint32(args.Int(1))
-}
-
-func (o *MockObject) Type() ObjectType {
-	return ObjectTypeOther
-}
-
-func TestModel_FindResource(t *testing.T) {
+func TestModel_FindAsset(t *testing.T) {
 	model := &Model{Path: "/3D/model.model"}
-	id1 := &ObjectResource{ID: 0, ModelPath: ""}
-	id2 := &ObjectResource{ID: 1, ModelPath: "/3D/model.model"}
-	model.Resources = append(model.Resources, id1, id2)
+	id1 := &BaseMaterialsResource{ID: 0}
+	id2 := &BaseMaterialsResource{ID: 1}
+	id3 := &BaseMaterialsResource{ID: 1}
+	model.Resources = Resources{Assets: []Asset{id1, id2}}
+	model.Childs = map[string]*ChildModel{
+		"/3D/other.model": {Resources: Resources{Assets: []Asset{id3}}},
+	}
 	type args struct {
 		path string
 		id   uint32
@@ -39,22 +52,68 @@ func TestModel_FindResource(t *testing.T) {
 		name   string
 		m      *Model
 		args   args
-		wantR  Resource
+		wantR  Asset
 		wantOk bool
 	}{
-		{"emptyPathExist", model, args{"", 1}, id2, true},
-		{"emptyPathNoExist", model, args{"", 0}, nil, false},
+		{"emptyPath1", model, args{"", 0}, id1, true},
+		{"emptyPath2", model, args{"", 1}, id2, true},
 		{"exist2", model, args{"/3D/model.model", 1}, id2, true},
-		{"noexist", model, args{"/3D/model.model", 100}, nil, false},
+		{"exist3", model, args{"/3D/other.model", 1}, id3, true},
+		{"noexistID", model, args{"/3D/model.model", 100}, nil, false},
+		{"noexistPath", model, args{"/3d.model", 1}, nil, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotR, gotOk := tt.m.FindResource(tt.args.path, tt.args.id)
+			gotR, gotOk := tt.m.FindAsset(tt.args.path, tt.args.id)
 			if !reflect.DeepEqual(gotR, tt.wantR) {
-				t.Errorf("Model.FindResource() gotR = %v, want %v", gotR, tt.wantR)
+				t.Errorf("Model.FindAsset() gotR = %v, want %v", gotR, tt.wantR)
+				return
 			}
 			if gotOk != tt.wantOk {
-				t.Errorf("Model.FindResource() gotOk = %v, want %v", gotOk, tt.wantOk)
+				t.Errorf("Model.FindAsset() gotOk = %v, want %v", gotOk, tt.wantOk)
+				return
+			}
+		})
+	}
+}
+
+func TestModel_FindObject(t *testing.T) {
+	model := &Model{Path: "/3D/model.model"}
+	id1 := &Object{ID: 0}
+	id2 := &Object{ID: 1}
+	id3 := &Object{ID: 1}
+	model.Resources = Resources{Objects: []*Object{id1, id2}}
+	model.Childs = map[string]*ChildModel{
+		"/3D/other.model": {Resources: Resources{Objects: []*Object{id3}}},
+	}
+	type args struct {
+		path string
+		id   uint32
+	}
+	tests := []struct {
+		name   string
+		m      *Model
+		args   args
+		wantR  *Object
+		wantOk bool
+	}{
+		{"emptyPath1", model, args{"", 0}, id1, true},
+		{"emptyPath2", model, args{"", 1}, id2, true},
+		{"exist2", model, args{"/3D/model.model", 1}, id2, true},
+		{"exist3", model, args{"/3D/other.model", 1}, id3, true},
+		{"noexistID", model, args{"/3D/model.model", 100}, nil, false},
+		{"noexistPath", model, args{"/3d.model", 1}, nil, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotR, gotOk := tt.m.FindObject(tt.args.path, tt.args.id)
+			if !reflect.DeepEqual(gotR, tt.wantR) {
+				t.Errorf("Model.FindObject() gotR = %v, want %v", gotR, tt.wantR)
+				return
+			}
+			if gotOk != tt.wantOk {
+				t.Errorf("Model.FindObject() gotOk = %v, want %v", gotOk, tt.wantOk)
+				return
 			}
 		})
 	}
@@ -98,24 +157,22 @@ func TestComponent_HasTransform(t *testing.T) {
 	}
 }
 
-func TestObjectResource_IsValid(t *testing.T) {
+func TestObject_IsValid(t *testing.T) {
 	tests := []struct {
 		name string
-		c    *ObjectResource
+		c    *Object
 		want bool
 	}{
-		{"empty", new(ObjectResource), false},
-		{"both", &ObjectResource{Mesh: new(Mesh), Components: make([]*Component, 0)}, false},
-		{"other", &ObjectResource{Mesh: new(Mesh), ObjectType: ObjectTypeOther}, false},
-		//{"surface", &Mesh{ObjectResource: ObjectResource{ObjectType: ObjectTypeSurface}}, true},
-		//{"support", &Mesh{ObjectResource: ObjectResource{ObjectType: ObjectTypeSupport}}, true},
-		{"solidsupport", &ObjectResource{Mesh: new(Mesh), ObjectType: ObjectTypeSolidSupport}, false},
-		{"model", &ObjectResource{Mesh: new(Mesh), ObjectType: ObjectTypeModel}, false},
+		{"empty", new(Object), false},
+		{"both", &Object{Mesh: new(Mesh), Components: make([]*Component, 0)}, false},
+		{"other", &Object{Mesh: new(Mesh), ObjectType: ObjectTypeOther}, false},
+		{"solidsupport", &Object{Mesh: new(Mesh), ObjectType: ObjectTypeSolidSupport}, false},
+		{"model", &Object{Mesh: new(Mesh), ObjectType: ObjectTypeModel}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.c.IsValid(); got != tt.want {
-				t.Errorf("ObjectResource.IsValid() = %v, want %v", got, tt.want)
+				t.Errorf("Object.IsValid() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -123,64 +180,39 @@ func TestObjectResource_IsValid(t *testing.T) {
 
 func TestBaseMaterialsResource_Identify(t *testing.T) {
 	tests := []struct {
-		name  string
-		ms    *BaseMaterialsResource
-		want  string
-		want1 uint32
+		name string
+		ms   *BaseMaterialsResource
+		want uint32
 	}{
-		{"base", &BaseMaterialsResource{ID: 1, ModelPath: "/3D/3dmodel.model"}, "/3D/3dmodel.model", 1},
+		{"base", &BaseMaterialsResource{ID: 1}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := tt.ms.Identify()
+			got := tt.ms.Identify()
 			if got != tt.want {
 				t.Errorf("BaseMaterialsResource.Identify() got = %v, want %v", got, tt.want)
 			}
-			if got1 != tt.want1 {
-				t.Errorf("BaseMaterialsResource.Identify() got = %v, want %v", got1, tt.want1)
-			}
 		})
 	}
 }
 
-func TestObjectResource_Identify(t *testing.T) {
-	tests := []struct {
-		name  string
-		o     *ObjectResource
-		want  string
-		want1 uint32
-	}{
-		{"base", &ObjectResource{ID: 1, ModelPath: "/3D/3dmodel.model"}, "/3D/3dmodel.model", 1},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := tt.o.Identify()
-			if got != tt.want {
-				t.Errorf("ObjectResource.Identify() got = %v, want %v", got, tt.want)
-			}
-			if got1 != tt.want1 {
-				t.Errorf("ObjectResource.Identify() got = %v, want %v", got1, tt.want1)
-			}
-		})
-	}
-}
-
-func TestModel_UnusedID(t *testing.T) {
+func TestResources_UnusedID(t *testing.T) {
 	tests := []struct {
 		name string
-		m    *Model
+		m    *Resources
 		want uint32
 	}{
-		{"empty", new(Model), 1},
-		{"one", &Model{Resources: []Resource{&ObjectResource{ID: 2}}}, 1},
-		{"two", &Model{Resources: []Resource{&ObjectResource{ID: 1}}}, 2},
-		{"sequence", &Model{Resources: []Resource{&ObjectResource{ID: 1}, &ObjectResource{ID: 2}}}, 3},
-		{"sparce", &Model{Resources: []Resource{&ObjectResource{ID: 1}, &ObjectResource{ID: 3}}}, 2},
+		{"empty", new(Resources), 1},
+		{"one-asset", &Resources{Assets: []Asset{&BaseMaterialsResource{ID: 2}}}, 1},
+		{"one-object", &Resources{Objects: []*Object{{ID: 2}}}, 1},
+		{"two", &Resources{Assets: []Asset{&BaseMaterialsResource{ID: 1}}}, 2},
+		{"sequence", &Resources{Assets: []Asset{&BaseMaterialsResource{ID: 1}}, Objects: []*Object{{ID: 2}}}, 3},
+		{"sparce", &Resources{Assets: []Asset{&BaseMaterialsResource{ID: 1}}, Objects: []*Object{{ID: 3}}}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.m.UnusedID(); got != tt.want {
-				t.Errorf("Model.UnusedID() = %v, want %v", got, tt.want)
+				t.Errorf("Resources.UnusedID() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -389,33 +421,33 @@ func Test_newUnits(t *testing.T) {
 	}
 }
 
-func TestNewMeshResource(t *testing.T) {
+func TestNewMeshObject(t *testing.T) {
 	tests := []struct {
 		name string
-		want *ObjectResource
+		want *Object
 	}{
-		{"base", &ObjectResource{Mesh: new(Mesh)}},
+		{"base", &Object{Mesh: new(Mesh)}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewMeshResource(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewMeshResource() = %v, want %v", got, tt.want)
+			if got := NewMeshObject(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewMeshObject() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestNewComponentsResource(t *testing.T) {
+func TestNewComponentsObject(t *testing.T) {
 	tests := []struct {
 		name string
-		want *ObjectResource
+		want *Object
 	}{
-		{"base", &ObjectResource{Components: make([]*Component, 0)}},
+		{"base", &Object{Components: make([]*Component, 0)}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewComponentsResource(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewComponentsResource() = %v, want %v", got, tt.want)
+			if got := NewComponentsObject(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewComponentsObject() = %v, want %v", got, tt.want)
 			}
 		})
 	}

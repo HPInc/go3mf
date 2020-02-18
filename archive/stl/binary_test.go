@@ -94,8 +94,8 @@ func (w *errorWriter) Write(p []byte) (n int, err error) {
 	return 0, nil
 }
 
-func createMeshTriangle(id uint32) *go3mf.ObjectResource {
-	m := go3mf.NewMeshResource()
+func createMeshTriangle(id uint32) *go3mf.Object {
+	m := go3mf.NewMeshObject()
 	m.ID = id
 	mb := go3mf.NewMeshBuilder(m.Mesh)
 	n1 := mb.AddNode(go3mf.Point3D{-20.0, -20.0, 0.0})

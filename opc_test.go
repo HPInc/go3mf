@@ -14,9 +14,9 @@ func Test_newRelationships(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want []*relationship
+		want []Relationship
 	}{
-		{"base", args{[]*opc.Relationship{{}, {TargetURI: "a.xml"}}}, []*relationship{{}, {TargetURI: "a.xml"}}},
+		{"base", args{[]*opc.Relationship{{}, {TargetURI: "a.xml"}}}, []Relationship{{}, {Path: "a.xml"}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -45,87 +45,25 @@ func Test_opcFile_Name(t *testing.T) {
 	}
 }
 
-func Test_opcFile_FindFileFromRel(t *testing.T) {
-	rels := []*opc.Relationship{
-		{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture", TargetURI: "/c.xml"},
-		{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel", TargetURI: "/b.xml"},
-		{Type: "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail", TargetURI: "Metadata/thumbnail.png"},
-	}
-	reader := &opc.Reader{
-		Files: []*opc.File{{Part: &opc.Part{Name: "/c.xml"}}, {Part: &opc.Part{Name: "/props/Metadata/thumbnail.png"}}},
-	}
-	type args struct {
-		relType string
-	}
-	tests := []struct {
-		name string
-		o    *opcFile
-		args args
-		want packageFile
-	}{
-		{"foundC", &opcFile{reader, &opc.File{Part: &opc.Part{Relationships: rels}}}, args{"http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture"}, &opcFile{reader, &opc.File{Part: &opc.Part{Name: "/c.xml"}}}},
-		{"thumbnail", &opcFile{reader, &opc.File{Part: &opc.Part{Name: "/props/a.xml", Relationships: rels}}}, args{"http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail"}, &opcFile{reader, &opc.File{Part: &opc.Part{Name: "/props/Metadata/thumbnail.png"}}}},
-		{"noFile", &opcFile{reader, &opc.File{Part: &opc.Part{Relationships: rels}}}, args{"http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"}, nil},
-		{"noRel", &opcFile{reader, &opc.File{Part: &opc.Part{Relationships: rels}}}, args{"other"}, nil},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got, _ := tt.o.FindFileFromRel(tt.args.relType); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("opcFile.FindFileFromRel() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func Test_opcFile_Relationships(t *testing.T) {
 	tests := []struct {
 		name string
 		o    *opcFile
-		want []*relationship
+		want []Relationship
 	}{
-		{"empty", &opcFile{nil, &opc.File{Part: new(opc.Part)}}, []*relationship{}},
+		{"empty", &opcFile{nil, &opc.File{Part: new(opc.Part)}}, []Relationship{}},
 		{"base", &opcFile{nil, &opc.File{Part: &opc.Part{Relationships: []*opc.Relationship{
 			{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture", TargetURI: "/a.xml"},
 			{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel", TargetURI: "/b.xml"},
-		}}}}, []*relationship{
-			{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture", TargetURI: "/a.xml"},
-			{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel", TargetURI: "/b.xml"},
+		}}}}, []Relationship{
+			{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture", Path: "/a.xml"},
+			{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel", Path: "/b.xml"},
 		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.o.Relationships(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("opcFile.Relationships() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_opcReader_FindFileFromRel(t *testing.T) {
-	reader := &opc.Reader{
-		Relationships: []*opc.Relationship{
-			{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture", TargetURI: "/a.xml"},
-			{Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel", TargetURI: "/b.xml"},
-		},
-		Files: []*opc.File{{Part: &opc.Part{Name: "/a.xml"}}},
-	}
-	type args struct {
-		relType string
-	}
-	tests := []struct {
-		name string
-		o    *opcReader
-		args args
-		want packageFile
-	}{
-		{"foundA", &opcReader{nil, 0, reader}, args{"http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture"}, &opcFile{reader, &opc.File{Part: &opc.Part{Name: "/a.xml"}}}},
-		{"noFile", &opcReader{nil, 0, reader}, args{"http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"}, nil},
-		{"noRel", &opcReader{nil, 0, reader}, args{"other"}, nil},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got, _ := tt.o.FindFileFromRel(tt.args.relType); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("opcReader.FindFileFromRel() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -174,7 +112,7 @@ func Test_opcFile_ContentType(t *testing.T) {
 
 func Test_opcWriter_AddRelationship(t *testing.T) {
 	type args struct {
-		r *relationship
+		r Relationship
 	}
 	tests := []struct {
 		name string
@@ -182,7 +120,7 @@ func Test_opcWriter_AddRelationship(t *testing.T) {
 		args args
 		want []*opc.Relationship
 	}{
-		{"base", newOpcWriter(nil), args{&relationship{ID: "id_1", TargetURI: "fake_uri", Type: "fake_type"}}, []*opc.Relationship{
+		{"base", newOpcWriter(nil), args{Relationship{ID: "id_1", Path: "fake_uri", Type: "fake_type"}}, []*opc.Relationship{
 			{ID: "id_1", TargetURI: "fake_uri", Type: "fake_type"},
 		}},
 	}

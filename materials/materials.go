@@ -82,7 +82,6 @@ func (b BlendMethod) String() string {
 // Texture2DResource defines the Model Texture 2D.
 type Texture2DResource struct {
 	ID          uint32
-	ModelPath   string
 	Path        string
 	ContentType Texture2DType
 	TileStyleU  TileStyle
@@ -91,8 +90,8 @@ type Texture2DResource struct {
 }
 
 // Identify returns the unique ID of the resource.
-func (t *Texture2DResource) Identify() (string, uint32) {
-	return t.ModelPath, t.ID
+func (t *Texture2DResource) Identify() uint32 {
+	return t.ID
 }
 
 // TextureCoord map a vertex of a triangle to a position in image space (U, V coordinates)
@@ -111,26 +110,24 @@ func (t TextureCoord) V() float32 {
 // Texture2DGroupResource acts as a container for texture coordinate properties.
 type Texture2DGroupResource struct {
 	ID        uint32
-	ModelPath string
 	TextureID uint32
 	Coords    []TextureCoord
 }
 
 // Identify returns the unique ID of the resource.
-func (t *Texture2DGroupResource) Identify() (string, uint32) {
-	return t.ModelPath, t.ID
+func (t *Texture2DGroupResource) Identify() uint32 {
+	return t.ID
 }
 
 // ColorGroupResource acts as a container for color properties.
 type ColorGroupResource struct {
-	ID        uint32
-	ModelPath string
-	Colors    []color.RGBA
+	ID     uint32
+	Colors []color.RGBA
 }
 
 // Identify returns the unique ID of the resource.
-func (c *ColorGroupResource) Identify() (string, uint32) {
-	return c.ModelPath, c.ID
+func (c *ColorGroupResource) Identify() uint32 {
+	return c.ID
 }
 
 // A Composite specifies the proportion of the overall mixture for each material.
@@ -141,35 +138,33 @@ type Composite struct {
 // CompositeMaterialsResource defines materials derived by mixing 2 or more base materials in defined ratios.
 type CompositeMaterialsResource struct {
 	ID         uint32
-	ModelPath  string
 	MaterialID uint32
 	Indices    []uint32
 	Composites []Composite
 }
 
 // Identify returns the unique ID of the resource.
-func (c *CompositeMaterialsResource) Identify() (string, uint32) {
-	return c.ModelPath, c.ID
+func (c *CompositeMaterialsResource) Identify() uint32 {
+	return c.ID
 }
 
 // The Multi element combines the constituent materials and properties.
 type Multi struct {
-	ResourceIndices []uint32
+	PIndex []uint32
 }
 
 // A MultiPropertiesResource element acts as a container for Multi
 // elements which are indexable groups of property indices.
 type MultiPropertiesResource struct {
 	ID           uint32
-	ModelPath    string
-	Resources    []uint32
+	PIDs         []uint32
 	BlendMethods []BlendMethod
 	Multis       []Multi
 }
 
 // Identify returns the unique ID of the resource.
-func (c *MultiPropertiesResource) Identify() (string, uint32) {
-	return c.ModelPath, c.ID
+func (c *MultiPropertiesResource) Identify() uint32 {
+	return c.ID
 }
 
 func newTexture2DType(s string) (t Texture2DType, ok bool) {

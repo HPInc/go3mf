@@ -5,17 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"image/color"
-	"strconv"
-	"strings"
 )
 
 // NodeDecoder defines the minimum contract to decode a 3MF node.
 type NodeDecoder interface {
-	Open()
-	Attributes([]xml.Attr)
+	Start([]xml.Attr)
 	Text([]byte)
 	Child(xml.Name) NodeDecoder
-	Close()
+	End()
 	SetScanner(*Scanner)
 }
 
@@ -23,11 +20,10 @@ type baseDecoder struct {
 	Scanner *Scanner
 }
 
-func (d *baseDecoder) Open()                      {}
-func (d *baseDecoder) Attributes([]xml.Attr)      {}
+func (d *baseDecoder) Start([]xml.Attr)           {}
 func (d *baseDecoder) Text([]byte)                {}
 func (d *baseDecoder) Child(xml.Name) NodeDecoder { return nil }
-func (d *baseDecoder) Close()                     {}
+func (d *baseDecoder) End()                       {}
 func (d *baseDecoder) SetScanner(s *Scanner)      { d.Scanner = s }
 
 // A MissingPropertyError represents a missing required property error.
@@ -86,7 +82,7 @@ func (e GenericError) Error() string {
 
 // A Scanner is a 3mf model file scanning state machine.
 type Scanner struct {
-	Resources        []Resource
+	Resources        Resources
 	BuildItems       []*Item
 	Strict           bool
 	ModelPath        string
@@ -99,14 +95,8 @@ type Scanner struct {
 	extensionDecoder map[string]*extensionDecoderWrapper
 }
 
-func newScanner() *Scanner {
-	return &Scanner{
-		extensionDecoder: make(map[string]*extensionDecoderWrapper),
-	}
-}
-
 // Namespace returns the space of the associated local, if existing.
-func (s *Scanner) Namespace(local string) (string, bool) {
+func (s *Scanner) namespace(local string) (string, bool) {
 	for _, name := range s.Namespaces {
 		if name.Local == local {
 			return name.Space, true
@@ -115,107 +105,62 @@ func (s *Scanner) Namespace(local string) (string, bool) {
 	return "", false
 }
 
-// AddResource adds a new resource to the resource cache.
-func (p *Scanner) AddResource(r Resource) {
-	p.Resources = append(p.Resources, r)
-	p.closeResource()
+// AddAsset adds a new resource to the resource cache.
+func (s *Scanner) AddAsset(r Asset) {
+	s.Resources.Assets = append(s.Resources.Assets, r)
+	s.closeResource()
+}
+
+// AddObject adds a new resource to the resource cache.
+func (s *Scanner) AddObject(r *Object) {
+	s.Resources.Objects = append(s.Resources.Objects, r)
+	s.closeResource()
 }
 
 // GenericError adds the error to the warnings.
 // Returns false if scanning cannot continue.
-func (p *Scanner) GenericError(strict bool, msg string) {
-	err := GenericError{ResourceID: p.ResourceID, Element: p.Element, ModelPath: p.ModelPath, Message: msg}
-	p.Warnings = append(p.Warnings, err)
-	if strict && p.Strict {
-		p.Err = err
+func (s *Scanner) GenericError(strict bool, msg string) {
+	err := GenericError{ResourceID: s.ResourceID, Element: s.Element, ModelPath: s.ModelPath, Message: msg}
+	s.Warnings = append(s.Warnings, err)
+	if strict && s.Strict {
+		s.Err = err
 	}
 }
 
 // InvalidAttr adds the error to the warnings.
 // Returns false if scanning cannot continue.
-func (p *Scanner) InvalidAttr(attr string, val string, required bool) {
+func (s *Scanner) InvalidAttr(attr string, val string, required bool) {
 	tp := PropertyRequired
 	if !required {
 		tp = PropertyOptional
 	}
-	p.strictError(ParsePropertyError{ResourceID: p.ResourceID, Element: p.Element, Name: attr, Value: val, ModelPath: p.ModelPath, Type: tp})
+	s.strictError(ParsePropertyError{ResourceID: s.ResourceID, Element: s.Element, Name: attr, Value: val, ModelPath: s.ModelPath, Type: tp})
 }
 
 // MissingAttr adds the error to the warnings.
-func (p *Scanner) MissingAttr(attr string) {
-	p.strictError(MissingPropertyError{ResourceID: p.ResourceID, Element: p.Element, Name: attr, ModelPath: p.ModelPath})
+func (s *Scanner) MissingAttr(attr string) {
+	s.strictError(MissingPropertyError{ResourceID: s.ResourceID, Element: s.Element, Name: attr, ModelPath: s.ModelPath})
 }
 
-// ParseResourceID parses the ID as a uint32.
-// If it cannot be parsed a ParsePropertyError is added to the warnings.
-func (p *Scanner) ParseResourceID(s string) uint32 {
-	n, err := strconv.ParseUint(s, 10, 32)
-	if err != nil {
-		p.InvalidAttr(attrID, s, true)
-		return 0
-	}
-	p.ResourceID = uint32(n)
-	return p.ResourceID
-}
-
-func (p *Scanner) strictError(err error) {
-	p.Warnings = append(p.Warnings, err)
-	if p.Strict {
-		p.Err = err
+func (s *Scanner) strictError(err error) {
+	s.Warnings = append(s.Warnings, err)
+	if s.Strict {
+		s.Err = err
 	}
 }
 
 // closeResource closes the current resource.
 // If there is no resource to close MissingPropertyError is added to the warnings.
-func (p *Scanner) closeResource() {
-	if p.ResourceID == 0 {
-		p.MissingAttr(attrID)
+func (s *Scanner) closeResource() {
+	if s.ResourceID == 0 {
+		s.MissingAttr(attrID)
 		return
 	}
-	p.ResourceID = 0
+	s.ResourceID = 0
 }
 
-// FormatMatrix converts a matrix to a string.
-func FormatMatrix(t Matrix) string {
-	sl := []string{
-		strconv.FormatFloat(float64(t[0]), 'f', 3, 32),
-		strconv.FormatFloat(float64(t[1]), 'f', 3, 32),
-		strconv.FormatFloat(float64(t[2]), 'f', 3, 32),
-		strconv.FormatFloat(float64(t[4]), 'f', 3, 32),
-		strconv.FormatFloat(float64(t[5]), 'f', 3, 32),
-		strconv.FormatFloat(float64(t[6]), 'f', 3, 32),
-		strconv.FormatFloat(float64(t[8]), 'f', 3, 32),
-		strconv.FormatFloat(float64(t[9]), 'f', 3, 32),
-		strconv.FormatFloat(float64(t[10]), 'f', 3, 32),
-		strconv.FormatFloat(float64(t[12]), 'f', 3, 32),
-		strconv.FormatFloat(float64(t[13]), 'f', 3, 32),
-		strconv.FormatFloat(float64(t[14]), 'f', 3, 32),
-	}
-	return strings.Join(sl, " ")
-}
-
-// ParseMatrix parses s as a Matrix.
-func ParseMatrix(s string) (Matrix, bool) {
-	values := strings.Fields(s)
-	if len(values) != 12 {
-		return Matrix{}, false
-	}
-	var t [12]float32
-	for i := 0; i < 12; i++ {
-		val, err := strconv.ParseFloat(values[i], 32)
-		if err != nil {
-			return Matrix{}, false
-		}
-		t[i] = float32(val)
-	}
-	return Matrix{t[0], t[1], t[2], 0.0,
-		t[3], t[4], t[5], 0.0,
-		t[6], t[7], t[8], 0.0,
-		t[9], t[10], t[11], 1.0}, true
-}
-
-// ParseRGB parses s as a RGBA color.
-func ParseRGB(s string) (c color.RGBA, err error) {
+// ParseRGBA parses s as a RGBA color.
+func ParseRGBA(s string) (c color.RGBA, err error) {
 	var errInvalidFormat = errors.New("gltf: invalid color format")
 
 	if len(s) == 0 || s[0] != '#' {

@@ -22,23 +22,23 @@ func nodeDecoder(_ interface{}, nodeName string) go3mf.NodeDecoder {
 
 func decodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
 	switch t := parentNode.(type) {
-	case *go3mf.ObjectResource:
+	case *go3mf.Object:
 		objectAttrDecoder(s, t, attr)
 	}
 }
 
 // objectAttrDecoder decodes the slice attributes of an ObjectReosurce.
-func objectAttrDecoder(scanner *go3mf.Scanner, o *go3mf.ObjectResource, a xml.Attr) {
+func objectAttrDecoder(scanner *go3mf.Scanner, o *go3mf.Object, a xml.Attr) {
 	switch a.Name.Local {
 	case attrSliceRefID:
 		val, err := strconv.ParseUint(a.Value, 10, 32)
 		if err != nil {
 			scanner.InvalidAttr(a.Name.Local, a.Value, true)
 		}
-		ObjectSliceStackInfo(o).SliceStackID = uint32(val)
+		ObjectAttr(o).SliceStackID = uint32(val)
 	case attrMeshRes:
 		var ok bool
-		ObjectSliceStackInfo(o).SliceResolution, ok = newSliceResolution(a.Value)
+		ObjectAttr(o).SliceResolution, ok = newSliceResolution(a.Value)
 		if !ok {
 			scanner.InvalidAttr(attrMeshRes, a.Value, false)
 		}
@@ -50,15 +50,11 @@ type sliceStackDecoder struct {
 	resource SliceStackResource
 }
 
-func (d *sliceStackDecoder) Open() {
-	d.resource.ModelPath = d.Scanner.ModelPath
-}
-
-func (d *sliceStackDecoder) Close() {
-	if len(d.resource.Stack.Refs) > 0 && len(d.resource.Stack.Slices) > 0 {
+func (d *sliceStackDecoder) End() {
+	if len(d.resource.Refs) > 0 && len(d.resource.Slices) > 0 {
 		d.Scanner.GenericError(true, "slicestack contains slices and slicerefs")
 	}
-	d.Scanner.AddResource(&d.resource)
+	d.Scanner.AddAsset(&d.resource)
 }
 
 func (d *sliceStackDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
@@ -72,17 +68,21 @@ func (d *sliceStackDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	return
 }
 
-func (d *sliceStackDecoder) Attributes(attrs []xml.Attr) {
+func (d *sliceStackDecoder) Start(attrs []xml.Attr) {
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrID:
-			d.resource.ID = d.Scanner.ParseResourceID(a.Value)
+			id, err := strconv.ParseUint(a.Value, 10, 32)
+			if err != nil {
+				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+			}
+			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
 		case attrZBottom:
 			val, err := strconv.ParseFloat(a.Value, 32)
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, a.Value, false)
 			}
-			d.resource.Stack.BottomZ = float32(val)
+			d.resource.BottomZ = float32(val)
 		}
 	}
 }
@@ -92,7 +92,7 @@ type sliceRefDecoder struct {
 	resource *SliceStackResource
 }
 
-func (d *sliceRefDecoder) Attributes(attrs []xml.Attr) {
+func (d *sliceRefDecoder) Start(attrs []xml.Attr) {
 	var (
 		sliceStackID uint32
 		path         string
@@ -112,10 +112,7 @@ func (d *sliceRefDecoder) Attributes(attrs []xml.Attr) {
 	if sliceStackID == 0 {
 		d.Scanner.MissingAttr(attrSliceRefID)
 	}
-	if path == d.resource.ModelPath {
-		d.Scanner.GenericError(true, "a slicepath is invalid")
-	}
-	d.resource.Stack.Refs = append(d.resource.Stack.Refs, SliceRef{SliceStackID: sliceStackID, Path: path})
+	d.resource.Refs = append(d.resource.Refs, SliceRef{SliceStackID: sliceStackID, Path: path})
 }
 
 // TODO: validate coherency after decoding.
@@ -136,12 +133,8 @@ type sliceDecoder struct {
 	polygonVerticesDecoder polygonVerticesDecoder
 }
 
-func (d *sliceDecoder) Open() {
-	d.polygonDecoder.slice = &d.slice
-	d.polygonVerticesDecoder.slice = &d.slice
-}
-func (d *sliceDecoder) Close() {
-	d.resource.Stack.Slices = append(d.resource.Stack.Slices, &d.slice)
+func (d *sliceDecoder) End() {
+	d.resource.Slices = append(d.resource.Slices, &d.slice)
 }
 func (d *sliceDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	if name.Space == ExtensionName {
@@ -154,7 +147,9 @@ func (d *sliceDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	return
 }
 
-func (d *sliceDecoder) Attributes(attrs []xml.Attr) {
+func (d *sliceDecoder) Start(attrs []xml.Attr) {
+	d.polygonDecoder.slice = &d.slice
+	d.polygonVerticesDecoder.slice = &d.slice
 	var hasTopZ bool
 	for _, a := range attrs {
 		if a.Name.Local == attrZTop {
@@ -178,7 +173,7 @@ type polygonVerticesDecoder struct {
 	polygonVertexDecoder polygonVertexDecoder
 }
 
-func (d *polygonVerticesDecoder) Open() {
+func (d *polygonVerticesDecoder) Start(_ []xml.Attr) {
 	d.polygonVertexDecoder.slice = d.slice
 }
 
@@ -194,8 +189,8 @@ type polygonVertexDecoder struct {
 	slice *Slice
 }
 
-func (d *polygonVertexDecoder) Attributes(attrs []xml.Attr) {
-	var x, y float32
+func (d *polygonVertexDecoder) Start(attrs []xml.Attr) {
+	var p go3mf.Point2D
 	for _, a := range attrs {
 		val, err := strconv.ParseFloat(a.Value, 32)
 		if err != nil {
@@ -203,31 +198,19 @@ func (d *polygonVertexDecoder) Attributes(attrs []xml.Attr) {
 		}
 		switch a.Name.Local {
 		case attrX:
-			x = float32(val)
+			p[0] = float32(val)
 		case attrY:
-			y = float32(val)
+			p[1] = float32(val)
 		}
 	}
-	d.slice.AddVertex(x, y)
+
+	d.slice.Vertices = append(d.slice.Vertices, p)
 }
 
 type polygonDecoder struct {
 	baseDecoder
 	slice                 *Slice
-	polygonIndex          int
 	polygonSegmentDecoder polygonSegmentDecoder
-}
-
-func (d *polygonDecoder) Open() {
-	d.polygonIndex = d.slice.BeginPolygon()
-	d.polygonSegmentDecoder.slice = d.slice
-	d.polygonSegmentDecoder.polygonIndex = d.polygonIndex
-}
-
-func (d *polygonDecoder) Close() {
-	if !d.slice.IsPolygonValid(d.polygonIndex) {
-		d.Scanner.GenericError(true, "a closed slice polygon is actually a line")
-	}
 }
 
 func (d *polygonDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
@@ -237,55 +220,63 @@ func (d *polygonDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	return
 }
 
-func (d *polygonDecoder) Attributes(attrs []xml.Attr) {
-	var start uint32
+func (d *polygonDecoder) Start(attrs []xml.Attr) {
+	polygonIndex := len(d.slice.Polygons)
+	d.slice.Polygons = append(d.slice.Polygons, Polygon{})
+	d.polygonSegmentDecoder.polygon = &d.slice.Polygons[polygonIndex]
 	for _, a := range attrs {
 		if a.Name.Local == attrStartV {
 			val, err := strconv.ParseUint(a.Value, 10, 32)
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
 			}
-			start = uint32(val)
+			d.slice.Polygons[polygonIndex].StartV = uint32(val)
 			break
 		}
-	}
-	err := d.slice.AddPolygonIndex(d.polygonIndex, int(start))
-	if err != nil {
-		d.Scanner.GenericError(true, err.Error())
 	}
 }
 
 type polygonSegmentDecoder struct {
 	baseDecoder
-	slice        *Slice
-	polygonIndex int
+	polygon *Polygon
 }
 
-func (d *polygonSegmentDecoder) Attributes(attrs []xml.Attr) {
-	var v2 uint32
+func (d *polygonSegmentDecoder) Start(attrs []xml.Attr) {
+	var (
+		segment      Segment
+		hasP1, hasP2 bool
+	)
 	for _, a := range attrs {
-		if a.Name.Local == attrV2 {
-			val, err := strconv.ParseUint(a.Value, 10, 32)
-			if err != nil {
-				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
-			}
-			v2 = uint32(val)
-			break
+		var required bool
+		val, err := strconv.ParseUint(a.Value, 10, 32)
+		switch a.Name.Local {
+		case attrV2:
+			segment.V2 = uint32(val)
+			required = true
+		case attrPID:
+			segment.PID = uint32(val)
+		case attrP1:
+			segment.P1 = uint32(val)
+			hasP1 = true
+		case attrP2:
+			segment.P2 = uint32(val)
+			hasP2 = true
+		}
+		if hasP1 && !hasP2 {
+			segment.P2 = segment.P1
+		}
+		if err != nil {
+			d.Scanner.InvalidAttr(a.Name.Local, a.Value, required)
 		}
 	}
-	err := d.slice.AddPolygonIndex(d.polygonIndex, int(v2))
-	if err != nil {
-		d.Scanner.GenericError(true, err.Error())
-	}
+	d.polygon.Segments = append(d.polygon.Segments, segment)
 }
 
 type baseDecoder struct {
 	Scanner *go3mf.Scanner
 }
 
-func (d *baseDecoder) Open()                            {}
-func (d *baseDecoder) Attributes([]xml.Attr)            {}
 func (d *baseDecoder) Text([]byte)                      {}
 func (d *baseDecoder) Child(xml.Name) go3mf.NodeDecoder { return nil }
-func (d *baseDecoder) Close()                           {}
+func (d *baseDecoder) End()                             {}
 func (d *baseDecoder) SetScanner(s *go3mf.Scanner)      { d.Scanner = s }

@@ -41,7 +41,7 @@ func TestDecoder_Decode(t *testing.T) {
 	tests := []struct {
 		name    string
 		d       *Decoder
-		want    *go3mf.ObjectResource
+		want    *go3mf.Object
 		wantErr bool
 	}{
 		{"empty", NewDecoder(new(bytes.Buffer)), nil, true},
@@ -57,7 +57,7 @@ func TestDecoder_Decode(t *testing.T) {
 				return
 			}
 			if !tt.wantErr {
-				if diff := deep.Equal(got.Resources[0], tt.want); diff != nil {
+				if diff := deep.Equal(got.Resources.Objects[0], tt.want); diff != nil {
 					t.Errorf("Decoder.Decode() = %v", diff)
 					return
 				}

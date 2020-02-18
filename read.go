@@ -9,13 +9,15 @@ import (
 	"io/ioutil"
 	"os"
 	"sort"
+	"strings"
 	"sync"
 )
+
+var checkEveryBytes = int64(4 * 1024 * 1024)
 
 type extensionDecoderWrapper struct {
 	newNodeDecoder  func(interface{}, string) NodeDecoder
 	decodeAttribute func(*Scanner, interface{}, xml.Attr)
-	fileFilter      func(string, bool) bool
 }
 
 func (e *extensionDecoderWrapper) NewNodeDecoder(parentNode interface{}, nodeName string) NodeDecoder {
@@ -31,13 +33,6 @@ func (e *extensionDecoderWrapper) DecodeAttribute(s *Scanner, parentNode interfa
 	}
 }
 
-func (e *extensionDecoderWrapper) FileFilter(relType string, isRootModel bool) bool {
-	if e.fileFilter != nil {
-		return e.fileFilter(relType, isRootModel)
-	}
-	return false
-}
-
 // A XMLDecoder is anything that can decode a stream of XML tokens, including a Decoder.
 type XMLDecoder interface {
 	xml.TokenReader
@@ -47,25 +42,18 @@ type XMLDecoder interface {
 	InputOffset() int64
 }
 
-type relationship struct {
-	ID        string
-	TargetURI string
-	Type      string
-}
-
 type packageFile interface {
 	Name() string
 	ContentType() string
-	FindFileFromRel(string) (packageFile, bool)
 	FindFileFromName(string) (packageFile, bool)
-	Relationships() []*relationship
+	Relationships() []Relationship
 	Open() (io.ReadCloser, error)
 }
 
 type packageReader interface {
 	Open(func(r io.Reader) io.ReadCloser) error
-	FindFileFromRel(string) (packageFile, bool)
 	FindFileFromName(string) (packageFile, bool)
+	Relationships() []Relationship
 }
 
 // ReadCloser wrapps a Decoder than can be closed.
@@ -107,78 +95,72 @@ func (d *topLevelDecoder) Child(name xml.Name) (child NodeDecoder) {
 	return
 }
 
-// modelFileDecoder cannot be reused between goroutines.
-type modelFileDecoder struct {
-	Scanner *Scanner
-}
-
-func (d *modelFileDecoder) Decode(ctx context.Context, x XMLDecoder, model *Model, path string, isRoot, strict bool, extensionDecoder map[string]*extensionDecoderWrapper) error {
-	d.Scanner = newScanner()
-	if extensionDecoder != nil {
-		d.Scanner.extensionDecoder = extensionDecoder
+func decodeModelFile(ctx context.Context, x XMLDecoder, model *Model, path string, isRoot, strict bool, extensionDecoder map[string]*extensionDecoderWrapper) *Scanner {
+	scanner := Scanner{
+		extensionDecoder: make(map[string]*extensionDecoderWrapper),
+		IsRoot:           isRoot,
+		Strict:           strict,
+		ModelPath:        path,
 	}
-	d.Scanner.IsRoot = isRoot
-	d.Scanner.Strict = strict
-	d.Scanner.ModelPath = path
-	state := make([]NodeDecoder, 0, 10)
-	names := make([]xml.Name, 0, 10)
+	if extensionDecoder != nil {
+		scanner.extensionDecoder = extensionDecoder
+	}
+	state, names := make([]NodeDecoder, 0, 10), make([]xml.Name, 0, 10)
 
 	var (
-		currentDecoder NodeDecoder
-		tmpDecoder     NodeDecoder
-		currentName    xml.Name
-		t              xml.Token
+		currentDecoder, tmpDecoder NodeDecoder
+		currentName                xml.Name
+		t                          xml.Token
 	)
 	nextBytesCheck := checkEveryBytes
 	currentDecoder = &topLevelDecoder{isRoot: isRoot, model: model}
-	currentDecoder.SetScanner(d.Scanner)
+	currentDecoder.SetScanner(&scanner)
 
 	for {
-		t, d.Scanner.Err = x.Token()
-		if d.Scanner.Err != nil {
+		t, scanner.Err = x.Token()
+		if scanner.Err != nil {
 			break
 		}
 		switch tp := t.(type) {
 		case xml.StartElement:
 			tmpDecoder = currentDecoder.Child(tp.Name)
 			if tmpDecoder != nil {
-				tmpDecoder.SetScanner(d.Scanner)
+				tmpDecoder.SetScanner(&scanner)
 				state = append(state, currentDecoder)
 				names = append(names, currentName)
 				currentName = tp.Name
-				d.Scanner.Element = tp.Name.Local
+				scanner.Element = tp.Name.Local
 				currentDecoder = tmpDecoder
-				currentDecoder.Open()
-				currentDecoder.Attributes(tp.Attr)
+				currentDecoder.Start(tp.Attr)
 			} else {
-				d.Scanner.Err = x.Skip()
+				scanner.Err = x.Skip()
 			}
 		case xml.CharData:
 			currentDecoder.Text(tp)
 		case xml.EndElement:
 			if currentName == tp.Name {
-				d.Scanner.Element = tp.Name.Local
-				currentDecoder.Close()
+				scanner.Element = tp.Name.Local
+				currentDecoder.End()
 				currentDecoder, state = state[len(state)-1], state[:len(state)-1]
 				currentName, names = names[len(names)-1], names[:len(names)-1]
 			}
 			if x.InputOffset() > nextBytesCheck {
 				select {
 				case <-ctx.Done():
-					d.Scanner.Err = ctx.Err()
+					scanner.Err = ctx.Err()
 				default: // Default is must to avoid blocking
 				}
 				nextBytesCheck += checkEveryBytes
 			}
 		}
-		if d.Scanner.Err != nil {
+		if scanner.Err != nil {
 			break
 		}
 	}
-	if d.Scanner.Err == io.EOF {
-		d.Scanner.Err = nil
+	if scanner.Err == io.EOF {
+		scanner.Err = nil
 	}
-	return d.Scanner.Err
+	return &scanner
 }
 
 // Decoder implements a 3mf file decoder.
@@ -195,8 +177,9 @@ type Decoder struct {
 // NewDecoder returns a new Decoder reading a 3mf file from r.
 func NewDecoder(r io.ReaderAt, size int64) *Decoder {
 	return &Decoder{
-		p:      &opcReader{ra: r, size: size},
-		Strict: true,
+		p:                &opcReader{ra: r, size: size},
+		Strict:           true,
+		extensionDecoder: make(map[string]*extensionDecoderWrapper),
 	}
 }
 
@@ -241,25 +224,6 @@ func (d *Decoder) RegisterDecodeAttributeExtension(key string, f func(s *Scanner
 	}
 }
 
-// RegisterFileFilterExtension registers a FileFilter function to the associated extension key.
-// The registered function should return true if a file with an specific relationship with a model file
-// should be preserved as an attachment or not. If the file is accepted and it is a 3dmodel
-// it will processed decoded. It can happen that a file is preserved even if this method is
-// not called or it is discarded as other packages could accept it.
-func (d *Decoder) RegisterFileFilterExtension(key string, f func(relType string, isRootModel bool) bool) {
-	if e, ok := d.extensionDecoder[key]; ok {
-		e.fileFilter = f
-	} else {
-		if d.extensionDecoder == nil {
-			d.extensionDecoder = make(map[string]*extensionDecoderWrapper)
-		}
-		if d.extensionDecoder == nil {
-			d.extensionDecoder = make(map[string]*extensionDecoderWrapper)
-		}
-		d.extensionDecoder[key] = &extensionDecoderWrapper{fileFilter: f}
-	}
-}
-
 // DecodeContext reads the 3mf file and unmarshall its content into the model.
 func (d *Decoder) DecodeContext(ctx context.Context, model *Model) error {
 	rootFile, err := d.processOPC(model)
@@ -292,24 +256,28 @@ func (d *Decoder) processRootModel(ctx context.Context, rootFile packageFile, mo
 		return err
 	}
 	defer f.Close()
-	mf := modelFileDecoder{}
-	err = mf.Decode(ctx, d.tokenReader(f), model, rootFile.Name(), true, d.Strict, d.extensionDecoder)
+	scanner := decodeModelFile(ctx, d.tokenReader(f), model, rootFile.Name(), true, d.Strict, d.extensionDecoder)
 	select {
 	case <-ctx.Done():
-		err = ctx.Err()
+		scanner.Err = ctx.Err()
 	default: // Default is must to avoid blocking
 	}
-	d.addModelFile(mf.Scanner, model)
-	return err
+	d.addModelFile(scanner, model)
+	return scanner.Err
+}
+
+func (d *Decoder) addChildModelFile(p *Scanner, model *Model) {
+	model.Childs[p.ModelPath].Resources = p.Resources
+	for _, res := range p.Warnings {
+		d.Warnings = append(d.Warnings, res)
+	}
 }
 
 func (d *Decoder) addModelFile(p *Scanner, model *Model) {
 	for _, bi := range p.BuildItems {
 		model.Build.Items = append(model.Build.Items, bi)
 	}
-	for _, res := range p.Resources {
-		model.Resources = append(model.Resources, res)
-	}
+	model.Resources = p.Resources
 	for _, ns := range p.Namespaces {
 		model.Namespaces = append(model.Namespaces, ns)
 	}
@@ -319,16 +287,18 @@ func (d *Decoder) addModelFile(p *Scanner, model *Model) {
 }
 
 func (d *Decoder) processNonRootModels(ctx context.Context, model *Model) (err error) {
-	var wg sync.WaitGroup
+	var (
+		files              sync.Map
+		wg                 sync.WaitGroup
+		nonRootModelsCount = len(d.nonRootModels)
+	)
+	wg.Add(nonRootModelsCount)
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	var files sync.Map
-	nonRootModelsCount := len(d.nonRootModels)
-	wg.Add(nonRootModelsCount)
 	for i := 0; i < nonRootModelsCount; i++ {
 		go func(i int) {
 			defer wg.Done()
-			f, err1 := d.readProductionAttachmentModel(ctx, i, model)
+			f, err1 := d.readChildModel(ctx, i, model)
 			select {
 			case <-ctx.Done():
 				return // Error somewhere, terminate
@@ -353,77 +323,88 @@ func (d *Decoder) processNonRootModels(ctx context.Context, model *Model) (err e
 	sort.Ints(indices)
 	for _, index := range indices {
 		f, _ := files.Load(index)
-		d.addModelFile(f.(*Scanner), model)
+		d.addChildModelFile(f.(*Scanner), model)
 	}
 	return nil
 }
 
 func (d *Decoder) processOPC(model *Model) (packageFile, error) {
-	err := d.p.Open(d.flate)
-	if err != nil {
+	if err := d.p.Open(d.flate); err != nil {
 		return nil, err
 	}
-	rootFile, ok := d.p.FindFileFromRel(RelTypeModel3D)
-	if !ok {
-		return nil, errors.New("go3mf: package does not have root model")
+	var rootFile packageFile
+	for _, r := range d.p.Relationships() {
+		if r.Type == RelTypeModel3D {
+			var ok bool
+			rootFile, ok = d.p.FindFileFromName(r.Path)
+			if !ok {
+				return nil, errors.New("go3mf: package root model points to an unexisting file")
+			}
+			model.Path = rootFile.Name()
+			d.extractCoreAttachments(rootFile, model, true)
+			for _, file := range d.nonRootModels {
+				d.extractCoreAttachments(file, model, false)
+			}
+		} else if att, ok := d.p.FindFileFromName(r.Path); ok {
+			model.RootRelationships = append(model.RootRelationships, r)
+			model.Attachments = d.addAttachment(model.Attachments, att)
+		}
 	}
-
-	model.Path = rootFile.Name()
-	d.extractCoreAttachments(rootFile, model, true)
-	for _, file := range d.nonRootModels {
-		d.extractCoreAttachments(file, model, false)
+	if rootFile == nil {
+		return nil, errors.New("go3mf: package does not have root model")
 	}
 	return rootFile, nil
 }
 
-func (d *Decoder) extractCoreAttachments(file packageFile, model *Model, isRoot bool) {
-	for _, rel := range file.Relationships() {
-		relType := rel.Type
-		preserve := relType == relTypePrintTicket || relType == relTypeThumbnail
-		if !preserve {
-			for _, ext := range d.extensionDecoder {
-				if ext.FileFilter(relType, isRoot) {
-					preserve = true
-					break
+func (d *Decoder) extractCoreAttachments(modelFile packageFile, model *Model, isRoot bool) {
+	for _, rel := range modelFile.Relationships() {
+		if file, ok := modelFile.FindFileFromName(rel.Path); ok {
+			if isRoot {
+				if rel.Type == RelTypeModel3D {
+					d.nonRootModels = append(d.nonRootModels, file)
+					if model.Childs == nil {
+						model.Childs = make(map[string]*ChildModel)
+					}
+					model.Childs[file.Name()] = new(ChildModel)
+				} else {
+					model.Attachments = d.addAttachment(model.Attachments, file)
+					model.Relationships = append(model.Relationships, rel)
 				}
-			}
-		}
-		if !preserve {
-			continue
-		}
-		if file, ok := file.FindFileFromName(rel.TargetURI); ok {
-			if relType == RelTypeModel3D {
-				d.nonRootModels = append(d.nonRootModels, file)
-			} else {
-				model.Attachments = d.addAttachment(model.Attachments, file, relType)
+			} else if rel.Type != RelTypeModel3D {
+				if child, ok := model.Childs[modelFile.Name()]; ok {
+					model.Attachments = d.addAttachment(model.Attachments, file)
+					child.Relationships = append(child.Relationships, rel)
+				}
 			}
 		}
 	}
 }
 
-func (d *Decoder) addAttachment(attachments []*Attachment, file packageFile, relType string) []*Attachment {
-	buff, err := copyFile(file)
-	if err == nil {
-		return append(attachments, &Attachment{
-			Path:             file.Name(),
-			Stream:           buff,
-			RelationshipType: relType,
-			ContentType:      file.ContentType(),
+func (d *Decoder) addAttachment(attachments []Attachment, file packageFile) []Attachment {
+	for _, att := range attachments {
+		if strings.EqualFold(att.Path, file.Name()) {
+			return attachments
+		}
+	}
+	if buff, err := copyFile(file); err == nil {
+		return append(attachments, Attachment{
+			Path:        file.Name(),
+			Stream:      buff,
+			ContentType: file.ContentType(),
 		})
 	}
 	return attachments
 }
 
-func (d *Decoder) readProductionAttachmentModel(ctx context.Context, i int, model *Model) (*Scanner, error) {
+func (d *Decoder) readChildModel(ctx context.Context, i int, model *Model) (*Scanner, error) {
 	attachment := d.nonRootModels[i]
 	file, err := attachment.Open()
 	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
-	mf := modelFileDecoder{}
-	err = mf.Decode(ctx, d.tokenReader(file), model, attachment.Name(), false, d.Strict, d.extensionDecoder)
-	return mf.Scanner, err
+	scanner := decodeModelFile(ctx, d.tokenReader(file), model, attachment.Name(), false, d.Strict, d.extensionDecoder)
+	return scanner, scanner.Err
 }
 
 func copyFile(file packageFile) (io.Reader, error) {
@@ -443,9 +424,8 @@ type fakePackageFile struct {
 
 func (f *fakePackageFile) Name() string                                { return uriDefault3DModel }
 func (f *fakePackageFile) ContentType() string                         { return contentType3DModel }
-func (f *fakePackageFile) FindFileFromRel(string) (packageFile, bool)  { return nil, false }
 func (f *fakePackageFile) FindFileFromName(string) (packageFile, bool) { return nil, false }
-func (f *fakePackageFile) Relationships() []*relationship              { return nil }
+func (f *fakePackageFile) Relationships() []Relationship               { return nil }
 func (f *fakePackageFile) Open() (io.ReadCloser, error) {
 	return ioutil.NopCloser(bytes.NewBuffer(f.data)), nil
 }

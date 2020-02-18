@@ -9,10 +9,10 @@ import (
 )
 
 func TestDecode(t *testing.T) {
-	meshLattice := &go3mf.ObjectResource{
-		ID: 15, Name: "Box", ModelPath: "/3D/3dmodel.model",
+	meshLattice := &go3mf.Object{
+		ID: 15, Name: "Box",
 		Mesh: &go3mf.Mesh{
-			Extensions: go3mf.Extensions{
+			Extension: go3mf.Extension{
 				ExtensionName: &BeamLattice{ClipMode: ClipInside, ClippingMeshID: 8, RepresentationMeshID: 8},
 			}},
 	}
@@ -46,8 +46,9 @@ func TestDecode(t *testing.T) {
 		{NodeIndices: [2]uint32{0, 5}, Radius: [2]float32{1.5, 2}, CapMode: [2]CapMode{CapModeHemisphere, CapModeButt}},
 	}...)
 
-	want := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "b"}}}
-	want.Resources = append(want.Resources, meshLattice)
+	want := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "b"}}, Resources: go3mf.Resources{
+		Objects: []*go3mf.Object{meshLattice},
+	}}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"
 	rootFile := `

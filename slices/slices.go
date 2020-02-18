@@ -1,68 +1,35 @@
 package slices
 
 import (
-	"errors"
-
 	"github.com/qmuntal/go3mf"
 )
 
 // ExtensionName is the canonical name of this extension.
 const ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/slice/2015/07"
 
+// A Segment element represents a single line segment (or edge) of a polygon.
+// It runs from the vertex specified by the previous segment
+// (or the startv Polygon attribute for the first segment) to the specified vertex, v2.
+type Segment struct {
+	V2  uint32
+	PID uint32
+	P1  uint32
+	P2  uint32
+}
+
+// The Polygon element contains a set of 1 or more Segment elements
+// to describe a 2D contour. If a Slice contains content,
+// there MUST be at least one Polygon to describe it.
+type Polygon struct {
+	StartV   uint32
+	Segments []Segment
+}
+
 // Slice defines the resource object for slices.
 type Slice struct {
-	Vertices []go3mf.Point2D
-	Polygons [][]int
 	TopZ     float32
-}
-
-// BeginPolygon adds a new polygon and return its index.
-func (s *Slice) BeginPolygon() int {
-	s.Polygons = append(s.Polygons, make([]int, 0))
-	return len(s.Polygons) - 1
-}
-
-// AddVertex adds a new vertex to the slice and returns its index.
-func (s *Slice) AddVertex(x, y float32) int {
-	s.Vertices = append(s.Vertices, go3mf.Point2D{x, y})
-	return len(s.Vertices) - 1
-}
-
-// AddPolygonIndex adds a new index to the polygon.
-func (s *Slice) AddPolygonIndex(polygonIndex, index int) error {
-	if polygonIndex >= len(s.Polygons) {
-		return errors.New("invalid polygon index")
-	}
-
-	if index >= len(s.Vertices) {
-		return errors.New("invalid slice segment index")
-	}
-
-	p := s.Polygons[polygonIndex]
-	if len(p) > 0 && p[len(p)-1] == index {
-		return errors.New("duplicated slice segment index")
-	}
-	s.Polygons[polygonIndex] = append(s.Polygons[polygonIndex], index)
-	return nil
-}
-
-// AllPolygonsAreClosed returns true if all the polygons are closed.
-func (s *Slice) AllPolygonsAreClosed() bool {
-	for _, p := range s.Polygons {
-		if len(p) > 1 && p[0] != p[len(p)-1] {
-			return false
-		}
-	}
-	return true
-}
-
-// IsPolygonValid returns true if the polygon is valid.
-func (s *Slice) IsPolygonValid(index int) bool {
-	if index >= len(s.Polygons) {
-		return false
-	}
-	p := s.Polygons[index]
-	return len(p) > 2
+	Vertices []go3mf.Point2D
+	Polygons []Polygon
 }
 
 // SliceResolution defines the resolutions for a slice.
@@ -95,53 +62,37 @@ type SliceRef struct {
 	Path         string
 }
 
-// SliceStack defines an stack of slices.
-// It can either contain Slices or a Refs.
-type SliceStack struct {
+// SliceStackResource defines a slice stack resource.
+// It can either contain a SliceStack or a Refs slice.
+type SliceStackResource struct {
+	ID      uint32
 	BottomZ float32
 	Slices  []*Slice
 	Refs    []SliceRef
 }
 
-// AddSlice adds an slice to the stack and returns its index.
-func (s *SliceStack) AddSlice(slice *Slice) (int, error) {
-	if slice.TopZ < s.BottomZ || (len(s.Slices) != 0 && slice.TopZ < s.Slices[0].TopZ) {
-		return 0, errors.New("the z-coordinates of slices within a slicestack are not increasing")
-	}
-	s.Slices = append(s.Slices, slice)
-	return len(s.Slices) - 1, nil
-}
-
-// SliceStackResource defines a slice stack resource.
-// It can either contain a SliceStack or a Refs slice.
-type SliceStackResource struct {
-	Stack     SliceStack
-	ID        uint32
-	ModelPath string
-}
-
 // Identify returns the unique ID of the resource.
-func (s *SliceStackResource) Identify() (string, uint32) {
-	return s.ModelPath, s.ID
+func (s *SliceStackResource) Identify() uint32 {
+	return s.ID
 }
 
-// SliceStackInfo defines the attributes added to <object>.
+// SliceStackInfo defines the attributes added to Object.
 type SliceStackInfo struct {
 	SliceStackID    uint32
 	SliceResolution SliceResolution
 }
 
-// ObjectSliceStackInfo extracts the SliceStackInfo attributes from an ObjectResource.
+// ObjectAttr extracts the SliceStackInfo attributes from an Object.
 // If it does not exist a new one is added.
-func ObjectSliceStackInfo(o *go3mf.ObjectResource) *SliceStackInfo {
-	if attr, ok := o.Extensions[ExtensionName]; ok {
+func ObjectAttr(o *go3mf.Object) *SliceStackInfo {
+	if attr, ok := o.ExtensionAttr[ExtensionName]; ok {
 		return attr.(*SliceStackInfo)
 	}
-	if o.Extensions == nil {
-		o.Extensions = make(go3mf.Extensions)
+	if o.ExtensionAttr == nil {
+		o.ExtensionAttr = make(go3mf.ExtensionAttr)
 	}
 	attr := &SliceStackInfo{}
-	o.Extensions[ExtensionName] = attr
+	o.ExtensionAttr[ExtensionName] = attr
 	return attr
 }
 
@@ -166,4 +117,7 @@ const (
 	attrSliceRefID = "slicestackid"
 	attrSlicePath  = "slicepath"
 	attrMeshRes    = "meshresolution"
+	attrPID        = "pid"
+	attrP1         = "p1"
+	attrP2         = "p2"
 )

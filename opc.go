@@ -6,6 +6,24 @@ import (
 	"github.com/qmuntal/opc"
 )
 
+type opcPart struct {
+	io.Writer
+	Part *opc.Part
+}
+
+func (o *opcPart) AddRelationship(r Relationship) {
+	for _, ro := range o.Part.Relationships {
+		if ro.Type == r.Type && ro.TargetURI == r.Path {
+			return
+		}
+	}
+	o.Part.Relationships = append(o.Part.Relationships, &opc.Relationship{
+		ID:        r.ID,
+		Type:      r.Type,
+		TargetURI: r.Path,
+	})
+}
+
 type opcWriter struct {
 	w *opc.Writer
 }
@@ -14,15 +32,25 @@ func newOpcWriter(w io.Writer) *opcWriter {
 	return &opcWriter{opc.NewWriter(w)}
 }
 
-func (o *opcWriter) Create(name, contentType string) (io.Writer, error) {
-	return o.w.Create(name, contentType)
+func (o *opcWriter) Create(name, contentType string) (packagePart, error) {
+	p := &opc.Part{Name: opc.NormalizePartName(name), ContentType: contentType}
+	w, err := o.w.CreatePart(p, opc.CompressionNormal)
+	if err != nil {
+		return nil, err
+	}
+	return &opcPart{Writer: w, Part: p}, nil
 }
 
-func (o *opcWriter) AddRelationship(r *relationship) {
+func (o *opcWriter) AddRelationship(r Relationship) {
+	for _, ro := range o.w.Relationships {
+		if ro.Type == r.Type && ro.TargetURI == r.Path {
+			return
+		}
+	}
 	o.w.Relationships = append(o.w.Relationships, &opc.Relationship{
 		ID:        r.ID,
 		Type:      r.Type,
-		TargetURI: r.TargetURI,
+		TargetURI: r.Path,
 	})
 }
 
@@ -30,10 +58,10 @@ func (o *opcWriter) Close() error {
 	return o.w.Close()
 }
 
-func newRelationships(rels []*opc.Relationship) []*relationship {
-	pr := make([]*relationship, len(rels))
+func newRelationships(rels []*opc.Relationship) []Relationship {
+	pr := make([]Relationship, len(rels))
 	for i, r := range rels {
-		pr[i] = &relationship{ID: r.ID, TargetURI: r.TargetURI, Type: r.Type}
+		pr[i] = Relationship{ID: r.ID, Path: r.TargetURI, Type: r.Type}
 	}
 	return pr
 }
@@ -55,17 +83,12 @@ func (o *opcFile) ContentType() string {
 	return o.f.ContentType
 }
 
-func (o *opcFile) FindFileFromRel(relType string) (packageFile, bool) {
-	name := findOPCFileURIFromRel(relType, o.f.Relationships)
-	return o.FindFileFromName(name)
-}
-
 func (o *opcFile) FindFileFromName(name string) (packageFile, bool) {
 	name = opc.ResolveRelationship(o.f.Name, name)
 	return findOPCFileFromName(name, o.r)
 }
 
-func (o *opcFile) Relationships() []*relationship {
+func (o *opcFile) Relationships() []Relationship {
 	return newRelationships(o.f.Relationships)
 }
 
@@ -83,9 +106,8 @@ func (o *opcReader) Open(f func(r io.Reader) io.ReadCloser) (err error) {
 	return
 }
 
-func (o *opcReader) FindFileFromRel(relType string) (packageFile, bool) {
-	name := findOPCFileURIFromRel(relType, o.r.Relationships)
-	return o.FindFileFromName(name)
+func (o *opcReader) Relationships() []Relationship {
+	return newRelationships(o.r.Relationships)
 }
 
 func (o *opcReader) FindFileFromName(name string) (packageFile, bool) {

@@ -100,14 +100,14 @@ type Beam struct {
 // MeshBeamLattice extracts the BeamLattice attributes from an Mesh.
 // If it does not exist a new one is added.
 func MeshBeamLattice(o *go3mf.Mesh) *BeamLattice {
-	if attr, ok := o.Extensions[ExtensionName]; ok {
+	if attr, ok := o.Extension[ExtensionName]; ok {
 		return attr.(*BeamLattice)
 	}
-	if o.Extensions == nil {
-		o.Extensions = make(go3mf.Extensions)
+	if o.Extension == nil {
+		o.Extension = make(go3mf.Extension)
 	}
 	attr := &BeamLattice{}
-	o.Extensions[ExtensionName] = attr
+	o.Extension[ExtensionName] = attr
 	return attr
 }
 

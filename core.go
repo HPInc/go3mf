@@ -7,9 +7,30 @@ import (
 	"sort"
 )
 
-// Extensions is an extension point containing <any> and <anyAttribute> information.
+// ExtensionAttr is an extension point containing <anyAttribute> information.
 // The key should be the extension namespace.
-type Extensions map[string]interface{}
+type ExtensionAttr map[string]MarshalerAttr
+
+func (e ExtensionAttr) encode(x *XMLEncoder, start *xml.StartElement) {
+	for _, ext := range e {
+		if att, err := ext.Marshal3MFAttr(x); err == nil {
+			start.Attr = append(start.Attr, att...)
+		}
+	}
+}
+
+// Extension is an extension point containing <any> information.
+// The key should be the extension namespace.
+type Extension map[string]Marshaler
+
+func (e Extension) encode(x *XMLEncoder) error {
+	for _, ext := range e {
+		if err := ext.Marshal3MF(x); err == nil {
+			return err
+		}
+	}
+	return nil
+}
 
 // Units define the allowed model units.
 type Units uint8
@@ -57,9 +78,9 @@ func (o ObjectType) String() string {
 	}[o]
 }
 
-// Resource defines build resource.
-type Resource interface {
-	Identify() (string, uint32)
+// Asset defines build resource.
+type Asset interface {
+	Identify() uint32
 }
 
 // Metadata item is an in memory representation of the 3MF metadata,
@@ -73,41 +94,48 @@ type Metadata struct {
 
 // Attachment defines the Model Attachment.
 type Attachment struct {
-	Stream           io.Reader
-	Path             string
-	RelationshipType string
-	ContentType      string
+	Stream      io.Reader
+	Path        string
+	ContentType string
+}
+
+// Relationship defines a dependency between
+// the owner of the relationsip and the attachment
+// referenced by path. ID is optional, if not set a random
+// value will be used when encoding.
+type Relationship struct {
+	Path string
+	Type string
+	ID   string
 }
 
 // Build contains one or more items to manufacture as part of processing the job.
 type Build struct {
-	Items      []*Item
-	Extensions Extensions
+	Items         []*Item
+	ExtensionAttr ExtensionAttr
 }
 
-// A Model is an in memory representation of the 3MF file.
-type Model struct {
-	Path        string
-	Language    string
-	Units       Units
-	Thumbnail   string
-	Metadata    []Metadata
-	Resources   []Resource
-	Build       Build
-	Attachments []*Attachment
-	Namespaces  []xml.Name
+// The Resources element acts as the root element of a library of constituent
+// pieces of the overall 3D object definition.
+type Resources struct {
+	Assets        []Asset
+	Objects       []*Object
+	ExtensionAttr ExtensionAttr
 }
 
 // UnusedID returns the lowest unused ID.
-func (m *Model) UnusedID() uint32 {
-	if len(m.Resources) == 0 {
+func (rs *Resources) UnusedID() uint32 {
+	if len(rs.Assets) == 0 && len(rs.Objects) == 0 {
 		return 1
 	}
-	ids := make([]int, len(m.Resources)+1)
+	ids := make([]int, len(rs.Assets)+len(rs.Objects)+1)
 	ids[0] = 0
-	for i, r := range m.Resources {
-		_, id := r.Identify()
+	for i, r := range rs.Assets {
+		id := r.Identify()
 		ids[i+1] = int(id)
+	}
+	for i, o := range rs.Objects {
+		ids[len(rs.Assets)+i+1] = int(o.ID)
 	}
 	sort.Ints(ids)
 	lowest := 0
@@ -122,38 +150,88 @@ func (m *Model) UnusedID() uint32 {
 	return uint32(lowest)
 }
 
-// MustFindObject returns the object with the target path and unique ID.
-// It is guaranteed not to panic if the Model has not been modified from the last validation.
-// If path is empty the resource will be searched in the root model.
-func (m *Model) MustFindObject(path string, id uint32) *ObjectResource {
-	return m.MustFindResource(path, id).(*ObjectResource)
-}
-
-// MustFindResource returns the resource with the target path and unique ID.
-// It is guaranteed not to panic if the Model has not been modified from the last validation.
-// If path is empty the resource will be searched in the root model.
-func (m *Model) MustFindResource(path string, id uint32) Resource {
-	r, ok := m.FindResource(path, id)
-	if !ok {
-		panic("go3mf: object does not exist")
-	}
-	return r
-}
-
-// FindResource returns the resource with the target path and unique ID.
-// If path is empty the resource will be searched in the root model.
-func (m *Model) FindResource(path string, id uint32) (r Resource, ok bool) {
-	if path == "" {
-		path = m.Path
-	}
-	for _, value := range m.Resources {
-		if rPath, rID := value.Identify(); rID == id && rPath == path {
-			r = value
-			ok = true
-			break
+// FindObject returns the resource with the target ID.
+func (rs *Resources) FindObject(id uint32) (*Object, bool) {
+	for _, value := range rs.Objects {
+		if value.ID == id {
+			return value, true
 		}
 	}
-	return
+	return nil, false
+}
+
+// FindAsset returns the resource with the target ID.
+func (rs *Resources) FindAsset(id uint32) (Asset, bool) {
+	for _, value := range rs.Assets {
+		if rID := value.Identify(); rID == id {
+			return value, true
+		}
+	}
+	return nil, false
+}
+
+// ChildModel repreents de content of a non-root model file.
+//
+// It is not supported by the core spec but a common concept
+// for multiple official specs.
+// The relationships are usually managed by the extensions themself,
+// but they are usefull to reference custom attachments.
+type ChildModel struct {
+	Resources     Resources
+	Relationships []Relationship
+	Extension     Extension
+}
+
+// A Model is an in memory representation of the 3MF file.
+//
+// If path is empty, the default path '/3D/3dmodel.model' will be used.
+// The relationships are usually managed by the extensions themself,
+// but they are usefull to reference custom attachments.
+// Childs keys cannot be an empty string.
+// RootRelationships are the OPC root relationships.
+type Model struct {
+	Path               string
+	Language           string
+	Units              Units
+	Thumbnail          string
+	Resources          Resources
+	Build              Build
+	Attachments        []Attachment
+	Namespaces         []xml.Name
+	RequiredExtensions []string
+	Metadata           []Metadata
+	Childs             map[string]*ChildModel // path -> child
+	RootRelationships  []Relationship
+	Relationships      []Relationship
+	Extension          Extension
+	ExtensionAttr      ExtensionAttr
+}
+
+// FindResources returns the resource associated with path.
+func (m *Model) FindResources(path string) (*Resources, bool) {
+	if path == "" || path == m.Path {
+		return &m.Resources, true
+	}
+	if child, ok := m.Childs[path]; ok {
+		return &child.Resources, true
+	}
+	return nil, false
+}
+
+// FindAsset returns the resource with the target path and ID.
+func (m *Model) FindAsset(path string, id uint32) (Asset, bool) {
+	if rs, ok := m.FindResources(path); ok {
+		return rs.FindAsset(id)
+	}
+	return nil, false
+}
+
+// FindObject returns the object with the target path and ID.
+func (m *Model) FindObject(path string, id uint32) (*Object, bool) {
+	if rs, ok := m.FindResources(path); ok {
+		return rs.FindObject(id)
+	}
+	return nil, false
 }
 
 // BaseMaterial defines the Model Base Material Resource.
@@ -167,23 +245,21 @@ type BaseMaterial struct {
 // BaseMaterialsResource defines a slice of BaseMaterial.
 type BaseMaterialsResource struct {
 	ID        uint32
-	ModelPath string
 	Materials []BaseMaterial
 }
 
 // Identify returns the unique ID of the resource.
-func (ms *BaseMaterialsResource) Identify() (string, uint32) {
-	return ms.ModelPath, ms.ID
+func (ms *BaseMaterialsResource) Identify() uint32 {
+	return ms.ID
 }
 
 // A Item is an in memory representation of the 3MF build item.
 type Item struct {
-	ObjectID   uint32
-	Path       string
-	Transform  Matrix
-	PartNumber string
-	Metadata   []Metadata
-	Extensions Extensions
+	ObjectID      uint32
+	Transform     Matrix
+	PartNumber    string
+	Metadata      []Metadata
+	ExtensionAttr ExtensionAttr
 }
 
 // HasTransform returns true if the transform is different than the identity.
@@ -191,41 +267,35 @@ func (b *Item) HasTransform() bool {
 	return b.Transform != Matrix{} && b.Transform != Identity()
 }
 
-// An ObjectResource is an in memory representation of the 3MF model object.
-type ObjectResource struct {
-	ID                   uint32
-	ModelPath            string
-	Name                 string
-	PartNumber           string
-	Thumbnail            string
-	DefaultPropertyID    uint32
-	DefaultPropertyIndex uint32
-	ObjectType           ObjectType
-	Metadata             []Metadata
-	Mesh                 *Mesh
-	Components           []*Component
-	Extensions           Extensions
+// An Object is an in memory representation of the 3MF model object.
+type Object struct {
+	ID            uint32
+	Name          string
+	PartNumber    string
+	Thumbnail     string
+	DefaultPID    uint32
+	DefaultPIndex uint32
+	ObjectType    ObjectType
+	Metadata      []Metadata
+	Mesh          *Mesh
+	Components    []*Component
+	ExtensionAttr ExtensionAttr
 }
 
-// NewMeshResource returns a new object resource
+// NewMeshObject returns a new object resource
 // with an initialized mesh.
-func NewMeshResource() *ObjectResource {
-	return &ObjectResource{Mesh: new(Mesh)}
+func NewMeshObject() *Object {
+	return &Object{Mesh: new(Mesh)}
 }
 
-// NewComponentsResource returns a new object resource
+// NewComponentsObject returns a new object resource
 // with an initialized components.
-func NewComponentsResource() *ObjectResource {
-	return &ObjectResource{Components: make([]*Component, 0)}
-}
-
-// Identify returns the unique ID of the resource.
-func (o *ObjectResource) Identify() (string, uint32) {
-	return o.ModelPath, o.ID
+func NewComponentsObject() *Object {
+	return &Object{Components: make([]*Component, 0)}
 }
 
 // IsValid checks if the mesh resource are valid.
-func (o *ObjectResource) IsValid() bool {
+func (o *Object) IsValid() bool {
 	if o.Mesh == nil && o.Components == nil {
 		return false
 	} else if o.Mesh != nil && o.Components != nil {
@@ -250,10 +320,9 @@ func (o *ObjectResource) IsValid() bool {
 
 // A Component is an in memory representation of the 3MF component.
 type Component struct {
-	ObjectID   uint32
-	Path       string
-	Transform  Matrix
-	Extensions Extensions
+	ObjectID      uint32
+	Transform     Matrix
+	ExtensionAttr ExtensionAttr
 }
 
 // HasTransform returns true if the transform is different than the identity.
@@ -263,19 +332,20 @@ func (c *Component) HasTransform() bool {
 
 // Face defines a triangle of a mesh.
 type Face struct {
-	NodeIndices     [3]uint32 // Coordinates of the three nodes that defines the face.
-	Resource        uint32
-	ResourceIndices [3]uint32 // Resource subindex of the three nodes that defines the face.
+	NodeIndices [3]uint32 // Coordinates of the three nodes that defines the face.
+	PID         uint32
+	PIndex      [3]uint32 // Resource subindex of the three nodes that defines the face.
 }
 
 // A Mesh is an in memory representation of the 3MF mesh object.
-// Each node,  and face have a ID, which allows to identify them. Each face have an
+// Each node and face have an ID, which allows to identify them. Each face have an
 // orientation (i.e. the face can look up or look down) and have three nodes.
 // The orientation is defined by the order of its nodes.
 type Mesh struct {
-	Nodes      []Point3D
-	Faces      []Face
-	Extensions Extensions
+	ExtensionAttr ExtensionAttr
+	Nodes         []Point3D
+	Faces         []Face
+	Extension     Extension
 }
 
 // CheckSanity checks if the mesh is well formated.
@@ -395,3 +465,68 @@ func newUnits(s string) (u Units, ok bool) {
 	}[s]
 	return
 }
+
+const (
+	nsXML   = "http://www.w3.org/XML/1998/namespace"
+	nsXMLNs = "http://www.w3.org/2000/xmlns/"
+)
+
+const (
+	// ExtensionName is the canonical name of this extension.
+	ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/core/2015/02"
+	// RelTypeModel3D is the canonical 3D model relationship type.
+	RelTypeModel3D = "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"
+	// RelTypeThumbnail is the canonical thumbnail relationship type.
+	RelTypeThumbnail = "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail"
+	// RelTypePrintTicket is the canonical print ticket relationship type.
+	RelTypePrintTicket = "http://schemas.microsoft.com/3dmanufacturing/2013/01/printticket"
+)
+
+const (
+	uriDefault3DModel  = "/3D/3dmodel.model"
+	contentType3DModel = "application/vnd.ms-package.3dmanufacturing-3dmodel+xml"
+)
+
+const (
+	attrXML           = "xml"
+	attrXmlns         = "xmlns"
+	attrID            = "id"
+	attrName          = "name"
+	attrObjectID      = "objectid"
+	attrTransform     = "transform"
+	attrUnit          = "unit"
+	attrReqExt        = "requiredextensions"
+	attrLang          = "lang"
+	attrResources     = "resources"
+	attrBuild         = "build"
+	attrObject        = "object"
+	attrBaseMaterials = "basematerials"
+	attrBase          = "base"
+	attrDisplayColor  = "displaycolor"
+	attrPartNumber    = "partnumber"
+	attrItem          = "item"
+	attrModel         = "model"
+	attrVertices      = "vertices"
+	attrVertex        = "vertex"
+	attrX             = "x"
+	attrY             = "y"
+	attrZ             = "z"
+	attrV1            = "v1"
+	attrV2            = "v2"
+	attrV3            = "v3"
+	attrType          = "type"
+	attrThumbnail     = "thumbnail"
+	attrPID           = "pid"
+	attrPIndex        = "pindex"
+	attrMesh          = "mesh"
+	attrComponents    = "components"
+	attrComponent     = "component"
+	attrTriangles     = "triangles"
+	attrTriangle      = "triangle"
+	attrP1            = "p1"
+	attrP2            = "p2"
+	attrP3            = "p3"
+	attrPreserve      = "preserve"
+	attrMetadata      = "metadata"
+	attrMetadataGroup = "metadatagroup"
+)
