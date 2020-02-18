@@ -57,7 +57,7 @@ func (d *modelDecoder) Start(attrs []xml.Attr) {
 	}
 
 	for i, ext := range d.model.RequiredExtensions {
-		if ns, ok := d.Scanner.Namespace(ext); ok {
+		if ns, ok := d.Scanner.namespace(ext); ok {
 			d.model.RequiredExtensions[i] = ns
 			if _, ok := d.Scanner.extensionDecoder[ns]; !ok {
 				d.Scanner.GenericError(true, fmt.Sprintf("'%s' extension is not supported", ext))
@@ -113,7 +113,7 @@ func (d *metadataDecoder) Start(attrs []xml.Attr) {
 			i := strings.IndexByte(a.Value, ':')
 			if i < 0 {
 				d.metadata.Name = a.Value
-			} else if _, ok := d.Scanner.Namespace(a.Value[0:i]); ok {
+			} else if _, ok := d.Scanner.namespace(a.Value[0:i]); ok {
 				d.metadata.Name = a.Value[0:i] + ":" + a.Value[i+1:]
 			} else {
 				d.Scanner.GenericError(true, "unregistered namespace")
@@ -261,7 +261,11 @@ func (d *baseMaterialsDecoder) Start(attrs []xml.Attr) {
 	d.baseMaterialDecoder.resource = &d.resource
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrID {
-			d.resource.ID = d.Scanner.ParseResourceID(a.Value)
+			id, err := strconv.ParseUint(a.Value, 10, 32)
+			if err != nil {
+				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+			}
+			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
 			break
 		}
 	}
@@ -494,7 +498,11 @@ func (d *objectDecoder) Child(name xml.Name) (child NodeDecoder) {
 func (d *objectDecoder) parseCoreAttr(a xml.Attr) {
 	switch a.Name.Local {
 	case attrID:
-		d.resource.ID = d.Scanner.ParseResourceID(a.Value)
+		id, err := strconv.ParseUint(a.Value, 10, 32)
+		if err != nil {
+			d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+		}
+		d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
 	case attrType:
 		var ok bool
 		d.resource.ObjectType, ok = newObjectType(a.Value)

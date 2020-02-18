@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"image/color"
-	"strconv"
 )
 
 // NodeDecoder defines the minimum contract to decode a 3MF node.
@@ -97,7 +96,7 @@ type Scanner struct {
 }
 
 // Namespace returns the space of the associated local, if existing.
-func (s *Scanner) Namespace(local string) (string, bool) {
+func (s *Scanner) namespace(local string) (string, bool) {
 	for _, name := range s.Namespaces {
 		if name.Local == local {
 			return name.Space, true
@@ -141,18 +140,6 @@ func (s *Scanner) InvalidAttr(attr string, val string, required bool) {
 // MissingAttr adds the error to the warnings.
 func (s *Scanner) MissingAttr(attr string) {
 	s.strictError(MissingPropertyError{ResourceID: s.ResourceID, Element: s.Element, Name: attr, ModelPath: s.ModelPath})
-}
-
-// ParseResourceID parses the ID as a uint32.
-// If it cannot be parsed a ParsePropertyError is added to the warnings.
-func (s *Scanner) ParseResourceID(v string) uint32 {
-	n, err := strconv.ParseUint(v, 10, 32)
-	if err != nil {
-		s.InvalidAttr(attrID, v, true)
-		return 0
-	}
-	s.ResourceID = uint32(n)
-	return s.ResourceID
 }
 
 func (s *Scanner) strictError(err error) {

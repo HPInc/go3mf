@@ -3,6 +3,8 @@ package go3mf
 import (
 	"fmt"
 	"math"
+	"strconv"
+	"strings"
 )
 
 // vec3I represents a 3D vector typed as int32

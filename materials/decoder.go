@@ -50,7 +50,11 @@ func (d *colorGroupDecoder) Start(attrs []xml.Attr) {
 	d.colorDecoder.resource = &d.resource
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrID {
-			d.resource.ID = d.Scanner.ParseResourceID(a.Value)
+			id, err := strconv.ParseUint(a.Value, 10, 32)
+			if err != nil {
+				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+			}
+			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
 			break
 		}
 	}
@@ -64,7 +68,7 @@ type colorDecoder struct {
 func (d *colorDecoder) Start(attrs []xml.Attr) {
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrColor {
-			c, err := go3mf.ParseRGB(a.Value)
+			c, err := go3mf.ParseRGBA(a.Value)
 			if err != nil {
 				d.Scanner.InvalidAttr(attrColor, a.Value, true)
 			}
@@ -123,7 +127,11 @@ func (d *tex2DGroupDecoder) Start(attrs []xml.Attr) {
 		}
 		switch a.Name.Local {
 		case attrID:
-			d.resource.ID = d.Scanner.ParseResourceID(a.Value)
+			id, err := strconv.ParseUint(a.Value, 10, 32)
+			if err != nil {
+				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+			}
+			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
 		case attrTexID:
 			val, err := strconv.ParseUint(a.Value, 10, 32)
 			if err != nil {
@@ -150,7 +158,11 @@ func (d *texture2DDecoder) Start(attrs []xml.Attr) {
 		}
 		switch a.Name.Local {
 		case attrID:
-			d.resource.ID = d.Scanner.ParseResourceID(a.Value)
+			id, err := strconv.ParseUint(a.Value, 10, 32)
+			if err != nil {
+				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+			}
+			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
 		case attrPath:
 			d.resource.Path = a.Value
 		case attrContentType:
@@ -193,7 +205,11 @@ func (d *compositeMaterialsDecoder) Start(attrs []xml.Attr) {
 		}
 		switch a.Name.Local {
 		case attrID:
-			d.resource.ID = d.Scanner.ParseResourceID(a.Value)
+			id, err := strconv.ParseUint(a.Value, 10, 32)
+			if err != nil {
+				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+			}
+			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
 		case attrMatID:
 			val, err := strconv.ParseUint(a.Value, 10, 32)
 			if err != nil {
@@ -267,7 +283,11 @@ func (d *multiPropertiesDecoder) Start(attrs []xml.Attr) {
 		}
 		switch a.Name.Local {
 		case attrID:
-			d.resource.ID = d.Scanner.ParseResourceID(a.Value)
+			id, err := strconv.ParseUint(a.Value, 10, 32)
+			if err != nil {
+				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+			}
+			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
 		case attrBlendMethods:
 			for _, f := range strings.Fields(a.Value) {
 				val, _ := newBlendMethod(f)

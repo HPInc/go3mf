@@ -72,7 +72,11 @@ func (d *sliceStackDecoder) Start(attrs []xml.Attr) {
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrID:
-			d.resource.ID = d.Scanner.ParseResourceID(a.Value)
+			id, err := strconv.ParseUint(a.Value, 10, 32)
+			if err != nil {
+				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+			}
+			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
 		case attrZBottom:
 			val, err := strconv.ParseFloat(a.Value, 32)
 			if err != nil {
