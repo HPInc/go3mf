@@ -72,13 +72,13 @@ func marshalBeams(x *go3mf.XMLEncoder, m *BeamLattice) {
 			{Name: xml.Name{Local: attrV1}, Value: strconv.FormatUint(uint64(b.NodeIndices[0]), 10)},
 			{Name: xml.Name{Local: attrV2}, Value: strconv.FormatUint(uint64(b.NodeIndices[1]), 10)},
 		}}
-		if b.Radius[0] > 0 {
+		if b.Radius[0] > 0 && b.Radius[0] != m.DefaultRadius {
 			xbeam.Attr = append(xbeam.Attr, xml.Attr{
 				Name:  xml.Name{Local: attrR1},
 				Value: strconv.FormatFloat(float64(b.Radius[0]), 'f', x.FloatPresicion(), 32),
 			})
 		}
-		if b.Radius[1] > 0 {
+		if b.Radius[1] > 0 && b.Radius[1] != m.DefaultRadius {
 			xbeam.Attr = append(xbeam.Attr, xml.Attr{
 				Name:  xml.Name{Local: attrR2},
 				Value: strconv.FormatFloat(float64(b.Radius[1]), 'f', x.FloatPresicion(), 32),
