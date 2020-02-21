@@ -66,14 +66,14 @@ func (e *Encoder) Encode(m *Model) error {
 	}
 	rootName := m.Path
 	if rootName == "" {
-		rootName = uriDefault3DModel
+		rootName = DefaultPartModelName
 	}
-	e.w.AddRelationship(Relationship{Type: RelTypeModel3D, Path: rootName})
+	e.w.AddRelationship(Relationship{Type: RelType3DModel, Path: rootName})
 	for _, r := range m.RootRelationships {
 		e.w.AddRelationship(r)
 	}
 
-	w, err := e.w.Create(rootName, contentType3DModel)
+	w, err := e.w.Create(rootName, ContentType3DModel)
 	if err != nil {
 		return err
 	}
@@ -84,7 +84,7 @@ func (e *Encoder) Encode(m *Model) error {
 	enc.relationships = make([]Relationship, len(m.Relationships))
 	copy(enc.relationships, m.Relationships)
 	for path := range m.Childs {
-		enc.AddRelationship(Relationship{Type: RelTypeModel3D, Path: path})
+		enc.AddRelationship(Relationship{Type: RelType3DModel, Path: path})
 	}
 	if err = e.writeModel(enc, m); err != nil {
 		return err
@@ -105,7 +105,7 @@ func (e *Encoder) writeChildModels(m *Model) error {
 			w   packagePart
 			err error
 		)
-		if w, err = e.w.Create(path, contentType3DModel); err != nil {
+		if w, err = e.w.Create(path, ContentType3DModel); err != nil {
 			return err
 		}
 		if _, err = w.Write([]byte(xml.Header)); err != nil {

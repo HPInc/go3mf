@@ -474,17 +474,31 @@ const (
 const (
 	// ExtensionName is the canonical name of this extension.
 	ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/core/2015/02"
-	// RelTypeModel3D is the canonical 3D model relationship type.
-	RelTypeModel3D = "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"
+
+	// RelType3DModel is the canonical 3D model relationship type.
+	RelType3DModel = "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"
 	// RelTypeThumbnail is the canonical thumbnail relationship type.
 	RelTypeThumbnail = "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail"
 	// RelTypePrintTicket is the canonical print ticket relationship type.
 	RelTypePrintTicket = "http://schemas.microsoft.com/3dmanufacturing/2013/01/printticket"
-)
+	// RelTypeMustPreserve is the canonical must preserve relationship type.
+	RelTypeMustPreserve = "http://schemas.openxmlformats.org/package/2006/relationships/mustpreserve"
 
-const (
-	uriDefault3DModel  = "/3D/3dmodel.model"
-	contentType3DModel = "application/vnd.ms-package.3dmanufacturing-3dmodel+xml"
+	// DefaultPartModelName is the recommended root model part name.
+	DefaultPartModelName = "/3D/3dmodel.model"
+	// DefaultPrintTicketName is the recommended print ticket part name.
+	DefaultPrintTicketName = "/3D/Metadata/Model_PT.xml"
+	// Default3DTexturesDir is the recommended directory for 3D textures.
+	Default3DTexturesDir = "/3D/Textures/"
+	// Default3DOtherDir is the recommended directory for non-standard parts.
+	Default3DOtherDir = "/3D/Other/"
+	// DefaultMetadataDir is the recommended directory for standard metadata.
+	DefaultMetadataDir = "/Metadata/"
+
+	// ContentType3DModel is the 3D model content type.
+	ContentType3DModel = "application/vnd.ms-package.3dmanufacturing-3dmodel+xml"
+	// ContentTypePrintTicket is the print ticket content type.
+	ContentTypePrintTicket = "application/vnd.ms-printing.printticket+xml"
 )
 
 const (

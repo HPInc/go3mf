@@ -186,7 +186,7 @@ func newMockPackage(other *mockFile) *mockPackage {
 	m := new(mockPackage)
 	m.On("Open", mock.Anything).Return(nil).Maybe()
 	m.On("Create", mock.Anything, mock.Anything).Return(nil, nil).Maybe()
-	m.On("Relationships").Return([]Relationship{{Path: uriDefault3DModel, Type: RelTypeModel3D}}).Maybe()
+	m.On("Relationships").Return([]Relationship{{Path: DefaultPartModelName, Type: RelType3DModel}}).Maybe()
 	m.On("FindFileFromName", mock.Anything).Return(other, other != nil).Maybe()
 	return m
 }
@@ -256,7 +256,7 @@ func TestDecoder_processOPC(t *testing.T) {
 			p: newMockPackage(newMockFile("/a.model", []Relationship{{Type: "other", Path: "/a.png"}}, nil, false)),
 		}, &Model{Path: "/a.model"}, false},
 		{"withModelAttachment", &Decoder{
-			p: newMockPackage(newMockFile("/a.model", []Relationship{{Type: RelTypeModel3D, Path: "/other.model"}}, otherModel, false)),
+			p: newMockPackage(newMockFile("/a.model", []Relationship{{Type: RelType3DModel, Path: "/other.model"}}, otherModel, false)),
 		}, &Model{Path: "/a.model", Childs: map[string]*ChildModel{"/other.model": new(ChildModel)}}, false},
 	}
 	for _, tt := range tests {
