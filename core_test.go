@@ -504,3 +504,57 @@ func TestExtension_Get(t *testing.T) {
 		})
 	}
 }
+
+func TestExtension_Get_Panic(t *testing.T) {
+	type args struct {
+		target interface{}
+	}
+	tests := []struct {
+		name string
+		e    Extension
+		args args
+	}{
+		{"nil", Extension{&fakeAsset{ID: 1}}, args{nil}},
+		{"int", Extension{&fakeAsset{ID: 1}}, args{1}},
+		{"nonPtrToPtr", Extension{&fakeAsset{ID: 1}}, args{new(fakeAsset)}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				if err := recover(); err == nil {
+					t.Error("Extension.Get() did not panic")
+				}
+			}()
+			if tt.e.Get(tt.args.target) {
+				t.Error("Extension.Get() want false")
+			}
+		})
+	}
+}
+
+func TestExtensionAttr_Get_Panic(t *testing.T) {
+	type args struct {
+		target interface{}
+	}
+	tests := []struct {
+		name string
+		e    ExtensionAttr
+		args args
+	}{
+		{"nil", ExtensionAttr{&fakeAttr{Value: "1"}}, args{nil}},
+		{"int", ExtensionAttr{&fakeAttr{Value: "1"}}, args{1}},
+		{"nonPtrToPtr", ExtensionAttr{&fakeAttr{Value: "1"}}, args{new(fakeAttr)}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				if err := recover(); err == nil {
+					t.Error("ExtensionAttr.Get() did not panic")
+				}
+			}()
+			if tt.e.Get(tt.args.target) {
+				t.Error("ExtensionAttr.Get() want false")
+			}
+		})
+	}
+}
