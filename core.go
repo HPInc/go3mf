@@ -335,6 +335,21 @@ type Item struct {
 	ExtensionAttr ExtensionAttr
 }
 
+// ObjectPath search an extension attribute with an ObjectPath
+// function that return a non empty path.
+// Else returns the default path.
+func (b *Item) ObjectPath(defaultPath string) string {
+	for _, att := range b.ExtensionAttr {
+		if ext, ok := att.(interface{ ObjectPath() string }); ok {
+			path := ext.ObjectPath()
+			if path != "" {
+				return path
+			}
+		}
+	}
+	return defaultPath
+}
+
 // HasTransform returns true if the transform is different than the identity.
 func (b *Item) HasTransform() bool {
 	return b.Transform != Matrix{} && b.Transform != Identity()
@@ -396,6 +411,21 @@ type Component struct {
 	ObjectID      uint32
 	Transform     Matrix
 	ExtensionAttr ExtensionAttr
+}
+
+// ObjectPath search an extension attribute with an ObjectPath
+// function that return a non empty path.
+// Else returns the default path.
+func (c *Component) ObjectPath(defaultPath string) string {
+	for _, att := range c.ExtensionAttr {
+		if ext, ok := att.(interface{ ObjectPath() string }); ok {
+			path := ext.ObjectPath()
+			if path != "" {
+				return path
+			}
+		}
+	}
+	return defaultPath
 }
 
 // HasTransform returns true if the transform is different than the identity.

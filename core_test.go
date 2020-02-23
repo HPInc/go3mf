@@ -558,3 +558,49 @@ func TestExtensionAttr_Get_Panic(t *testing.T) {
 		})
 	}
 }
+
+func TestComponent_ObjectPath(t *testing.T) {
+	type args struct {
+		defaultPath string
+	}
+	tests := []struct {
+		name string
+		c    *Component
+		args args
+		want string
+	}{
+		{"emptyattr", &Component{}, args{"/other.model"}, "/other.model"},
+		{"emptypath", &Component{ExtensionAttr: ExtensionAttr{&fakeAttr{}}}, args{"/other.model"}, "/other.model"},
+		{"emptyattr", &Component{ExtensionAttr: ExtensionAttr{&fakeAttr{Value: "/3dmodel.model"}}}, args{"/other.model"}, "/3dmodel.model"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.c.ObjectPath(tt.args.defaultPath); got != tt.want {
+				t.Errorf("Component.ObjectPath() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestItem_ObjectPath(t *testing.T) {
+	type args struct {
+		defaultPath string
+	}
+	tests := []struct {
+		name string
+		b    *Item
+		args args
+		want string
+	}{
+		{"emptyattr", &Item{}, args{"/other.model"}, "/other.model"},
+		{"emptypath", &Item{ExtensionAttr: ExtensionAttr{&fakeAttr{}}}, args{"/other.model"}, "/other.model"},
+		{"emptyattr", &Item{ExtensionAttr: ExtensionAttr{&fakeAttr{Value: "/3dmodel.model"}}}, args{"/other.model"}, "/3dmodel.model"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.b.ObjectPath(tt.args.defaultPath); got != tt.want {
+				t.Errorf("Item.ObjectPath() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
