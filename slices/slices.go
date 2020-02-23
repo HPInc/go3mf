@@ -82,20 +82,6 @@ type SliceStackInfo struct {
 	SliceResolution SliceResolution
 }
 
-// ObjectAttr extracts the SliceStackInfo attributes from an Object.
-// If it does not exist a new one is added.
-func ObjectAttr(o *go3mf.Object) *SliceStackInfo {
-	if attr, ok := o.ExtensionAttr[ExtensionName]; ok {
-		return attr.(*SliceStackInfo)
-	}
-	if o.ExtensionAttr == nil {
-		o.ExtensionAttr = make(go3mf.ExtensionAttr)
-	}
-	attr := &SliceStackInfo{}
-	o.ExtensionAttr[ExtensionName] = attr
-	return attr
-}
-
 const (
 	attrSliceStack = "slicestack"
 	attrID         = "id"

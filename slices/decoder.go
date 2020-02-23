@@ -35,12 +35,23 @@ func objectAttrDecoder(scanner *go3mf.Scanner, o *go3mf.Object, a xml.Attr) {
 		if err != nil {
 			scanner.InvalidAttr(a.Name.Local, a.Value, true)
 		}
-		ObjectAttr(o).SliceStackID = uint32(val)
+
+		var ext *SliceStackInfo
+		if o.ExtensionAttr.Get(&ext) {
+			ext.SliceStackID = uint32(val)
+		} else {
+			o.ExtensionAttr = append(o.ExtensionAttr, &SliceStackInfo{SliceStackID: uint32(val)})
+		}
 	case attrMeshRes:
-		var ok bool
-		ObjectAttr(o).SliceResolution, ok = newSliceResolution(a.Value)
+		res, ok := newSliceResolution(a.Value)
 		if !ok {
 			scanner.InvalidAttr(attrMeshRes, a.Value, false)
+		}
+		var ext *SliceStackInfo
+		if o.ExtensionAttr.Get(&ext) {
+			ext.SliceResolution = res
+		} else {
+			o.ExtensionAttr = append(o.ExtensionAttr, &SliceStackInfo{SliceResolution: res})
 		}
 	}
 }

@@ -22,62 +22,31 @@ type PathUUID struct {
 	Path string
 }
 
-func extractUUID(ext go3mf.ExtensionAttr) *UUID {
-	if attr, ok := ext[ExtensionName]; ok {
-		return attr.(*UUID)
-	}
-	attr := UUID("")
-	pa := &attr
-	ext[ExtensionName] = pa
-	return pa
-}
-
-func extractPathUUID(ext go3mf.ExtensionAttr) *PathUUID {
-	if attr, ok := ext[ExtensionName]; ok {
-		return attr.(*PathUUID)
-	}
-	attr := &PathUUID{}
-	ext[ExtensionName] = attr
-	return attr
-}
-
-// BuildAttr extracts the UUID attributes from a Build.
-// Returns an empty UUID if it does not exist, never nil.
-func BuildAttr(b *go3mf.Build) *UUID {
-	if b.ExtensionAttr == nil {
-		b.ExtensionAttr = make(go3mf.ExtensionAttr)
-	}
-	return extractUUID(b.ExtensionAttr)
-}
-
-// ItemAttr extracts the Path and UUID attributes from an Item.
-// Returns an empty PathUUID if it does not exist, never nil.
-func ItemAttr(item *go3mf.Item) *PathUUID {
-	if item.ExtensionAttr == nil {
-		item.ExtensionAttr = make(go3mf.ExtensionAttr)
-	}
-	return extractPathUUID(item.ExtensionAttr)
-}
-
-// ComponentAttr extracts the Pathn and UUID attributes from a Component.
-// Returns an empty PathUUID if it does not exist, never nil.
-func ComponentAttr(c *go3mf.Component) *PathUUID {
-	if c.ExtensionAttr == nil {
-		c.ExtensionAttr = make(go3mf.ExtensionAttr)
-	}
-	return extractPathUUID(c.ExtensionAttr)
-}
-
-// ObjectAttr extracts the UUID attributes from a Object.
-// Returns an empty UUID if it does not exist, never nil.
-func ObjectAttr(o *go3mf.Object) *UUID {
-	if o.ExtensionAttr == nil {
-		o.ExtensionAttr = make(go3mf.ExtensionAttr)
-	}
-	return extractUUID(o.ExtensionAttr)
-}
-
 const (
 	attrProdUUID = "UUID"
 	attrPath     = "path"
 )
+
+// PathObject returns the Path extension attributes if exists and is not empty.
+// Else it returns defaultValue.
+func PathObject(o *go3mf.Object, defaultValue string) string {
+	var ext *PathUUID
+	if o.ExtensionAttr.Get(&ext) {
+		if ext.Path != "" {
+			return ext.Path
+		}
+	}
+	return defaultValue
+}
+
+// PathObject returns the Path extension attributes if exists and is not empty.
+// Else it returns defaultValue.
+func PathItem(o *go3mf.Item, defaultValue string) string {
+	var ext *PathUUID
+	if o.ExtensionAttr.Get(&ext) {
+		if ext.Path != "" {
+			return ext.Path
+		}
+	}
+	return defaultValue
+}

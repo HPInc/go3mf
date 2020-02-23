@@ -50,30 +50,15 @@ func nodeDecoder(_ interface{}, nodeName string) NodeDecoder {
 func decodeAttribute(s *Scanner, parentNode interface{}, attr xml.Attr) {
 	switch t := parentNode.(type) {
 	case *Object:
-		if t.ExtensionAttr == nil {
-			t.ExtensionAttr = make(ExtensionAttr)
-		}
-		t.ExtensionAttr[fakeExtension] = &fakeAttr{attr.Value}
+		t.ExtensionAttr = append(t.ExtensionAttr, &fakeAttr{attr.Value})
 	case *Build:
-		if t.ExtensionAttr == nil {
-			t.ExtensionAttr = make(ExtensionAttr)
-		}
-		t.ExtensionAttr[fakeExtension] = &fakeAttr{attr.Value}
+		t.ExtensionAttr = append(t.ExtensionAttr, &fakeAttr{attr.Value})
 	case *Model:
-		if t.ExtensionAttr == nil {
-			t.ExtensionAttr = make(ExtensionAttr)
-		}
-		t.ExtensionAttr[fakeExtension] = &fakeAttr{attr.Value}
+		t.ExtensionAttr = append(t.ExtensionAttr, &fakeAttr{attr.Value})
 	case *Item:
-		if t.ExtensionAttr == nil {
-			t.ExtensionAttr = make(ExtensionAttr)
-		}
-		t.ExtensionAttr[fakeExtension] = &fakeAttr{attr.Value}
+		t.ExtensionAttr = append(t.ExtensionAttr, &fakeAttr{attr.Value})
 	case *Component:
-		if t.ExtensionAttr == nil {
-			t.ExtensionAttr = make(ExtensionAttr)
-		}
-		t.ExtensionAttr[fakeExtension] = &fakeAttr{attr.Value}
+		t.ExtensionAttr = append(t.ExtensionAttr, &fakeAttr{attr.Value})
 	}
 }
 
