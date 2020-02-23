@@ -47,7 +47,7 @@ func TestMarshalModel(t *testing.T) {
 		Units: UnitMillimeter, Language: "en-US", Path: "/3D/3dmodel.model", Thumbnail: "/thumbnail.png",
 		Namespaces:         []xml.Name{{Space: fakeExtension, Local: "qm"}},
 		RequiredExtensions: []string{fakeExtension},
-		ExtensionAttr:      ExtensionAttr{fakeExtension: &fakeAttr{Value: "model_fake"}},
+		ExtensionAttr:      ExtensionAttr{&fakeAttr{Value: "model_fake"}},
 		Resources: Resources{
 			Assets: []Asset{
 				&BaseMaterialsResource{ID: 5, Materials: []BaseMaterial{
@@ -57,7 +57,7 @@ func TestMarshalModel(t *testing.T) {
 			Objects: []*Object{
 				{
 					ID: 8, Name: "Box 1", PartNumber: "11111111-1111-1111-1111-111111111111", Thumbnail: "/a.png",
-					ExtensionAttr: ExtensionAttr{fakeExtension: &fakeAttr{Value: "object_fake"}},
+					ExtensionAttr: ExtensionAttr{&fakeAttr{Value: "object_fake"}},
 					DefaultPID:    1, DefaultPIndex: 1, ObjectType: ObjectTypeModel, Mesh: &Mesh{
 						Nodes: []Point3D{
 							{0, 0, 0}, {100, 0, 0}, {100, 100, 0},
@@ -82,18 +82,18 @@ func TestMarshalModel(t *testing.T) {
 					ID: 20, ObjectType: ObjectTypeSupport,
 					Metadata: []Metadata{{Name: "qm:CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: "qm:CustomMetadata4", Type: "xs:boolean", Value: "2"}},
 					Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1},
-						ExtensionAttr: ExtensionAttr{fakeExtension: &fakeAttr{Value: "component_fake"}}}},
+						ExtensionAttr: ExtensionAttr{&fakeAttr{Value: "component_fake"}}}},
 				},
 			},
 		},
 		Build: Build{
-			ExtensionAttr: ExtensionAttr{fakeExtension: &fakeAttr{Value: "build_fake"}},
+			ExtensionAttr: ExtensionAttr{&fakeAttr{Value: "build_fake"}},
 			Items: []*Item{
 				{
 					ObjectID: 20, PartNumber: "bob", Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
 					Metadata: []Metadata{{Name: "qm:CustomMetadata3", Type: "xs:boolean", Value: "1"}},
 				},
-				{ObjectID: 21, ExtensionAttr: ExtensionAttr{fakeExtension: &fakeAttr{Value: "item_fake"}}},
+				{ObjectID: 21, ExtensionAttr: ExtensionAttr{&fakeAttr{Value: "item_fake"}}},
 			}}, Metadata: []Metadata{
 			{Name: "Application", Value: "go3mf app"},
 			{Name: "qm:CustomMetadata1", Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},

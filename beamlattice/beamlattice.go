@@ -1,7 +1,5 @@
 package beamlattice
 
-import "github.com/qmuntal/go3mf"
-
 // ExtensionName is the canonical name of this extension.
 const ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/beamlattice/2017/02"
 
@@ -95,20 +93,6 @@ type Beam struct {
 	NodeIndices [2]uint32  // Indices of the two nodes that defines the beam.
 	Radius      [2]float32 // Radius of both ends of the beam.
 	CapMode     [2]CapMode // Capping mode.
-}
-
-// MeshBeamLattice extracts the BeamLattice attributes from an Mesh.
-// If it does not exist a new one is added.
-func MeshBeamLattice(o *go3mf.Mesh) *BeamLattice {
-	if attr, ok := o.Extension[ExtensionName]; ok {
-		return attr.(*BeamLattice)
-	}
-	if o.Extension == nil {
-		o.Extension = make(go3mf.Extension)
-	}
-	attr := &BeamLattice{}
-	o.Extension[ExtensionName] = attr
-	return attr
 }
 
 const (

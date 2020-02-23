@@ -22,7 +22,7 @@ func decodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
 			if uuid, err = NewUUID(attr.Value); err != nil {
 				s.InvalidAttr(attr.Name.Local, attr.Value, true)
 			}
-			*BuildAttr(t) = uuid
+			t.ExtensionAttr = append(t.ExtensionAttr, &uuid)
 		}
 	case *go3mf.Item:
 		switch attr.Name.Local {
@@ -30,16 +30,26 @@ func decodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
 			if uuid, err = NewUUID(attr.Value); err != nil {
 				s.InvalidAttr(attr.Name.Local, attr.Value, true)
 			}
-			ItemAttr(t).UUID = uuid
+			var ext *PathUUID
+			if t.ExtensionAttr.Get(&ext) {
+				ext.UUID = uuid
+			} else {
+				t.ExtensionAttr = append(t.ExtensionAttr, &PathUUID{UUID: uuid})
+			}
 		case attrPath:
-			ItemAttr(t).Path = attr.Value
+			var ext *PathUUID
+			if t.ExtensionAttr.Get(&ext) {
+				ext.Path = attr.Value
+			} else {
+				t.ExtensionAttr = append(t.ExtensionAttr, &PathUUID{Path: attr.Value})
+			}
 		}
 	case *go3mf.Object:
 		if attr.Name.Local == attrProdUUID {
 			if uuid, err = NewUUID(attr.Value); err != nil {
 				s.InvalidAttr(attr.Name.Local, attr.Value, true)
 			}
-			*ObjectAttr(t) = uuid
+			t.ExtensionAttr = append(t.ExtensionAttr, &uuid)
 		}
 	case *go3mf.Component:
 		switch attr.Name.Local {
@@ -47,9 +57,19 @@ func decodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
 			if uuid, err = NewUUID(attr.Value); err != nil {
 				s.InvalidAttr(attr.Name.Local, attr.Value, true)
 			}
-			ComponentAttr(t).UUID = uuid
+			var ext *PathUUID
+			if t.ExtensionAttr.Get(&ext) {
+				ext.UUID = uuid
+			} else {
+				t.ExtensionAttr = append(t.ExtensionAttr, &PathUUID{UUID: uuid})
+			}
 		case attrPath:
-			ComponentAttr(t).Path = attr.Value
+			var ext *PathUUID
+			if t.ExtensionAttr.Get(&ext) {
+				ext.Path = attr.Value
+			} else {
+				t.ExtensionAttr = append(t.ExtensionAttr, &PathUUID{Path: attr.Value})
+			}
 		}
 	}
 }

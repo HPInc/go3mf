@@ -9,15 +9,13 @@ import (
 )
 
 func TestMarshalModel(t *testing.T) {
+	beamLattice := &BeamLattice{ClipMode: ClipInside, ClippingMeshID: 8, RepresentationMeshID: 8}
 	meshLattice := &go3mf.Object{
 		ID: 15, Name: "Box",
 		Mesh: &go3mf.Mesh{
-			Faces: []go3mf.Face{},
-			Extension: go3mf.Extension{
-				ExtensionName: &BeamLattice{ClipMode: ClipInside, ClippingMeshID: 8, RepresentationMeshID: 8},
-			}},
+			Faces:     []go3mf.Face{},
+			Extension: go3mf.Extension{beamLattice}},
 	}
-	beamLattice := MeshBeamLattice(meshLattice.Mesh)
 	beamLattice.MinLength = 0.0001
 	beamLattice.CapMode = CapModeHemisphere
 	beamLattice.DefaultRadius = 1

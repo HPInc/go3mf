@@ -452,3 +452,55 @@ func TestNewComponentsObject(t *testing.T) {
 		})
 	}
 }
+
+func TestExtensionAttr_Get(t *testing.T) {
+	tests := []struct {
+		name   string
+		e      ExtensionAttr
+		want   interface{}
+		wantOK bool
+	}{
+		{"nil", nil, new(fakeAttr), false},
+		{"empty", ExtensionAttr{}, new(fakeAttr), false},
+		{"non-exist", ExtensionAttr{nil}, new(fakeAttr), false},
+		{"exist", ExtensionAttr{&fakeAttr{Value: "1"}}, &fakeAttr{Value: "1"}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			target := new(fakeAttr)
+			if got := tt.e.Get(&target); got != tt.wantOK {
+				t.Errorf("ExtensionAttr.Get() = %v, wantOK %v", got, tt.wantOK)
+				return
+			}
+			if !reflect.DeepEqual(target, tt.want) {
+				t.Errorf("ExtensionAttr.Get() = %v, want %v", target, tt.want)
+			}
+		})
+	}
+}
+
+func TestExtension_Get(t *testing.T) {
+	tests := []struct {
+		name   string
+		e      Extension
+		want   interface{}
+		wantOK bool
+	}{
+		{"nil", nil, new(fakeAsset), false},
+		{"empty", Extension{}, new(fakeAsset), false},
+		{"non-exist", Extension{nil}, new(fakeAsset), false},
+		{"exist", Extension{&fakeAsset{ID: 1}}, &fakeAsset{ID: 1}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			target := new(fakeAsset)
+			if got := tt.e.Get(&target); got != tt.wantOK {
+				t.Errorf("Extension.Get() = %v, wantOK %v", got, tt.wantOK)
+				return
+			}
+			if !reflect.DeepEqual(target, tt.want) {
+				t.Errorf("Extension.Get() = %v, want %v", target, tt.want)
+			}
+		})
+	}
+}
