@@ -4,12 +4,49 @@ import (
 	"encoding/xml"
 	"image/color"
 	"io"
+	"reflect"
 	"sort"
 )
 
 // ExtensionAttr is an extension point containing <anyAttribute> information.
 // The key should be the extension namespace.
-type ExtensionAttr map[string]MarshalerAttr
+type ExtensionAttr []MarshalerAttr
+
+var marshalerAttrType = reflect.TypeOf((*MarshalerAttr)(nil)).Elem()
+
+// Get finds the first MarshalerAttr that matches target, and if so, sets
+// target to that extension value and returns true.
+
+// A Marshallerattr matches target if the marshaller's concrete value is assignable to the value
+// pointed to by target.
+
+// Get will panic if target is not a non-nil pointer to either a type that implements
+// MarshallerAttr, or to any interface type.
+func (e ExtensionAttr) Get(target interface{}) bool {
+	if e == nil || len(e) == 0 {
+		return false
+	}
+	if target == nil {
+		panic("go3mf: target cannot be nil")
+	}
+
+	val := reflect.ValueOf(target)
+	typ := val.Type()
+	if typ.Kind() != reflect.Ptr || val.IsNil() {
+		panic("go3mf: target must be a non-nil pointer")
+	}
+	if el := typ.Elem(); el.Kind() != reflect.Interface && !el.Implements(marshalerAttrType) {
+		panic("go3mf: *target must be interface or implement MarshalerAttr")
+	}
+	targetType := typ.Elem()
+	for _, v := range e {
+		if v != nil && reflect.TypeOf(v).AssignableTo(targetType) {
+			val.Elem().Set(reflect.ValueOf(v))
+			return true
+		}
+	}
+	return false
+}
 
 func (e ExtensionAttr) encode(x *XMLEncoder, start *xml.StartElement) {
 	for _, ext := range e {
@@ -21,7 +58,43 @@ func (e ExtensionAttr) encode(x *XMLEncoder, start *xml.StartElement) {
 
 // Extension is an extension point containing <any> information.
 // The key should be the extension namespace.
-type Extension map[string]Marshaler
+type Extension []Marshaler
+
+var marshalerType = reflect.TypeOf((*Marshaler)(nil)).Elem()
+
+// Get finds the first Marshaller that matches target, and if so, sets
+// target to that extension value and returns true.
+
+// A Marshaller matches target if the marshaller's concrete value is assignable to the value
+// pointed to by target.
+
+// Get will panic if target is not a non-nil pointer to either a type that implements
+// Marshaller, or to any interface type.
+func (e Extension) Get(target interface{}) bool {
+	if e == nil || len(e) == 0 {
+		return false
+	}
+	if target == nil {
+		panic("go3mf: target cannot be nil")
+	}
+
+	val := reflect.ValueOf(target)
+	typ := val.Type()
+	if typ.Kind() != reflect.Ptr || val.IsNil() {
+		panic("go3mf: target must be a non-nil pointer")
+	}
+	if el := typ.Elem(); el.Kind() != reflect.Interface && !el.Implements(marshalerType) {
+		panic("go3mf: *target must be interface or implement Marshaler")
+	}
+	targetType := typ.Elem()
+	for _, v := range e {
+		if v != nil && reflect.TypeOf(v).AssignableTo(targetType) {
+			val.Elem().Set(reflect.ValueOf(v))
+			return true
+		}
+	}
+	return false
+}
 
 func (e Extension) encode(x *XMLEncoder) error {
 	for _, ext := range e {
