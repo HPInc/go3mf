@@ -38,12 +38,36 @@ func TestValidate(t *testing.T) {
 			specerr.ErrRequiredExt,
 		}},
 		{"metadata", args{&Model{Namespaces: []xml.Name{{Space: "fake", Local: "f"}}, Metadata: []Metadata{
-			{Name: "fake:issue"}, {Name: "f:issue"}, {Name: "fake:issue"}, {Name: "issue"},
+			{Name: "fake:issue"}, {Name: "f:issue"}, {Name: "fake:issue"}, {Name: "issue"}, {},
 		}}}, []error{
 			&specerr.MetadataError{Index: 1, Err: specerr.ErrMetadataNamespace},
 			&specerr.MetadataError{Index: 2, Err: specerr.ErrMetadataDuplicated},
 			&specerr.MetadataError{Index: 3, Err: specerr.ErrMetadataName},
+			&specerr.MetadataError{Index: 4, Err: &specerr.MissingFieldError{Name: attrName}},
 		}},
+		{"build", args{&Model{Resources: Resources{Assets: []Asset{&BaseMaterialsResource{ID: 1, Materials: []BaseMaterial{{Name: "a", Color: color.RGBA{}}}}}, Objects: []*Object{
+			{ID: 2, ObjectType: ObjectTypeOther, Mesh: &Mesh{Nodes: []Point3D{{}, {}, {}, {}}, Faces: []Face{
+				{NodeIndices: [3]uint32{0, 1, 2}}, {NodeIndices: [3]uint32{0, 3, 1}}, {NodeIndices: [3]uint32{0, 2, 3}}, {NodeIndices: [3]uint32{1, 3, 2}},
+			}}}}}, Build: Build{Items: []*Item{
+			{},
+			{ObjectID: 2},
+			{ObjectID: 100},
+			{ObjectID: 1, Metadata: []Metadata{{Name: "issue"}}},
+		}}}}, []error{
+			&specerr.ItemError{Index: 0, Err: &specerr.MissingFieldError{Name: attrObjectID}},
+			&specerr.ItemError{Index: 1, Err: specerr.ErrOtherItem},
+			&specerr.ItemError{Index: 2, Err: specerr.ErrMissingResource},
+			&specerr.ItemError{Index: 3, Err: specerr.ErrNonObject},
+			&specerr.ItemError{Index: 3, Err: &specerr.MetadataError{Index: 0, Err: specerr.ErrMetadataName}},
+		}},
+		{"childs", args{&Model{Childs: map[string]*ChildModel{path: &ChildModel{}, "/a.model": &ChildModel{
+			Relationships: make([]Relationship, 1), Resources: Resources{Objects: []*Object{{}}}}}}},
+			[]error{
+				specerr.ErrOPCDuplicatedModelName,
+				&specerr.RelationshipError{Path: "/a.model", Index: 0, Err: specerr.ErrOPCPartName},
+				&specerr.ObjectError{Path: "/a.model", Index: 0, Err: specerr.ErrMissingID},
+				&specerr.ObjectError{Path: "/a.model", Index: 0, Err: specerr.ErrInvalidObject},
+			}},
 		{"assets", args{&Model{Resources: Resources{Assets: []Asset{
 			&BaseMaterialsResource{Materials: []BaseMaterial{{Color: color.RGBA{}}}},
 			&BaseMaterialsResource{ID: 1, Materials: []BaseMaterial{{Name: "a", Color: color.RGBA{}}}},

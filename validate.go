@@ -39,15 +39,12 @@ func (v *validator) Validate() {
 	if rootPath == "" {
 		rootPath = DefaultPartModelName
 	}
-	names := map[string]struct{}{
-		rootPath: struct{}{},
-	}
 	for path, c := range v.m.Childs {
-		if _, ok := names[path]; ok {
+		if path == rootPath {
 			v.AddWarning(specerr.ErrOPCDuplicatedModelName)
+		} else {
+			v.validateRelationship(c.Relationships, path)
 		}
-		names[path] = struct{}{}
-		v.validateRelationship(c.Relationships, path)
 	}
 	v.validateRelationship(v.m.Relationships, rootPath)
 	v.AddWarning(v.checkMetadadata(v.m.Metadata)...)
@@ -75,7 +72,7 @@ func (v *validator) validateBuild(rootPath string) {
 		} else {
 			v.AddWarning(specerr.NewItem(i, specerr.ErrMissingResource))
 		}
-		for _, err := range v.checkMetadadata(v.m.Metadata) {
+		for _, err := range v.checkMetadadata(item.Metadata) {
 			v.AddWarning(specerr.NewItem(i, err))
 		}
 	}
@@ -89,6 +86,10 @@ func (v *validator) checkMetadadata(md []Metadata) []error {
 	var errs []error
 	names := make(map[string]struct{})
 	for i, m := range md {
+		if m.Name == "" {
+			errs = append(errs, &specerr.MetadataError{Index: i, Err: &specerr.MissingFieldError{Name: attrName}})
+			continue
+		}
 		in := strings.Index(m.Name, ":")
 		if in < 0 {
 			nm := strings.ToLower(m.Name)
