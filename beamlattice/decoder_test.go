@@ -114,13 +114,8 @@ func TestDecode(t *testing.T) {
 
 func TestDecode_warns(t *testing.T) {
 	want := []error{
-		go3mf.MissingPropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3D/3dmodel.model", Name: "radius"},
-		go3mf.MissingPropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3D/3dmodel.model", Name: "minlength"},
 		go3mf.ParsePropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3D/3dmodel.model", Name: "cap", Value: "invalid", Type: go3mf.PropertyOptional},
 		go3mf.ParsePropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3D/3dmodel.model", Name: "clippingmode", Value: "invalid2", Type: go3mf.PropertyOptional},
-		go3mf.MissingPropertyError{ResourceID: 15, Element: "beam", ModelPath: "/3D/3dmodel.model", Name: "v1"},
-		go3mf.MissingPropertyError{ResourceID: 15, Element: "beam", ModelPath: "/3D/3dmodel.model", Name: "v2"},
-		go3mf.MissingPropertyError{ResourceID: 15, Element: "ref", ModelPath: "/3D/3dmodel.model", Name: "index"},
 		go3mf.ParsePropertyError{ResourceID: 15, Element: "ref", Name: "index", Value: "a", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
 	}
 	got := new(go3mf.Model)

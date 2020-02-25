@@ -117,9 +117,6 @@ func (d *sliceRefDecoder) Start(attrs []xml.Attr) {
 			path = a.Value
 		}
 	}
-	if sliceStackID == 0 {
-		d.Scanner.MissingAttr(attrSliceRefID)
-	}
 	d.resource.Refs = append(d.resource.Refs, SliceRef{SliceStackID: sliceStackID, Path: path})
 }
 
@@ -148,10 +145,8 @@ func (d *sliceDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 func (d *sliceDecoder) Start(attrs []xml.Attr) {
 	d.polygonDecoder.slice = &d.slice
 	d.polygonVerticesDecoder.slice = &d.slice
-	var hasTopZ bool
 	for _, a := range attrs {
 		if a.Name.Local == attrZTop {
-			hasTopZ = true
 			val, err := strconv.ParseFloat(a.Value, 32)
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
@@ -159,9 +154,6 @@ func (d *sliceDecoder) Start(attrs []xml.Attr) {
 			d.slice.TopZ = float32(val)
 			break
 		}
-	}
-	if !hasTopZ {
-		d.Scanner.MissingAttr(attrZTop)
 	}
 }
 

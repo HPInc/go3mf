@@ -26,20 +26,6 @@ func (d *baseDecoder) Child(xml.Name) NodeDecoder { return nil }
 func (d *baseDecoder) End()                       {}
 func (d *baseDecoder) SetScanner(s *Scanner)      { d.Scanner = s }
 
-// A MissingPropertyError represents a missing required property error.
-// If MissingPropertyError is 0 means that the error took place while parsing the resource property before the ID appeared.
-// When Element is 'item' the ResourceID is the objectID property of a build item.
-type MissingPropertyError struct {
-	ResourceID uint32
-	ModelPath  string
-	Element    string
-	Name       string
-}
-
-func (e MissingPropertyError) Error() string {
-	return fmt.Sprintf("go3mf: missing required property '%s' of element '%s' in resource '%s:%d'", e.Name, e.Element, e.ModelPath, e.ResourceID)
-}
-
 // PropertyType defines the possible property types.
 type PropertyType string
 
@@ -94,13 +80,13 @@ func (s *Scanner) namespace(local string) (string, bool) {
 // AddAsset adds a new resource to the resource cache.
 func (s *Scanner) AddAsset(r Asset) {
 	s.Resources.Assets = append(s.Resources.Assets, r)
-	s.closeResource()
+	s.ResourceID = 0
 }
 
 // AddObject adds a new resource to the resource cache.
 func (s *Scanner) AddObject(r *Object) {
 	s.Resources.Objects = append(s.Resources.Objects, r)
-	s.closeResource()
+	s.ResourceID = 0
 }
 
 // InvalidAttr adds the error to the warnings.
@@ -113,26 +99,11 @@ func (s *Scanner) InvalidAttr(attr string, val string, required bool) {
 	s.strictError(ParsePropertyError{ResourceID: s.ResourceID, Element: s.Element, Name: attr, Value: val, ModelPath: s.ModelPath, Type: tp})
 }
 
-// MissingAttr adds the error to the warnings.
-func (s *Scanner) MissingAttr(attr string) {
-	s.strictError(MissingPropertyError{ResourceID: s.ResourceID, Element: s.Element, Name: attr, ModelPath: s.ModelPath})
-}
-
 func (s *Scanner) strictError(err error) {
 	s.Warnings = append(s.Warnings, err)
 	if s.Strict {
 		s.Err = err
 	}
-}
-
-// closeResource closes the current resource.
-// If there is no resource to close MissingPropertyError is added to the warnings.
-func (s *Scanner) closeResource() {
-	if s.ResourceID == 0 {
-		s.MissingAttr(attrID)
-		return
-	}
-	s.ResourceID = 0
 }
 
 // ParseRGBA parses s as a RGBA color.

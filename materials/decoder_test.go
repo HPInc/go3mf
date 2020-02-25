@@ -63,20 +63,13 @@ func TestDecode(t *testing.T) {
 func TestDecode_warns(t *testing.T) {
 	want := []error{
 		go3mf.ParsePropertyError{ResourceID: 0, Element: "texture2d", Name: "id", Value: "b", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
-		go3mf.MissingPropertyError{ResourceID: 0, Element: "texture2d", ModelPath: "/3D/3dmodel.model", Name: "path"},
-		go3mf.MissingPropertyError{ResourceID: 0, Element: "texture2d", ModelPath: "/3D/3dmodel.model", Name: "id"},
 		go3mf.ParsePropertyError{ResourceID: 1, Element: "color", Name: "color", Value: "#FFFFF", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
 		go3mf.ParsePropertyError{ResourceID: 2, Element: "texture2dgroup", Name: "texid", Value: "a", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
 		go3mf.ParsePropertyError{ResourceID: 2, Element: "tex2coord", Name: "u", Value: "b", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
 		go3mf.ParsePropertyError{ResourceID: 2, Element: "tex2coord", Name: "v", Value: "c", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
 		go3mf.ParsePropertyError{ResourceID: 4, Element: "compositematerials", Name: "matid", Value: "a", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
-		go3mf.MissingPropertyError{ResourceID: 4, Element: "compositematerials", ModelPath: "/3D/3dmodel.model", Name: "matid"},
-		go3mf.MissingPropertyError{ResourceID: 4, Element: "compositematerials", ModelPath: "/3D/3dmodel.model", Name: "matindices"},
-		go3mf.MissingPropertyError{ResourceID: 4, Element: "composite", ModelPath: "/3D/3dmodel.model", Name: "values"},
 		go3mf.ParsePropertyError{ResourceID: 4, Element: "composite", Name: "values", Value: "a", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
 		go3mf.ParsePropertyError{ResourceID: 9, Element: "multiproperties", ModelPath: "/3D/3dmodel.model", Name: "pids", Value: "a", Type: go3mf.PropertyRequired},
-		go3mf.MissingPropertyError{ResourceID: 9, Element: "multi", ModelPath: "/3D/3dmodel.model", Name: "pindices"},
-		go3mf.MissingPropertyError{ResourceID: 19, Element: "multiproperties", ModelPath: "/3D/3dmodel.model", Name: "pids"},
 	}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"

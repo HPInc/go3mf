@@ -177,9 +177,6 @@ func (d *buildItemDecoder) Start(attrs []xml.Attr) {
 			ext.DecodeAttribute(d.Scanner, &d.item, a)
 		}
 	}
-	if d.item.ObjectID == 0 {
-		d.Scanner.MissingAttr(attrObjectID)
-	}
 	return
 }
 
@@ -259,8 +256,7 @@ type baseMaterialDecoder struct {
 
 func (d *baseMaterialDecoder) Start(attrs []xml.Attr) {
 	var name string
-	var withColor bool
-	baseColor := color.RGBA{}
+	var baseColor color.RGBA
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrName:
@@ -268,17 +264,10 @@ func (d *baseMaterialDecoder) Start(attrs []xml.Attr) {
 		case attrDisplayColor:
 			var err error
 			baseColor, err = ParseRGBA(a.Value)
-			withColor = true
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
 			}
 		}
-	}
-	if name == "" {
-		d.Scanner.MissingAttr(attrName)
-	}
-	if !withColor {
-		d.Scanner.MissingAttr(attrDisplayColor)
 	}
 	d.resource.Materials = append(d.resource.Materials, BaseMaterial{Name: name, Color: baseColor})
 	return
@@ -540,9 +529,6 @@ func (d *componentDecoder) Start(attrs []xml.Attr) {
 		} else if ext, ok := d.Scanner.extensionDecoder[a.Name.Space]; ok {
 			ext.DecodeAttribute(d.Scanner, &component, a)
 		}
-	}
-	if component.ObjectID == 0 {
-		d.Scanner.MissingAttr(attrObjectID)
 	}
 	d.resource.Components = append(d.resource.Components, &component)
 }
