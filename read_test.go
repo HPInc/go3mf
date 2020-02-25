@@ -33,6 +33,8 @@ type fakeAttr struct {
 	Value string
 }
 
+func (f *fakeAttr) ObjectPath() string { return f.Value }
+
 type fakeAssetDecoder struct {
 	baseDecoder
 }

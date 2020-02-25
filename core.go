@@ -382,30 +382,6 @@ func NewComponentsObject() *Object {
 	return &Object{Components: make([]*Component, 0)}
 }
 
-// IsValid checks if the mesh resource are valid.
-func (o *Object) IsValid() bool {
-	if o.Mesh == nil && o.Components == nil {
-		return false
-	} else if o.Mesh != nil && o.Components != nil {
-		return false
-	}
-	var isValid bool
-	if o.Mesh != nil {
-		switch o.ObjectType {
-		case ObjectTypeModel:
-			isValid = o.Mesh.IsManifoldAndOriented()
-		case ObjectTypeSolidSupport:
-			isValid = o.Mesh.IsManifoldAndOriented()
-			//case ObjectTypeSupport:
-			//	return len(c.Mesh.Beams) == 0
-			//case ObjectTypeSurface:
-			//	return len(c.Mesh.Beams) == 0
-		}
-	}
-
-	return isValid
-}
-
 // A Component is an in memory representation of the 3MF component.
 type Component struct {
 	ObjectID      uint32
@@ -449,65 +425,6 @@ type Mesh struct {
 	Nodes         []Point3D
 	Faces         []Face
 	Extension     Extension
-}
-
-// CheckSanity checks if the mesh is well formated.
-func (m *Mesh) CheckSanity() bool {
-	return m.checkFacesSanity()
-}
-
-// IsManifoldAndOriented returns true if the mesh is manifold and oriented.
-func (m *Mesh) IsManifoldAndOriented() bool {
-	if len(m.Nodes) < 3 || len(m.Faces) < 3 || !m.CheckSanity() {
-		return false
-	}
-
-	var edgeCounter uint32
-	pairMatching := newPairMatch()
-	for _, face := range m.Faces {
-		for j := uint32(0); j < 3; j++ {
-			n1, n2 := face.NodeIndices[j], face.NodeIndices[(j+1)%3]
-			if _, ok := pairMatching.CheckMatch(n1, n2); !ok {
-				pairMatching.AddMatch(n1, n2, edgeCounter)
-				edgeCounter++
-			}
-		}
-	}
-
-	positive, negative := make([]uint32, edgeCounter), make([]uint32, edgeCounter)
-	for _, face := range m.Faces {
-		for j := uint32(0); j < 3; j++ {
-			n1, n2 := face.NodeIndices[j], face.NodeIndices[(j+1)%3]
-			edgeIndex, _ := pairMatching.CheckMatch(n1, n2)
-			if n1 <= n2 {
-				positive[edgeIndex]++
-			} else {
-				negative[edgeIndex]++
-			}
-		}
-	}
-
-	for i := uint32(0); i < edgeCounter; i++ {
-		if positive[i] != 1 || negative[i] != 1 {
-			return false
-		}
-	}
-
-	return true
-}
-
-func (m *Mesh) checkFacesSanity() bool {
-	nodeCount := uint32(len(m.Nodes))
-	for _, face := range m.Faces {
-		i0, i1, i2 := face.NodeIndices[0], face.NodeIndices[1], face.NodeIndices[2]
-		if i0 == i1 || i0 == i2 || i1 == i2 {
-			return false
-		}
-		if i0 >= nodeCount || i1 >= nodeCount || i2 >= nodeCount {
-			return false
-		}
-	}
-	return true
 }
 
 // MeshBuilder is a helper that creates mesh following a configurable criteria.

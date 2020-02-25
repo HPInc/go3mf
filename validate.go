@@ -1,7 +1,6 @@
 package go3mf
 
 import (
-	"errors"
 	"sort"
 	"strings"
 
@@ -15,25 +14,27 @@ type validatorResource struct {
 
 type validator struct {
 	m        *Model
-	strict   bool
 	warnings []error
-	ids      map[validatorResource]struct{}
+	ids      map[validatorResource]interface{}
 }
 
-func Validate(model *Model, strict bool) []error {
-	v := validator{m: model, strict: strict}
+func Validate(model *Model) []error {
+	v := validator{m: model}
 	v.Validate()
 	return v.warnings
 }
 
-func (v *validator) AddWarning(err error) {
-	v.warnings = append(v.warnings, err)
+func (v *validator) AddWarning(err ...error) {
+	v.warnings = append(v.warnings, err...)
 }
 
 // Validate checks that the model is conformant with the 3MF spec.
 func (v *validator) Validate() {
-	v.ids = make(map[validatorResource]struct{})
+	v.ids = make(map[validatorResource]interface{})
 	v.validateRelationship(v.m.RootRelationships, "")
+
+	v.validateNamespaces()
+
 	rootPath := v.m.Path
 	if rootPath == "" {
 		rootPath = DefaultPartModelName
@@ -49,27 +50,50 @@ func (v *validator) Validate() {
 		v.validateRelationship(c.Relationships, path)
 	}
 	v.validateRelationship(v.m.Relationships, rootPath)
-
-	v.validateNamespaces()
+	v.AddWarning(v.checkMetadadata(v.m.Metadata)...)
 
 	for path, c := range v.m.Childs {
 		v.validateResources(&c.Resources, path)
 	}
 	v.validateResources(&v.m.Resources, rootPath)
+	v.validateBuild(rootPath)
 }
 
-var allowedMetadataNames = [...]string{ // sorted
-	"application", "copyright", "creationdate", "description", "designer",
-	"licenseterms", "modificationdate", "rating", "title",
+func (v *validator) validateBuild(rootPath string) {
+	for i, item := range v.m.Build.Items {
+		opath := item.ObjectPath(rootPath)
+		if item.ObjectID == 0 {
+			v.AddWarning(specerr.NewItem(i, &specerr.MissingFieldError{attrObjectID}))
+		} else if r, ok := v.ids[validatorResource{opath, item.ObjectID}]; ok {
+			if obj, ok := r.(*Object); ok {
+				if obj.ObjectType == ObjectTypeOther {
+					v.AddWarning(specerr.NewItem(i, specerr.ErrOtherItem))
+				}
+			} else {
+				v.AddWarning(specerr.NewItem(i, specerr.ErrNonObject))
+			}
+		} else {
+			v.AddWarning(specerr.NewItem(i, specerr.ErrMissingResource))
+		}
+		for _, err := range v.checkMetadadata(v.m.Metadata) {
+			v.AddWarning(specerr.NewItem(i, err))
+		}
+	}
 }
 
-func (v *validator) checkMetdadata(md []Metadata) []error {
+func (v *validator) checkMetadadata(md []Metadata) []error {
+	var allowedMetadataNames = [...]string{ // sorted
+		"application", "copyright", "creationdate", "description", "designer",
+		"licenseterms", "modificationdate", "rating", "title",
+	}
 	var errs []error
 	names := make(map[string]struct{})
 	for i, m := range md {
 		in := strings.Index(m.Name, ":")
 		if in < 0 {
-			if n := sort.SearchStrings(allowedMetadataNames[:], m.Name); n >= len(allowedMetadataNames) {
+			nm := strings.ToLower(m.Name)
+			n := sort.SearchStrings(allowedMetadataNames[:], nm)
+			if n >= len(allowedMetadataNames) || allowedMetadataNames[n] != nm {
 				errs = append(errs, &specerr.MetadataError{Index: i, Err: specerr.ErrMetadataName})
 			}
 		} else {
@@ -102,16 +126,20 @@ func (v *validator) validateResources(resources *Resources, path string) {
 		} else if _, ok := v.ids[validatorResource{path, id}]; ok {
 			v.AddWarning(specerr.NewAsset(path, i, specerr.ErrDuplicatedID))
 		}
-		v.ids[validatorResource{path, id}] = struct{}{}
+		v.ids[validatorResource{path, id}] = r
 		assets[id] = r
 		switch r := r.(type) {
 		case *BaseMaterialsResource:
-			for j, b := range r.Materials {
-				if b.Name == "" {
-					v.AddWarning(specerr.NewAsset(path, i, &specerr.BaseError{
-						Index: j,
-						Err:   &specerr.MissingFieldError{Name: attrName}},
-					))
+			if len(r.Materials) == 0 {
+				v.AddWarning(specerr.NewAsset(path, i, specerr.ErrEmptySlice))
+			} else {
+				for j, b := range r.Materials {
+					if b.Name == "" {
+						v.AddWarning(specerr.NewAsset(path, i, &specerr.BaseError{
+							Index: j,
+							Err:   &specerr.MissingFieldError{Name: attrName}},
+						))
+					}
 				}
 			}
 		}
@@ -122,9 +150,12 @@ func (v *validator) validateResources(resources *Resources, path string) {
 		} else if _, ok := v.ids[validatorResource{path, r.ID}]; ok {
 			v.AddWarning(specerr.NewObject(path, i, specerr.ErrDuplicatedID))
 		}
-		v.ids[validatorResource{path, r.ID}] = struct{}{}
+		v.ids[validatorResource{path, r.ID}] = r
 		if r.DefaultPIndex != 0 && r.DefaultPID == 0 {
 			v.AddWarning(specerr.NewObject(path, i, &specerr.MissingFieldError{Name: attrPID}))
+		}
+		if (r.Mesh != nil && len(r.Components) > 0) || (r.Mesh == nil && len(r.Components) == 0) {
+			v.AddWarning(specerr.NewObject(path, i, specerr.ErrInvalidObject))
 		}
 		if r.Mesh != nil {
 			if r.DefaultPID != 0 {
@@ -135,11 +166,12 @@ func (v *validator) validateResources(resources *Resources, path string) {
 						}
 					}
 				} else {
-					v.AddWarning(specerr.NewObject(path, i, specerr.ErrMissingObject))
+					v.AddWarning(specerr.NewObject(path, i, specerr.ErrMissingResource))
 				}
 			}
 			v.validateMesh(r, path, i, assets)
-		} else {
+		}
+		if len(r.Components) > 0 {
 			if r.DefaultPID != 0 {
 				v.AddWarning(specerr.NewObject(path, i, specerr.ErrComponentsPID))
 			}
@@ -170,7 +202,7 @@ func (v *validator) validateMesh(r *Object, path string, index int, assets map[u
 					}
 				}
 			} else {
-				v.AddWarning(specerr.NewObject(path, index, &specerr.TriangleError{Index: i, Err: specerr.ErrMissingObject}))
+				v.AddWarning(specerr.NewObject(path, index, &specerr.TriangleError{Index: i, Err: specerr.ErrMissingResource}))
 			}
 		}
 	}
@@ -182,10 +214,10 @@ func (v *validator) validateMesh(r *Object, path string, index int, assets map[u
 
 func (v *validator) validateMeshCoherency(r *Object, path string, index int) {
 	if len(r.Mesh.Nodes) < 3 {
-		v.AddWarning(specerr.NewObject(path, index, specerr.ErrEmptyTriangles))
+		v.AddWarning(specerr.NewObject(path, index, specerr.ErrInsufficientVertices))
 	}
 	if len(r.Mesh.Faces) <= 3 {
-		v.AddWarning(specerr.NewObject(path, index, specerr.ErrEmptyTriangles))
+		v.AddWarning(specerr.NewObject(path, index, specerr.ErrInsufficientTriangles))
 	}
 
 	var edgeCounter uint32
@@ -216,6 +248,7 @@ func (v *validator) validateMeshCoherency(r *Object, path string, index int) {
 	for i := uint32(0); i < edgeCounter; i++ {
 		if positive[i] != 1 || negative[i] != 1 {
 			v.AddWarning(specerr.NewObject(path, index, specerr.ErrMeshConsistency))
+			break
 		}
 	}
 }
@@ -227,10 +260,22 @@ func (v *validator) validateComponents(r *Object, path string, index int) {
 				Index: j,
 				Err:   &specerr.MissingFieldError{Name: attrObjectID}},
 			))
-		} else if _, ok := v.ids[validatorResource{path, c.ObjectID}]; !ok {
+		} else if ref, ok := v.ids[validatorResource{c.ObjectPath(path), c.ObjectID}]; ok {
+			if ref == r {
+				v.AddWarning(specerr.NewObject(path, index, &specerr.ComponentError{
+					Index: j,
+					Err:   specerr.ErrRecursiveComponent},
+				))
+			} else if _, ok := ref.(*Object); !ok {
+				v.AddWarning(specerr.NewObject(path, index, &specerr.ComponentError{
+					Index: j,
+					Err:   specerr.ErrNonObject},
+				))
+			}
+		} else {
 			v.AddWarning(specerr.NewObject(path, index, &specerr.ComponentError{
 				Index: j,
-				Err:   specerr.ErrMissingObject},
+				Err:   specerr.ErrMissingResource},
 			))
 		}
 	}
@@ -246,7 +291,7 @@ func (v *validator) validateNamespaces() {
 			}
 		}
 		if !found {
-			v.AddWarning(errors.New("go3mf: unsupported required extension"))
+			v.AddWarning(specerr.ErrRequiredExt)
 		}
 	}
 }

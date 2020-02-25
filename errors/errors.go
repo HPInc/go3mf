@@ -5,25 +5,51 @@ import (
 	"fmt"
 )
 
-var ErrMissingID = errors.New("resource ID MUST be a positive integer")
-var ErrDuplicatedID = errors.New("IDs MUST be unique among all resources under same Model")
-var ErrMissingObject = errors.New("resources MUST be defined prior to referencing")
-var ErrDuplicatedIndices = errors.New("indices v1, v2 and v3 MUST be distinct")
-var ErrIndexOutOfBounds = errors.New("index is bigger than referenced slice")
-var ErrEmptyVertices = errors.New("mesh has to contain at least 3 vertices to form a solid body")
-var ErrEmptyTriangles = errors.New("mesh has to contain at least 4 triangles to form a solid body")
-var ErrMeshConsistency = errors.New("mesh has non-manifold edges without consistent triangle orientation")
-var ErrComponentsPID = errors.New("MUST NOT assign pid to objects that contain components")
-var ErrOPCPartName = errors.New("part name MUST conform to the syntax specified in the OPC specification")
-var ErrOPCRelTarget = errors.New("relationship target part MUST be included in the 3MF document")
-var ErrOPCDuplicatedRel = errors.New("there MUST NOT be more than one relationship of a given type from one part to a second part")
-var ErrOPCContentType = errors.New("part MUST use an appropriate content type specified")
-var ErrOPCDuplicatedTicket = errors.New("each model part MUST attach no more than one PrintTicket")
-var ErrOPCDuplicatedModelName = errors.New("go3mf: model part names MUST be unique")
-var ErrBaseMaterialGradient = errors.New("triangle with base material MUST NOT form gradients")
-var ErrMetadataName = errors.New("names without a namespace MUST be restricted to predefined values")
-var ErrMetadataNamespace = errors.New("namespace MUST be declared on the model")
-var ErrMetadataDuplicated = errors.New("names must be distint")
+// Error guards.
+var (
+	ErrMissingID              = errors.New("resource ID MUST be a positive integer")
+	ErrDuplicatedID           = errors.New("IDs MUST be unique among all resources under same Model")
+	ErrMissingResource        = errors.New("resources MUST be defined prior to referencing")
+	ErrDuplicatedIndices      = errors.New("indices v1, v2 and v3 MUST be distinct")
+	ErrIndexOutOfBounds       = errors.New("index is bigger than referenced slice")
+	ErrInsufficientVertices   = errors.New("mesh has to contain at least 3 vertices to form a solid body")
+	ErrInsufficientTriangles  = errors.New("mesh has to contain at least 4 triangles to form a solid body")
+	ErrMeshConsistency        = errors.New("mesh has non-manifold edges without consistent triangle orientation")
+	ErrComponentsPID          = errors.New("MUST NOT assign pid to objects that contain components")
+	ErrOPCPartName            = errors.New("part name MUST conform to the syntax specified in the OPC specification")
+	ErrOPCRelTarget           = errors.New("relationship target part MUST be included in the 3MF document")
+	ErrOPCDuplicatedRel       = errors.New("there MUST NOT be more than one relationship of a given type from one part to a second part")
+	ErrOPCContentType         = errors.New("part MUST use an appropriate content type specified")
+	ErrOPCDuplicatedTicket    = errors.New("each model part MUST attach no more than one PrintTicket")
+	ErrOPCDuplicatedModelName = errors.New("go3mf: model part names MUST be unique")
+	ErrBaseMaterialGradient   = errors.New("triangle with base material MUST NOT form gradients")
+	ErrMetadataName           = errors.New("names without a namespace MUST be restricted to predefined values")
+	ErrMetadataNamespace      = errors.New("namespace MUST be declared on the model")
+	ErrMetadataDuplicated     = errors.New("names MUST NOT be duplicated")
+	ErrOtherItem              = errors.New("MUST NOT reference objects of type other")
+	ErrNonObject              = errors.New("MUST NOT reference non-object resources")
+	ErrRequiredExt            = errors.New("go3mf: unsupported required extension")
+	ErrEmptySlice             = errors.New("slice MUST NOT be empty")
+	ErrRecursiveComponent     = errors.New("MUST NOT contain recursive references")
+	ErrInvalidObject          = errors.New("MUST contain a mesh or components")
+)
+
+type ItemError struct {
+	Index int
+	Err   error
+}
+
+func NewItem(index int, err error) error {
+	return &ItemError{Index: index, Err: err}
+}
+
+func (e *ItemError) Unwrap() error {
+	return e.Err
+}
+
+func (e *ItemError) Error() string {
+	return fmt.Sprintf("go3mf: build item %d: %v", e.Index, e.Err)
+}
 
 type AssetError struct {
 	Path  string
