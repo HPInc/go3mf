@@ -16,6 +16,7 @@ import (
 	"testing"
 
 	"github.com/go-test/deep"
+	specerr "github.com/qmuntal/go3mf/errors"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -318,7 +319,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 
 	components := &Object{
 		ID: 20, ObjectType: ObjectTypeSupport,
-		Metadata:   []Metadata{{Name: "qm:CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: "qm:CustomMetadata4", Type: "xs:boolean", Value: "2"}},
+		Metadata:   []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}, {Name: xml.Name{Space: "qm", Local: "CustomMetadata4"}, Type: "xs:boolean", Value: "2"}},
 		Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
 	}
 
@@ -332,11 +333,11 @@ func TestDecoder_processRootModel(t *testing.T) {
 	}
 	want.Build.Items = append(want.Build.Items, &Item{
 		ObjectID: 20, PartNumber: "bob", Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
-		Metadata: []Metadata{{Name: "qm:CustomMetadata3", Type: "xs:boolean", Value: "1"}},
+		Metadata: []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}},
 	})
 	want.Metadata = append(want.Metadata, []Metadata{
-		{Name: "Application", Value: "go3mf app"},
-		{Name: "qm:CustomMetadata1", Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},
+		{Name: xml.Name{Local: "Application"}, Value: "go3mf app"},
+		{Name: xml.Name{Space: "qm", Local: "CustomMetadata1"}, Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},
 	}...)
 	got := new(Model)
 	got.Path = "/3D/3dmodel.model"
@@ -549,33 +550,17 @@ func TestNewDecoder(t *testing.T) {
 
 func TestDecoder_processRootModel_warns(t *testing.T) {
 	want := []error{
-		GenericError{Element: "model", ModelPath: "/3D/3dmodel.model", Message: "'other' extension is not defined"},
-		ParsePropertyError{ResourceID: 0, Element: "base", Name: "displaycolor", Value: "0000FF", ModelPath: "/3D/3dmodel.model", Type: PropertyRequired},
-		MissingPropertyError{ResourceID: 0, Element: "base", ModelPath: "/3D/3dmodel.model", Name: "name"},
-		MissingPropertyError{ResourceID: 0, Element: "base", ModelPath: "/3D/3dmodel.model", Name: "displaycolor"},
-		MissingPropertyError{ResourceID: 0, Element: "basematerials", ModelPath: "/3D/3dmodel.model", Name: "id"},
-		ParsePropertyError{ResourceID: 0, Element: "basematerials", Name: "id", Value: "a", ModelPath: "/3D/3dmodel.model", Type: PropertyRequired},
-		MissingPropertyError{ResourceID: 0, Element: "basematerials", ModelPath: "/3D/3dmodel.model", Name: "id"},
-		ParsePropertyError{ResourceID: 8, Element: "vertex", Name: "x", ModelPath: "/3D/3dmodel.model", Value: "a", Type: PropertyRequired},
-		GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3D/3dmodel.model", Message: "duplicated triangle indices"},
-		GenericError{ResourceID: 8, Element: "triangle", ModelPath: "/3D/3dmodel.model", Message: "triangle indices are out of range"},
-		ParsePropertyError{ResourceID: 8, Element: "triangle", ModelPath: "/3D/3dmodel.model", Name: "v1", Value: "a", Type: PropertyRequired},
-		ParsePropertyError{ResourceID: 22, Element: "object", ModelPath: "/3D/3dmodel.model", Name: "pid", Value: "a", Type: PropertyOptional},
-		ParsePropertyError{ResourceID: 22, Element: "object", ModelPath: "/3D/3dmodel.model", Name: "pindex", Value: "a", Type: PropertyOptional},
-		ParsePropertyError{ResourceID: 22, Element: "object", ModelPath: "/3D/3dmodel.model", Name: "type", Value: "invalid", Type: PropertyOptional},
-		GenericError{ResourceID: 20, Element: "object", ModelPath: "/3D/3dmodel.model", Message: "default PID is not supported for component objects"},
-		ParsePropertyError{ResourceID: 20, Element: "component", ModelPath: "/3D/3dmodel.model", Name: "transform", Value: "0 0 0 1 0 0 0 2 -66.4 -87.1 8.8", Type: PropertyOptional},
-		ParsePropertyError{ResourceID: 20, Element: "component", ModelPath: "/3D/3dmodel.model", Name: "objectid", Value: "a", Type: PropertyRequired},
-		MissingPropertyError{ResourceID: 20, Element: "component", Name: "objectid", ModelPath: "/3D/3dmodel.model"},
-		//GenericError{ResourceID: 20, Element: "component", ModelPath: "/3D/3dmodel.model", Message: "non-existent referenced object"},
-		//GenericError{ResourceID: 20, Element: "component", ModelPath: "/3D/3dmodel.model", Message: "non-object referenced resource"},
-		ParsePropertyError{ResourceID: 20, Element: "item", Name: "transform", Value: "1 0 0 0 2 0 0 0 3 -66.4 -87.1", ModelPath: "/3D/3dmodel.model", Type: PropertyOptional},
-		ParsePropertyError{Element: "item", Name: "objectid", Value: "a", ModelPath: "/3D/3dmodel.model", Type: PropertyRequired},
-		MissingPropertyError{Element: "item", Name: "objectid", ModelPath: "/3D/3dmodel.model"},
-		//GenericError{ResourceID: 20, Element: "item", ModelPath: "/3D/3dmodel.model", Message: "referenced object cannot be have OTHER type"},
-		//GenericError{ResourceID: 8, Element: "item", ModelPath: "/3D/3dmodel.model", Message: "non-existent referenced object"},
-		//GenericError{ResourceID: 5, Element: "item", ModelPath: "/3D/3dmodel.model", Message: "non-object referenced resource"},
-		GenericError{ResourceID: 0, Element: "metadata", ModelPath: "/3D/3dmodel.model", Message: "unregistered namespace"},
+		&specerr.ParseFieldError{ResourceID: 0, Element: "base", Name: "displaycolor", Value: "0000FF", ModelPath: "/3D/3dmodel.model", Required: true},
+		&specerr.ParseFieldError{ResourceID: 0, Element: "basematerials", Name: "id", Value: "a", ModelPath: "/3D/3dmodel.model", Required: true},
+		&specerr.ParseFieldError{ResourceID: 8, Element: "vertex", Name: "x", ModelPath: "/3D/3dmodel.model", Value: "a", Required: true},
+		&specerr.ParseFieldError{ResourceID: 8, Element: "triangle", ModelPath: "/3D/3dmodel.model", Name: "v1", Value: "a", Required: true},
+		&specerr.ParseFieldError{ResourceID: 22, Element: "object", ModelPath: "/3D/3dmodel.model", Name: "pid", Value: "a", Required: false},
+		&specerr.ParseFieldError{ResourceID: 22, Element: "object", ModelPath: "/3D/3dmodel.model", Name: "pindex", Value: "a", Required: false},
+		&specerr.ParseFieldError{ResourceID: 22, Element: "object", ModelPath: "/3D/3dmodel.model", Name: "type", Value: "invalid", Required: false},
+		&specerr.ParseFieldError{ResourceID: 20, Element: "component", ModelPath: "/3D/3dmodel.model", Name: "transform", Value: "0 0 0 1 0 0 0 2 -66.4 -87.1 8.8", Required: false},
+		&specerr.ParseFieldError{ResourceID: 20, Element: "component", ModelPath: "/3D/3dmodel.model", Name: "objectid", Value: "a", Required: true},
+		&specerr.ParseFieldError{ResourceID: 20, Element: "item", Name: "transform", Value: "1 0 0 0 2 0 0 0 3 -66.4 -87.1", ModelPath: "/3D/3dmodel.model", Required: false},
+		&specerr.ParseFieldError{Element: "item", Name: "objectid", Value: "a", ModelPath: "/3D/3dmodel.model", Required: true},
 	}
 	got := new(Model)
 	got.Path = "/3D/3dmodel.model"

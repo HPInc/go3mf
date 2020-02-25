@@ -38,7 +38,7 @@ func TestValidate(t *testing.T) {
 			specerr.ErrRequiredExt,
 		}},
 		{"metadata", args{&Model{Namespaces: []xml.Name{{Space: "fake", Local: "f"}}, Metadata: []Metadata{
-			{Name: "fake:issue"}, {Name: "f:issue"}, {Name: "fake:issue"}, {Name: "issue"}, {},
+			{Name: xml.Name{Space: "fake", Local: "issue"}}, {Name: xml.Name{Space: "f", Local: "issue"}}, {Name: xml.Name{Space: "fake", Local: "issue"}}, {Name: xml.Name{Local: "issue"}}, {},
 		}}}, []error{
 			&specerr.MetadataError{Index: 1, Err: specerr.ErrMetadataNamespace},
 			&specerr.MetadataError{Index: 2, Err: specerr.ErrMetadataDuplicated},
@@ -52,7 +52,7 @@ func TestValidate(t *testing.T) {
 			{},
 			{ObjectID: 2},
 			{ObjectID: 100},
-			{ObjectID: 1, Metadata: []Metadata{{Name: "issue"}}},
+			{ObjectID: 1, Metadata: []Metadata{{Name: xml.Name{Local: "issue"}}}},
 		}}}}, []error{
 			&specerr.ItemError{Index: 0, Err: &specerr.MissingFieldError{Name: attrObjectID}},
 			&specerr.ItemError{Index: 1, Err: specerr.ErrOtherItem},
@@ -113,18 +113,16 @@ func TestValidate(t *testing.T) {
 			&specerr.ObjectError{Path: path, Index: 3, Err: &specerr.ComponentError{Index: 3, Err: specerr.ErrNonObject}},
 			&specerr.ObjectError{Path: path, Index: 3, Err: &specerr.ComponentError{Index: 4, Err: specerr.ErrMissingResource}},
 			&specerr.ObjectError{Path: path, Index: 4, Err: specerr.ErrMissingResource},
+			&specerr.ObjectError{Path: path, Index: 4, Err: specerr.ErrInsufficientVertices},
+			&specerr.ObjectError{Path: path, Index: 4, Err: specerr.ErrInsufficientTriangles},
 			&specerr.ObjectError{Path: path, Index: 4, Err: &specerr.TriangleError{Index: 0, Err: specerr.ErrDuplicatedIndices}},
 			&specerr.ObjectError{Path: path, Index: 4, Err: &specerr.TriangleError{Index: 1, Err: specerr.ErrDuplicatedIndices}},
 			&specerr.ObjectError{Path: path, Index: 4, Err: &specerr.TriangleError{Index: 2, Err: specerr.ErrDuplicatedIndices}},
-			&specerr.ObjectError{Path: path, Index: 4, Err: specerr.ErrInsufficientVertices},
-			&specerr.ObjectError{Path: path, Index: 4, Err: specerr.ErrInsufficientTriangles},
-			&specerr.ObjectError{Path: path, Index: 4, Err: specerr.ErrMeshConsistency},
 			&specerr.ObjectError{Path: path, Index: 5, Err: specerr.ErrIndexOutOfBounds},
 			&specerr.ObjectError{Path: path, Index: 5, Err: &specerr.TriangleError{Index: 0, Err: specerr.ErrIndexOutOfBounds}},
 			&specerr.ObjectError{Path: path, Index: 5, Err: &specerr.TriangleError{Index: 1, Err: specerr.ErrIndexOutOfBounds}},
 			&specerr.ObjectError{Path: path, Index: 5, Err: &specerr.TriangleError{Index: 2, Err: specerr.ErrBaseMaterialGradient}},
 			&specerr.ObjectError{Path: path, Index: 5, Err: &specerr.TriangleError{Index: 3, Err: specerr.ErrMissingResource}},
-			&specerr.ObjectError{Path: path, Index: 5, Err: specerr.ErrMeshConsistency},
 		}},
 	}
 	for _, tt := range tests {

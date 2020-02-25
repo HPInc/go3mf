@@ -273,8 +273,12 @@ func (e *Encoder) writeResources(x *XMLEncoder, rs *Resources) error {
 
 func (e *Encoder) writeMetadata(x *XMLEncoder, metadata []Metadata) {
 	for _, md := range metadata {
+		name := md.Name.Local
+		if md.Name.Space != "" {
+			name = md.Name.Space + ":" + name
+		}
 		xn := xml.StartElement{Name: xml.Name{Local: attrMetadata}, Attr: []xml.Attr{
-			{Name: xml.Name{Local: attrName}, Value: md.Name},
+			{Name: xml.Name{Local: attrName}, Value: name},
 		}}
 		if md.Preserve {
 			xn.Attr = append(xn.Attr, xml.Attr{

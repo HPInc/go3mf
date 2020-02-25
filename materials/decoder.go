@@ -175,9 +175,6 @@ func (d *texture2DDecoder) Start(attrs []xml.Attr) {
 			d.resource.Filter, _ = newTextureFilter(a.Value)
 		}
 	}
-	if d.resource.Path == "" {
-		d.Scanner.MissingAttr(attrPath)
-	}
 }
 
 type compositeMaterialsDecoder struct {
@@ -226,12 +223,6 @@ func (d *compositeMaterialsDecoder) Start(attrs []xml.Attr) {
 			}
 		}
 	}
-	if d.resource.MaterialID == 0 {
-		d.Scanner.MissingAttr(attrMatID)
-	}
-	if len(d.resource.Indices) == 0 {
-		d.Scanner.MissingAttr(attrMatIndices)
-	}
 }
 
 type compositeDecoder struct {
@@ -240,7 +231,7 @@ type compositeDecoder struct {
 }
 
 func (d *compositeDecoder) Start(attrs []xml.Attr) {
-	composite := Composite{}
+	var composite Composite
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrValues {
 			for _, f := range strings.Fields(a.Value) {
@@ -251,9 +242,6 @@ func (d *compositeDecoder) Start(attrs []xml.Attr) {
 				composite.Values = append(composite.Values, float32(val))
 			}
 		}
-	}
-	if len(composite.Values) == 0 {
-		d.Scanner.MissingAttr(attrValues)
 	}
 	d.resource.Composites = append(d.resource.Composites, composite)
 }
@@ -303,9 +291,6 @@ func (d *multiPropertiesDecoder) Start(attrs []xml.Attr) {
 			}
 		}
 	}
-	if len(d.resource.PIDs) == 0 {
-		d.Scanner.MissingAttr(attrPIDs)
-	}
 }
 
 type multiDecoder struct {
@@ -314,7 +299,7 @@ type multiDecoder struct {
 }
 
 func (d *multiDecoder) Start(attrs []xml.Attr) {
-	multi := Multi{}
+	var multi Multi
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrPIndices {
 			for _, f := range strings.Fields(a.Value) {
@@ -325,9 +310,6 @@ func (d *multiDecoder) Start(attrs []xml.Attr) {
 				multi.PIndex = append(multi.PIndex, uint32(val))
 			}
 		}
-	}
-	if len(multi.PIndex) == 0 {
-		d.Scanner.MissingAttr(attrPIndices)
 	}
 	d.resource.Multis = append(d.resource.Multis, multi)
 }

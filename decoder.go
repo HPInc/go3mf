@@ -2,7 +2,6 @@ package go3mf
 
 import (
 	"encoding/xml"
-	"fmt"
 	"image/color"
 	"strconv"
 	"strings"
@@ -59,11 +58,8 @@ func (d *modelDecoder) Start(attrs []xml.Attr) {
 	for i, ext := range d.model.RequiredExtensions {
 		if ns, ok := d.Scanner.namespace(ext); ok {
 			d.model.RequiredExtensions[i] = ns
-			if _, ok := d.Scanner.extensionDecoder[ns]; !ok {
-				d.Scanner.GenericError(true, fmt.Sprintf("'%s' extension is not supported", ext))
-			}
 		} else {
-			d.Scanner.GenericError(true, fmt.Sprintf("'%s' extension is not defined", ext))
+			d.model.RequiredExtensions[i] = ext
 		}
 	}
 }
@@ -110,13 +106,15 @@ func (d *metadataDecoder) Start(attrs []xml.Attr) {
 		}
 		switch a.Name.Local {
 		case attrName:
+			d.metadata.Name = a.Name
 			i := strings.IndexByte(a.Value, ':')
 			if i < 0 {
-				d.metadata.Name = a.Value
+				d.metadata.Name.Local = a.Value
 			} else if _, ok := d.Scanner.namespace(a.Value[0:i]); ok {
-				d.metadata.Name = a.Value[0:i] + ":" + a.Value[i+1:]
+				d.metadata.Name.Space = a.Value[0:i]
+				d.metadata.Name.Local = a.Value[i+1:]
 			} else {
-				d.Scanner.GenericError(true, "unregistered namespace")
+				d.metadata.Name.Local = a.Value
 			}
 		case attrType:
 			d.metadata.Type = a.Value
@@ -171,23 +169,6 @@ func (d *buildItemDecoder) Child(name xml.Name) (child NodeDecoder) {
 	return
 }
 
-// TODO: validate coeherence after decoding
-// func (d *buildItemDecoder) processItem() {
-// 	resource, ok := d.Scanner.FindResource(d.objectPath, uint32(d.objectID))
-// 	if !ok {
-// 		d.Scanner.GenericError(true, "non-existent referenced object")
-// 	} else if d.item.Object, ok = resource.(Object); !ok {
-// 		d.Scanner.GenericError(true, "non-object referenced resource")
-// 	}
-// 	if ok {
-// 		if d.item.Object != nil && d.item.Object.Type() == ObjectTypeOther {
-// 			d.Scanner.GenericError(true, "referenced object cannot be have OTHER type")
-// 		}
-// 	}
-// 	if ok {
-// 	}
-// }
-
 func (d *buildItemDecoder) Start(attrs []xml.Attr) {
 	for _, a := range attrs {
 		if a.Name.Space == "" {
@@ -195,9 +176,6 @@ func (d *buildItemDecoder) Start(attrs []xml.Attr) {
 		} else if ext, ok := d.Scanner.extensionDecoder[a.Name.Space]; ok {
 			ext.DecodeAttribute(d.Scanner, &d.item, a)
 		}
-	}
-	if d.item.ObjectID == 0 {
-		d.Scanner.MissingAttr(attrObjectID)
 	}
 	return
 }
@@ -278,8 +256,7 @@ type baseMaterialDecoder struct {
 
 func (d *baseMaterialDecoder) Start(attrs []xml.Attr) {
 	var name string
-	var withColor bool
-	baseColor := color.RGBA{}
+	var baseColor color.RGBA
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrName:
@@ -287,17 +264,10 @@ func (d *baseMaterialDecoder) Start(attrs []xml.Attr) {
 		case attrDisplayColor:
 			var err error
 			baseColor, err = ParseRGBA(a.Value)
-			withColor = true
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
 			}
 		}
-	}
-	if name == "" {
-		d.Scanner.MissingAttr(attrName)
-	}
-	if !withColor {
-		d.Scanner.MissingAttr(attrDisplayColor)
 	}
 	d.resource.Materials = append(d.resource.Materials, BaseMaterial{Name: name, Color: baseColor})
 	return
@@ -435,17 +405,6 @@ func (d *triangleDecoder) Start(attrs []xml.Attr) {
 	p3 = applyDefault(p3, p1, hasP3)
 	pid = applyDefault(pid, d.defaultPropertyID, hasPID)
 
-	d.addTriangle(v1, v2, v3, pid, p1, p2, p3)
-}
-
-func (d *triangleDecoder) addTriangle(v1, v2, v3, pid, p1, p2, p3 uint32) {
-	if v1 == v2 || v1 == v3 || v2 == v3 {
-		d.Scanner.GenericError(true, "duplicated triangle indices")
-	}
-	nodeCount := uint32(len(d.mesh.Nodes))
-	if v1 >= nodeCount || v2 >= nodeCount || v3 >= nodeCount {
-		d.Scanner.GenericError(true, "triangle indices are out of range")
-	}
 	d.mesh.Faces = append(d.mesh.Faces, Face{
 		NodeIndices: [3]uint32{v1, v2, v3},
 		PID:         pid,
@@ -484,9 +443,6 @@ func (d *objectDecoder) Child(name xml.Name) (child NodeDecoder) {
 		if name.Local == attrMesh {
 			child = &meshDecoder{resource: &d.resource}
 		} else if name.Local == attrComponents {
-			if d.resource.DefaultPID != 0 {
-				d.Scanner.GenericError(true, "default PID is not supported for component objects")
-			}
 			child = &componentsDecoder{resource: &d.resource}
 		} else if name.Local == attrMetadataGroup {
 			child = &metadataGroupDecoder{metadatas: &d.resource.Metadata}
@@ -574,23 +530,5 @@ func (d *componentDecoder) Start(attrs []xml.Attr) {
 			ext.DecodeAttribute(d.Scanner, &component, a)
 		}
 	}
-	if component.ObjectID == 0 {
-		d.Scanner.MissingAttr(attrObjectID)
-	}
 	d.resource.Components = append(d.resource.Components, &component)
 }
-
-// TODO: validate coeherence after decoding
-// func (d *componentDecoder) addComponent(component *Component, path string, objectID uint32) {
-// if path != "" && !d.Scanner.IsRoot {
-// d.Scanner.GenericError(true, "path attribute in a non-root file is not supported")
-// }
-
-// resource, ok := d.Scanner.FindResource(path, uint32(objectID))
-// if !ok {
-// d.Scanner.GenericError(true, "non-existent referenced object")
-// } else if component.Object, ok = resource.(Object); !ok {
-// d.Scanner.GenericError(true, "non-object referenced resource")
-// }
-// d.resource.Components = append(d.resource.Components, component)
-// }

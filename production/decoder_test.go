@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/qmuntal/go3mf"
+	specerr "github.com/qmuntal/go3mf/errors"
 )
 
 func mustUUID(u string) *UUID {
@@ -75,13 +76,10 @@ func TestDecode(t *testing.T) {
 
 func TestDecode_warns(t *testing.T) {
 	want := []error{
-		go3mf.ParsePropertyError{ResourceID: 20, Element: "object", ModelPath: "/3D/3dmodel.model", Name: "UUID", Value: "cb8286808895-4e08-a1fc-be63e033df15", Type: go3mf.PropertyRequired},
-		go3mf.ParsePropertyError{ResourceID: 20, Element: "component", ModelPath: "/3D/3dmodel.model", Name: "UUID", Value: "cb8286808895-4e08-a1fc-be63e033df16", Type: go3mf.PropertyRequired},
-		//go3mf.MissingPropertyError{ResourceID: 20, Element: "component", ModelPath: "/3D/3dmodel.model", Name: "UUID"},
-		//go3mf.MissingPropertyError{ResourceID: 0, Element: "build", ModelPath: "/3D/3dmodel.model", Name: "UUID"},
-		//go3mf.MissingPropertyError{ResourceID: 8, Element: "item", ModelPath: "/3D/3dmodel.model", Name: "UUID"},
-		go3mf.ParsePropertyError{ResourceID: 0, Element: "build", Name: "UUID", Value: "e9e25302-6428-402e-8633ed2", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
-		go3mf.ParsePropertyError{ResourceID: 20, Element: "item", ModelPath: "/3D/3dmodel.model", Name: "UUID", Value: "invalid-uuid", Type: go3mf.PropertyRequired},
+		&specerr.ParseFieldError{ResourceID: 20, Element: "object", ModelPath: "/3D/3dmodel.model", Name: "UUID", Value: "cb8286808895-4e08-a1fc-be63e033df15", Required: true},
+		&specerr.ParseFieldError{ResourceID: 20, Element: "component", ModelPath: "/3D/3dmodel.model", Name: "UUID", Value: "cb8286808895-4e08-a1fc-be63e033df16", Required: true},
+		&specerr.ParseFieldError{ResourceID: 0, Element: "build", Name: "UUID", Value: "e9e25302-6428-402e-8633ed2", ModelPath: "/3D/3dmodel.model", Required: true},
+		&specerr.ParseFieldError{ResourceID: 20, Element: "item", ModelPath: "/3D/3dmodel.model", Name: "UUID", Value: "invalid-uuid", Required: true},
 	}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"

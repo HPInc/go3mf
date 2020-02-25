@@ -25,7 +25,6 @@ type beamLatticeDecoder struct {
 }
 
 func (d *beamLatticeDecoder) Start(attrs []xml.Attr) {
-	var hasRadius, hasMinLength bool
 	beamLattice := new(BeamLattice)
 	d.mesh.Extension = append(d.mesh.Extension, beamLattice)
 	for _, a := range attrs {
@@ -39,14 +38,12 @@ func (d *beamLatticeDecoder) Start(attrs []xml.Attr) {
 				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
 			}
 			beamLattice.DefaultRadius = float32(val)
-			hasRadius = true
 		case attrMinLength, attrPrecision: // lib3mf legacy
 			val, err := strconv.ParseFloat(a.Value, 32)
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
 			}
 			beamLattice.MinLength = float32(val)
-			hasMinLength = true
 		case attrClippingMode, attrClipping: // lib3mf legacy
 			var ok bool
 			beamLattice.ClipMode, ok = newClipMode(a.Value)
@@ -72,12 +69,6 @@ func (d *beamLatticeDecoder) Start(attrs []xml.Attr) {
 				d.Scanner.InvalidAttr(a.Name.Local, a.Value, false)
 			}
 		}
-	}
-	if !hasRadius {
-		d.Scanner.MissingAttr(attrRadius)
-	}
-	if !hasMinLength {
-		d.Scanner.MissingAttr(attrMinLength)
 	}
 }
 
@@ -115,9 +106,9 @@ type beamDecoder struct {
 }
 
 func (d *beamDecoder) Start(attrs []xml.Attr) {
-	beam := Beam{}
+	var beam Beam
 	var (
-		hasV1, hasV2, hasCap1, hasCap2 bool
+		hasCap1, hasCap2 bool
 	)
 	var beamLattice *BeamLattice
 	d.mesh.Extension.Get(&beamLattice)
@@ -132,14 +123,12 @@ func (d *beamDecoder) Start(attrs []xml.Attr) {
 				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
 			}
 			beam.NodeIndices[0] = uint32(val)
-			hasV1 = true
 		case attrV2:
 			val, err := strconv.ParseUint(a.Value, 10, 32)
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
 			}
 			beam.NodeIndices[1] = uint32(val)
-			hasV2 = true
 		case attrR1:
 			val, err := strconv.ParseFloat(a.Value, 32)
 			if err != nil {
@@ -165,12 +154,6 @@ func (d *beamDecoder) Start(attrs []xml.Attr) {
 				hasCap2 = true
 			}
 		}
-	}
-	if !hasV1 {
-		d.Scanner.MissingAttr(attrV1)
-	}
-	if !hasV2 {
-		d.Scanner.MissingAttr(attrV2)
 	}
 	if beam.Radius[0] == 0 {
 		beam.Radius[0] = beamLattice.DefaultRadius
@@ -247,10 +230,8 @@ func (d *beamRefDecoder) Start(attrs []xml.Attr) {
 				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
 			}
 			d.beamSet.Refs = append(d.beamSet.Refs, uint32(val))
-			return
 		}
 	}
-	d.Scanner.MissingAttr(attrIndex)
 }
 
 type baseDecoder struct {

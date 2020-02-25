@@ -62,9 +62,6 @@ type sliceStackDecoder struct {
 }
 
 func (d *sliceStackDecoder) End() {
-	if len(d.resource.Refs) > 0 && len(d.resource.Slices) > 0 {
-		d.Scanner.GenericError(true, "slicestack contains slices and slicerefs")
-	}
 	d.Scanner.AddAsset(&d.resource)
 }
 
@@ -120,21 +117,8 @@ func (d *sliceRefDecoder) Start(attrs []xml.Attr) {
 			path = a.Value
 		}
 	}
-	if sliceStackID == 0 {
-		d.Scanner.MissingAttr(attrSliceRefID)
-	}
 	d.resource.Refs = append(d.resource.Refs, SliceRef{SliceStackID: sliceStackID, Path: path})
 }
-
-// TODO: validate coherency after decoding.
-// func (d *sliceRefDecoder) addSliceRef(sliceStackID uint32, path string) {
-// 	resource, exist := d.Scanner.FindResource(path, sliceStackID)
-// 	if !exist {
-// 		d.Scanner.GenericError(true, "non-existent referenced resource")
-// 	} else if _, isSlice := resource.(*SliceStackResource); !isSlice {
-// 		d.Scanner.GenericError(true, "non-slicestack referenced resource")
-// 	}
-// }
 
 type sliceDecoder struct {
 	baseDecoder
@@ -161,10 +145,8 @@ func (d *sliceDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 func (d *sliceDecoder) Start(attrs []xml.Attr) {
 	d.polygonDecoder.slice = &d.slice
 	d.polygonVerticesDecoder.slice = &d.slice
-	var hasTopZ bool
 	for _, a := range attrs {
 		if a.Name.Local == attrZTop {
-			hasTopZ = true
 			val, err := strconv.ParseFloat(a.Value, 32)
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
@@ -172,9 +154,6 @@ func (d *sliceDecoder) Start(attrs []xml.Attr) {
 			d.slice.TopZ = float32(val)
 			break
 		}
-	}
-	if !hasTopZ {
-		d.Scanner.MissingAttr(attrZTop)
 	}
 }
 
