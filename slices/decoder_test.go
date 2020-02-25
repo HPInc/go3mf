@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/qmuntal/go3mf"
+	specerr "github.com/qmuntal/go3mf/errors"
 )
 
 func TestDecode(t *testing.T) {
@@ -93,15 +94,15 @@ func TestDecode(t *testing.T) {
 
 func TestDecode_warns(t *testing.T) {
 	want := []error{
-		go3mf.ParsePropertyError{ResourceID: 3, Element: "slicestack", Name: "zbottom", Value: "a", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyOptional},
-		go3mf.ParsePropertyError{ResourceID: 3, Element: "vertex", Name: "x", Value: "a", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
-		go3mf.ParsePropertyError{ResourceID: 3, Element: "vertex", Name: "y", Value: "b", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
-		go3mf.ParsePropertyError{ResourceID: 3, Element: "slice", Name: "ztop", Value: "a", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
-		go3mf.ParsePropertyError{ResourceID: 3, Element: "polygon", Name: "startv", Value: "a", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
-		go3mf.ParsePropertyError{ResourceID: 3, Element: "segment", Name: "v2", Value: "a", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
-		go3mf.ParsePropertyError{ResourceID: 3, Element: "sliceref", Name: "slicestackid", Value: "a", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
-		go3mf.ParsePropertyError{ResourceID: 8, Element: "object", ModelPath: "/3D/3dmodel.model", Name: "meshresolution", Value: "invalid", Type: go3mf.PropertyOptional},
-		go3mf.ParsePropertyError{ResourceID: 8, Element: "object", ModelPath: "/3D/3dmodel.model", Name: "slicestackid", Value: "a", Type: go3mf.PropertyRequired},
+		&specerr.ParseFieldError{ResourceID: 3, Element: "slicestack", Name: "zbottom", Value: "a", ModelPath: "/3D/3dmodel.model", Required: false},
+		&specerr.ParseFieldError{ResourceID: 3, Element: "vertex", Name: "x", Value: "a", ModelPath: "/3D/3dmodel.model", Required: true},
+		&specerr.ParseFieldError{ResourceID: 3, Element: "vertex", Name: "y", Value: "b", ModelPath: "/3D/3dmodel.model", Required: true},
+		&specerr.ParseFieldError{ResourceID: 3, Element: "slice", Name: "ztop", Value: "a", ModelPath: "/3D/3dmodel.model", Required: true},
+		&specerr.ParseFieldError{ResourceID: 3, Element: "polygon", Name: "startv", Value: "a", ModelPath: "/3D/3dmodel.model", Required: true},
+		&specerr.ParseFieldError{ResourceID: 3, Element: "segment", Name: "v2", Value: "a", ModelPath: "/3D/3dmodel.model", Required: true},
+		&specerr.ParseFieldError{ResourceID: 3, Element: "sliceref", Name: "slicestackid", Value: "a", ModelPath: "/3D/3dmodel.model", Required: true},
+		&specerr.ParseFieldError{ResourceID: 8, Element: "object", ModelPath: "/3D/3dmodel.model", Name: "meshresolution", Value: "invalid", Required: false},
+		&specerr.ParseFieldError{ResourceID: 8, Element: "object", ModelPath: "/3D/3dmodel.model", Name: "slicestackid", Value: "a", Required: true},
 	}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"

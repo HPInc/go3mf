@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"image/color"
+
+	specerr "github.com/qmuntal/go3mf/errors"
 )
 
 // NodeDecoder defines the minimum contract to decode a 3MF node.
@@ -25,32 +27,6 @@ func (d *baseDecoder) Text([]byte)                {}
 func (d *baseDecoder) Child(xml.Name) NodeDecoder { return nil }
 func (d *baseDecoder) End()                       {}
 func (d *baseDecoder) SetScanner(s *Scanner)      { d.Scanner = s }
-
-// PropertyType defines the possible property types.
-type PropertyType string
-
-const (
-	// PropertyRequired is mandatory.
-	PropertyRequired PropertyType = "required"
-	// PropertyOptional is optional.
-	PropertyOptional = "optional"
-)
-
-// A ParsePropertyError represents an error while decoding a required or an optional property.
-// If ResourceID is 0 means that the error took place while parsing the resource property before the ID appeared.
-// When Element is 'item' the ResourceID is the objectID property of a build item.
-type ParsePropertyError struct {
-	ResourceID uint32
-	ModelPath  string
-	Element    string
-	Name       string
-	Value      string
-	Type       PropertyType
-}
-
-func (e ParsePropertyError) Error() string {
-	return fmt.Sprintf("go3mf: [%s] error parsing property '%s = %s' of element '%s' in resource '%s:%d'", e.Type, e.Name, e.Value, e.Element, e.ModelPath, e.ResourceID)
-}
 
 // A Scanner is a 3mf model file scanning state machine.
 type Scanner struct {
@@ -92,14 +68,7 @@ func (s *Scanner) AddObject(r *Object) {
 // InvalidAttr adds the error to the warnings.
 // Returns false if scanning cannot continue.
 func (s *Scanner) InvalidAttr(attr string, val string, required bool) {
-	tp := PropertyRequired
-	if !required {
-		tp = PropertyOptional
-	}
-	s.strictError(ParsePropertyError{ResourceID: s.ResourceID, Element: s.Element, Name: attr, Value: val, ModelPath: s.ModelPath, Type: tp})
-}
-
-func (s *Scanner) strictError(err error) {
+	err := &specerr.ParseFieldError{ResourceID: s.ResourceID, Element: s.Element, Name: attr, Value: val, ModelPath: s.ModelPath, Required: required}
 	s.Warnings = append(s.Warnings, err)
 	if s.Strict {
 		s.Err = err

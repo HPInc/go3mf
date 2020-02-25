@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/qmuntal/go3mf"
+	specerr "github.com/qmuntal/go3mf/errors"
 )
 
 func TestDecode(t *testing.T) {
@@ -114,9 +115,9 @@ func TestDecode(t *testing.T) {
 
 func TestDecode_warns(t *testing.T) {
 	want := []error{
-		go3mf.ParsePropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3D/3dmodel.model", Name: "cap", Value: "invalid", Type: go3mf.PropertyOptional},
-		go3mf.ParsePropertyError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3D/3dmodel.model", Name: "clippingmode", Value: "invalid2", Type: go3mf.PropertyOptional},
-		go3mf.ParsePropertyError{ResourceID: 15, Element: "ref", Name: "index", Value: "a", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
+		&specerr.ParseFieldError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3D/3dmodel.model", Name: "cap", Value: "invalid", Required: false},
+		&specerr.ParseFieldError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3D/3dmodel.model", Name: "clippingmode", Value: "invalid2", Required: false},
+		&specerr.ParseFieldError{ResourceID: 15, Element: "ref", Name: "index", Value: "a", ModelPath: "/3D/3dmodel.model", Required: true},
 	}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"

@@ -108,6 +108,26 @@ func (e *MissingFieldError) Error() string {
 	return fmt.Sprintf("required field %s is not set", e.Name)
 }
 
+// A &specerr.ParseFieldError represents an error while decoding a required or an optional property.
+// If ResourceID is 0 means that the error took place while parsing the resource property before the ID appeared.
+// When Element is 'item' the ResourceID is the objectID property of a build item.
+type ParseFieldError struct {
+	ResourceID uint32
+	ModelPath  string
+	Element    string
+	Name       string
+	Value      string
+	Required   bool
+}
+
+func (e *ParseFieldError) Error() string {
+	req := "required"
+	if !e.Required {
+		req = "optional"
+	}
+	return fmt.Sprintf("go3mf: [%s] error parsing property '%s = %s' of element '%s' in resource '%s:%d'", req, e.Name, e.Value, e.Element, e.ModelPath, e.ResourceID)
+}
+
 type ComponentError struct {
 	Index int
 	Err   error
