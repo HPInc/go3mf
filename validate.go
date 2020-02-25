@@ -28,6 +28,15 @@ func (v *validator) AddWarning(err ...error) {
 	v.warnings = append(v.warnings, err...)
 }
 
+func (v *validator) sortedChilds() []string {
+	s := make([]string, 0, len(v.m.Childs))
+	for path := range v.m.Childs {
+		s = append(s, path)
+	}
+	sort.Strings(s)
+	return s
+}
+
 // Validate checks that the model is conformant with the 3MF spec.
 func (v *validator) Validate() {
 	v.ids = make(map[validatorResource]interface{})
@@ -39,7 +48,9 @@ func (v *validator) Validate() {
 	if rootPath == "" {
 		rootPath = DefaultPartModelName
 	}
-	for path, c := range v.m.Childs {
+	sortedChilds := v.sortedChilds()
+	for _, path := range sortedChilds {
+		c := v.m.Childs[path]
 		if path == rootPath {
 			v.AddWarning(specerr.ErrOPCDuplicatedModelName)
 		} else {
@@ -49,7 +60,8 @@ func (v *validator) Validate() {
 	v.validateRelationship(v.m.Relationships, rootPath)
 	v.AddWarning(v.checkMetadadata(v.m.Metadata)...)
 
-	for path, c := range v.m.Childs {
+	for _, path := range sortedChilds {
+		c := v.m.Childs[path]
 		v.validateResources(&c.Resources, path)
 	}
 	v.validateResources(&v.m.Resources, rootPath)
