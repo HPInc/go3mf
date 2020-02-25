@@ -80,7 +80,7 @@ func TestMarshalModel(t *testing.T) {
 					}},
 				{
 					ID: 20, ObjectType: ObjectTypeSupport,
-					Metadata: []Metadata{{Name: "qm:CustomMetadata3", Type: "xs:boolean", Value: "1"}, {Name: "qm:CustomMetadata4", Type: "xs:boolean", Value: "2"}},
+					Metadata: []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}, {Name: xml.Name{Space: "qm", Local: "CustomMetadata4"}, Type: "xs:boolean", Value: "2"}},
 					Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1},
 						ExtensionAttr: ExtensionAttr{&fakeAttr{Value: "component_fake"}}}},
 				},
@@ -91,12 +91,12 @@ func TestMarshalModel(t *testing.T) {
 			Items: []*Item{
 				{
 					ObjectID: 20, PartNumber: "bob", Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
-					Metadata: []Metadata{{Name: "qm:CustomMetadata3", Type: "xs:boolean", Value: "1"}},
+					Metadata: []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}},
 				},
 				{ObjectID: 21, ExtensionAttr: ExtensionAttr{&fakeAttr{Value: "item_fake"}}},
 			}}, Metadata: []Metadata{
-			{Name: "Application", Value: "go3mf app"},
-			{Name: "qm:CustomMetadata1", Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},
+			{Name: xml.Name{Local: "Application"}, Value: "go3mf app"},
+			{Name: xml.Name{Space: "qm", Local: "CustomMetadata1"}, Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},
 		}}
 
 	t.Run("base", func(t *testing.T) {
@@ -249,8 +249,8 @@ func TestEncoder_Encode_Roundtrip(t *testing.T) {
 		{"empty", args{new(Model)}},
 		{"withAttrs", args{&Model{Path: "/a/other.ml", Language: "un", Units: UnitFoot, Thumbnail: "/thumb.png"}}},
 		{"withMetdata", args{&Model{Metadata: []Metadata{
-			{Name: "a", Value: "b", Type: "tp", Preserve: true},
-			{Name: "ab", Value: "bb", Type: "tpb", Preserve: false},
+			{Name: xml.Name{Local: "a"}, Value: "b", Type: "tp", Preserve: true},
+			{Name: xml.Name{Local: "ab"}, Value: "bb", Type: "tpb", Preserve: false},
 		}}}},
 		{"withRootRel", args{&Model{
 			RootRelationships: []Relationship{

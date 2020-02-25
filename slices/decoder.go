@@ -126,16 +126,6 @@ func (d *sliceRefDecoder) Start(attrs []xml.Attr) {
 	d.resource.Refs = append(d.resource.Refs, SliceRef{SliceStackID: sliceStackID, Path: path})
 }
 
-// TODO: validate coherency after decoding.
-// func (d *sliceRefDecoder) addSliceRef(sliceStackID uint32, path string) {
-// 	resource, exist := d.Scanner.FindResource(path, sliceStackID)
-// 	if !exist {
-// 		d.Scanner.GenericError(true, "non-existent referenced resource")
-// 	} else if _, isSlice := resource.(*SliceStackResource); !isSlice {
-// 		d.Scanner.GenericError(true, "non-slicestack referenced resource")
-// 	}
-// }
-
 type sliceDecoder struct {
 	baseDecoder
 	resource               *SliceStackResource

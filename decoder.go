@@ -2,7 +2,6 @@ package go3mf
 
 import (
 	"encoding/xml"
-	"fmt"
 	"image/color"
 	"strconv"
 	"strings"
@@ -59,11 +58,8 @@ func (d *modelDecoder) Start(attrs []xml.Attr) {
 	for i, ext := range d.model.RequiredExtensions {
 		if ns, ok := d.Scanner.namespace(ext); ok {
 			d.model.RequiredExtensions[i] = ns
-			if _, ok := d.Scanner.extensionDecoder[ns]; !ok {
-				d.Scanner.GenericError(true, fmt.Sprintf("'%s' extension is not supported", ext))
-			}
 		} else {
-			d.Scanner.GenericError(true, fmt.Sprintf("'%s' extension is not defined", ext))
+			d.model.RequiredExtensions[i] = ext
 		}
 	}
 }
@@ -110,13 +106,15 @@ func (d *metadataDecoder) Start(attrs []xml.Attr) {
 		}
 		switch a.Name.Local {
 		case attrName:
+			d.metadata.Name = a.Name
 			i := strings.IndexByte(a.Value, ':')
 			if i < 0 {
-				d.metadata.Name = a.Value
+				d.metadata.Name.Local = a.Value
 			} else if _, ok := d.Scanner.namespace(a.Value[0:i]); ok {
-				d.metadata.Name = a.Value[0:i] + ":" + a.Value[i+1:]
+				d.metadata.Name.Space = a.Value[0:i]
+				d.metadata.Name.Local = a.Value[i+1:]
 			} else {
-				d.Scanner.GenericError(true, "unregistered namespace")
+				d.metadata.Name.Local = a.Value
 			}
 		case attrType:
 			d.metadata.Type = a.Value
@@ -170,23 +168,6 @@ func (d *buildItemDecoder) Child(name xml.Name) (child NodeDecoder) {
 	}
 	return
 }
-
-// TODO: validate coeherence after decoding
-// func (d *buildItemDecoder) processItem() {
-// 	resource, ok := d.Scanner.FindResource(d.objectPath, uint32(d.objectID))
-// 	if !ok {
-// 		d.Scanner.GenericError(true, "non-existent referenced object")
-// 	} else if d.item.Object, ok = resource.(Object); !ok {
-// 		d.Scanner.GenericError(true, "non-object referenced resource")
-// 	}
-// 	if ok {
-// 		if d.item.Object != nil && d.item.Object.Type() == ObjectTypeOther {
-// 			d.Scanner.GenericError(true, "referenced object cannot be have OTHER type")
-// 		}
-// 	}
-// 	if ok {
-// 	}
-// }
 
 func (d *buildItemDecoder) Start(attrs []xml.Attr) {
 	for _, a := range attrs {
@@ -579,18 +560,3 @@ func (d *componentDecoder) Start(attrs []xml.Attr) {
 	}
 	d.resource.Components = append(d.resource.Components, &component)
 }
-
-// TODO: validate coeherence after decoding
-// func (d *componentDecoder) addComponent(component *Component, path string, objectID uint32) {
-// if path != "" && !d.Scanner.IsRoot {
-// d.Scanner.GenericError(true, "path attribute in a non-root file is not supported")
-// }
-
-// resource, ok := d.Scanner.FindResource(path, uint32(objectID))
-// if !ok {
-// d.Scanner.GenericError(true, "non-existent referenced object")
-// } else if component.Object, ok = resource.(Object); !ok {
-// d.Scanner.GenericError(true, "non-object referenced resource")
-// }
-// d.resource.Components = append(d.resource.Components, component)
-// }

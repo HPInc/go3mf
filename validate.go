@@ -1,6 +1,7 @@
 package go3mf
 
 import (
+	"encoding/xml"
 	"sort"
 	"strings"
 
@@ -96,24 +97,22 @@ func (v *validator) checkMetadadata(md []Metadata) []error {
 		"licenseterms", "modificationdate", "rating", "title",
 	}
 	var errs []error
-	names := make(map[string]struct{})
+	names := make(map[xml.Name]struct{})
 	for i, m := range md {
-		if m.Name == "" {
+		if m.Name.Local == "" {
 			errs = append(errs, &specerr.MetadataError{Index: i, Err: &specerr.MissingFieldError{Name: attrName}})
 			continue
 		}
-		in := strings.Index(m.Name, ":")
-		if in < 0 {
-			nm := strings.ToLower(m.Name)
+		if m.Name.Space == "" {
+			nm := strings.ToLower(m.Name.Local)
 			n := sort.SearchStrings(allowedMetadataNames[:], nm)
 			if n >= len(allowedMetadataNames) || allowedMetadataNames[n] != nm {
 				errs = append(errs, &specerr.MetadataError{Index: i, Err: specerr.ErrMetadataName})
 			}
 		} else {
 			var found bool
-			space := m.Name[0:in]
 			for _, ns := range v.m.Namespaces {
-				if ns.Space == space {
+				if ns.Space == m.Name.Space {
 					found = true
 					break
 				}
