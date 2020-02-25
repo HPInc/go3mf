@@ -14,7 +14,6 @@ var (
 	ErrIndexOutOfBounds       = errors.New("index is bigger than referenced slice")
 	ErrInsufficientVertices   = errors.New("mesh has to contain at least 3 vertices to form a solid body")
 	ErrInsufficientTriangles  = errors.New("mesh has to contain at least 4 triangles to form a solid body")
-	ErrMeshConsistency        = errors.New("mesh has non-manifold edges without consistent triangle orientation")
 	ErrComponentsPID          = errors.New("MUST NOT assign pid to objects that contain components")
 	ErrOPCPartName            = errors.New("part name MUST conform to the syntax specified in the OPC specification")
 	ErrOPCRelTarget           = errors.New("relationship target part MUST be included in the 3MF document")

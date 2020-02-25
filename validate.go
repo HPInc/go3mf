@@ -18,6 +18,7 @@ type validator struct {
 	ids      map[validatorResource]interface{}
 }
 
+// Validate checks that the model is conformant with the 3MF spec.
 func Validate(model *Model) []error {
 	v := validator{m: model}
 	v.Validate()
@@ -37,7 +38,6 @@ func (v *validator) sortedChilds() []string {
 	return s
 }
 
-// Validate checks that the model is conformant with the 3MF spec.
 func (v *validator) Validate() {
 	v.ids = make(map[validatorResource]interface{})
 	v.validateRelationship(v.m.RootRelationships, "")
@@ -194,6 +194,16 @@ func (v *validator) validateResources(resources *Resources, path string) {
 }
 
 func (v *validator) validateMesh(r *Object, path string, index int, assets map[uint32]Asset) {
+	switch r.ObjectType {
+	case ObjectTypeModel, ObjectTypeSolidSupport:
+		if len(r.Mesh.Nodes) < 3 {
+			v.AddWarning(specerr.NewObject(path, index, specerr.ErrInsufficientVertices))
+		}
+		if len(r.Mesh.Faces) <= 3 {
+			v.AddWarning(specerr.NewObject(path, index, specerr.ErrInsufficientTriangles))
+		}
+	}
+
 	nodeCount := uint32(len(r.Mesh.Nodes))
 	for i, face := range r.Mesh.Faces {
 		i0, i1, i2 := face.NodeIndices[0], face.NodeIndices[1], face.NodeIndices[2]
@@ -217,51 +227,6 @@ func (v *validator) validateMesh(r *Object, path string, index int, assets map[u
 			} else {
 				v.AddWarning(specerr.NewObject(path, index, &specerr.TriangleError{Index: i, Err: specerr.ErrMissingResource}))
 			}
-		}
-	}
-	switch r.ObjectType {
-	case ObjectTypeModel, ObjectTypeSolidSupport:
-		v.validateMeshCoherency(r, path, index)
-	}
-}
-
-func (v *validator) validateMeshCoherency(r *Object, path string, index int) {
-	if len(r.Mesh.Nodes) < 3 {
-		v.AddWarning(specerr.NewObject(path, index, specerr.ErrInsufficientVertices))
-	}
-	if len(r.Mesh.Faces) <= 3 {
-		v.AddWarning(specerr.NewObject(path, index, specerr.ErrInsufficientTriangles))
-	}
-
-	var edgeCounter uint32
-	pairMatching := newPairMatch()
-	for _, face := range r.Mesh.Faces {
-		for j := uint32(0); j < 3; j++ {
-			n1, n2 := face.NodeIndices[j], face.NodeIndices[(j+1)%3]
-			if _, ok := pairMatching.CheckMatch(n1, n2); !ok {
-				pairMatching.AddMatch(n1, n2, edgeCounter)
-				edgeCounter++
-			}
-		}
-	}
-
-	positive, negative := make([]uint32, edgeCounter), make([]uint32, edgeCounter)
-	for _, face := range r.Mesh.Faces {
-		for j := uint32(0); j < 3; j++ {
-			n1, n2 := face.NodeIndices[j], face.NodeIndices[(j+1)%3]
-			edgeIndex, _ := pairMatching.CheckMatch(n1, n2)
-			if n1 <= n2 {
-				positive[edgeIndex]++
-			} else {
-				negative[edgeIndex]++
-			}
-		}
-	}
-
-	for i := uint32(0); i < edgeCounter; i++ {
-		if positive[i] != 1 || negative[i] != 1 {
-			v.AddWarning(specerr.NewObject(path, index, specerr.ErrMeshConsistency))
-			break
 		}
 	}
 }
