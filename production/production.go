@@ -1,7 +1,5 @@
 package production
 
-import "github.com/qmuntal/go3mf"
-
 // ExtensionName is the canonical name of this extension.
 const ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/production/2015/06"
 
@@ -22,31 +20,12 @@ type PathUUID struct {
 	Path string
 }
 
+// ObjectPath returns the Path extension attribute.
+func (p *PathUUID) ObjectPath() string {
+	return p.Path
+}
+
 const (
 	attrProdUUID = "UUID"
 	attrPath     = "path"
 )
-
-// PathObject returns the Path extension attributes if exists and is not empty.
-// Else it returns defaultValue.
-func PathObject(o *go3mf.Object, defaultValue string) string {
-	var ext *PathUUID
-	if o.ExtensionAttr.Get(&ext) {
-		if ext.Path != "" {
-			return ext.Path
-		}
-	}
-	return defaultValue
-}
-
-// PathObject returns the Path extension attributes if exists and is not empty.
-// Else it returns defaultValue.
-func PathItem(o *go3mf.Item, defaultValue string) string {
-	var ext *PathUUID
-	if o.ExtensionAttr.Get(&ext) {
-		if ext.Path != "" {
-			return ext.Path
-		}
-	}
-	return defaultValue
-}

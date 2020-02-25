@@ -335,6 +335,21 @@ type Item struct {
 	ExtensionAttr ExtensionAttr
 }
 
+// ObjectPath search an extension attribute with an ObjectPath
+// function that return a non empty path.
+// Else returns the default path.
+func (b *Item) ObjectPath(defaultPath string) string {
+	for _, att := range b.ExtensionAttr {
+		if ext, ok := att.(interface{ ObjectPath() string }); ok {
+			path := ext.ObjectPath()
+			if path != "" {
+				return path
+			}
+		}
+	}
+	return defaultPath
+}
+
 // HasTransform returns true if the transform is different than the identity.
 func (b *Item) HasTransform() bool {
 	return b.Transform != Matrix{} && b.Transform != Identity()
@@ -367,35 +382,26 @@ func NewComponentsObject() *Object {
 	return &Object{Components: make([]*Component, 0)}
 }
 
-// IsValid checks if the mesh resource are valid.
-func (o *Object) IsValid() bool {
-	if o.Mesh == nil && o.Components == nil {
-		return false
-	} else if o.Mesh != nil && o.Components != nil {
-		return false
-	}
-	var isValid bool
-	if o.Mesh != nil {
-		switch o.ObjectType {
-		case ObjectTypeModel:
-			isValid = o.Mesh.IsManifoldAndOriented()
-		case ObjectTypeSolidSupport:
-			isValid = o.Mesh.IsManifoldAndOriented()
-			//case ObjectTypeSupport:
-			//	return len(c.Mesh.Beams) == 0
-			//case ObjectTypeSurface:
-			//	return len(c.Mesh.Beams) == 0
-		}
-	}
-
-	return isValid
-}
-
 // A Component is an in memory representation of the 3MF component.
 type Component struct {
 	ObjectID      uint32
 	Transform     Matrix
 	ExtensionAttr ExtensionAttr
+}
+
+// ObjectPath search an extension attribute with an ObjectPath
+// function that return a non empty path.
+// Else returns the default path.
+func (c *Component) ObjectPath(defaultPath string) string {
+	for _, att := range c.ExtensionAttr {
+		if ext, ok := att.(interface{ ObjectPath() string }); ok {
+			path := ext.ObjectPath()
+			if path != "" {
+				return path
+			}
+		}
+	}
+	return defaultPath
 }
 
 // HasTransform returns true if the transform is different than the identity.
@@ -419,65 +425,6 @@ type Mesh struct {
 	Nodes         []Point3D
 	Faces         []Face
 	Extension     Extension
-}
-
-// CheckSanity checks if the mesh is well formated.
-func (m *Mesh) CheckSanity() bool {
-	return m.checkFacesSanity()
-}
-
-// IsManifoldAndOriented returns true if the mesh is manifold and oriented.
-func (m *Mesh) IsManifoldAndOriented() bool {
-	if len(m.Nodes) < 3 || len(m.Faces) < 3 || !m.CheckSanity() {
-		return false
-	}
-
-	var edgeCounter uint32
-	pairMatching := newPairMatch()
-	for _, face := range m.Faces {
-		for j := uint32(0); j < 3; j++ {
-			n1, n2 := face.NodeIndices[j], face.NodeIndices[(j+1)%3]
-			if _, ok := pairMatching.CheckMatch(n1, n2); !ok {
-				pairMatching.AddMatch(n1, n2, edgeCounter)
-				edgeCounter++
-			}
-		}
-	}
-
-	positive, negative := make([]uint32, edgeCounter), make([]uint32, edgeCounter)
-	for _, face := range m.Faces {
-		for j := uint32(0); j < 3; j++ {
-			n1, n2 := face.NodeIndices[j], face.NodeIndices[(j+1)%3]
-			edgeIndex, _ := pairMatching.CheckMatch(n1, n2)
-			if n1 <= n2 {
-				positive[edgeIndex]++
-			} else {
-				negative[edgeIndex]++
-			}
-		}
-	}
-
-	for i := uint32(0); i < edgeCounter; i++ {
-		if positive[i] != 1 || negative[i] != 1 {
-			return false
-		}
-	}
-
-	return true
-}
-
-func (m *Mesh) checkFacesSanity() bool {
-	nodeCount := uint32(len(m.Nodes))
-	for _, face := range m.Faces {
-		i0, i1, i2 := face.NodeIndices[0], face.NodeIndices[1], face.NodeIndices[2]
-		if i0 == i1 || i0 == i2 || i1 == i2 {
-			return false
-		}
-		if i0 >= nodeCount || i1 >= nodeCount || i2 >= nodeCount {
-			return false
-		}
-	}
-	return true
 }
 
 // MeshBuilder is a helper that creates mesh following a configurable criteria.
@@ -547,17 +494,31 @@ const (
 const (
 	// ExtensionName is the canonical name of this extension.
 	ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/core/2015/02"
-	// RelTypeModel3D is the canonical 3D model relationship type.
-	RelTypeModel3D = "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"
+
+	// RelType3DModel is the canonical 3D model relationship type.
+	RelType3DModel = "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"
 	// RelTypeThumbnail is the canonical thumbnail relationship type.
 	RelTypeThumbnail = "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail"
 	// RelTypePrintTicket is the canonical print ticket relationship type.
 	RelTypePrintTicket = "http://schemas.microsoft.com/3dmanufacturing/2013/01/printticket"
-)
+	// RelTypeMustPreserve is the canonical must preserve relationship type.
+	RelTypeMustPreserve = "http://schemas.openxmlformats.org/package/2006/relationships/mustpreserve"
 
-const (
-	uriDefault3DModel  = "/3D/3dmodel.model"
-	contentType3DModel = "application/vnd.ms-package.3dmanufacturing-3dmodel+xml"
+	// DefaultPartModelName is the recommended root model part name.
+	DefaultPartModelName = "/3D/3dmodel.model"
+	// DefaultPrintTicketName is the recommended print ticket part name.
+	DefaultPrintTicketName = "/3D/Metadata/Model_PT.xml"
+	// Default3DTexturesDir is the recommended directory for 3D textures.
+	Default3DTexturesDir = "/3D/Textures/"
+	// Default3DOtherDir is the recommended directory for non-standard parts.
+	Default3DOtherDir = "/3D/Other/"
+	// DefaultMetadataDir is the recommended directory for standard metadata.
+	DefaultMetadataDir = "/Metadata/"
+
+	// ContentType3DModel is the 3D model content type.
+	ContentType3DModel = "application/vnd.ms-package.3dmanufacturing-3dmodel+xml"
+	// ContentTypePrintTicket is the print ticket content type.
+	ContentTypePrintTicket = "application/vnd.ms-printing.printticket+xml"
 )
 
 const (

@@ -334,7 +334,7 @@ func (d *Decoder) processOPC(model *Model) (packageFile, error) {
 	}
 	var rootFile packageFile
 	for _, r := range d.p.Relationships() {
-		if r.Type == RelTypeModel3D {
+		if r.Type == RelType3DModel {
 			var ok bool
 			rootFile, ok = d.p.FindFileFromName(r.Path)
 			if !ok {
@@ -360,7 +360,7 @@ func (d *Decoder) extractCoreAttachments(modelFile packageFile, model *Model, is
 	for _, rel := range modelFile.Relationships() {
 		if file, ok := modelFile.FindFileFromName(rel.Path); ok {
 			if isRoot {
-				if rel.Type == RelTypeModel3D {
+				if rel.Type == RelType3DModel {
 					d.nonRootModels = append(d.nonRootModels, file)
 					if model.Childs == nil {
 						model.Childs = make(map[string]*ChildModel)
@@ -370,7 +370,7 @@ func (d *Decoder) extractCoreAttachments(modelFile packageFile, model *Model, is
 					model.Attachments = d.addAttachment(model.Attachments, file)
 					model.Relationships = append(model.Relationships, rel)
 				}
-			} else if rel.Type != RelTypeModel3D {
+			} else if rel.Type != RelType3DModel {
 				if child, ok := model.Childs[modelFile.Name()]; ok {
 					model.Attachments = d.addAttachment(model.Attachments, file)
 					child.Relationships = append(child.Relationships, rel)
@@ -422,8 +422,8 @@ type fakePackageFile struct {
 	data []byte
 }
 
-func (f *fakePackageFile) Name() string                                { return uriDefault3DModel }
-func (f *fakePackageFile) ContentType() string                         { return contentType3DModel }
+func (f *fakePackageFile) Name() string                                { return DefaultPartModelName }
+func (f *fakePackageFile) ContentType() string                         { return ContentType3DModel }
 func (f *fakePackageFile) FindFileFromName(string) (packageFile, bool) { return nil, false }
 func (f *fakePackageFile) Relationships() []Relationship               { return nil }
 func (f *fakePackageFile) Open() (io.ReadCloser, error) {
