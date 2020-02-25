@@ -66,20 +66,6 @@ func (e ParsePropertyError) Error() string {
 	return fmt.Sprintf("go3mf: [%s] error parsing property '%s = %s' of element '%s' in resource '%s:%d'", e.Type, e.Name, e.Value, e.Element, e.ModelPath, e.ResourceID)
 }
 
-// A GenericError represents a generic error.
-// If ResourceID is 0 means that the error took place while parsing the resource property before the ID appeared.
-// When Element is 'item' the ResourceID is the objectID property of a build item.
-type GenericError struct {
-	ResourceID uint32
-	ModelPath  string
-	Element    string
-	Message    string
-}
-
-func (e GenericError) Error() string {
-	return fmt.Sprintf("go3mf: error at element '%s' in resource '%s:%d' with messages '%s'", e.Element, e.ModelPath, e.ResourceID, e.Message)
-}
-
 // A Scanner is a 3mf model file scanning state machine.
 type Scanner struct {
 	Resources        Resources
@@ -115,16 +101,6 @@ func (s *Scanner) AddAsset(r Asset) {
 func (s *Scanner) AddObject(r *Object) {
 	s.Resources.Objects = append(s.Resources.Objects, r)
 	s.closeResource()
-}
-
-// GenericError adds the error to the warnings.
-// Returns false if scanning cannot continue.
-func (s *Scanner) GenericError(strict bool, msg string) {
-	err := GenericError{ResourceID: s.ResourceID, Element: s.Element, ModelPath: s.ModelPath, Message: msg}
-	s.Warnings = append(s.Warnings, err)
-	if strict && s.Strict {
-		s.Err = err
-	}
 }
 
 // InvalidAttr adds the error to the warnings.

@@ -102,7 +102,6 @@ func TestDecode_warns(t *testing.T) {
 		go3mf.ParsePropertyError{ResourceID: 3, Element: "segment", Name: "v2", Value: "a", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
 		go3mf.ParsePropertyError{ResourceID: 3, Element: "sliceref", Name: "slicestackid", Value: "a", ModelPath: "/3D/3dmodel.model", Type: go3mf.PropertyRequired},
 		go3mf.MissingPropertyError{ResourceID: 3, Element: "sliceref", ModelPath: "/3D/3dmodel.model", Name: "slicestackid"},
-		go3mf.GenericError{ResourceID: 3, Element: "slicestack", ModelPath: "/3D/3dmodel.model", Message: "slicestack contains slices and slicerefs"},
 		go3mf.MissingPropertyError{ResourceID: 7, Element: "sliceref", ModelPath: "/3D/3dmodel.model", Name: "slicestackid"},
 		go3mf.ParsePropertyError{ResourceID: 8, Element: "object", ModelPath: "/3D/3dmodel.model", Name: "meshresolution", Value: "invalid", Type: go3mf.PropertyOptional},
 		go3mf.ParsePropertyError{ResourceID: 8, Element: "object", ModelPath: "/3D/3dmodel.model", Name: "slicestackid", Value: "a", Type: go3mf.PropertyRequired},

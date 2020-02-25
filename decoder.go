@@ -416,17 +416,6 @@ func (d *triangleDecoder) Start(attrs []xml.Attr) {
 	p3 = applyDefault(p3, p1, hasP3)
 	pid = applyDefault(pid, d.defaultPropertyID, hasPID)
 
-	d.addTriangle(v1, v2, v3, pid, p1, p2, p3)
-}
-
-func (d *triangleDecoder) addTriangle(v1, v2, v3, pid, p1, p2, p3 uint32) {
-	if v1 == v2 || v1 == v3 || v2 == v3 {
-		d.Scanner.GenericError(true, "duplicated triangle indices")
-	}
-	nodeCount := uint32(len(d.mesh.Nodes))
-	if v1 >= nodeCount || v2 >= nodeCount || v3 >= nodeCount {
-		d.Scanner.GenericError(true, "triangle indices are out of range")
-	}
 	d.mesh.Faces = append(d.mesh.Faces, Face{
 		NodeIndices: [3]uint32{v1, v2, v3},
 		PID:         pid,
@@ -465,9 +454,6 @@ func (d *objectDecoder) Child(name xml.Name) (child NodeDecoder) {
 		if name.Local == attrMesh {
 			child = &meshDecoder{resource: &d.resource}
 		} else if name.Local == attrComponents {
-			if d.resource.DefaultPID != 0 {
-				d.Scanner.GenericError(true, "default PID is not supported for component objects")
-			}
 			child = &componentsDecoder{resource: &d.resource}
 		} else if name.Local == attrMetadataGroup {
 			child = &metadataGroupDecoder{metadatas: &d.resource.Metadata}

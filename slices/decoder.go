@@ -62,9 +62,6 @@ type sliceStackDecoder struct {
 }
 
 func (d *sliceStackDecoder) End() {
-	if len(d.resource.Refs) > 0 && len(d.resource.Slices) > 0 {
-		d.Scanner.GenericError(true, "slicestack contains slices and slicerefs")
-	}
 	d.Scanner.AddAsset(&d.resource)
 }
 
