@@ -2,6 +2,7 @@ package go3mf
 
 import (
 	"encoding/xml"
+	"image/color"
 	"sort"
 	"strings"
 
@@ -131,6 +132,7 @@ func (v *validator) checkMetadadata(md []Metadata) []error {
 
 func (v *validator) validateResources(resources *Resources, path string) {
 	assets := make(map[uint32]Asset)
+	var emptyColor color.RGBA
 	for i, r := range resources.Assets {
 		id := r.Identify()
 		if id == 0 {
@@ -144,14 +146,19 @@ func (v *validator) validateResources(resources *Resources, path string) {
 		case *BaseMaterialsResource:
 			if len(r.Materials) == 0 {
 				v.AddWarning(specerr.NewAsset(path, i, specerr.ErrEmptySlice))
-			} else {
-				for j, b := range r.Materials {
-					if b.Name == "" {
-						v.AddWarning(specerr.NewAsset(path, i, &specerr.BaseError{
-							Index: j,
-							Err:   &specerr.MissingFieldError{Name: attrName}},
-						))
-					}
+			}
+			for j, b := range r.Materials {
+				if b.Name == "" {
+					v.AddWarning(specerr.NewAsset(path, i, &specerr.ResourcePropertyError{
+						Index: j,
+						Err:   &specerr.MissingFieldError{Name: attrName}},
+					))
+				}
+				if b.Color == emptyColor {
+					v.AddWarning(specerr.NewAsset(path, i, &specerr.ResourcePropertyError{
+						Index: j,
+						Err:   &specerr.MissingFieldError{Name: attrDisplayColor}},
+					))
 				}
 			}
 		}

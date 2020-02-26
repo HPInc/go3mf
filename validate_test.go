@@ -45,7 +45,7 @@ func TestValidate(t *testing.T) {
 			&specerr.MetadataError{Index: 3, Err: specerr.ErrMetadataName},
 			&specerr.MetadataError{Index: 4, Err: &specerr.MissingFieldError{Name: attrName}},
 		}},
-		{"build", args{&Model{Resources: Resources{Assets: []Asset{&BaseMaterialsResource{ID: 1, Materials: []BaseMaterial{{Name: "a", Color: color.RGBA{}}}}}, Objects: []*Object{
+		{"build", args{&Model{Resources: Resources{Assets: []Asset{&BaseMaterialsResource{ID: 1, Materials: []BaseMaterial{{Name: "a", Color: color.RGBA{A: 1}}}}}, Objects: []*Object{
 			{ID: 2, ObjectType: ObjectTypeOther, Mesh: &Mesh{Nodes: []Point3D{{}, {}, {}, {}}, Faces: []Face{
 				{NodeIndices: [3]uint32{0, 1, 2}}, {NodeIndices: [3]uint32{0, 3, 1}}, {NodeIndices: [3]uint32{0, 2, 3}}, {NodeIndices: [3]uint32{1, 3, 2}},
 			}}}}}, Build: Build{Items: []*Item{
@@ -70,17 +70,18 @@ func TestValidate(t *testing.T) {
 			}},
 		{"assets", args{&Model{Resources: Resources{Assets: []Asset{
 			&BaseMaterialsResource{Materials: []BaseMaterial{{Color: color.RGBA{}}}},
-			&BaseMaterialsResource{ID: 1, Materials: []BaseMaterial{{Name: "a", Color: color.RGBA{}}}},
+			&BaseMaterialsResource{ID: 1, Materials: []BaseMaterial{{Name: "a", Color: color.RGBA{A: 1}}}},
 			&BaseMaterialsResource{ID: 1},
 		}}}}, []error{
 			&specerr.AssetError{Path: path, Index: 0, Err: specerr.ErrMissingID},
-			&specerr.AssetError{Path: path, Index: 0, Err: &specerr.BaseError{Index: 0, Err: &specerr.MissingFieldError{Name: attrName}}},
+			&specerr.AssetError{Path: path, Index: 0, Err: &specerr.ResourcePropertyError{Index: 0, Err: &specerr.MissingFieldError{Name: attrName}}},
+			&specerr.AssetError{Path: path, Index: 0, Err: &specerr.ResourcePropertyError{Index: 0, Err: &specerr.MissingFieldError{Name: attrDisplayColor}}},
 			&specerr.AssetError{Path: path, Index: 2, Err: specerr.ErrDuplicatedID},
 			&specerr.AssetError{Path: path, Index: 2, Err: specerr.ErrEmptySlice},
 		}},
 		{"objects", args{&Model{Resources: Resources{Assets: []Asset{
-			&BaseMaterialsResource{ID: 1, Materials: []BaseMaterial{{Name: "a", Color: color.RGBA{}}, {Name: "b", Color: color.RGBA{}}}},
-			&BaseMaterialsResource{ID: 5, Materials: []BaseMaterial{{Name: "a", Color: color.RGBA{}}, {Name: "b", Color: color.RGBA{}}}},
+			&BaseMaterialsResource{ID: 1, Materials: []BaseMaterial{{Name: "a", Color: color.RGBA{A: 1}}, {Name: "b", Color: color.RGBA{A: 1}}}},
+			&BaseMaterialsResource{ID: 5, Materials: []BaseMaterial{{Name: "a", Color: color.RGBA{A: 1}}, {Name: "b", Color: color.RGBA{A: 1}}}},
 		}, Objects: []*Object{
 			{},
 			{ID: 1, DefaultPIndex: 1, Mesh: &Mesh{}, Components: []*Component{{ObjectID: 1}}},

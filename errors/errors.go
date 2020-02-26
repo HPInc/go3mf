@@ -154,25 +154,17 @@ func (e *TriangleError) Error() string {
 	return fmt.Sprintf("triangle %d: %v", e.Index, e.Err)
 }
 
-type BaseError struct {
+type ResourcePropertyError struct {
 	Index int
 	Err   error
 }
 
-func (e *BaseError) Unwrap() error {
+func (e *ResourcePropertyError) Unwrap() error {
 	return e.Err
 }
 
-func (e *BaseError) Error() string {
-	return fmt.Sprintf("base %d: %v", e.Index, e.Err)
-}
-
-type UnusupportedExtensionErr struct {
-	Name string
-}
-
-func (e *UnusupportedExtensionErr) Error() string {
-	return "go3mf: unupported extension %s" + e.Name
+func (e *ResourcePropertyError) Error() string {
+	return fmt.Sprintf("property %d: %v", e.Index, e.Err)
 }
 
 type MetadataError struct {
