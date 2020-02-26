@@ -3,7 +3,6 @@ package stl
 import (
 	"bufio"
 	"context"
-	"fmt"
 	"io"
 	"strconv"
 	"strings"
@@ -55,29 +54,4 @@ func (d *asciiDecoder) decode(ctx context.Context, m *go3mf.Mesh) (err error) {
 		}
 	}
 	return scanner.Err()
-}
-
-type asciiEncoder struct {
-	w io.Writer
-}
-
-const pstr = "solid\nfacet normal %f %f %f\nouter loop\nvertex %f %f %f\nvertex %f %f %f\nvertex %f %f %f\nendloop\nendfacet\nendsolid\n"
-
-func (e *asciiEncoder) encode(m *go3mf.Mesh) error {
-	for _, f := range m.Faces {
-		n1, n2, n3 := m.Nodes[f.NodeIndices[0]], m.Nodes[f.NodeIndices[1]], m.Nodes[f.NodeIndices[2]]
-		n := faceNormal(n1, n2, n3)
-		_, err := io.WriteString(e.w, fmt.Sprintf(pstr,
-			n.X(), n.Y(), n.Z(),
-			n1.X(), n1.Y(), n1.Z(),
-			n2.X(), n2.Y(), n2.Z(),
-			n3.X(), n3.Y(), n3.Z(),
-		))
-
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

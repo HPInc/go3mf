@@ -3,7 +3,6 @@ package stl
 import (
 	"bytes"
 	"context"
-	"errors"
 	"testing"
 
 	"github.com/go-test/deep"
@@ -44,54 +43,6 @@ func Test_binaryDecoder_decode(t *testing.T) {
 			}
 		})
 	}
-}
-
-func Test_binaryEncoder_encode(t *testing.T) {
-	triangle := createMeshTriangle(0)
-	type args struct {
-		m *go3mf.Mesh
-	}
-	tests := []struct {
-		name    string
-		e       *binaryEncoder
-		args    args
-		wantErr bool
-	}{
-		{"errorHeader", &binaryEncoder{w: new(errorWriter)}, args{triangle.Mesh}, true},
-		{"errorFace", &binaryEncoder{w: &errorWriter{max: 1}}, args{triangle.Mesh}, true},
-		{"base", &binaryEncoder{w: new(bytes.Buffer)}, args{triangle.Mesh}, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.e.encode(tt.args.m); (err != nil) != tt.wantErr {
-				t.Errorf("binaryEncoder.encode() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !tt.wantErr {
-				// We do decoder and then encoder again, and the result must be the same
-				decoder := &binaryDecoder{r: tt.e.w.(*bytes.Buffer)}
-				got := new(go3mf.Mesh)
-				decoder.decode(context.Background(), got)
-				if diff := deep.Equal(got, tt.args.m); diff != nil {
-					t.Errorf("binaryDecoder.encode() = %v", diff)
-					return
-				}
-			}
-		})
-	}
-}
-
-type errorWriter struct {
-	max     int // writes before failing
-	current int
-}
-
-func (w *errorWriter) Write(p []byte) (n int, err error) {
-	if w.current >= w.max {
-		return 0, errors.New("")
-	}
-	w.current++
-	return 0, nil
 }
 
 func createMeshTriangle(id uint32) *go3mf.Object {
