@@ -48,9 +48,9 @@ func TestFormatRGBA(t *testing.T) {
 		want string
 	}{
 		{"base", color.RGBA{200, 250, 60, 80}, "#c8fa3c50"},
-		{"red", color.RGBA{255, 0, 0, 255}, "#ff0000ff"},
-		{"green", color.RGBA{0, 255, 0, 255}, "#00ff00ff"},
-		{"blue", color.RGBA{0, 0, 255, 255}, "#0000ffff"},
+		{"red", color.RGBA{255, 0, 0, 255}, "#ff0000"},
+		{"green", color.RGBA{0, 255, 0, 255}, "#00ff00"},
+		{"blue", color.RGBA{0, 0, 255, 255}, "#0000ff"},
 		{"transparent", color.RGBA{0, 0, 0, 0}, "#00000000"},
 	}
 	for _, tt := range tests {

@@ -115,5 +115,8 @@ func ParseRGBA(s string) (c color.RGBA, err error) {
 
 // FormatRGBA returns the color as a hex string with the format #rrggbbaa.
 func FormatRGBA(c color.RGBA) string {
+	if c.A == 255 {
+		return fmt.Sprintf("#%02x%02x%02x", c.R, c.G, c.B)
+	}
 	return fmt.Sprintf("#%02x%02x%02x%02x", c.R, c.G, c.B, c.A)
 }
