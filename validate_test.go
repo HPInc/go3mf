@@ -73,11 +73,11 @@ func TestValidate(t *testing.T) {
 			&BaseMaterialsResource{ID: 1, Materials: []BaseMaterial{{Name: "a", Color: color.RGBA{A: 1}}}},
 			&BaseMaterialsResource{ID: 1},
 		}}}}, []error{
-			&specerr.AssetError{Path: path, Index: 0, Err: specerr.ErrMissingID},
-			&specerr.AssetError{Path: path, Index: 0, Err: &specerr.ResourcePropertyError{Index: 0, Err: &specerr.MissingFieldError{Name: attrName}}},
-			&specerr.AssetError{Path: path, Index: 0, Err: &specerr.ResourcePropertyError{Index: 0, Err: &specerr.MissingFieldError{Name: attrDisplayColor}}},
-			&specerr.AssetError{Path: path, Index: 2, Err: specerr.ErrDuplicatedID},
-			&specerr.AssetError{Path: path, Index: 2, Err: specerr.ErrEmptySlice},
+			&specerr.AssetError{Path: path, Index: 0, Name: "BaseMaterialsResource", Err: specerr.ErrMissingID},
+			&specerr.AssetError{Path: path, Index: 0, Name: "BaseMaterialsResource", Err: &specerr.ResourcePropertyError{Index: 0, Err: &specerr.MissingFieldError{Name: attrName}}},
+			&specerr.AssetError{Path: path, Index: 0, Name: "BaseMaterialsResource", Err: &specerr.ResourcePropertyError{Index: 0, Err: &specerr.MissingFieldError{Name: attrDisplayColor}}},
+			&specerr.AssetError{Path: path, Index: 2, Name: "BaseMaterialsResource", Err: specerr.ErrDuplicatedID},
+			&specerr.AssetError{Path: path, Index: 2, Name: "BaseMaterialsResource", Err: specerr.ErrEmptyResourceProps},
 		}},
 		{"objects", args{&Model{Resources: Resources{Assets: []Asset{
 			&BaseMaterialsResource{ID: 1, Materials: []BaseMaterial{{Name: "a", Color: color.RGBA{A: 1}}, {Name: "b", Color: color.RGBA{A: 1}}}},

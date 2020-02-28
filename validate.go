@@ -136,26 +136,26 @@ func (v *validator) validateResources(resources *Resources, path string) {
 	for i, r := range resources.Assets {
 		id := r.Identify()
 		if id == 0 {
-			v.AddWarning(specerr.NewAsset(path, i, specerr.ErrMissingID))
+			v.AddWarning(specerr.NewAsset(path, i, r, specerr.ErrMissingID))
 		} else if _, ok := v.ids[validatorResource{path, id}]; ok {
-			v.AddWarning(specerr.NewAsset(path, i, specerr.ErrDuplicatedID))
+			v.AddWarning(specerr.NewAsset(path, i, r, specerr.ErrDuplicatedID))
 		}
 		v.ids[validatorResource{path, id}] = r
 		assets[id] = r
 		switch r := r.(type) {
 		case *BaseMaterialsResource:
 			if len(r.Materials) == 0 {
-				v.AddWarning(specerr.NewAsset(path, i, specerr.ErrEmptySlice))
+				v.AddWarning(specerr.NewAsset(path, i, r, specerr.ErrEmptyResourceProps))
 			}
 			for j, b := range r.Materials {
 				if b.Name == "" {
-					v.AddWarning(specerr.NewAsset(path, i, &specerr.ResourcePropertyError{
+					v.AddWarning(specerr.NewAsset(path, i, r, &specerr.ResourcePropertyError{
 						Index: j,
 						Err:   &specerr.MissingFieldError{Name: attrName}},
 					))
 				}
 				if b.Color == emptyColor {
-					v.AddWarning(specerr.NewAsset(path, i, &specerr.ResourcePropertyError{
+					v.AddWarning(specerr.NewAsset(path, i, r, &specerr.ResourcePropertyError{
 						Index: j,
 						Err:   &specerr.MissingFieldError{Name: attrDisplayColor}},
 					))

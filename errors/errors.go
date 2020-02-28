@@ -3,11 +3,13 @@ package errors
 import (
 	"errors"
 	"fmt"
+	"reflect"
+	"strings"
 )
 
 // Error guards.
 var (
-	ErrMissingID              = errors.New("resource ID MUST be a positive integer")
+	ErrMissingID              = errors.New("resource ID MUST be greater than zero")
 	ErrDuplicatedID           = errors.New("IDs MUST be unique among all resources under same Model")
 	ErrMissingResource        = errors.New("resources MUST be defined prior to referencing")
 	ErrDuplicatedIndices      = errors.New("indices v1, v2 and v3 MUST be distinct")
@@ -28,9 +30,13 @@ var (
 	ErrOtherItem              = errors.New("MUST NOT reference objects of type other")
 	ErrNonObject              = errors.New("MUST NOT reference non-object resources")
 	ErrRequiredExt            = errors.New("go3mf: unsupported required extension")
-	ErrEmptySlice             = errors.New("slice MUST NOT be empty")
+	ErrEmptyResourceProps     = errors.New("resource properties MUST NOT be empty")
 	ErrRecursiveComponent     = errors.New("MUST NOT contain recursive references")
 	ErrInvalidObject          = errors.New("MUST contain a mesh or components")
+	ErrMultiBlend             = errors.New("there MUST NOT be more blendmethods than layers – 1")
+	ErrMaterialMulti          = errors.New("a material, if included, MUST be positioned as the first layer")
+	ErrMultiRefMulti          = errors.New("the pids list MUST NOT contain any references to a multiproperties")
+	ErrMultiColors            = errors.New("the pids list MUST NOT contain more than one reference to a colorgroup")
 )
 
 type ItemError struct {
@@ -53,11 +59,12 @@ func (e *ItemError) Error() string {
 type AssetError struct {
 	Path  string
 	Index int
+	Name  string
 	Err   error
 }
 
-func NewAsset(path string, index int, err error) error {
-	return &AssetError{Path: path, Index: index, Err: err}
+func NewAsset(path string, index int, asset interface{}, err error) error {
+	return &AssetError{Path: path, Index: index, Name: reflect.TypeOf(asset).Elem().Name(), Err: err}
 }
 
 func (e *AssetError) Unwrap() error {
@@ -65,7 +72,7 @@ func (e *AssetError) Unwrap() error {
 }
 
 func (e *AssetError) Error() string {
-	return fmt.Sprintf("go3mf: asset %s#%d: %v", e.Path, e.Index, e.Err)
+	return fmt.Sprintf("go3mf: %s %s#%d: %v", strings.ToLower(e.Name), e.Path, e.Index, e.Err)
 }
 
 type ObjectError struct {
