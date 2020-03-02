@@ -174,7 +174,7 @@ func newMockPackage(other *mockFile) *mockPackage {
 	m := new(mockPackage)
 	m.On("Open", mock.Anything).Return(nil).Maybe()
 	m.On("Create", mock.Anything, mock.Anything).Return(nil, nil).Maybe()
-	m.On("Relationships").Return([]Relationship{{Path: DefaultPartModelName, Type: RelType3DModel}}).Maybe()
+	m.On("Relationships").Return([]Relationship{{Path: DefaultModelPath, Type: RelType3DModel}}).Maybe()
 	m.On("FindFileFromName", mock.Anything).Return(other, other != nil).Maybe()
 	return m
 }

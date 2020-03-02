@@ -422,7 +422,7 @@ type fakePackageFile struct {
 	data []byte
 }
 
-func (f *fakePackageFile) Name() string                                { return DefaultPartModelName }
+func (f *fakePackageFile) Name() string                                { return DefaultModelPath }
 func (f *fakePackageFile) ContentType() string                         { return ContentType3DModel }
 func (f *fakePackageFile) FindFileFromName(string) (packageFile, bool) { return nil, false }
 func (f *fakePackageFile) Relationships() []Relationship               { return nil }

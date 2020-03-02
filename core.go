@@ -280,6 +280,14 @@ type Model struct {
 	ExtensionAttr      ExtensionAttr
 }
 
+// PathOrDefault returns Path if not empty, else DefaultModelPath.
+func (m *Model) PathOrDefault() string {
+	if m.Path == "" {
+		return DefaultModelPath
+	}
+	return m.Path
+}
+
 // FindResources returns the resource associated with path.
 func (m *Model) FindResources(path string) (*Resources, bool) {
 	if path == "" || path == m.Path {
@@ -504,8 +512,8 @@ const (
 	// RelTypeMustPreserve is the canonical must preserve relationship type.
 	RelTypeMustPreserve = "http://schemas.openxmlformats.org/package/2006/relationships/mustpreserve"
 
-	// DefaultPartModelName is the recommended root model part name.
-	DefaultPartModelName = "/3D/3dmodel.model"
+	// DefaultModelPath is the recommended root model part name.
+	DefaultModelPath = "/3D/3dmodel.model"
 	// DefaultPrintTicketName is the recommended print ticket part name.
 	DefaultPrintTicketName = "/3D/Metadata/Model_PT.xml"
 	// Default3DTexturesDir is the recommended directory for 3D textures.

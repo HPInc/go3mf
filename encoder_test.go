@@ -178,7 +178,7 @@ func TestEncoder_Encode_Normalize(t *testing.T) {
 		args args
 		want *Model
 	}{
-		{"empty", args{new(Model)}, &Model{Path: DefaultPartModelName}},
+		{"empty", args{new(Model)}, &Model{Path: DefaultModelPath}},
 		{"withAttrs", args{&Model{Path: "a/other.ml", Thumbnail: "/Metadata/thumbnail.png", Attachments: []Attachment{
 			{ContentType: "image/png", Path: "Metadata/thumbnail.png", Stream: bytes.NewBufferString("fake")},
 		}}}, &Model{Path: "/a/other.ml", Units: UnitMillimeter, Thumbnail: "/Metadata/thumbnail.png", Attachments: []Attachment{
@@ -195,7 +195,7 @@ func TestEncoder_Encode_Normalize(t *testing.T) {
 				{ContentType: "application/vnd.ms-printing.printticket+xml", Path: "/3D/Metadata/pt.xml", Stream: bytes.NewBufferString("other")},
 				{ContentType: "image/png", Path: "/Metadata/thumbnail.png", Stream: bytes.NewBufferString("fake")},
 			}}},
-			&Model{Path: DefaultPartModelName,
+			&Model{Path: DefaultModelPath,
 				RootRelationships: []Relationship{
 					{Path: "/Metadata/thumbnail.png", Type: RelTypeThumbnail, ID: "2"},
 				},
@@ -208,7 +208,7 @@ func TestEncoder_Encode_Normalize(t *testing.T) {
 				"/other.model": {Relationships: []Relationship{
 					{Path: "/3D/Metadata/pt.xml", Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/printticket", ID: "1"}},
 				},
-			}}}, &Model{Path: DefaultPartModelName,
+			}}}, &Model{Path: DefaultModelPath,
 			Childs: map[string]*ChildModel{
 				"/empty.model": {},
 				"/other.model": {},
@@ -229,7 +229,7 @@ func TestEncoder_Encode_Normalize(t *testing.T) {
 				return
 			}
 			if tt.args.m.Path == "" {
-				tt.args.m.Path = DefaultPartModelName
+				tt.args.m.Path = DefaultModelPath
 			}
 			if diff := deep.Equal(newModel, tt.want); diff != nil {
 				t.Errorf("MarshalModel() = %v", diff)
@@ -288,7 +288,7 @@ func TestEncoder_Encode_Roundtrip(t *testing.T) {
 				return
 			}
 			if tt.args.m.Path == "" {
-				tt.args.m.Path = DefaultPartModelName
+				tt.args.m.Path = DefaultModelPath
 			}
 			if diff := deep.Equal(newModel, tt.args.m); diff != nil {
 				t.Errorf("MarshalModel() = %v", diff)

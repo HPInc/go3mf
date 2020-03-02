@@ -10,7 +10,7 @@ import (
 )
 
 func TestValidate(t *testing.T) {
-	path := DefaultPartModelName
+	path := DefaultModelPath
 	type args struct {
 		model *Model
 	}

@@ -46,10 +46,7 @@ func (v *validator) Validate() {
 
 	v.validateNamespaces()
 
-	rootPath := v.m.Path
-	if rootPath == "" {
-		rootPath = DefaultPartModelName
-	}
+	rootPath := v.m.PathOrDefault()
 	sortedChilds := v.sortedChilds()
 	for _, path := range sortedChilds {
 		c := v.m.Childs[path]

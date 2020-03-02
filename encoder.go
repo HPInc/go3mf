@@ -64,10 +64,7 @@ func (e *Encoder) Encode(m *Model) error {
 	if err := e.writeAttachements(m.Attachments); err != nil {
 		return err
 	}
-	rootName := m.Path
-	if rootName == "" {
-		rootName = DefaultPartModelName
-	}
+	rootName := m.PathOrDefault()
 	e.w.AddRelationship(Relationship{Type: RelType3DModel, Path: rootName})
 	for _, r := range m.RootRelationships {
 		e.w.AddRelationship(r)
