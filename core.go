@@ -280,6 +280,39 @@ type Model struct {
 	ExtensionAttr      ExtensionAttr
 }
 
+// AddNamespace appends name to Namespaces if it does not contains name.Space.
+// If required is true it does the same with RequiredExtensions.
+//
+// If name.Space already exists in Namespaces with another local name it is updated
+// with the new local name.
+func (m *Model) AddNamespace(name xml.Name, required bool) {
+	var exists bool
+	for i, ns := range m.Namespaces {
+		if ns.Space == name.Space {
+			exists = true
+			if ns.Local != name.Local {
+				m.Namespaces[i].Local = name.Local
+			}
+			break
+		}
+	}
+	if !exists {
+		m.Namespaces = append(m.Namespaces, xml.Name{Space: name.Space, Local: name.Local})
+	}
+	if required {
+		exists = false
+		for _, ns := range m.RequiredExtensions {
+			if ns == name.Space {
+				exists = true
+				break
+			}
+		}
+		if !exists {
+			m.RequiredExtensions = append(m.RequiredExtensions, name.Space)
+		}
+	}
+}
+
 // PathOrDefault returns Path if not empty, else DefaultModelPath.
 func (m *Model) PathOrDefault() string {
 	if m.Path == "" {

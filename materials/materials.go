@@ -1,6 +1,8 @@
 package materials
 
-import "image/color"
+import (
+	"image/color"
+)
 
 const (
 	// ExtensionName is the canonical name of this extension.

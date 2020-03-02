@@ -1,8 +1,11 @@
 package go3mf
 
 import (
+	"encoding/xml"
 	"reflect"
 	"testing"
+
+	"github.com/go-test/deep"
 )
 
 func TestResources_FindAsset(t *testing.T) {
@@ -495,6 +498,39 @@ func TestItem_ObjectPath(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.b.ObjectPath(tt.args.defaultPath); got != tt.want {
 				t.Errorf("Item.ObjectPath() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestModel_AddNamespace(t *testing.T) {
+	type args struct {
+		name     xml.Name
+		required bool
+	}
+	tests := []struct {
+		name string
+		m    *Model
+		args args
+		want *Model
+	}{
+		{"empty", new(Model), args{xml.Name{Space: fakeExtension, Local: "f"}, false}, &Model{Namespaces: []xml.Name{
+			{Space: fakeExtension, Local: "f"}},
+		}},
+		{"emptyRequired", new(Model), args{xml.Name{Space: fakeExtension, Local: "f"}, true}, &Model{Namespaces: []xml.Name{
+			{Space: fakeExtension, Local: "f"}},
+			RequiredExtensions: []string{fakeExtension}}},
+		{"existing", &Model{Namespaces: []xml.Name{{Space: fakeExtension, Local: "f"}},
+			RequiredExtensions: []string{fakeExtension, ExtensionName},
+		}, args{xml.Name{Space: fakeExtension, Local: "s"}, true}, &Model{Namespaces: []xml.Name{
+			{Space: fakeExtension, Local: "s"}},
+			RequiredExtensions: []string{fakeExtension, ExtensionName}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.m.AddNamespace(tt.args.name, tt.args.required)
+			if diff := deep.Equal(tt.m, tt.want); diff != nil {
+				t.Errorf("Model.AddNamespace() = %v", diff)
 			}
 		})
 	}
