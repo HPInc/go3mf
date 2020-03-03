@@ -39,6 +39,18 @@ var (
 	ErrMultiColors            = errors.New("the pids list MUST NOT contain more than one reference to a colorgroup")
 )
 
+type BuildError struct {
+	Err error
+}
+
+func (e *BuildError) Unwrap() error {
+	return e.Err
+}
+
+func (e *BuildError) Error() string {
+	return fmt.Sprintf("go3mf: build: %v", e.Err)
+}
+
 type ItemError struct {
 	Index int
 	Err   error

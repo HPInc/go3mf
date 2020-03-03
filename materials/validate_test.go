@@ -1,6 +1,7 @@
 package materials
 
 import (
+	"encoding/xml"
 	"image/color"
 	"testing"
 
@@ -20,7 +21,10 @@ func TestValidate(t *testing.T) {
 		want []error
 	}{
 		{"empty", args{new(go3mf.Model)}, nil},
-		{"child", args{&go3mf.Model{Childs: map[string]*go3mf.ChildModel{
+		{"noNamespace", args{&go3mf.Model{Resources: go3mf.Resources{Assets: []go3mf.Asset{
+			&ColorGroupResource{ID: 1},
+		}}}}, nil},
+		{"child", args{&go3mf.Model{Namespaces: []xml.Name{{Space: ExtensionName}}, Childs: map[string]*go3mf.ChildModel{
 			"/other.model": &go3mf.ChildModel{Resources: go3mf.Resources{Assets: []go3mf.Asset{
 				&ColorGroupResource{ID: 1},
 			}}},
@@ -34,6 +38,7 @@ func TestValidate(t *testing.T) {
 			&specerr.AssetError{Path: "/that.model", Index: 0, Name: "MultiPropertiesResource", Err: specerr.ErrEmptyResourceProps},
 		}},
 		{"multi", args{&go3mf.Model{
+			Namespaces: []xml.Name{{Space: ExtensionName}},
 			Resources: go3mf.Resources{Assets: []go3mf.Asset{
 				&MultiPropertiesResource{ID: 4},
 				&MultiPropertiesResource{ID: 5, Multis: []Multi{{PIndex: []uint32{}}}, PIDs: []uint32{4, 100}},
@@ -62,16 +67,17 @@ func TestValidate(t *testing.T) {
 			&specerr.AssetError{Path: rootPath, Index: 7, Name: "MultiPropertiesResource", Err: specerr.ErrMultiColors},
 			&specerr.AssetError{Path: rootPath, Index: 8, Name: "MultiPropertiesResource", Err: specerr.ErrMaterialMulti},
 		}},
-		{"missingTextPart", args{&go3mf.Model{Resources: go3mf.Resources{Assets: []go3mf.Asset{
-			&Texture2DResource{ID: 1},
-			&Texture2DResource{ID: 2, ContentType: TextureTypePNG, Path: "/a.png"},
-		}}},
+		{"missingTextPart", args{&go3mf.Model{Namespaces: []xml.Name{{Space: ExtensionName}},
+			Resources: go3mf.Resources{Assets: []go3mf.Asset{
+				&Texture2DResource{ID: 1},
+				&Texture2DResource{ID: 2, ContentType: TextureTypePNG, Path: "/a.png"},
+			}}},
 		}, []error{
 			&specerr.AssetError{Path: rootPath, Index: 0, Name: "Texture2DResource", Err: &specerr.MissingFieldError{Name: attrPath}},
 			&specerr.AssetError{Path: rootPath, Index: 0, Name: "Texture2DResource", Err: &specerr.MissingFieldError{Name: attrContentType}},
 			&specerr.AssetError{Path: rootPath, Index: 1, Name: "Texture2DResource", Err: ErrMissingTexturePart},
 		}},
-		{"textureGroup", args{&go3mf.Model{
+		{"textureGroup", args{&go3mf.Model{Namespaces: []xml.Name{{Space: ExtensionName}},
 			Attachments: []go3mf.Attachment{{Path: "/a.png"}},
 			Resources: go3mf.Resources{Assets: []go3mf.Asset{
 				&Texture2DResource{ID: 1, ContentType: TextureTypePNG, Path: "/a.png"},
@@ -86,28 +92,30 @@ func TestValidate(t *testing.T) {
 			&specerr.AssetError{Path: rootPath, Index: 3, Name: "Texture2DGroupResource", Err: ErrTextureReference},
 			&specerr.AssetError{Path: rootPath, Index: 4, Name: "Texture2DGroupResource", Err: ErrTextureReference},
 		}},
-		{"colorGroup", args{&go3mf.Model{Resources: go3mf.Resources{Assets: []go3mf.Asset{
-			&ColorGroupResource{ID: 1},
-			&ColorGroupResource{ID: 2, Colors: []color.RGBA{{R: 1}, {R: 2, G: 3, B: 4, A: 5}}},
-			&ColorGroupResource{ID: 3, Colors: []color.RGBA{{R: 1}, {}}},
-		}}}}, []error{
+		{"colorGroup", args{&go3mf.Model{Namespaces: []xml.Name{{Space: ExtensionName}},
+			Resources: go3mf.Resources{Assets: []go3mf.Asset{
+				&ColorGroupResource{ID: 1},
+				&ColorGroupResource{ID: 2, Colors: []color.RGBA{{R: 1}, {R: 2, G: 3, B: 4, A: 5}}},
+				&ColorGroupResource{ID: 3, Colors: []color.RGBA{{R: 1}, {}}},
+			}}}}, []error{
 			&specerr.AssetError{Path: rootPath, Index: 0, Name: "ColorGroupResource", Err: specerr.ErrEmptyResourceProps},
 			&specerr.AssetError{Path: rootPath, Index: 2, Name: "ColorGroupResource", Err: &specerr.ResourcePropertyError{
 				Index: 1,
 				Err:   &specerr.MissingFieldError{Name: attrColor},
 			}},
 		}},
-		{"composite", args{&go3mf.Model{Resources: go3mf.Resources{Assets: []go3mf.Asset{
-			&go3mf.BaseMaterialsResource{ID: 1, Materials: []go3mf.BaseMaterial{
-				{Name: "a", Color: color.RGBA{R: 1}},
-				{Name: "b", Color: color.RGBA{G: 1}},
-			}},
-			&CompositeMaterialsResource{ID: 2},
-			&CompositeMaterialsResource{ID: 3, MaterialID: 1, Indices: []uint32{0, 1}, Composites: []Composite{{Values: []float32{1, 2}}}},
-			&CompositeMaterialsResource{ID: 4, MaterialID: 1, Indices: []uint32{100, 100}, Composites: []Composite{{Values: []float32{1, 2}}}},
-			&CompositeMaterialsResource{ID: 5, MaterialID: 2, Indices: []uint32{0, 1}, Composites: []Composite{{Values: []float32{1, 2}}}},
-			&CompositeMaterialsResource{ID: 6, MaterialID: 100, Indices: []uint32{0, 1}, Composites: []Composite{{Values: []float32{1, 2}}}},
-		}}}}, []error{
+		{"composite", args{&go3mf.Model{Namespaces: []xml.Name{{Space: ExtensionName}},
+			Resources: go3mf.Resources{Assets: []go3mf.Asset{
+				&go3mf.BaseMaterialsResource{ID: 1, Materials: []go3mf.BaseMaterial{
+					{Name: "a", Color: color.RGBA{R: 1}},
+					{Name: "b", Color: color.RGBA{G: 1}},
+				}},
+				&CompositeMaterialsResource{ID: 2},
+				&CompositeMaterialsResource{ID: 3, MaterialID: 1, Indices: []uint32{0, 1}, Composites: []Composite{{Values: []float32{1, 2}}}},
+				&CompositeMaterialsResource{ID: 4, MaterialID: 1, Indices: []uint32{100, 100}, Composites: []Composite{{Values: []float32{1, 2}}}},
+				&CompositeMaterialsResource{ID: 5, MaterialID: 2, Indices: []uint32{0, 1}, Composites: []Composite{{Values: []float32{1, 2}}}},
+				&CompositeMaterialsResource{ID: 6, MaterialID: 100, Indices: []uint32{0, 1}, Composites: []Composite{{Values: []float32{1, 2}}}},
+			}}}}, []error{
 			&specerr.AssetError{Path: rootPath, Index: 1, Name: "CompositeMaterialsResource", Err: &specerr.MissingFieldError{Name: attrMatID}},
 			&specerr.AssetError{Path: rootPath, Index: 1, Name: "CompositeMaterialsResource", Err: &specerr.MissingFieldError{Name: attrMatIndices}},
 			&specerr.AssetError{Path: rootPath, Index: 1, Name: "CompositeMaterialsResource", Err: specerr.ErrEmptyResourceProps},

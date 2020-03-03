@@ -23,6 +23,16 @@ var (
 // Validate checks that the model is conformant with the 3MF spec.
 // Core spec related checks are not reported.
 func Validate(model *go3mf.Model) []error {
+	var hasExt bool
+	for _, ext := range model.Namespaces {
+		if ext.Space == ExtensionName {
+			hasExt = true
+			break
+		}
+	}
+	if !hasExt {
+		return nil
+	}
 	var err []error
 	err = validate(model, model.PathOrDefault(), &model.Resources, err)
 
