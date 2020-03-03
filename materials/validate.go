@@ -1,23 +1,12 @@
 package materials
 
 import (
-	"errors"
 	"image/color"
 	"sort"
 	"strings"
 
 	"github.com/qmuntal/go3mf"
 	specerr "github.com/qmuntal/go3mf/errors"
-)
-
-var (
-	ErrTextureReference       = errors.New("MUST reference to a texture resource")
-	ErrCompositeBase          = errors.New("MUST reference to a basematerials group")
-	ErrMaterialMulti          = errors.New("material, if included, MUST be positioned in the first layer")
-	ErrMultiRefMulti          = errors.New("MUST NOT contain any references to a multiproperties")
-	ErrMultiRefMultipleColors = errors.New("MUST NOT contain more than one reference to a colorgroup")
-	ErrMissingMultiBlend      = errors.New("MUST NOT have more blendmethods than layers – 1")
-	ErrMissingTexturePart     = errors.New("texture part MUST be added as an attachment")
 )
 
 // Validate checks that the model is conformant with the 3MF spec.
@@ -106,10 +95,10 @@ func (v *validator) validateTextureGroup(i int, r *Texture2DGroupResource) {
 		v.AddWarning(specerr.NewAsset(v.path, i, r, &specerr.MissingFieldError{Name: attrTexID}))
 	} else if text, ok := v.ids[r.TextureID]; ok {
 		if _, ok := text.(*Texture2DResource); !ok {
-			v.AddWarning(specerr.NewAsset(v.path, i, r, ErrTextureReference))
+			v.AddWarning(specerr.NewAsset(v.path, i, r, specerr.ErrTextureReference))
 		}
 	} else {
-		v.AddWarning(specerr.NewAsset(v.path, i, r, ErrTextureReference))
+		v.AddWarning(specerr.NewAsset(v.path, i, r, specerr.ErrTextureReference))
 	}
 	if len(r.Coords) == 0 {
 		v.AddWarning(specerr.NewAsset(v.path, i, r, specerr.ErrEmptyResourceProps))
@@ -128,7 +117,7 @@ func (v *validator) validateTexture(i int, r *Texture2DResource) {
 			}
 		}
 		if !hasTexture {
-			v.AddWarning(specerr.NewAsset(v.path, i, r, ErrMissingTexturePart))
+			v.AddWarning(specerr.NewAsset(v.path, i, r, specerr.ErrMissingTexturePart))
 		}
 	}
 	if r.ContentType == 0 {
@@ -202,7 +191,7 @@ func (v *validator) validateComposite(i int, r *CompositeMaterialsResource) {
 				}
 			}
 		} else {
-			v.AddWarning(specerr.NewAsset(v.path, i, r, ErrCompositeBase))
+			v.AddWarning(specerr.NewAsset(v.path, i, r, specerr.ErrCompositeBase))
 		}
 	} else {
 		v.AddWarning(specerr.NewAsset(v.path, i, r, specerr.ErrMissingResource))

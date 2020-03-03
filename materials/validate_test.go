@@ -75,7 +75,7 @@ func TestValidate(t *testing.T) {
 		}, []error{
 			&specerr.AssetError{Path: rootPath, Index: 0, Name: "Texture2DResource", Err: &specerr.MissingFieldError{Name: attrPath}},
 			&specerr.AssetError{Path: rootPath, Index: 0, Name: "Texture2DResource", Err: &specerr.MissingFieldError{Name: attrContentType}},
-			&specerr.AssetError{Path: rootPath, Index: 1, Name: "Texture2DResource", Err: ErrMissingTexturePart},
+			&specerr.AssetError{Path: rootPath, Index: 1, Name: "Texture2DResource", Err: specerr.ErrMissingTexturePart},
 		}},
 		{"textureGroup", args{&go3mf.Model{Namespaces: []xml.Name{{Space: ExtensionName}},
 			Attachments: []go3mf.Attachment{{Path: "/a.png"}},
@@ -89,8 +89,8 @@ func TestValidate(t *testing.T) {
 		}, []error{
 			&specerr.AssetError{Path: rootPath, Index: 1, Name: "Texture2DGroupResource", Err: &specerr.MissingFieldError{Name: attrTexID}},
 			&specerr.AssetError{Path: rootPath, Index: 1, Name: "Texture2DGroupResource", Err: specerr.ErrEmptyResourceProps},
-			&specerr.AssetError{Path: rootPath, Index: 3, Name: "Texture2DGroupResource", Err: ErrTextureReference},
-			&specerr.AssetError{Path: rootPath, Index: 4, Name: "Texture2DGroupResource", Err: ErrTextureReference},
+			&specerr.AssetError{Path: rootPath, Index: 3, Name: "Texture2DGroupResource", Err: specerr.ErrTextureReference},
+			&specerr.AssetError{Path: rootPath, Index: 4, Name: "Texture2DGroupResource", Err: specerr.ErrTextureReference},
 		}},
 		{"colorGroup", args{&go3mf.Model{Namespaces: []xml.Name{{Space: ExtensionName}},
 			Resources: go3mf.Resources{Assets: []go3mf.Asset{
@@ -120,7 +120,7 @@ func TestValidate(t *testing.T) {
 			&specerr.AssetError{Path: rootPath, Index: 1, Name: "CompositeMaterialsResource", Err: &specerr.MissingFieldError{Name: attrMatIndices}},
 			&specerr.AssetError{Path: rootPath, Index: 1, Name: "CompositeMaterialsResource", Err: specerr.ErrEmptyResourceProps},
 			&specerr.AssetError{Path: rootPath, Index: 3, Name: "CompositeMaterialsResource", Err: specerr.ErrIndexOutOfBounds},
-			&specerr.AssetError{Path: rootPath, Index: 4, Name: "CompositeMaterialsResource", Err: ErrCompositeBase},
+			&specerr.AssetError{Path: rootPath, Index: 4, Name: "CompositeMaterialsResource", Err: specerr.ErrCompositeBase},
 			&specerr.AssetError{Path: rootPath, Index: 5, Name: "CompositeMaterialsResource", Err: specerr.ErrMissingResource},
 		}},
 	}

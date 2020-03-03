@@ -1,17 +1,10 @@
 package production
 
 import (
-	"errors"
 	"sort"
 
 	"github.com/qmuntal/go3mf"
 	specerr "github.com/qmuntal/go3mf/errors"
-)
-
-var (
-	ErrUUID         = errors.New("UUID MUST be any of the four UUID variants described in IETF RFC 4122")
-	ErrExtRequired  = errors.New("go3mf: a 3MF package which uses referenced objects MUST enlist the production extension as required")
-	ErrRefInNonRoot = errors.New("non-root model file components MUST only reference objects in the same model file")
 )
 
 // Validate checks that the model is conformant with the 3MF spec.
@@ -41,7 +34,7 @@ func validateObjects(path string, isRoot bool, objs []*go3mf.Object, err []error
 	for i, obj := range objs {
 		if ok := obj.ExtensionAttr.Get(&extU); ok && extU != nil {
 			if validateUUID(string(*extU)) != nil {
-				err = append(err, specerr.NewObject(path, i, ErrUUID))
+				err = append(err, specerr.NewObject(path, i, specerr.ErrUUID))
 			}
 		} else {
 			err = append(err, specerr.NewObject(path, i, &specerr.MissingFieldError{Name: attrProdUUID}))
@@ -51,14 +44,14 @@ func validateObjects(path string, isRoot bool, objs []*go3mf.Object, err []error
 				if extP.UUID == "" {
 					err = append(err, specerr.NewObject(path, i, &specerr.ComponentError{Index: j, Err: &specerr.MissingFieldError{Name: attrProdUUID}}))
 				} else if validateUUID(string(extP.UUID)) != nil {
-					err = append(err, specerr.NewObject(path, i, &specerr.ComponentError{Index: j, Err: ErrUUID}))
+					err = append(err, specerr.NewObject(path, i, &specerr.ComponentError{Index: j, Err: specerr.ErrUUID}))
 				}
 				if extP.Path != "" && extP.Path != path {
 					if isRoot {
 						// Path is validated as part if the core validations
 						mustRequire = true
 					} else {
-						err = append(err, specerr.NewObject(path, i, &specerr.ComponentError{Index: j, Err: ErrRefInNonRoot}))
+						err = append(err, specerr.NewObject(path, i, &specerr.ComponentError{Index: j, Err: specerr.ErrRefInNonRoot}))
 					}
 				}
 			} else {
@@ -89,7 +82,7 @@ func validateRoot(model *go3mf.Model, err []error) []error {
 	var extU *UUID
 	if ok := model.Build.ExtensionAttr.Get(&extU); ok && extU != nil {
 		if validateUUID(string(*extU)) != nil {
-			err = append(err, &specerr.BuildError{Err: ErrUUID})
+			err = append(err, &specerr.BuildError{Err: specerr.ErrUUID})
 		}
 	} else {
 		err = append(err, &specerr.BuildError{Err: &specerr.MissingFieldError{Name: attrProdUUID}})
@@ -100,7 +93,7 @@ func validateRoot(model *go3mf.Model, err []error) []error {
 			if ext.UUID == "" {
 				err = append(err, specerr.NewItem(i, &specerr.MissingFieldError{Name: attrProdUUID}))
 			} else if validateUUID(string(ext.UUID)) != nil {
-				err = append(err, specerr.NewItem(i, ErrUUID))
+				err = append(err, specerr.NewItem(i, specerr.ErrUUID))
 			}
 			if ext.Path != "" && ext.Path != model.Path {
 				// Path is validated as part if the core validations
@@ -119,7 +112,7 @@ func validateRoot(model *go3mf.Model, err []error) []error {
 			}
 		}
 		if !extRequired {
-			err = append(err, ErrExtRequired)
+			err = append(err, specerr.ErrProdExtRequired)
 		}
 	}
 	return err

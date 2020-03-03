@@ -9,6 +9,7 @@ import (
 
 // Error guards.
 var (
+	// core
 	ErrMissingID              = errors.New("resource ID MUST be greater than zero")
 	ErrDuplicatedID           = errors.New("IDs MUST be unique among all resources under same Model")
 	ErrMissingResource        = errors.New("resources MUST be defined prior to referencing")
@@ -33,10 +34,18 @@ var (
 	ErrEmptyResourceProps     = errors.New("resource properties MUST NOT be empty")
 	ErrRecursiveComponent     = errors.New("MUST NOT contain recursive references")
 	ErrInvalidObject          = errors.New("MUST contain a mesh or components")
-	ErrMultiBlend             = errors.New("there MUST NOT be more blendmethods than layers – 1")
-	ErrMaterialMulti          = errors.New("a material, if included, MUST be positioned as the first layer")
-	ErrMultiRefMulti          = errors.New("the pids list MUST NOT contain any references to a multiproperties")
-	ErrMultiColors            = errors.New("the pids list MUST NOT contain more than one reference to a colorgroup")
+	// materials
+	ErrMultiBlend         = errors.New("there MUST NOT be more blendmethods than layers – 1")
+	ErrMaterialMulti      = errors.New("a material, if included, MUST be positioned as the first layer")
+	ErrMultiRefMulti      = errors.New("the pids list MUST NOT contain any references to a multiproperties")
+	ErrMultiColors        = errors.New("the pids list MUST NOT contain more than one reference to a colorgroup")
+	ErrTextureReference   = errors.New("MUST reference to a texture resource")
+	ErrCompositeBase      = errors.New("MUST reference to a basematerials group")
+	ErrMissingTexturePart = errors.New("texture part MUST be added as an attachment")
+	//production
+	ErrUUID            = errors.New("UUID MUST be any of the four UUID variants described in IETF RFC 4122")
+	ErrProdExtRequired = errors.New("go3mf: a 3MF package which uses referenced objects MUST enlist the production extension as required")
+	ErrRefInNonRoot    = errors.New("non-root model file components MUST only reference objects in the same model file")
 )
 
 type BuildError struct {

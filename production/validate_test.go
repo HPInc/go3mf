@@ -27,11 +27,11 @@ func TestValidate(t *testing.T) {
 			[]error{&specerr.BuildError{Err: &specerr.MissingFieldError{Name: attrProdUUID}}},
 		},
 		{"buildEmptyUUID", args{&go3mf.Model{Namespaces: []xml.Name{{Space: ExtensionName}}, Build: go3mf.Build{
-			ExtensionAttr: go3mf.ExtensionAttr{mustUUID("")}}}}, []error{&specerr.BuildError{Err: ErrUUID}},
+			ExtensionAttr: go3mf.ExtensionAttr{mustUUID("")}}}}, []error{&specerr.BuildError{Err: specerr.ErrUUID}},
 		},
 		{"buildNonValidUUID", args{&go3mf.Model{Namespaces: []xml.Name{{Space: ExtensionName}}, Build: go3mf.Build{
 			ExtensionAttr: go3mf.ExtensionAttr{mustUUID("a-b-c-d")}}}}, []error{
-			&specerr.BuildError{Err: ErrUUID},
+			&specerr.BuildError{Err: specerr.ErrUUID},
 		}},
 		{"extReq", args{&go3mf.Model{Namespaces: []xml.Name{{Space: ExtensionName}}, RequiredExtensions: []string{ExtensionName},
 			Resources: go3mf.Resources{Objects: []*go3mf.Object{{ExtensionAttr: go3mf.ExtensionAttr{mustUUID("f47ac10b-58cc-0372-8567-0e02b2c3d481")},
@@ -50,8 +50,8 @@ func TestValidate(t *testing.T) {
 			}}}}, []error{
 			&specerr.ItemError{Index: 1, Err: &specerr.MissingFieldError{Name: attrProdUUID}},
 			&specerr.ItemError{Index: 2, Err: &specerr.MissingFieldError{Name: attrProdUUID}},
-			&specerr.ItemError{Index: 3, Err: ErrUUID},
-			ErrExtRequired,
+			&specerr.ItemError{Index: 3, Err: specerr.ErrUUID},
+			specerr.ErrProdExtRequired,
 		}},
 		{"components", args{&go3mf.Model{Namespaces: []xml.Name{{Space: ExtensionName}}, Resources: go3mf.Resources{
 			Objects: []*go3mf.Object{
@@ -65,10 +65,10 @@ func TestValidate(t *testing.T) {
 			},
 		}, Build: go3mf.Build{ExtensionAttr: go3mf.ExtensionAttr{mustUUID("f47ac10b-58cc-0372-8567-0e02b2c3d479")}}}}, []error{
 			&specerr.ObjectError{Path: rootPath, Index: 0, Err: &specerr.MissingFieldError{Name: attrProdUUID}},
-			&specerr.ObjectError{Path: rootPath, Index: 1, Err: ErrUUID},
+			&specerr.ObjectError{Path: rootPath, Index: 1, Err: specerr.ErrUUID},
 			&specerr.ObjectError{Path: rootPath, Index: 2, Err: &specerr.ComponentError{Index: 0, Err: &specerr.MissingFieldError{Name: attrProdUUID}}},
 			&specerr.ObjectError{Path: rootPath, Index: 2, Err: &specerr.ComponentError{Index: 1, Err: &specerr.MissingFieldError{Name: attrProdUUID}}},
-			&specerr.ObjectError{Path: rootPath, Index: 2, Err: &specerr.ComponentError{Index: 2, Err: ErrUUID}},
+			&specerr.ObjectError{Path: rootPath, Index: 2, Err: &specerr.ComponentError{Index: 2, Err: specerr.ErrUUID}},
 		}},
 		{"child", args{&go3mf.Model{Namespaces: []xml.Name{{Space: ExtensionName}},
 			Build: go3mf.Build{ExtensionAttr: go3mf.ExtensionAttr{mustUUID("f47ac10b-58cc-0372-8567-0e02b2c3d479")}},
@@ -80,7 +80,7 @@ func TestValidate(t *testing.T) {
 				}}}}}}, []error{
 			&specerr.ObjectError{Path: "/other.model", Index: 0, Err: &specerr.MissingFieldError{Name: attrProdUUID}},
 			&specerr.ObjectError{Path: "/other.model", Index: 0, Err: &specerr.ComponentError{Index: 0, Err: &specerr.MissingFieldError{Name: attrProdUUID}}},
-			&specerr.ObjectError{Path: "/other.model", Index: 0, Err: &specerr.ComponentError{Index: 0, Err: ErrRefInNonRoot}},
+			&specerr.ObjectError{Path: "/other.model", Index: 0, Err: &specerr.ComponentError{Index: 0, Err: specerr.ErrRefInNonRoot}},
 		}},
 	}
 	for _, tt := range tests {
