@@ -80,7 +80,7 @@ func TestValidate(t *testing.T) {
 				}}}}}}, []error{
 			&specerr.ObjectError{Path: "/other.model", Index: 0, Err: &specerr.MissingFieldError{Name: attrProdUUID}},
 			&specerr.ObjectError{Path: "/other.model", Index: 0, Err: &specerr.ComponentError{Index: 0, Err: &specerr.MissingFieldError{Name: attrProdUUID}}},
-			&specerr.ObjectError{Path: "/other.model", Index: 0, Err: &specerr.ComponentError{Index: 0, Err: specerr.ErrRefInNonRoot}},
+			&specerr.ObjectError{Path: "/other.model", Index: 0, Err: &specerr.ComponentError{Index: 0, Err: specerr.ErrProdRefInNonRoot}},
 		}},
 	}
 	for _, tt := range tests {

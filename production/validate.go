@@ -51,7 +51,7 @@ func validateObjects(path string, isRoot bool, objs []*go3mf.Object, err []error
 						// Path is validated as part if the core validations
 						mustRequire = true
 					} else {
-						err = append(err, specerr.NewObject(path, i, &specerr.ComponentError{Index: j, Err: specerr.ErrRefInNonRoot}))
+						err = append(err, specerr.NewObject(path, i, &specerr.ComponentError{Index: j, Err: specerr.ErrProdRefInNonRoot}))
 					}
 				}
 			} else {

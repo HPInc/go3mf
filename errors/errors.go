@@ -12,11 +12,11 @@ var (
 	// core
 	ErrMissingID              = errors.New("resource ID MUST be greater than zero")
 	ErrDuplicatedID           = errors.New("IDs MUST be unique among all resources under same Model")
-	ErrMissingResource        = errors.New("resources MUST be defined prior to referencing")
+	ErrMissingResource        = errors.New("resource MUST be defined prior to referencing")
 	ErrDuplicatedIndices      = errors.New("indices v1, v2 and v3 MUST be distinct")
 	ErrIndexOutOfBounds       = errors.New("index is bigger than referenced slice")
-	ErrInsufficientVertices   = errors.New("mesh has to contain at least 3 vertices to form a solid body")
-	ErrInsufficientTriangles  = errors.New("mesh has to contain at least 4 triangles to form a solid body")
+	ErrInsufficientVertices   = errors.New("mesh MUST contain at least 3 vertices to form a solid body")
+	ErrInsufficientTriangles  = errors.New("mesh MUST contain at least 4 triangles to form a solid body")
 	ErrComponentsPID          = errors.New("MUST NOT assign pid to objects that contain components")
 	ErrOPCPartName            = errors.New("part name MUST conform to the syntax specified in the OPC specification")
 	ErrOPCRelTarget           = errors.New("relationship target part MUST be included in the 3MF document")
@@ -42,10 +42,22 @@ var (
 	ErrTextureReference   = errors.New("MUST reference to a texture resource")
 	ErrCompositeBase      = errors.New("MUST reference to a basematerials group")
 	ErrMissingTexturePart = errors.New("texture part MUST be added as an attachment")
-	//production
-	ErrUUID            = errors.New("UUID MUST be any of the four UUID variants described in IETF RFC 4122")
-	ErrProdExtRequired = errors.New("go3mf: a 3MF package which uses referenced objects MUST enlist the production extension as required")
-	ErrRefInNonRoot    = errors.New("non-root model file components MUST only reference objects in the same model file")
+	// production
+	ErrUUID             = errors.New("UUID MUST be any of the four UUID variants described in IETF RFC 4122")
+	ErrProdExtRequired  = errors.New("go3mf: a 3MF package which uses referenced objects MUST enlist the production extension as required")
+	ErrProdRefInNonRoot = errors.New("non-root model file components MUST only reference objects in the same model file")
+	// slices
+	ErrNonSliceStack             = errors.New("slicestackid MUST reference a slice stack resource")
+	ErrSlicesAndRefs             = errors.New("may either contain slices or refs, but they MUST NOT contain both element types")
+	ErrSliceRefSamePart          = errors.New("the path of the referenced slice stack MUST be different than the path of the original slice stack")
+	ErrSliceRefRef               = errors.New("a referenced slice stack MUST NOT contain any further sliceref elements")
+	ErrSliceSmallTopZ            = errors.New("slice ztop is smaller than stack zbottom")
+	ErrSliceNoMonotonic          = errors.New("the first ztop in the next slicestack MUST be greater than the last ztop in the previous slicestack")
+	ErrSliceInsufficientVertices = errors.New("slice MUST contain at least 2 vertices")
+	ErrSliceInsufficientPolygons = errors.New("slice MUST contain at least 1 polygon")
+	ErrSliceInsufficientSegments = errors.New("slice polygon MUST contain at least 1 segment")
+	ErrSlicePolygonNotClosed     = errors.New("all polygons of all slices MUST be closed")
+	ErrSliceInvalidTranform      = errors.New("slices transforms MUST be planar")
 )
 
 type BuildError struct {
@@ -206,4 +218,17 @@ func (e *MetadataError) Unwrap() error {
 
 func (e *MetadataError) Error() string {
 	return fmt.Sprintf("metadata %d: %v", e.Index, e.Err)
+}
+
+type SliceSegmentError struct {
+	Index int
+	Err   error
+}
+
+func (e *SliceSegmentError) Unwrap() error {
+	return e.Err
+}
+
+func (e *SliceSegmentError) Error() string {
+	return fmt.Sprintf("slice segment %d: %v", e.Index, e.Err)
 }
