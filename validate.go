@@ -9,6 +9,10 @@ import (
 	specerr "github.com/qmuntal/go3mf/errors"
 )
 
+type validator interface {
+	Validate(*Model, string) []error
+}
+
 func (m *Model) sortedChilds() []string {
 	s := make([]string, 0, len(m.Childs))
 	for path := range m.Childs {
@@ -20,7 +24,7 @@ func (m *Model) sortedChilds() []string {
 
 // Validate checks that the model is conformant with the 3MF spec.
 func (m *Model) Validate() []error {
-	var errs []error
+	errs := []error{}
 	errs = append(errs, validateRelationship(m, m.RootRelationships, "")...)
 	if err := m.validateNamespaces(); err != nil {
 		errs = append(errs, err)
@@ -43,12 +47,12 @@ func (m *Model) Validate() []error {
 		errs = append(errs, c.Resources.validate(m, path)...)
 	}
 	errs = append(errs, m.Resources.validate(m, rootPath)...)
-	return append(errs, m.Build.Validate(m)...)
+	return append(errs, m.Build.Validate(m, rootPath)...)
 }
 
-func (item *Item) Validate(m *Model) []error {
+func (item *Item) Validate(m *Model, path string) []error {
 	var errs []error
-	opath := item.ObjectPath(m.Path)
+	opath := item.ObjectPath(path)
 	if item.ObjectID == 0 {
 		errs = append(errs, &specerr.MissingFieldError{attrObjectID})
 	} else if obj, ok := m.FindObject(opath, item.ObjectID); ok {
@@ -58,15 +62,26 @@ func (item *Item) Validate(m *Model) []error {
 	} else {
 		errs = append(errs, specerr.ErrMissingResource)
 	}
-
 	errs = append(errs, checkMetadadata(m, item.Metadata)...)
+	for _, a := range item.ExtensionAttr {
+		if a, ok := a.(validator); ok {
+			errs = append(errs, a.Validate(m, path)...)
+		}
+	}
 	return errs
 }
 
-func (b *Build) Validate(m *Model) []error {
+func (b *Build) Validate(m *Model, path string) []error {
 	var errs []error
+	for _, a := range b.ExtensionAttr {
+		if a, ok := a.(validator); ok {
+			for _, err := range a.Validate(m, path) {
+				errs = append(errs, &specerr.BuildError{Err: err})
+			}
+		}
+	}
 	for i, item := range b.Items {
-		for _, err := range item.Validate(m) {
+		for _, err := range item.Validate(m, path) {
 			errs = append(errs, specerr.NewItem(i, err))
 		}
 	}
@@ -149,7 +164,7 @@ func (res *Resources) validate(m *Model, path string) []error {
 			}
 		}
 		assets[id] = struct{}{}
-		if r, ok := r.(interface{ Validate(*Model, string) []error }); ok {
+		if r, ok := r.(validator); ok {
 			for _, err := range r.Validate(m, path) {
 				errs = append(errs, specerr.NewAsset(path, i, r, err))
 			}
@@ -180,6 +195,11 @@ func (r *Object) Validate(m *Model, path string) []error {
 	}
 	if (r.Mesh != nil && len(r.Components) > 0) || (r.Mesh == nil && len(r.Components) == 0) {
 		errs = append(errs, specerr.ErrInvalidObject)
+	}
+	for _, a := range r.ExtensionAttr {
+		if a, ok := a.(validator); ok {
+			errs = append(errs, a.Validate(m, path)...)
+		}
 	}
 	if r.Mesh != nil {
 		if r.DefaultPID != 0 {
@@ -256,6 +276,13 @@ func (r *Object) validateComponents(m *Model, path string) []error {
 			}
 		} else {
 			errs = append(errs, &specerr.IndexedError{Name: attrComponent, Index: j, Err: specerr.ErrMissingResource})
+		}
+		for _, a := range c.ExtensionAttr {
+			if a, ok := a.(validator); ok {
+				for _, err := range a.Validate(m, path) {
+					errs = append(errs, &specerr.IndexedError{Name: attrComponent, Index: j, Err: err})
+				}
+			}
 		}
 	}
 	return errs

@@ -43,7 +43,7 @@ var (
 	ErrMissingTexturePart = errors.New("texture part MUST be added as an attachment")
 	// production
 	ErrUUID             = errors.New("UUID MUST be any of the four UUID variants described in IETF RFC 4122")
-	ErrProdExtRequired  = errors.New("go3mf: a 3MF package which uses referenced objects MUST enlist the production extension as required")
+	ErrProdExtRequired  = errors.New("a 3MF package which uses referenced objects MUST enlist the production extension as required")
 	ErrProdRefInNonRoot = errors.New("non-root model file components MUST only reference objects in the same model file")
 	// slices
 	ErrNonSliceStack             = errors.New("slicestackid MUST reference a slice stack resource")

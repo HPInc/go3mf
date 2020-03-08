@@ -19,7 +19,7 @@ func TestValidate(t *testing.T) {
 		args args
 		want []error
 	}{
-		{"empty", args{new(go3mf.Model)}, nil},
+		{"empty", args{new(go3mf.Model)}, []error{}},
 		{"child", args{&go3mf.Model{Childs: map[string]*go3mf.ChildModel{
 			"/other.model": &go3mf.ChildModel{Resources: go3mf.Resources{Assets: []go3mf.Asset{
 				&ColorGroupResource{ID: 1},

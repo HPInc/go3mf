@@ -19,7 +19,7 @@ func TestValidate(t *testing.T) {
 		args args
 		want []error
 	}{
-		{"empty", args{new(Model)}, nil},
+		{"empty", args{new(Model)}, []error{}},
 		{"rels", args{&Model{Attachments: []Attachment{{Path: "/a.png"}}, Relationships: []Relationship{
 			{}, {Path: "/.png"}, {Path: "/a.png"}, {Path: "a.png"}, {Path: "/b.png"}, {Path: "/a.png"},
 			{Path: "/a.png", Type: RelTypePrintTicket}, {Path: "/a.png", Type: RelTypePrintTicket},
