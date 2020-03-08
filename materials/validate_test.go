@@ -1,7 +1,6 @@
 package materials
 
 import (
-	"encoding/xml"
 	"image/color"
 	"testing"
 
@@ -21,10 +20,7 @@ func TestValidate(t *testing.T) {
 		want []error
 	}{
 		{"empty", args{new(go3mf.Model)}, nil},
-		{"noNamespace", args{&go3mf.Model{Resources: go3mf.Resources{Assets: []go3mf.Asset{
-			&ColorGroupResource{ID: 1},
-		}}}}, nil},
-		{"child", args{&go3mf.Model{Namespaces: []xml.Name{{Space: ExtensionName}}, Childs: map[string]*go3mf.ChildModel{
+		{"child", args{&go3mf.Model{Childs: map[string]*go3mf.ChildModel{
 			"/other.model": &go3mf.ChildModel{Resources: go3mf.Resources{Assets: []go3mf.Asset{
 				&ColorGroupResource{ID: 1},
 			}}},
@@ -38,7 +34,6 @@ func TestValidate(t *testing.T) {
 			&specerr.AssetError{Path: "/that.model", Index: 0, Name: "MultiPropertiesResource", Err: specerr.ErrEmptyResourceProps},
 		}},
 		{"multi", args{&go3mf.Model{
-			Namespaces: []xml.Name{{Space: ExtensionName}},
 			Resources: go3mf.Resources{Assets: []go3mf.Asset{
 				&MultiPropertiesResource{ID: 4},
 				&MultiPropertiesResource{ID: 5, Multis: []Multi{{PIndex: []uint32{}}}, PIDs: []uint32{4, 100}},
@@ -68,7 +63,7 @@ func TestValidate(t *testing.T) {
 			&specerr.AssetError{Path: rootPath, Index: 7, Name: "MultiPropertiesResource", Err: specerr.ErrMultiColors},
 			&specerr.AssetError{Path: rootPath, Index: 8, Name: "MultiPropertiesResource", Err: specerr.ErrMaterialMulti},
 		}},
-		{"missingTextPart", args{&go3mf.Model{Namespaces: []xml.Name{{Space: ExtensionName}},
+		{"missingTextPart", args{&go3mf.Model{
 			Resources: go3mf.Resources{Assets: []go3mf.Asset{
 				&Texture2DResource{ID: 1},
 				&Texture2DResource{ID: 2, ContentType: TextureTypePNG, Path: "/a.png"},
@@ -78,7 +73,7 @@ func TestValidate(t *testing.T) {
 			&specerr.AssetError{Path: rootPath, Index: 0, Name: "Texture2DResource", Err: &specerr.MissingFieldError{Name: attrContentType}},
 			&specerr.AssetError{Path: rootPath, Index: 1, Name: "Texture2DResource", Err: specerr.ErrMissingTexturePart},
 		}},
-		{"textureGroup", args{&go3mf.Model{Namespaces: []xml.Name{{Space: ExtensionName}},
+		{"textureGroup", args{&go3mf.Model{
 			Attachments: []go3mf.Attachment{{Path: "/a.png"}},
 			Resources: go3mf.Resources{Assets: []go3mf.Asset{
 				&Texture2DResource{ID: 1, ContentType: TextureTypePNG, Path: "/a.png"},
@@ -93,7 +88,7 @@ func TestValidate(t *testing.T) {
 			&specerr.AssetError{Path: rootPath, Index: 3, Name: "Texture2DGroupResource", Err: specerr.ErrTextureReference},
 			&specerr.AssetError{Path: rootPath, Index: 4, Name: "Texture2DGroupResource", Err: specerr.ErrTextureReference},
 		}},
-		{"colorGroup", args{&go3mf.Model{Namespaces: []xml.Name{{Space: ExtensionName}},
+		{"colorGroup", args{&go3mf.Model{
 			Resources: go3mf.Resources{Assets: []go3mf.Asset{
 				&ColorGroupResource{ID: 1},
 				&ColorGroupResource{ID: 2, Colors: []color.RGBA{{R: 1}, {R: 2, G: 3, B: 4, A: 5}}},
@@ -106,7 +101,7 @@ func TestValidate(t *testing.T) {
 				Err:   &specerr.MissingFieldError{Name: attrColor},
 			}},
 		}},
-		{"composite", args{&go3mf.Model{Namespaces: []xml.Name{{Space: ExtensionName}},
+		{"composite", args{&go3mf.Model{
 			Resources: go3mf.Resources{Assets: []go3mf.Asset{
 				&go3mf.BaseMaterialsResource{ID: 1, Materials: []go3mf.BaseMaterial{
 					{Name: "a", Color: color.RGBA{R: 1}},
@@ -128,7 +123,7 @@ func TestValidate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := Validate(tt.args.model)
+			got := tt.args.model.Validate()
 			if diff := deep.Equal(got, tt.want); diff != nil {
 				t.Errorf("Validate() = %v", diff)
 			}

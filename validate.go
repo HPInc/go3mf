@@ -121,6 +121,9 @@ func checkMetadadata(model *Model, md []Metadata) []error {
 
 func (r *BaseMaterialsResource) Validate(m *Model, path string) []error {
 	var errs []error
+	if r.ID == 0 {
+		errs = append(errs, specerr.ErrMissingID)
+	}
 	if len(r.Materials) == 0 {
 		errs = append(errs, specerr.ErrEmptyResourceProps)
 	}
@@ -140,14 +143,13 @@ func (res *Resources) validate(m *Model, path string) []error {
 	assets := make(map[uint32]struct{})
 	for i, r := range res.Assets {
 		id := r.Identify()
-		if id == 0 {
-			errs = append(errs, specerr.NewAsset(path, i, r, specerr.ErrMissingID))
-		} else if _, ok := assets[id]; ok {
-			errs = append(errs, specerr.NewAsset(path, i, r, specerr.ErrDuplicatedID))
+		if id != 0 {
+			if _, ok := assets[id]; ok {
+				errs = append(errs, specerr.NewAsset(path, i, r, specerr.ErrDuplicatedID))
+			}
 		}
 		assets[id] = struct{}{}
-		switch r := r.(type) {
-		case *BaseMaterialsResource:
+		if r, ok := r.(interface{ Validate(*Model, string) []error }); ok {
 			for _, err := range r.Validate(m, path) {
 				errs = append(errs, specerr.NewAsset(path, i, r, err))
 			}
