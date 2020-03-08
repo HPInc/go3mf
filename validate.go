@@ -182,8 +182,8 @@ func (r *Object) Validate(m *Model, path string) []error {
 	if r.Mesh != nil {
 		if r.DefaultPID != 0 {
 			if a, ok := res.FindAsset(r.DefaultPID); ok {
-				if a, ok := a.(*BaseMaterialsResource); ok {
-					if int(r.DefaultPIndex) > len(a.Materials) {
+				if a, ok := a.(propertyGroup); ok {
+					if int(r.DefaultPIndex) >= a.Len() {
 						errs = append(errs, specerr.ErrIndexOutOfBounds)
 					}
 				}
@@ -224,13 +224,14 @@ func (r *Object) validateMesh(m *Model, res *Resources) []error {
 			errs = append(errs, &specerr.IndexedError{Name: attrTriangle, Index: i, Err: specerr.ErrIndexOutOfBounds})
 		}
 		if face.PID != 0 {
+			if face.PID == r.DefaultPID && face.PIndex[0] == r.DefaultPIndex &&
+				face.PIndex[1] == r.DefaultPIndex && face.PIndex[2] == r.DefaultPIndex {
+				continue
+			}
 			if a, ok := res.FindAsset(face.PID); ok {
-				if a, ok := a.(*BaseMaterialsResource); ok {
-					if (face.PIndex[1] != face.PIndex[0] && face.PIndex[1] != 0) ||
-						(face.PIndex[2] != face.PIndex[0] && face.PIndex[2] != 0) {
-						errs = append(errs, &specerr.IndexedError{Name: attrTriangle, Index: i, Err: specerr.ErrBaseMaterialGradient})
-					}
-					if int(face.PIndex[0]) > len(a.Materials) {
+				if a, ok := a.(propertyGroup); ok {
+					l := a.Len()
+					if int(face.PIndex[0]) >= l || int(face.PIndex[1]) >= l || int(face.PIndex[2]) >= l {
 						errs = append(errs, &specerr.IndexedError{Name: attrTriangle, Index: i, Err: specerr.ErrIndexOutOfBounds})
 					}
 				}

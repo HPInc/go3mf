@@ -92,11 +92,11 @@ func TestValidate(t *testing.T) {
 				{ObjectID: 3}, {ObjectID: 2}, {}, {ObjectID: 5}, {ObjectID: 100},
 			}},
 			{ID: 4, DefaultPID: 100, Mesh: &Mesh{Nodes: make([]Point3D, 2), Faces: make([]Face, 3)}},
-			{ID: 6, DefaultPID: 5, DefaultPIndex: 3, Mesh: &Mesh{Nodes: []Point3D{{}, {}, {}, {}},
+			{ID: 6, DefaultPID: 5, DefaultPIndex: 2, Mesh: &Mesh{Nodes: []Point3D{{}, {}, {}, {}},
 				Faces: []Face{
-					{NodeIndices: [3]uint32{0, 1, 2}, PID: 5, PIndex: [3]uint32{4, 0, 0}},
-					{NodeIndices: [3]uint32{0, 1, 4}},
-					{NodeIndices: [3]uint32{0, 2, 3}, PID: 5, PIndex: [3]uint32{1, 2, 0}},
+					{NodeIndices: [3]uint32{0, 1, 2}, PID: 5, PIndex: [3]uint32{2, 0, 0}},
+					{NodeIndices: [3]uint32{0, 1, 4}, PID: 5, PIndex: [3]uint32{2, 2, 2}},
+					{NodeIndices: [3]uint32{0, 2, 3}, PID: 5, PIndex: [3]uint32{1, 1, 0}},
 					{NodeIndices: [3]uint32{1, 2, 3}, PID: 100},
 				}}},
 		}}}}, []error{
@@ -122,7 +122,6 @@ func TestValidate(t *testing.T) {
 			&specerr.ObjectError{Path: path, Index: 5, Err: specerr.ErrIndexOutOfBounds},
 			&specerr.ObjectError{Path: path, Index: 5, Err: &specerr.IndexedError{Name: attrTriangle, Index: 0, Err: specerr.ErrIndexOutOfBounds}},
 			&specerr.ObjectError{Path: path, Index: 5, Err: &specerr.IndexedError{Name: attrTriangle, Index: 1, Err: specerr.ErrIndexOutOfBounds}},
-			&specerr.ObjectError{Path: path, Index: 5, Err: &specerr.IndexedError{Name: attrTriangle, Index: 2, Err: specerr.ErrBaseMaterialGradient}},
 			&specerr.ObjectError{Path: path, Index: 5, Err: &specerr.IndexedError{Name: attrTriangle, Index: 3, Err: specerr.ErrMissingResource}},
 		}},
 	}

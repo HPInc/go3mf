@@ -24,7 +24,6 @@ var (
 	ErrOPCContentType         = errors.New("part MUST use an appropriate content type specified")
 	ErrOPCDuplicatedTicket    = errors.New("each model part MUST attach no more than one PrintTicket")
 	ErrOPCDuplicatedModelName = errors.New("go3mf: model part names MUST be unique")
-	ErrBaseMaterialGradient   = errors.New("triangle with base material MUST NOT form gradients")
 	ErrMetadataName           = errors.New("names without a namespace MUST be restricted to predefined values")
 	ErrMetadataNamespace      = errors.New("namespace MUST be declared on the model")
 	ErrMetadataDuplicated     = errors.New("names MUST NOT be duplicated")

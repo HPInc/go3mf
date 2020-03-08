@@ -8,6 +8,10 @@ import (
 	"sort"
 )
 
+type propertyGroup interface {
+	Len() int
+}
+
 // ExtensionAttr is an extension point containing <anyAttribute> information.
 // The key should be the extension namespace.
 type ExtensionAttr []MarshalerAttr
@@ -362,9 +366,14 @@ type BaseMaterialsResource struct {
 	Materials []BaseMaterial
 }
 
+// Len returns the materials count.
+func (r *BaseMaterialsResource) Len() int {
+	return len(r.Materials)
+}
+
 // Identify returns the unique ID of the resource.
-func (ms *BaseMaterialsResource) Identify() uint32 {
-	return ms.ID
+func (r *BaseMaterialsResource) Identify() uint32 {
+	return r.ID
 }
 
 // A Item is an in memory representation of the 3MF build item.

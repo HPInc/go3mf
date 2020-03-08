@@ -116,15 +116,25 @@ type Texture2DGroupResource struct {
 	Coords    []TextureCoord
 }
 
+// Len returns the materials count.
+func (r *Texture2DGroupResource) Len() int {
+	return len(r.Coords)
+}
+
 // Identify returns the unique ID of the resource.
-func (t *Texture2DGroupResource) Identify() uint32 {
-	return t.ID
+func (r *Texture2DGroupResource) Identify() uint32 {
+	return r.ID
 }
 
 // ColorGroupResource acts as a container for color properties.
 type ColorGroupResource struct {
 	ID     uint32
 	Colors []color.RGBA
+}
+
+// Len returns the materials count.
+func (r *ColorGroupResource) Len() int {
+	return len(r.Colors)
 }
 
 // Identify returns the unique ID of the resource.
@@ -145,6 +155,11 @@ type CompositeMaterialsResource struct {
 	Composites []Composite
 }
 
+// Len returns the materials count.
+func (r *CompositeMaterialsResource) Len() int {
+	return len(r.Composites)
+}
+
 // Identify returns the unique ID of the resource.
 func (c *CompositeMaterialsResource) Identify() uint32 {
 	return c.ID
@@ -162,6 +177,11 @@ type MultiPropertiesResource struct {
 	PIDs         []uint32
 	BlendMethods []BlendMethod
 	Multis       []Multi
+}
+
+// Len returns the materials count.
+func (r *MultiPropertiesResource) Len() int {
+	return len(r.Multis)
 }
 
 // Identify returns the unique ID of the resource.
