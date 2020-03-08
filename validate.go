@@ -109,10 +109,10 @@ func checkMetadadata(model *Model, md []Metadata) []error {
 	names := make(map[xml.Name]struct{})
 	for i, m := range md {
 		for _, err := range m.Validate(model) {
-			errs = append(errs, &specerr.MetadataError{Index: i, Err: err})
+			errs = append(errs, &specerr.IndexedError{Name: attrMetadata, Index: i, Err: err})
 		}
 		if _, ok := names[m.Name]; ok {
-			errs = append(errs, &specerr.MetadataError{Index: i, Err: specerr.ErrMetadataDuplicated})
+			errs = append(errs, &specerr.IndexedError{Name: attrMetadata, Index: i, Err: specerr.ErrMetadataDuplicated})
 		}
 		names[m.Name] = struct{}{}
 	}
@@ -126,10 +126,10 @@ func (r *BaseMaterialsResource) Validate(m *Model, path string) []error {
 	}
 	for j, b := range r.Materials {
 		if b.Name == "" {
-			errs = append(errs, &specerr.ResourcePropertyError{Index: j, Err: &specerr.MissingFieldError{Name: attrName}})
+			errs = append(errs, &specerr.IndexedError{Name: attrBase, Index: j, Err: &specerr.MissingFieldError{Name: attrName}})
 		}
 		if b.Color == (color.RGBA{}) {
-			errs = append(errs, &specerr.ResourcePropertyError{Index: j, Err: &specerr.MissingFieldError{Name: attrDisplayColor}})
+			errs = append(errs, &specerr.IndexedError{Name: attrBase, Index: j, Err: &specerr.MissingFieldError{Name: attrDisplayColor}})
 		}
 	}
 	return errs
@@ -218,24 +218,24 @@ func (r *Object) validateMesh(m *Model, res *Resources) []error {
 	for i, face := range r.Mesh.Faces {
 		i0, i1, i2 := face.NodeIndices[0], face.NodeIndices[1], face.NodeIndices[2]
 		if i0 == i1 || i0 == i2 || i1 == i2 {
-			errs = append(errs, &specerr.TriangleError{Index: i, Err: specerr.ErrDuplicatedIndices})
+			errs = append(errs, &specerr.IndexedError{Name: attrTriangle, Index: i, Err: specerr.ErrDuplicatedIndices})
 		}
 		if i0 >= nodeCount || i1 >= nodeCount || i2 >= nodeCount {
-			errs = append(errs, &specerr.TriangleError{Index: i, Err: specerr.ErrIndexOutOfBounds})
+			errs = append(errs, &specerr.IndexedError{Name: attrTriangle, Index: i, Err: specerr.ErrIndexOutOfBounds})
 		}
 		if face.PID != 0 {
 			if a, ok := res.FindAsset(face.PID); ok {
 				if a, ok := a.(*BaseMaterialsResource); ok {
 					if (face.PIndex[1] != face.PIndex[0] && face.PIndex[1] != 0) ||
 						(face.PIndex[2] != face.PIndex[0] && face.PIndex[2] != 0) {
-						errs = append(errs, &specerr.TriangleError{Index: i, Err: specerr.ErrBaseMaterialGradient})
+						errs = append(errs, &specerr.IndexedError{Name: attrTriangle, Index: i, Err: specerr.ErrBaseMaterialGradient})
 					}
 					if int(face.PIndex[0]) > len(a.Materials) {
-						errs = append(errs, &specerr.TriangleError{Index: i, Err: specerr.ErrIndexOutOfBounds})
+						errs = append(errs, &specerr.IndexedError{Name: attrTriangle, Index: i, Err: specerr.ErrIndexOutOfBounds})
 					}
 				}
 			} else {
-				errs = append(errs, &specerr.TriangleError{Index: i, Err: specerr.ErrMissingResource})
+				errs = append(errs, &specerr.IndexedError{Name: attrTriangle, Index: i, Err: specerr.ErrMissingResource})
 			}
 		}
 	}
@@ -246,13 +246,13 @@ func (r *Object) validateComponents(m *Model, path string) []error {
 	var errs []error
 	for j, c := range r.Components {
 		if c.ObjectID == 0 {
-			errs = append(errs, &specerr.ComponentError{Index: j, Err: &specerr.MissingFieldError{Name: attrObjectID}})
+			errs = append(errs, &specerr.IndexedError{Name: attrComponent, Index: j, Err: &specerr.MissingFieldError{Name: attrObjectID}})
 		} else if ref, ok := m.FindObject(c.ObjectPath(path), c.ObjectID); ok {
 			if ref.ID == r.ID && c.ObjectPath(path) == path {
-				errs = append(errs, &specerr.ComponentError{Index: j, Err: specerr.ErrRecursiveComponent})
+				errs = append(errs, &specerr.IndexedError{Name: attrComponent, Index: j, Err: specerr.ErrRecursiveComponent})
 			}
 		} else {
-			errs = append(errs, &specerr.ComponentError{Index: j, Err: specerr.ErrMissingResource})
+			errs = append(errs, &specerr.IndexedError{Name: attrComponent, Index: j, Err: specerr.ErrMissingResource})
 		}
 	}
 	return errs

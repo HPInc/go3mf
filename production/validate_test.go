@@ -66,9 +66,9 @@ func TestValidate(t *testing.T) {
 		}, Build: go3mf.Build{ExtensionAttr: go3mf.ExtensionAttr{mustUUID("f47ac10b-58cc-0372-8567-0e02b2c3d479")}}}}, []error{
 			&specerr.ObjectError{Path: rootPath, Index: 0, Err: &specerr.MissingFieldError{Name: attrProdUUID}},
 			&specerr.ObjectError{Path: rootPath, Index: 1, Err: specerr.ErrUUID},
-			&specerr.ObjectError{Path: rootPath, Index: 2, Err: &specerr.ComponentError{Index: 0, Err: &specerr.MissingFieldError{Name: attrProdUUID}}},
-			&specerr.ObjectError{Path: rootPath, Index: 2, Err: &specerr.ComponentError{Index: 1, Err: &specerr.MissingFieldError{Name: attrProdUUID}}},
-			&specerr.ObjectError{Path: rootPath, Index: 2, Err: &specerr.ComponentError{Index: 2, Err: specerr.ErrUUID}},
+			&specerr.ObjectError{Path: rootPath, Index: 2, Err: &specerr.IndexedError{Name: "component", Index: 0, Err: &specerr.MissingFieldError{Name: attrProdUUID}}},
+			&specerr.ObjectError{Path: rootPath, Index: 2, Err: &specerr.IndexedError{Name: "component", Index: 1, Err: &specerr.MissingFieldError{Name: attrProdUUID}}},
+			&specerr.ObjectError{Path: rootPath, Index: 2, Err: &specerr.IndexedError{Name: "component", Index: 2, Err: specerr.ErrUUID}},
 		}},
 		{"child", args{&go3mf.Model{Namespaces: []xml.Name{{Space: ExtensionName}},
 			Build: go3mf.Build{ExtensionAttr: go3mf.ExtensionAttr{mustUUID("f47ac10b-58cc-0372-8567-0e02b2c3d479")}},
@@ -79,8 +79,8 @@ func TestValidate(t *testing.T) {
 					}},
 				}}}}}}, []error{
 			&specerr.ObjectError{Path: "/other.model", Index: 0, Err: &specerr.MissingFieldError{Name: attrProdUUID}},
-			&specerr.ObjectError{Path: "/other.model", Index: 0, Err: &specerr.ComponentError{Index: 0, Err: &specerr.MissingFieldError{Name: attrProdUUID}}},
-			&specerr.ObjectError{Path: "/other.model", Index: 0, Err: &specerr.ComponentError{Index: 0, Err: specerr.ErrProdRefInNonRoot}},
+			&specerr.ObjectError{Path: "/other.model", Index: 0, Err: &specerr.IndexedError{Name: "component", Index: 0, Err: &specerr.MissingFieldError{Name: attrProdUUID}}},
+			&specerr.ObjectError{Path: "/other.model", Index: 0, Err: &specerr.IndexedError{Name: "component", Index: 0, Err: specerr.ErrProdRefInNonRoot}},
 		}},
 	}
 	for _, tt := range tests {

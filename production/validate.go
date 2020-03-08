@@ -26,6 +26,7 @@ func Validate(model *go3mf.Model) []error {
 }
 
 func validateObjects(path string, isRoot bool, objs []*go3mf.Object, err []error) (bool, []error) {
+	const attrComponent = "component"
 	var (
 		extU        *UUID
 		extP        *PathUUID
@@ -42,20 +43,20 @@ func validateObjects(path string, isRoot bool, objs []*go3mf.Object, err []error
 		for j, comp := range obj.Components {
 			if comp.ExtensionAttr.Get(&extP) {
 				if extP.UUID == "" {
-					err = append(err, specerr.NewObject(path, i, &specerr.ComponentError{Index: j, Err: &specerr.MissingFieldError{Name: attrProdUUID}}))
+					err = append(err, specerr.NewObject(path, i, &specerr.IndexedError{Name: attrComponent, Index: j, Err: &specerr.MissingFieldError{Name: attrProdUUID}}))
 				} else if validateUUID(string(extP.UUID)) != nil {
-					err = append(err, specerr.NewObject(path, i, &specerr.ComponentError{Index: j, Err: specerr.ErrUUID}))
+					err = append(err, specerr.NewObject(path, i, &specerr.IndexedError{Name: attrComponent, Index: j, Err: specerr.ErrUUID}))
 				}
 				if extP.Path != "" && extP.Path != path {
 					if isRoot {
 						// Path is validated as part if the core validations
 						mustRequire = true
 					} else {
-						err = append(err, specerr.NewObject(path, i, &specerr.ComponentError{Index: j, Err: specerr.ErrProdRefInNonRoot}))
+						err = append(err, specerr.NewObject(path, i, &specerr.IndexedError{Name: attrComponent, Index: j, Err: specerr.ErrProdRefInNonRoot}))
 					}
 				}
 			} else {
-				err = append(err, specerr.NewObject(path, i, &specerr.ComponentError{Index: j, Err: &specerr.MissingFieldError{Name: attrProdUUID}}))
+				err = append(err, specerr.NewObject(path, i, &specerr.IndexedError{Name: attrComponent, Index: j, Err: &specerr.MissingFieldError{Name: attrProdUUID}}))
 			}
 		}
 	}

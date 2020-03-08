@@ -59,7 +59,8 @@ func TestValidate(t *testing.T) {
 			&specerr.AssetError{Path: rootPath, Index: 0, Name: "MultiPropertiesResource", Err: specerr.ErrEmptyResourceProps},
 			&specerr.AssetError{Path: rootPath, Index: 1, Name: "MultiPropertiesResource", Err: specerr.ErrMultiRefMulti},
 			&specerr.AssetError{Path: rootPath, Index: 1, Name: "MultiPropertiesResource", Err: specerr.ErrMissingResource},
-			&specerr.AssetError{Path: rootPath, Index: 6, Name: "MultiPropertiesResource", Err: &specerr.ResourcePropertyError{
+			&specerr.AssetError{Path: rootPath, Index: 6, Name: "MultiPropertiesResource", Err: &specerr.IndexedError{
+				Name:  attrMulti,
 				Index: 0,
 				Err:   specerr.ErrIndexOutOfBounds,
 			}},
@@ -99,7 +100,8 @@ func TestValidate(t *testing.T) {
 				&ColorGroupResource{ID: 3, Colors: []color.RGBA{{R: 1}, {}}},
 			}}}}, []error{
 			&specerr.AssetError{Path: rootPath, Index: 0, Name: "ColorGroupResource", Err: specerr.ErrEmptyResourceProps},
-			&specerr.AssetError{Path: rootPath, Index: 2, Name: "ColorGroupResource", Err: &specerr.ResourcePropertyError{
+			&specerr.AssetError{Path: rootPath, Index: 2, Name: "ColorGroupResource", Err: &specerr.IndexedError{
+				Name:  attrColor,
 				Index: 1,
 				Err:   &specerr.MissingFieldError{Name: attrColor},
 			}},

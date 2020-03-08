@@ -60,6 +60,20 @@ var (
 	ErrSliceInvalidTranform      = errors.New("slices transforms MUST be planar")
 )
 
+type IndexedError struct {
+	Name  string
+	Index int
+	Err   error
+}
+
+func (e *IndexedError) Unwrap() error {
+	return e.Err
+}
+
+func (e *IndexedError) Error() string {
+	return fmt.Sprintf("%s: %v", e.Name, e.Err)
+}
+
 type BuildError struct {
 	Err error
 }
@@ -166,69 +180,4 @@ func (e *ParseFieldError) Error() string {
 		req = "optional"
 	}
 	return fmt.Sprintf("go3mf: [%s] error parsing property '%s = %s' of element '%s' in resource '%s:%d'", req, e.Name, e.Value, e.Element, e.ModelPath, e.ResourceID)
-}
-
-type ComponentError struct {
-	Index int
-	Err   error
-}
-
-func (e *ComponentError) Unwrap() error {
-	return e.Err
-}
-
-func (e *ComponentError) Error() string {
-	return fmt.Sprintf("component %d: %v", e.Index, e.Err)
-}
-
-type TriangleError struct {
-	Index int
-	Err   error
-}
-
-func (e *TriangleError) Unwrap() error {
-	return e.Err
-}
-
-func (e *TriangleError) Error() string {
-	return fmt.Sprintf("triangle %d: %v", e.Index, e.Err)
-}
-
-type ResourcePropertyError struct {
-	Index int
-	Err   error
-}
-
-func (e *ResourcePropertyError) Unwrap() error {
-	return e.Err
-}
-
-func (e *ResourcePropertyError) Error() string {
-	return fmt.Sprintf("property %d: %v", e.Index, e.Err)
-}
-
-type MetadataError struct {
-	Index int
-	Err   error
-}
-
-func (e *MetadataError) Unwrap() error {
-	return e.Err
-}
-
-func (e *MetadataError) Error() string {
-	return fmt.Sprintf("metadata %d: %v", e.Index, e.Err)
-}
-
-type SliceSegmentError struct {
-	Index int
-	Err   error
-}
-
-func (e *SliceSegmentError) Unwrap() error {
-	return e.Err
-}
-
-func (e *SliceSegmentError) Error() string {
-	return fmt.Sprintf("slice segment %d: %v", e.Index, e.Err)
 }

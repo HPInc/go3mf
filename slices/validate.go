@@ -77,28 +77,28 @@ func validateAssets(path string, model *go3mf.Model, res *go3mf.Resources, stack
 			err = validateRefs(path, model, i, r, stacks, err)
 			for j, slice := range r.Slices {
 				if slice.TopZ == 0 {
-					err = append(err, specerr.NewAsset(path, i, r, &specerr.ResourcePropertyError{Index: j, Err: &specerr.MissingFieldError{Name: attrZTop}}))
+					err = append(err, specerr.NewAsset(path, i, r, &specerr.IndexedError{Name: attrSlice, Index: j, Err: &specerr.MissingFieldError{Name: attrZTop}}))
 				} else if slice.TopZ < r.BottomZ {
-					err = append(err, specerr.NewAsset(path, i, r, &specerr.ResourcePropertyError{Index: j, Err: specerr.ErrSliceSmallTopZ}))
+					err = append(err, specerr.NewAsset(path, i, r, &specerr.IndexedError{Name: attrSlice, Index: j, Err: specerr.ErrSliceSmallTopZ}))
 				}
 				if len(slice.Polygons) == 0 && len(slice.Vertices) == 0 {
 					continue
 				}
 				if slice.TopZ < lastTopZ {
-					err = append(err, specerr.NewAsset(path, i, r, &specerr.ResourcePropertyError{Index: j, Err: specerr.ErrSliceNoMonotonic}))
+					err = append(err, specerr.NewAsset(path, i, r, &specerr.IndexedError{Name: attrSlice, Index: j, Err: specerr.ErrSliceNoMonotonic}))
 				}
 				if len(slice.Vertices) < 2 {
-					err = append(err, specerr.NewAsset(path, i, r, &specerr.ResourcePropertyError{Index: j, Err: specerr.ErrSliceInsufficientVertices}))
+					err = append(err, specerr.NewAsset(path, i, r, &specerr.IndexedError{Name: attrSlice, Index: j, Err: specerr.ErrSliceInsufficientVertices}))
 				}
 				if len(slice.Polygons) < 2 {
-					err = append(err, specerr.NewAsset(path, i, r, &specerr.ResourcePropertyError{Index: j, Err: specerr.ErrSliceInsufficientPolygons}))
+					err = append(err, specerr.NewAsset(path, i, r, &specerr.IndexedError{Name: attrSlice, Index: j, Err: specerr.ErrSliceInsufficientPolygons}))
 				}
 				for k, p := range slice.Polygons {
 					if len(p.Segments) < 1 {
-						err = append(err, specerr.NewAsset(path, i, r, &specerr.ResourcePropertyError{Index: j, Err: &specerr.SliceSegmentError{Index: k, Err: specerr.ErrSliceInsufficientSegments}}))
+						err = append(err, specerr.NewAsset(path, i, r, &specerr.IndexedError{Name: attrSlice, Index: j, Err: &specerr.IndexedError{Name: attrSegment, Index: k, Err: specerr.ErrSliceInsufficientSegments}}))
 					} else if _, ok := stacks[resource{path, r.ID}]; ok {
 						if p.StartV != p.Segments[len(p.Segments)-1].V2 {
-							err = append(err, specerr.NewAsset(path, i, r, &specerr.ResourcePropertyError{Index: j, Err: &specerr.SliceSegmentError{Index: k, Err: specerr.ErrSlicePolygonNotClosed}}))
+							err = append(err, specerr.NewAsset(path, i, r, &specerr.IndexedError{Name: attrSlice, Index: j, Err: &specerr.IndexedError{Name: attrSegment, Index: k, Err: specerr.ErrSlicePolygonNotClosed}}))
 						}
 					}
 				}
@@ -115,14 +115,14 @@ func validateRefs(path string, model *go3mf.Model, i int, r *SliceStackResource,
 		valid := true
 		if ref.Path == "" {
 			valid = false
-			err = append(err, specerr.NewAsset(path, i, r, &specerr.ResourcePropertyError{Index: j, Err: &specerr.MissingFieldError{Name: attrSlicePath}}))
+			err = append(err, specerr.NewAsset(path, i, r, &specerr.IndexedError{Name: attrSliceRef, Index: j, Err: &specerr.MissingFieldError{Name: attrSlicePath}}))
 		} else if ref.Path == path {
 			valid = false
-			err = append(err, specerr.NewAsset(path, i, r, &specerr.ResourcePropertyError{Index: j, Err: specerr.ErrSliceRefSamePart}))
+			err = append(err, specerr.NewAsset(path, i, r, &specerr.IndexedError{Name: attrSliceRef, Index: j, Err: specerr.ErrSliceRefSamePart}))
 		}
 		if ref.SliceStackID == 0 {
 			valid = false
-			err = append(err, specerr.NewAsset(path, i, r, &specerr.ResourcePropertyError{Index: j, Err: &specerr.MissingFieldError{Name: attrSliceRefID}}))
+			err = append(err, specerr.NewAsset(path, i, r, &specerr.IndexedError{Name: attrSliceRef, Index: j, Err: &specerr.MissingFieldError{Name: attrSliceRefID}}))
 		}
 		if !valid {
 			continue
@@ -133,19 +133,19 @@ func validateRefs(path string, model *go3mf.Model, i int, r *SliceStackResource,
 					stacks[resource{ref.Path, ref.SliceStackID}] = struct{}{}
 				}
 				if len(st.Refs) != 0 {
-					err = append(err, specerr.NewAsset(path, i, r, &specerr.ResourcePropertyError{Index: j, Err: specerr.ErrSliceRefRef}))
+					err = append(err, specerr.NewAsset(path, i, r, &specerr.IndexedError{Name: attrSliceRef, Index: j, Err: specerr.ErrSliceRefRef}))
 				}
 				if len(st.Slices) > 0 && st.Slices[0].TopZ < lastTopZ {
-					err = append(err, specerr.NewAsset(path, i, r, &specerr.ResourcePropertyError{Index: j, Err: specerr.ErrSliceNoMonotonic}))
+					err = append(err, specerr.NewAsset(path, i, r, &specerr.IndexedError{Name: attrSliceRef, Index: j, Err: specerr.ErrSliceNoMonotonic}))
 				}
 				if len(st.Slices) > 0 {
 					lastTopZ = st.Slices[len(st.Slices)-1].TopZ
 				}
 			} else {
-				err = append(err, specerr.NewAsset(path, i, r, &specerr.ResourcePropertyError{Index: j, Err: specerr.ErrNonSliceStack}))
+				err = append(err, specerr.NewAsset(path, i, r, &specerr.IndexedError{Name: attrSliceRef, Index: j, Err: specerr.ErrNonSliceStack}))
 			}
 		} else {
-			err = append(err, specerr.NewAsset(path, i, r, &specerr.ResourcePropertyError{Index: j, Err: specerr.ErrMissingResource}))
+			err = append(err, specerr.NewAsset(path, i, r, &specerr.IndexedError{Name: attrSliceRef, Index: j, Err: specerr.ErrMissingResource}))
 		}
 	}
 	return err
@@ -177,7 +177,7 @@ func validateObjects(path string, res *go3mf.Resources, stacks map[resource]stru
 		}
 		for j, c := range obj.Components {
 			if c.HasTransform() && !validTransform(c.Transform) {
-				err = append(err, specerr.NewObject(path, i, &specerr.ComponentError{Index: j, Err: specerr.ErrSliceInvalidTranform}))
+				err = append(err, specerr.NewObject(path, i, &specerr.IndexedError{Name: "component", Index: j, Err: specerr.ErrSliceInvalidTranform}))
 			}
 		}
 		if ext.SliceResolution == ResolutionLow {

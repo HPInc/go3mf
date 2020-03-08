@@ -79,10 +79,10 @@ func (v *validator) validateColorGroup(i int, r *ColorGroupResource) {
 	if len(r.Colors) == 0 {
 		v.AddWarning(specerr.NewAsset(v.path, i, r, specerr.ErrEmptyResourceProps))
 	}
-	var emptyColor color.RGBA
 	for j, c := range r.Colors {
-		if c == emptyColor {
-			v.AddWarning(specerr.NewAsset(v.path, i, r, &specerr.ResourcePropertyError{
+		if c == (color.RGBA{}) {
+			v.AddWarning(specerr.NewAsset(v.path, i, r, &specerr.IndexedError{
+				Name:  attrColor,
 				Index: j,
 				Err:   &specerr.MissingFieldError{Name: attrColor},
 			}))
@@ -170,7 +170,8 @@ func (v *validator) validateMulti(i int, r *MultiPropertiesResource) {
 	for j, m := range r.Multis {
 		for k, index := range m.PIndex {
 			if k < len(r.PIDs) && lengths[k] < int(index) {
-				v.AddWarning(specerr.NewAsset(v.path, i, r, &specerr.ResourcePropertyError{
+				v.AddWarning(specerr.NewAsset(v.path, i, r, &specerr.IndexedError{
+					Name:  attrMulti,
 					Index: j,
 					Err:   specerr.ErrIndexOutOfBounds,
 				}))
