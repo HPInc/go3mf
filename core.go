@@ -323,7 +323,7 @@ func (m *Model) PathOrDefault() string {
 
 // FindResources returns the resource associated with path.
 func (m *Model) FindResources(path string) (*Resources, bool) {
-	if path == "" || path == m.Path {
+	if path == "" || path == m.Path || (m.Path == "" && path == DefaultModelPath) {
 		return &m.Resources, true
 	}
 	if child, ok := m.Childs[path]; ok {

@@ -57,7 +57,7 @@ func TestValidate(t *testing.T) {
 			&specerr.ItemError{Index: 0, Err: &specerr.MissingFieldError{Name: attrObjectID}},
 			&specerr.ItemError{Index: 1, Err: specerr.ErrOtherItem},
 			&specerr.ItemError{Index: 2, Err: specerr.ErrMissingResource},
-			&specerr.ItemError{Index: 3, Err: specerr.ErrNonObject},
+			&specerr.ItemError{Index: 3, Err: specerr.ErrMissingResource},
 			&specerr.ItemError{Index: 3, Err: &specerr.MetadataError{Index: 0, Err: specerr.ErrMetadataName}},
 		}},
 		{"childs", args{&Model{Childs: map[string]*ChildModel{path: &ChildModel{}, "/a.model": &ChildModel{
@@ -111,7 +111,7 @@ func TestValidate(t *testing.T) {
 			&specerr.ObjectError{Path: path, Index: 3, Err: specerr.ErrComponentsPID},
 			&specerr.ObjectError{Path: path, Index: 3, Err: &specerr.ComponentError{Index: 0, Err: specerr.ErrRecursiveComponent}},
 			&specerr.ObjectError{Path: path, Index: 3, Err: &specerr.ComponentError{Index: 2, Err: &specerr.MissingFieldError{Name: attrObjectID}}},
-			&specerr.ObjectError{Path: path, Index: 3, Err: &specerr.ComponentError{Index: 3, Err: specerr.ErrNonObject}},
+			&specerr.ObjectError{Path: path, Index: 3, Err: &specerr.ComponentError{Index: 3, Err: specerr.ErrMissingResource}},
 			&specerr.ObjectError{Path: path, Index: 3, Err: &specerr.ComponentError{Index: 4, Err: specerr.ErrMissingResource}},
 			&specerr.ObjectError{Path: path, Index: 4, Err: specerr.ErrMissingResource},
 			&specerr.ObjectError{Path: path, Index: 4, Err: specerr.ErrInsufficientVertices},
@@ -128,9 +128,9 @@ func TestValidate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := Validate(tt.args.model)
+			got := tt.args.model.Validate()
 			if diff := deep.Equal(got, tt.want); diff != nil {
-				t.Errorf("Validate() = %v", diff)
+				t.Errorf("Model.Validate() = %v", diff)
 			}
 		})
 	}
