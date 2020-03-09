@@ -2,6 +2,7 @@ package go3mf
 
 import (
 	"encoding/xml"
+	"errors"
 	"image/color"
 	"testing"
 
@@ -48,12 +49,13 @@ func TestValidate(t *testing.T) {
 		{"build", args{&Model{Resources: Resources{Assets: []Asset{&BaseMaterialsResource{ID: 1, Materials: []BaseMaterial{{Name: "a", Color: color.RGBA{A: 1}}}}}, Objects: []*Object{
 			{ID: 2, ObjectType: ObjectTypeOther, Mesh: &Mesh{Nodes: []Point3D{{}, {}, {}, {}}, Faces: []Face{
 				{NodeIndices: [3]uint32{0, 1, 2}}, {NodeIndices: [3]uint32{0, 3, 1}}, {NodeIndices: [3]uint32{0, 2, 3}}, {NodeIndices: [3]uint32{1, 3, 2}},
-			}}}}}, Build: Build{Items: []*Item{
+			}}}}}, Build: Build{ExtensionAttr: ExtensionAttr{&fakeAttr{}}, Items: []*Item{
 			{},
 			{ObjectID: 2},
 			{ObjectID: 100},
 			{ObjectID: 1, Metadata: []Metadata{{Name: xml.Name{Local: "issue"}}}},
 		}}}}, []error{
+			&specerr.BuildError{Err: errors.New("")},
 			&specerr.ItemError{Index: 0, Err: &specerr.MissingFieldError{Name: attrObjectID}},
 			&specerr.ItemError{Index: 1, Err: specerr.ErrOtherItem},
 			&specerr.ItemError{Index: 2, Err: specerr.ErrMissingResource},
@@ -84,7 +86,7 @@ func TestValidate(t *testing.T) {
 			&BaseMaterialsResource{ID: 5, Materials: []BaseMaterial{{Name: "a", Color: color.RGBA{A: 1}}, {Name: "b", Color: color.RGBA{A: 1}}}},
 		}, Objects: []*Object{
 			{},
-			{ID: 1, DefaultPIndex: 1, Mesh: &Mesh{}, Components: []*Component{{ObjectID: 1}}},
+			{ID: 1, DefaultPIndex: 1, Mesh: &Mesh{}, Components: []*Component{{ObjectID: 1, ExtensionAttr: ExtensionAttr{&fakeAttr{path}}}}},
 			{ID: 2, Mesh: &Mesh{Nodes: []Point3D{{}, {}, {}, {}}, Faces: []Face{
 				{NodeIndices: [3]uint32{0, 1, 2}}, {NodeIndices: [3]uint32{0, 3, 1}}, {NodeIndices: [3]uint32{0, 2, 3}}, {NodeIndices: [3]uint32{1, 3, 2}},
 			}}},
@@ -108,6 +110,7 @@ func TestValidate(t *testing.T) {
 			&specerr.ObjectError{Path: path, Index: 1, Err: specerr.ErrInsufficientVertices},
 			&specerr.ObjectError{Path: path, Index: 1, Err: specerr.ErrInsufficientTriangles},
 			&specerr.ObjectError{Path: path, Index: 1, Err: &specerr.IndexedError{Name: attrComponent, Index: 0, Err: specerr.ErrRecursiveComponent}},
+			&specerr.ObjectError{Path: path, Index: 1, Err: &specerr.IndexedError{Name: attrComponent, Index: 0, Err: errors.New("")}},
 			&specerr.ObjectError{Path: path, Index: 3, Err: specerr.ErrComponentsPID},
 			&specerr.ObjectError{Path: path, Index: 3, Err: &specerr.IndexedError{Name: attrComponent, Index: 0, Err: specerr.ErrRecursiveComponent}},
 			&specerr.ObjectError{Path: path, Index: 3, Err: &specerr.IndexedError{Name: attrComponent, Index: 2, Err: &specerr.MissingFieldError{Name: attrObjectID}}},

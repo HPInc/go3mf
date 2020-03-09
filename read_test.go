@@ -34,7 +34,8 @@ type fakeAttr struct {
 	Value string
 }
 
-func (f *fakeAttr) ObjectPath() string { return f.Value }
+func (f *fakeAttr) ObjectPath() string                  { return f.Value }
+func (f *fakeAttr) Validate(_ *Model, _ string) []error { return []error{errors.New("")} }
 
 type fakeAssetDecoder struct {
 	baseDecoder

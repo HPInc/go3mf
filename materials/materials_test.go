@@ -1,6 +1,7 @@
 package materials
 
 import (
+	"image/color"
 	"reflect"
 	"testing"
 )
@@ -296,6 +297,78 @@ func Test_newTexture2DType(t *testing.T) {
 			}
 			if got1 != tt.want1 {
 				t.Errorf("newTexture2DType() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+
+func TestColorGroupResource_Len(t *testing.T) {
+	tests := []struct {
+		name string
+		r    *ColorGroupResource
+		want int
+	}{
+		{"empty", new(ColorGroupResource), 0},
+		{"base", &ColorGroupResource{Colors: make([]color.RGBA, 3)}, 3},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.r.Len(); got != tt.want {
+				t.Errorf("ColorGroupResource.Len() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCompositeMaterialsResource_Len(t *testing.T) {
+	tests := []struct {
+		name string
+		r    *CompositeMaterialsResource
+		want int
+	}{
+		{"empty", new(CompositeMaterialsResource), 0},
+		{"base", &CompositeMaterialsResource{Composites: make([]Composite, 3)}, 3},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.r.Len(); got != tt.want {
+				t.Errorf("CompositeMaterialsResource.Len() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMultiPropertiesResource_Len(t *testing.T) {
+	tests := []struct {
+		name string
+		r    *MultiPropertiesResource
+		want int
+	}{
+		{"empty", new(MultiPropertiesResource), 0},
+		{"base", &MultiPropertiesResource{Multis: make([]Multi, 3)}, 3},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.r.Len(); got != tt.want {
+				t.Errorf("MultiPropertiesResource.Len() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestTexture2DGroupResource_Len(t *testing.T) {
+	tests := []struct {
+		name string
+		r    *Texture2DGroupResource
+		want int
+	}{
+		{"empty", new(Texture2DGroupResource), 0},
+		{"base", &Texture2DGroupResource{Coords: make([]TextureCoord, 3)}, 3},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.r.Len(); got != tt.want {
+				t.Errorf("Texture2DGroupResource.Len() = %v, want %v", got, tt.want)
 			}
 		})
 	}

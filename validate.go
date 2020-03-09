@@ -50,6 +50,16 @@ func (m *Model) Validate() []error {
 	return append(errs, m.Build.Validate(m, rootPath)...)
 }
 
+func (ext ExtensionAttr) validate(m *Model, path string) []error {
+	var errs []error
+	for _, a := range ext {
+		if a, ok := a.(validator); ok {
+			errs = append(errs, a.Validate(m, path)...)
+		}
+	}
+	return errs
+}
+
 func (item *Item) Validate(m *Model, path string) []error {
 	var errs []error
 	opath := item.ObjectPath(path)
@@ -63,22 +73,14 @@ func (item *Item) Validate(m *Model, path string) []error {
 		errs = append(errs, specerr.ErrMissingResource)
 	}
 	errs = append(errs, checkMetadadata(m, item.Metadata)...)
-	for _, a := range item.ExtensionAttr {
-		if a, ok := a.(validator); ok {
-			errs = append(errs, a.Validate(m, path)...)
-		}
-	}
+	errs = append(errs, item.ExtensionAttr.validate(m, path)...)
 	return errs
 }
 
 func (b *Build) Validate(m *Model, path string) []error {
 	var errs []error
-	for _, a := range b.ExtensionAttr {
-		if a, ok := a.(validator); ok {
-			for _, err := range a.Validate(m, path) {
-				errs = append(errs, &specerr.BuildError{Err: err})
-			}
-		}
+	for _, err := range b.ExtensionAttr.validate(m, path) {
+		errs = append(errs, &specerr.BuildError{Err: err})
 	}
 	for i, item := range b.Items {
 		for _, err := range item.Validate(m, path) {
@@ -196,11 +198,7 @@ func (r *Object) Validate(m *Model, path string) []error {
 	if (r.Mesh != nil && len(r.Components) > 0) || (r.Mesh == nil && len(r.Components) == 0) {
 		errs = append(errs, specerr.ErrInvalidObject)
 	}
-	for _, a := range r.ExtensionAttr {
-		if a, ok := a.(validator); ok {
-			errs = append(errs, a.Validate(m, path)...)
-		}
-	}
+	errs = append(errs, r.ExtensionAttr.validate(m, path)...)
 	if r.Mesh != nil {
 		if r.DefaultPID != 0 {
 			if a, ok := res.FindAsset(r.DefaultPID); ok {
@@ -277,12 +275,8 @@ func (r *Object) validateComponents(m *Model, path string) []error {
 		} else {
 			errs = append(errs, &specerr.IndexedError{Name: attrComponent, Index: j, Err: specerr.ErrMissingResource})
 		}
-		for _, a := range c.ExtensionAttr {
-			if a, ok := a.(validator); ok {
-				for _, err := range a.Validate(m, path) {
-					errs = append(errs, &specerr.IndexedError{Name: attrComponent, Index: j, Err: err})
-				}
-			}
+		for _, err := range c.ExtensionAttr.validate(m, path) {
+			errs = append(errs, &specerr.IndexedError{Name: attrComponent, Index: j, Err: err})
 		}
 	}
 	return errs
