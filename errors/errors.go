@@ -158,7 +158,7 @@ type MissingFieldError struct {
 }
 
 func (e *MissingFieldError) Error() string {
-	return fmt.Sprintf("required field %s is not set", e.Name)
+	return fmt.Sprintf("required field '%s' is not set", e.Name)
 }
 
 // A &specerr.ParseFieldError represents an error while decoding a required or an optional property.
