@@ -70,7 +70,7 @@ func validateRoot(model *go3mf.Model, stacks map[resource]struct{}, err []error)
 func validateAssets(path string, model *go3mf.Model, res *go3mf.Resources, stacks map[resource]struct{}, err []error) []error {
 	var lastTopZ float32
 	for i, r := range res.Assets {
-		if r, ok := r.(*SliceStackResource); ok {
+		if r, ok := r.(*SliceStack); ok {
 			if len(r.Slices) != 0 && len(r.Refs) != 0 {
 				err = append(err, specerr.NewAsset(path, i, r, specerr.ErrSlicesAndRefs))
 			}
@@ -109,7 +109,7 @@ func validateAssets(path string, model *go3mf.Model, res *go3mf.Resources, stack
 	return err
 }
 
-func validateRefs(path string, model *go3mf.Model, i int, r *SliceStackResource, stacks map[resource]struct{}, err []error) []error {
+func validateRefs(path string, model *go3mf.Model, i int, r *SliceStack, stacks map[resource]struct{}, err []error) []error {
 	var lastTopZ float32
 	for j, ref := range r.Refs {
 		valid := true
@@ -128,7 +128,7 @@ func validateRefs(path string, model *go3mf.Model, i int, r *SliceStackResource,
 			continue
 		}
 		if st, ok := model.FindAsset(ref.Path, ref.SliceStackID); ok {
-			if st, ok := st.(*SliceStackResource); ok {
+			if st, ok := st.(*SliceStack); ok {
 				if _, ok := stacks[resource{path, r.ID}]; ok {
 					stacks[resource{ref.Path, ref.SliceStackID}] = struct{}{}
 				}
@@ -165,7 +165,7 @@ func validateObjects(path string, res *go3mf.Resources, stacks map[resource]stru
 			continue
 		}
 		if r, ok := res.FindAsset(ext.SliceStackID); ok {
-			if r, ok := r.(*SliceStackResource); ok {
+			if r, ok := r.(*SliceStack); ok {
 				if obj.ObjectType == go3mf.ObjectTypeModel || obj.ObjectType == go3mf.ObjectTypeSolidSupport {
 					stacks[resource{path, r.ID}] = struct{}{}
 				}

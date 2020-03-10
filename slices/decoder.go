@@ -58,7 +58,7 @@ func objectAttrDecoder(scanner *go3mf.Scanner, o *go3mf.Object, a xml.Attr) {
 
 type sliceStackDecoder struct {
 	baseDecoder
-	resource SliceStackResource
+	resource SliceStack
 }
 
 func (d *sliceStackDecoder) End() {
@@ -97,7 +97,7 @@ func (d *sliceStackDecoder) Start(attrs []xml.Attr) {
 
 type sliceRefDecoder struct {
 	baseDecoder
-	resource *SliceStackResource
+	resource *SliceStack
 }
 
 func (d *sliceRefDecoder) Start(attrs []xml.Attr) {
@@ -122,7 +122,7 @@ func (d *sliceRefDecoder) Start(attrs []xml.Attr) {
 
 type sliceDecoder struct {
 	baseDecoder
-	resource               *SliceStackResource
+	resource               *SliceStack
 	slice                  Slice
 	polygonDecoder         polygonDecoder
 	polygonVerticesDecoder polygonVerticesDecoder

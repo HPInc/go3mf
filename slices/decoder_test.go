@@ -11,7 +11,7 @@ import (
 )
 
 func TestDecode(t *testing.T) {
-	sliceStack := &SliceStackResource{ID: 3, BottomZ: 1,
+	sliceStack := &SliceStack{ID: 3, BottomZ: 1,
 		Slices: []*Slice{
 			{
 				TopZ:     0,
@@ -25,7 +25,7 @@ func TestDecode(t *testing.T) {
 			},
 		},
 	}
-	sliceStackRef := &SliceStackResource{ID: 7, BottomZ: 1.1, Refs: []SliceRef{{SliceStackID: 10, Path: "/2D/2Dmodel.model"}}}
+	sliceStackRef := &SliceStack{ID: 7, BottomZ: 1.1, Refs: []SliceRef{{SliceStackID: 10, Path: "/2D/2Dmodel.model"}}}
 	meshRes := &go3mf.Object{
 		Mesh: new(go3mf.Mesh),
 		ID:   8, Name: "Box 1",

@@ -9,7 +9,7 @@ import (
 )
 
 func TestMarshalModel(t *testing.T) {
-	sliceStack := &SliceStackResource{ID: 3, BottomZ: 1,
+	sliceStack := &SliceStack{ID: 3, BottomZ: 1,
 		Slices: []*Slice{
 			{
 				TopZ:     0,
@@ -23,7 +23,7 @@ func TestMarshalModel(t *testing.T) {
 			},
 		},
 	}
-	sliceStackRef := &SliceStackResource{ID: 7, BottomZ: 1.1, Refs: []SliceRef{{SliceStackID: 10, Path: "/2D/2dmodel.model"}}}
+	sliceStackRef := &SliceStack{ID: 7, BottomZ: 1.1, Refs: []SliceRef{{SliceStackID: 10, Path: "/2D/2dmodel.model"}}}
 	meshRes := &go3mf.Object{
 		Mesh: new(go3mf.Mesh),
 		ID:   8, Name: "Box 1",

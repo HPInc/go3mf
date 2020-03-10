@@ -16,7 +16,7 @@ func (s *SliceStackInfo) Marshal3MFAttr(_ *go3mf.XMLEncoder) ([]xml.Attr, error)
 }
 
 // Marshal3MF encodes the resource.
-func (s *SliceStackResource) Marshal3MF(x *go3mf.XMLEncoder) error {
+func (s *SliceStack) Marshal3MF(x *go3mf.XMLEncoder) error {
 	xs := xml.StartElement{Name: xml.Name{Space: ExtensionName, Local: attrSliceStack}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(s.ID), 10)},
 	}}

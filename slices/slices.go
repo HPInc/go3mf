@@ -62,9 +62,9 @@ type SliceRef struct {
 	Path         string
 }
 
-// SliceStackResource defines a slice stack resource.
+// SliceStack defines a slice stack resource.
 // It can either contain a SliceStack or a Refs slice.
-type SliceStackResource struct {
+type SliceStack struct {
 	ID      uint32
 	BottomZ float32
 	Slices  []*Slice
@@ -72,7 +72,7 @@ type SliceStackResource struct {
 }
 
 // Identify returns the unique ID of the resource.
-func (s *SliceStackResource) Identify() uint32 {
+func (s *SliceStack) Identify() uint32 {
 	return s.ID
 }
 

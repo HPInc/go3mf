@@ -8,16 +8,16 @@ import (
 func TestSliceStackResource_Identify(t *testing.T) {
 	tests := []struct {
 		name string
-		s    *SliceStackResource
+		s    *SliceStack
 		want uint32
 	}{
-		{"base", &SliceStackResource{ID: 1}, 1},
+		{"base", &SliceStack{ID: 1}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.s.Identify()
 			if got != tt.want {
-				t.Errorf("SliceStackResource.Identify() got = %v, want %v", got, tt.want)
+				t.Errorf("SliceStack.Identify() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
