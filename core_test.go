@@ -319,38 +319,6 @@ func Test_newUnits(t *testing.T) {
 	}
 }
 
-func TestNewMeshObject(t *testing.T) {
-	tests := []struct {
-		name string
-		want *Object
-	}{
-		{"base", &Object{Mesh: new(Mesh)}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewMeshObject(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewMeshObject() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestNewComponentsObject(t *testing.T) {
-	tests := []struct {
-		name string
-		want *Object
-	}{
-		{"base", &Object{Components: make([]*Component, 0)}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewComponentsObject(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewComponentsObject() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestExtensionAttr_Get(t *testing.T) {
 	tests := []struct {
 		name   string

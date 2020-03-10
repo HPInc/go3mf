@@ -3,7 +3,6 @@ package errors
 import (
 	"errors"
 	"fmt"
-	"reflect"
 	"strings"
 )
 
@@ -23,13 +22,13 @@ var (
 	ErrOPCDuplicatedRel       = errors.New("there MUST NOT be more than one relationship of a given type from one part to a second part")
 	ErrOPCContentType         = errors.New("part MUST use an appropriate content type specified")
 	ErrOPCDuplicatedTicket    = errors.New("each model part MUST attach no more than one PrintTicket")
-	ErrOPCDuplicatedModelName = errors.New("go3mf: model part names MUST be unique")
+	ErrOPCDuplicatedModelName = errors.New("model part names MUST be unique")
 	ErrMetadataName           = errors.New("names without a namespace MUST be restricted to predefined values")
 	ErrMetadataNamespace      = errors.New("namespace MUST be declared on the model")
 	ErrMetadataDuplicated     = errors.New("names MUST NOT be duplicated")
 	ErrOtherItem              = errors.New("MUST NOT reference objects of type other")
 	ErrNonObject              = errors.New("MUST NOT reference non-object resources")
-	ErrRequiredExt            = errors.New("go3mf: unsupported required extension")
+	ErrRequiredExt            = errors.New("unsupported required extension")
 	ErrEmptyResourceProps     = errors.New("resource properties MUST NOT be empty")
 	ErrRecursiveComponent     = errors.New("MUST NOT contain recursive references")
 	ErrInvalidObject          = errors.New("MUST contain a mesh or components")
@@ -59,98 +58,54 @@ var (
 	ErrSliceInvalidTranform      = errors.New("slices transforms MUST be planar")
 )
 
-type IndexedError struct {
-	Name  string
-	Index int
-	Err   error
+type Level struct {
+	Element interface{}
+	Index   int // -1 if not needed
 }
 
-func (e *IndexedError) Unwrap() error {
+func (l *Level) String() string {
+	name := fmt.Sprintf("%T", l.Element)
+	name = strings.Replace(name, "go3mf.", "", -1)
+	name = strings.Replace(name, "*", "", -1)
+	if l.Index == -1 {
+		return name
+	}
+	return fmt.Sprintf("%s#%d", name, l.Index)
+}
+
+type Error struct {
+	Path   string
+	Target []Level
+	Err    error
+}
+
+func New(path string, element interface{}, err error) *Error {
+	if e, ok := err.(*Error); ok {
+		e.Target = append(e.Target, Level{element, -1})
+		return e
+	}
+	return &Error{path, []Level{{element, -1}}, err}
+}
+
+func NewIndexed(path string, element interface{}, index int, err error) *Error {
+	if e, ok := err.(*Error); ok {
+		e.Target = append(e.Target, Level{element, index})
+		return e
+	}
+	return &Error{path, []Level{{element, index}}, err}
+}
+
+func (e *Error) Unwrap() error {
 	return e.Err
 }
 
-func (e *IndexedError) Error() string {
-	return fmt.Sprintf("%s: %v", e.Name, e.Err)
-}
-
-type BuildError struct {
-	Err error
-}
-
-func (e *BuildError) Unwrap() error {
-	return e.Err
-}
-
-func (e *BuildError) Error() string {
-	return fmt.Sprintf("go3mf: build: %v", e.Err)
-}
-
-type ItemError struct {
-	Index int
-	Err   error
-}
-
-func NewItem(index int, err error) error {
-	return &ItemError{Index: index, Err: err}
-}
-
-func (e *ItemError) Unwrap() error {
-	return e.Err
-}
-
-func (e *ItemError) Error() string {
-	return fmt.Sprintf("go3mf: build item %d: %v", e.Index, e.Err)
-}
-
-type AssetError struct {
-	Path  string
-	Index int
-	Name  string
-	Err   error
-}
-
-func NewAsset(path string, index int, asset interface{}, err error) error {
-	return &AssetError{Path: path, Index: index, Name: reflect.TypeOf(asset).Elem().Name(), Err: err}
-}
-
-func (e *AssetError) Unwrap() error {
-	return e.Err
-}
-
-func (e *AssetError) Error() string {
-	return fmt.Sprintf("go3mf: %s %s#%d: %v", strings.ToLower(e.Name), e.Path, e.Index, e.Err)
-}
-
-type ObjectError struct {
-	Path  string
-	Index int
-	Err   error
-}
-
-func NewObject(path string, index int, err error) error {
-	return &ObjectError{Path: path, Index: index, Err: err}
-}
-
-func (e *ObjectError) Unwrap() error {
-	return e.Err
-}
-
-func (e *ObjectError) Error() string {
-	return fmt.Sprintf("go3mf: object %s#%d: %v", e.Path, e.Index, e.Err)
-}
-
-type RelationshipError struct {
-	Path  string
-	Index int
-	Err   error
-}
-
-func (e *RelationshipError) Unwrap() error {
-	return e.Err
-}
-
-func (e *RelationshipError) Error() string {
-	return fmt.Sprintf("go3mf: relationship %s#%d: %v", e.Path, e.Index, e.Err)
+func (e *Error) Error() string {
+	levels := make([]string, len(e.Target)+1)
+	levels[0] = e.Path
+	for i, l := range e.Target {
+		levels[len(e.Target)-i] = l.String()
+	}
+	return fmt.Sprintf("go3mf: %s: %v", strings.Join(levels, "@"), e.Err)
 }
 
 type MissingFieldError struct {

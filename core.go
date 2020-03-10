@@ -420,18 +420,6 @@ type Object struct {
 	ExtensionAttr ExtensionAttr
 }
 
-// NewMeshObject returns a new object resource
-// with an initialized mesh.
-func NewMeshObject() *Object {
-	return &Object{Mesh: new(Mesh)}
-}
-
-// NewComponentsObject returns a new object resource
-// with an initialized components.
-func NewComponentsObject() *Object {
-	return &Object{Components: make([]*Component, 0)}
-}
-
 // A Component is an in memory representation of the 3MF component.
 type Component struct {
 	ObjectID      uint32

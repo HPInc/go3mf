@@ -39,7 +39,7 @@ func (d *Decoder) DecodeContext(ctx context.Context, m *go3mf.Model) error {
 	if err != nil {
 		return err
 	}
-	newMesh := go3mf.NewMeshObject()
+	newMesh := &go3mf.Object{Mesh: new(go3mf.Mesh)}
 	if isASCII {
 		decoder := asciiDecoder{r: b}
 		err = decoder.decode(ctx, newMesh.Mesh)

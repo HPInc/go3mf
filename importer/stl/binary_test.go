@@ -46,8 +46,7 @@ func Test_binaryDecoder_decode(t *testing.T) {
 }
 
 func createMeshTriangle(id uint32) *go3mf.Object {
-	m := go3mf.NewMeshObject()
-	m.ID = id
+	m := &go3mf.Object{ID: id, Mesh: new(go3mf.Mesh)}
 	mb := go3mf.NewMeshBuilder(m.Mesh)
 	n1 := mb.AddNode(go3mf.Point3D{-20.0, -20.0, 0.0})
 	n2 := mb.AddNode(go3mf.Point3D{20.0, -20.0, 0.0})
