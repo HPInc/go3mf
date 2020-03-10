@@ -156,7 +156,7 @@ func (e *Encoder) modelToken(x *XMLEncoder, m *Model, isRoot bool) (xml.StartEle
 				}
 			}
 			if exts[i] == "" {
-				return xml.StartElement{}, fmt.Errorf("go3mf: cannot encode model with undefined required extension '%s'", ns)
+				return xml.StartElement{}, fmt.Errorf("cannot encode model with undefined required extension '%s'", ns)
 			}
 		}
 		attrs = append(attrs, xml.Attr{Name: xml.Name{Local: attrReqExt}, Value: strings.Join(exts, " ")})

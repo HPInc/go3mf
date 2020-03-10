@@ -105,7 +105,7 @@ func (e *Error) Error() string {
 	for i, l := range e.Target {
 		levels[len(e.Target)-i] = l.String()
 	}
-	return fmt.Sprintf("go3mf: %s: %v", strings.Join(levels, "@"), e.Err)
+	return fmt.Sprintf("%s: %v", strings.Join(levels, "@"), e.Err)
 }
 
 type MissingFieldError struct {
@@ -133,5 +133,5 @@ func (e *ParseFieldError) Error() string {
 	if !e.Required {
 		req = "optional"
 	}
-	return fmt.Sprintf("go3mf: [%s] error parsing property '%s = %s' of element '%s' in resource '%s:%d'", req, e.Name, e.Value, e.Element, e.ModelPath, e.ResourceID)
+	return fmt.Sprintf("[%s] error parsing property '%s = %s' of element '%s' in resource '%s:%d'", req, e.Name, e.Value, e.Element, e.ModelPath, e.ResourceID)
 }

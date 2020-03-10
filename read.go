@@ -338,7 +338,7 @@ func (d *Decoder) processOPC(model *Model) (packageFile, error) {
 			var ok bool
 			rootFile, ok = d.p.FindFileFromName(r.Path)
 			if !ok {
-				return nil, errors.New("go3mf: package root model points to an unexisting file")
+				return nil, errors.New("package root model points to an unexisting file")
 			}
 			model.Path = rootFile.Name()
 			d.extractCoreAttachments(rootFile, model, true)
@@ -351,7 +351,7 @@ func (d *Decoder) processOPC(model *Model) (packageFile, error) {
 		}
 	}
 	if rootFile == nil {
-		return nil, errors.New("go3mf: package does not have root model")
+		return nil, errors.New("package does not have root model")
 	}
 	return rootFile, nil
 }
