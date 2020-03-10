@@ -95,7 +95,7 @@ func (r *MultiPropertiesResource) Validate(m *go3mf.Model, path string) []error 
 	for j, pid := range r.PIDs {
 		if pr, ok := m.FindAsset(path, pid); ok {
 			switch pr := pr.(type) {
-			case *go3mf.BaseMaterialsResource:
+			case *go3mf.BaseMaterials:
 				if j != 0 {
 					errs = append(errs, specerr.ErrMaterialMulti)
 				}
@@ -142,7 +142,7 @@ func (r *CompositeMaterialsResource) Validate(m *go3mf.Model, path string) []err
 	if r.MaterialID == 0 {
 		errs = append(errs, &specerr.MissingFieldError{Name: attrMatID})
 	} else if mat, ok := m.FindAsset(path, r.MaterialID); ok {
-		if bm, ok := mat.(*go3mf.BaseMaterialsResource); ok {
+		if bm, ok := mat.(*go3mf.BaseMaterials); ok {
 			for _, index := range r.Indices {
 				if int(index) > len(bm.Materials) {
 					errs = append(errs, specerr.ErrIndexOutOfBounds)

@@ -220,7 +220,7 @@ func (d *resourceDecoder) Child(name xml.Name) (child NodeDecoder) {
 
 type baseMaterialsDecoder struct {
 	baseDecoder
-	resource            BaseMaterialsResource
+	resource            BaseMaterials
 	baseMaterialDecoder baseMaterialDecoder
 }
 
@@ -251,7 +251,7 @@ func (d *baseMaterialsDecoder) Start(attrs []xml.Attr) {
 
 type baseMaterialDecoder struct {
 	baseDecoder
-	resource *BaseMaterialsResource
+	resource *BaseMaterials
 }
 
 func (d *baseMaterialDecoder) Start(attrs []xml.Attr) {
@@ -269,7 +269,7 @@ func (d *baseMaterialDecoder) Start(attrs []xml.Attr) {
 			}
 		}
 	}
-	d.resource.Materials = append(d.resource.Materials, BaseMaterial{Name: name, Color: baseColor})
+	d.resource.Materials = append(d.resource.Materials, Base{Name: name, Color: baseColor})
 	return
 }
 

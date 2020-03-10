@@ -37,7 +37,7 @@ func TestValidate(t *testing.T) {
 			Resources: go3mf.Resources{Assets: []go3mf.Asset{
 				&MultiPropertiesResource{ID: 4},
 				&MultiPropertiesResource{ID: 5, Multis: []Multi{{PIndex: []uint32{}}}, PIDs: []uint32{4, 100}},
-				&go3mf.BaseMaterialsResource{ID: 1, Materials: []go3mf.BaseMaterial{
+				&go3mf.BaseMaterials{ID: 1, Materials: []go3mf.Base{
 					{Name: "a", Color: color.RGBA{R: 1}},
 					{Name: "b", Color: color.RGBA{G: 1}},
 				}},
@@ -103,7 +103,7 @@ func TestValidate(t *testing.T) {
 		}},
 		{"composite", args{&go3mf.Model{
 			Resources: go3mf.Resources{Assets: []go3mf.Asset{
-				&go3mf.BaseMaterialsResource{ID: 1, Materials: []go3mf.BaseMaterial{
+				&go3mf.BaseMaterials{ID: 1, Materials: []go3mf.Base{
 					{Name: "a", Color: color.RGBA{R: 1}},
 					{Name: "b", Color: color.RGBA{G: 1}},
 				}},

@@ -285,7 +285,7 @@ func TestDecoder_processRootModel_Fail(t *testing.T) {
 }
 
 func TestDecoder_processRootModel(t *testing.T) {
-	baseMaterials := &BaseMaterialsResource{ID: 5, Materials: []BaseMaterial{
+	baseMaterials := &BaseMaterials{ID: 5, Materials: []Base{
 		{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 		{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
 	}}
@@ -443,9 +443,9 @@ func TestDecoder_processNonRootModels(t *testing.T) {
 			`).build("/3D/other.model"),
 			}}, false, &Model{
 				Childs: map[string]*ChildModel{
-					"/3D/other.model": {Resources: Resources{Assets: []Asset{&BaseMaterialsResource{ID: 6}}}},
+					"/3D/other.model": {Resources: Resources{Assets: []Asset{&BaseMaterials{ID: 6}}}},
 					"/3D/new.model": {Resources: Resources{Assets: []Asset{
-						&BaseMaterialsResource{ID: 5, Materials: []BaseMaterial{
+						&BaseMaterials{ID: 5, Materials: []Base{
 							{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 							{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
 						}}}}},

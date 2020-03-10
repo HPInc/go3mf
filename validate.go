@@ -137,7 +137,7 @@ func checkMetadadata(model *Model, path string, md []Metadata) []error {
 	return errs
 }
 
-func (r *BaseMaterialsResource) Validate(m *Model, path string) []error {
+func (r *BaseMaterials) Validate(m *Model, path string) []error {
 	var errs []error
 	if r.ID == 0 {
 		errs = append(errs, specerr.ErrMissingID)

@@ -46,7 +46,7 @@ func TestValidate(t *testing.T) {
 			fmt.Errorf("go3mf: %s@Metadata#3: %v", path, specerr.ErrMetadataName),
 			fmt.Errorf("go3mf: %s@Metadata#4: %v", path, &specerr.MissingFieldError{Name: attrName}),
 		}},
-		{"build", args{&Model{Resources: Resources{Assets: []Asset{&BaseMaterialsResource{ID: 1, Materials: []BaseMaterial{{Name: "a", Color: color.RGBA{A: 1}}}}}, Objects: []*Object{
+		{"build", args{&Model{Resources: Resources{Assets: []Asset{&BaseMaterials{ID: 1, Materials: []Base{{Name: "a", Color: color.RGBA{A: 1}}}}}, Objects: []*Object{
 			{ID: 2, ObjectType: ObjectTypeOther, Mesh: &Mesh{Nodes: []Point3D{{}, {}, {}, {}}, Faces: []Face{
 				{NodeIndices: [3]uint32{0, 1, 2}}, {NodeIndices: [3]uint32{0, 3, 1}}, {NodeIndices: [3]uint32{0, 2, 3}}, {NodeIndices: [3]uint32{1, 3, 2}},
 			}}}}}, Build: Build{ExtensionAttr: ExtensionAttr{&fakeAttr{}}, Items: []*Item{
@@ -71,19 +71,19 @@ func TestValidate(t *testing.T) {
 				fmt.Errorf("go3mf: /a.model@Resources@Object#0: %v", specerr.ErrInvalidObject),
 			}},
 		{"assets", args{&Model{Resources: Resources{Assets: []Asset{
-			&BaseMaterialsResource{Materials: []BaseMaterial{{Color: color.RGBA{}}}},
-			&BaseMaterialsResource{ID: 1, Materials: []BaseMaterial{{Name: "a", Color: color.RGBA{A: 1}}}},
-			&BaseMaterialsResource{ID: 1},
+			&BaseMaterials{Materials: []Base{{Color: color.RGBA{}}}},
+			&BaseMaterials{ID: 1, Materials: []Base{{Name: "a", Color: color.RGBA{A: 1}}}},
+			&BaseMaterials{ID: 1},
 		}}}}, []error{
-			fmt.Errorf("go3mf: %s@Resources@BaseMaterialsResource#0: %v", path, specerr.ErrMissingID),
-			fmt.Errorf("go3mf: %s@Resources@BaseMaterialsResource#0@BaseMaterial#0: %v", path, &specerr.MissingFieldError{Name: attrName}),
-			fmt.Errorf("go3mf: %s@Resources@BaseMaterialsResource#0@BaseMaterial#0: %v", path, &specerr.MissingFieldError{Name: attrDisplayColor}),
-			fmt.Errorf("go3mf: %s@Resources@BaseMaterialsResource#2: %v", path, specerr.ErrDuplicatedID),
-			fmt.Errorf("go3mf: %s@Resources@BaseMaterialsResource#2: %v", path, specerr.ErrEmptyResourceProps),
+			fmt.Errorf("go3mf: %s@Resources@BaseMaterials#0: %v", path, specerr.ErrMissingID),
+			fmt.Errorf("go3mf: %s@Resources@BaseMaterials#0@Base#0: %v", path, &specerr.MissingFieldError{Name: attrName}),
+			fmt.Errorf("go3mf: %s@Resources@BaseMaterials#0@Base#0: %v", path, &specerr.MissingFieldError{Name: attrDisplayColor}),
+			fmt.Errorf("go3mf: %s@Resources@BaseMaterials#2: %v", path, specerr.ErrDuplicatedID),
+			fmt.Errorf("go3mf: %s@Resources@BaseMaterials#2: %v", path, specerr.ErrEmptyResourceProps),
 		}},
 		{"objects", args{&Model{Resources: Resources{Assets: []Asset{
-			&BaseMaterialsResource{ID: 1, Materials: []BaseMaterial{{Name: "a", Color: color.RGBA{A: 1}}, {Name: "b", Color: color.RGBA{A: 1}}}},
-			&BaseMaterialsResource{ID: 5, Materials: []BaseMaterial{{Name: "a", Color: color.RGBA{A: 1}}, {Name: "b", Color: color.RGBA{A: 1}}}},
+			&BaseMaterials{ID: 1, Materials: []Base{{Name: "a", Color: color.RGBA{A: 1}}, {Name: "b", Color: color.RGBA{A: 1}}}},
+			&BaseMaterials{ID: 5, Materials: []Base{{Name: "a", Color: color.RGBA{A: 1}}, {Name: "b", Color: color.RGBA{A: 1}}}},
 		}, Objects: []*Object{
 			{},
 			{ID: 1, DefaultPIndex: 1, Mesh: &Mesh{}, Components: []*Component{{ObjectID: 1, ExtensionAttr: ExtensionAttr{&fakeAttr{path}}}}},

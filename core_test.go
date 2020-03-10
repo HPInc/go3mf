@@ -9,8 +9,8 @@ import (
 )
 
 func TestResources_FindAsset(t *testing.T) {
-	id1 := &BaseMaterialsResource{ID: 0}
-	id2 := &BaseMaterialsResource{ID: 1}
+	id1 := &BaseMaterials{ID: 0}
+	id2 := &BaseMaterials{ID: 1}
 	type args struct {
 		id uint32
 	}
@@ -40,9 +40,9 @@ func TestResources_FindAsset(t *testing.T) {
 
 func TestModel_FindAsset(t *testing.T) {
 	model := &Model{Path: "/3D/model.model"}
-	id1 := &BaseMaterialsResource{ID: 0}
-	id2 := &BaseMaterialsResource{ID: 1}
-	id3 := &BaseMaterialsResource{ID: 1}
+	id1 := &BaseMaterials{ID: 0}
+	id2 := &BaseMaterials{ID: 1}
+	id3 := &BaseMaterials{ID: 1}
 	model.Resources = Resources{Assets: []Asset{id1, id2}}
 	model.Childs = map[string]*ChildModel{
 		"/3D/other.model": {Resources: Resources{Assets: []Asset{id3}}},
@@ -163,16 +163,16 @@ func TestComponent_HasTransform(t *testing.T) {
 func TestBaseMaterialsResource_Identify(t *testing.T) {
 	tests := []struct {
 		name string
-		ms   *BaseMaterialsResource
+		ms   *BaseMaterials
 		want uint32
 	}{
-		{"base", &BaseMaterialsResource{ID: 1}, 1},
+		{"base", &BaseMaterials{ID: 1}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.ms.Identify()
 			if got != tt.want {
-				t.Errorf("BaseMaterialsResource.Identify() got = %v, want %v", got, tt.want)
+				t.Errorf("BaseMaterials.Identify() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -185,11 +185,11 @@ func TestResources_UnusedID(t *testing.T) {
 		want uint32
 	}{
 		{"empty", new(Resources), 1},
-		{"one-asset", &Resources{Assets: []Asset{&BaseMaterialsResource{ID: 2}}}, 1},
+		{"one-asset", &Resources{Assets: []Asset{&BaseMaterials{ID: 2}}}, 1},
 		{"one-object", &Resources{Objects: []*Object{{ID: 2}}}, 1},
-		{"two", &Resources{Assets: []Asset{&BaseMaterialsResource{ID: 1}}}, 2},
-		{"sequence", &Resources{Assets: []Asset{&BaseMaterialsResource{ID: 1}}, Objects: []*Object{{ID: 2}}}, 3},
-		{"sparce", &Resources{Assets: []Asset{&BaseMaterialsResource{ID: 1}}, Objects: []*Object{{ID: 3}}}, 2},
+		{"two", &Resources{Assets: []Asset{&BaseMaterials{ID: 1}}}, 2},
+		{"sequence", &Resources{Assets: []Asset{&BaseMaterials{ID: 1}}, Objects: []*Object{{ID: 2}}}, 3},
+		{"sparce", &Resources{Assets: []Asset{&BaseMaterials{ID: 1}}, Objects: []*Object{{ID: 3}}}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

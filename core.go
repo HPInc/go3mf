@@ -352,27 +352,27 @@ func (m *Model) FindObject(path string, id uint32) (*Object, bool) {
 	return nil, false
 }
 
-// BaseMaterial defines the Model Base Material Resource.
+// Base defines the Model Base Material Resource.
 // A model material resource is an in memory representation of the 3MF
 // material resource object.
-type BaseMaterial struct {
+type Base struct {
 	Name  string
 	Color color.RGBA
 }
 
-// BaseMaterialsResource defines a slice of BaseMaterial.
-type BaseMaterialsResource struct {
+// BaseMaterials defines a slice of Base.
+type BaseMaterials struct {
 	ID        uint32
-	Materials []BaseMaterial
+	Materials []Base
 }
 
 // Len returns the materials count.
-func (r *BaseMaterialsResource) Len() int {
+func (r *BaseMaterials) Len() int {
 	return len(r.Materials)
 }
 
 // Identify returns the unique ID of the resource.
-func (r *BaseMaterialsResource) Identify() uint32 {
+func (r *BaseMaterials) Identify() uint32 {
 	return r.ID
 }
 

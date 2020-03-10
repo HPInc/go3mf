@@ -50,7 +50,7 @@ func TestMarshalModel(t *testing.T) {
 		ExtensionAttr:      ExtensionAttr{&fakeAttr{Value: "model_fake"}},
 		Resources: Resources{
 			Assets: []Asset{
-				&BaseMaterialsResource{ID: 5, Materials: []BaseMaterial{
+				&BaseMaterials{ID: 5, Materials: []Base{
 					{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 					{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
 				}}, &fakeAsset{ID: 25}},
