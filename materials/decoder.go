@@ -144,7 +144,7 @@ func (d *tex2DGroupDecoder) Start(attrs []xml.Attr) {
 
 type texture2DDecoder struct {
 	baseDecoder
-	resource Texture2DResource
+	resource Texture2D
 }
 
 func (d *texture2DDecoder) End() {

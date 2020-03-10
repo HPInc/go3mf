@@ -8,7 +8,7 @@ import (
 	specerr "github.com/qmuntal/go3mf/errors"
 )
 
-func (r *ColorGroup) Validate(m *go3mf.Model, _ string) []error {
+func (r *ColorGroup) Validate(m *go3mf.Model, path string) []error {
 	var errs []error
 	if r.ID == 0 {
 		errs = append(errs, specerr.ErrMissingID)
@@ -18,11 +18,7 @@ func (r *ColorGroup) Validate(m *go3mf.Model, _ string) []error {
 	}
 	for j, c := range r.Colors {
 		if c == (color.RGBA{}) {
-			errs = append(errs, &specerr.IndexedError{
-				Name:  attrColor,
-				Index: j,
-				Err:   &specerr.MissingFieldError{Name: attrColor},
-			})
+			errs = append(errs, specerr.NewIndexed(path, c, j, &specerr.MissingFieldError{Name: attrColor}))
 		}
 	}
 	return errs
@@ -36,7 +32,7 @@ func (r *Texture2DGroup) Validate(m *go3mf.Model, path string) []error {
 	if r.TextureID == 0 {
 		errs = append(errs, &specerr.MissingFieldError{Name: attrTexID})
 	} else if text, ok := m.FindAsset(path, r.TextureID); ok {
-		if _, ok := text.(*Texture2DResource); !ok {
+		if _, ok := text.(*Texture2D); !ok {
 			errs = append(errs, specerr.ErrTextureReference)
 		}
 	} else {
@@ -48,7 +44,7 @@ func (r *Texture2DGroup) Validate(m *go3mf.Model, path string) []error {
 	return errs
 }
 
-func (r *Texture2DResource) Validate(m *go3mf.Model, path string) []error {
+func (r *Texture2D) Validate(m *go3mf.Model, path string) []error {
 	var errs []error
 	if r.ID == 0 {
 		errs = append(errs, specerr.ErrMissingID)
@@ -122,11 +118,7 @@ func (r *MultiProperties) Validate(m *go3mf.Model, path string) []error {
 	for j, m := range r.Multis {
 		for k, index := range m.PIndex {
 			if k < len(r.PIDs) && lengths[k] < int(index) {
-				errs = append(errs, &specerr.IndexedError{
-					Name:  attrMulti,
-					Index: j,
-					Err:   specerr.ErrIndexOutOfBounds,
-				})
+				errs = append(errs, specerr.NewIndexed(path, m,  j, specerr.ErrIndexOutOfBounds))
 				break
 			}
 		}

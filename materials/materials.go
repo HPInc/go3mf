@@ -81,8 +81,8 @@ func (b BlendMethod) String() string {
 	}[b]
 }
 
-// Texture2DResource defines the Model Texture 2D.
-type Texture2DResource struct {
+// Texture2D defines the Model Texture 2D.
+type Texture2D struct {
 	ID          uint32
 	Path        string
 	ContentType Texture2DType
@@ -92,7 +92,7 @@ type Texture2DResource struct {
 }
 
 // Identify returns the unique ID of the resource.
-func (t *Texture2DResource) Identify() uint32 {
+func (t *Texture2D) Identify() uint32 {
 	return t.ID
 }
 

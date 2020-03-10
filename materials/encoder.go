@@ -103,7 +103,7 @@ func (r *MultiProperties) Marshal3MF(x *go3mf.XMLEncoder) error {
 }
 
 // Marshal3MF encodes the resource.
-func (r *Texture2DResource) Marshal3MF(x *go3mf.XMLEncoder) error {
+func (r *Texture2D) Marshal3MF(x *go3mf.XMLEncoder) error {
 	x.AddRelationship(go3mf.Relationship{Path: r.Path, Type: RelTypeTexture3D})
 	xs := xml.StartElement{Name: xml.Name{Space: ExtensionName, Local: attrTexture2D}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(r.ID), 10)},

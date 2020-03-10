@@ -1,6 +1,7 @@
 package materials
 
 import (
+	"fmt"
 	"image/color"
 	"testing"
 
@@ -28,10 +29,10 @@ func TestValidate(t *testing.T) {
 				&MultiProperties{ID: 2},
 			}}},
 		}}}, []error{
-			&specerr.AssetError{Path: "/other.model", Index: 0, Name: "ColorGroup", Err: specerr.ErrEmptyResourceProps},
-			&specerr.AssetError{Path: "/that.model", Index: 0, Name: "MultiProperties", Err: &specerr.MissingFieldError{Name: attrPIDs}},
-			&specerr.AssetError{Path: "/that.model", Index: 0, Name: "MultiProperties", Err: specerr.ErrMultiBlend},
-			&specerr.AssetError{Path: "/that.model", Index: 0, Name: "MultiProperties", Err: specerr.ErrEmptyResourceProps},
+			fmt.Errorf("/other.model@Resources@ColorGroup#0: %v", specerr.ErrEmptyResourceProps),
+			fmt.Errorf("/that.model@Resources@MultiProperties#0: %v", &specerr.MissingFieldError{Name: attrPIDs}),
+			fmt.Errorf("/that.model@Resources@MultiProperties#0: %v", specerr.ErrMultiBlend),
+			fmt.Errorf("/that.model@Resources@MultiProperties#0: %v", specerr.ErrEmptyResourceProps),
 		}},
 		{"multi", args{&go3mf.Model{
 			Resources: go3mf.Resources{Assets: []go3mf.Asset{
@@ -49,44 +50,40 @@ func TestValidate(t *testing.T) {
 				&MultiProperties{ID: 9, Multis: []Multi{{PIndex: []uint32{}}}, PIDs: []uint32{1, 3}},
 			}},
 		}}, []error{
-			&specerr.AssetError{Path: rootPath, Index: 0, Name: "MultiProperties", Err: &specerr.MissingFieldError{Name: attrPIDs}},
-			&specerr.AssetError{Path: rootPath, Index: 0, Name: "MultiProperties", Err: specerr.ErrMultiBlend},
-			&specerr.AssetError{Path: rootPath, Index: 0, Name: "MultiProperties", Err: specerr.ErrEmptyResourceProps},
-			&specerr.AssetError{Path: rootPath, Index: 1, Name: "MultiProperties", Err: specerr.ErrMultiRefMulti},
-			&specerr.AssetError{Path: rootPath, Index: 1, Name: "MultiProperties", Err: specerr.ErrMissingResource},
-			&specerr.AssetError{Path: rootPath, Index: 6, Name: "MultiProperties", Err: &specerr.IndexedError{
-				Name:  attrMulti,
-				Index: 0,
-				Err:   specerr.ErrIndexOutOfBounds,
-			}},
-			&specerr.AssetError{Path: rootPath, Index: 7, Name: "MultiProperties", Err: specerr.ErrMaterialMulti},
-			&specerr.AssetError{Path: rootPath, Index: 7, Name: "MultiProperties", Err: specerr.ErrMultiColors},
-			&specerr.AssetError{Path: rootPath, Index: 8, Name: "MultiProperties", Err: specerr.ErrMaterialMulti},
+			fmt.Errorf("%s@Resources@MultiProperties#0: %v", rootPath, &specerr.MissingFieldError{Name: attrPIDs}),
+			fmt.Errorf("%s@Resources@MultiProperties#0: %v", rootPath, specerr.ErrMultiBlend),
+			fmt.Errorf("%s@Resources@MultiProperties#0: %v", rootPath, specerr.ErrEmptyResourceProps),
+			fmt.Errorf("%s@Resources@MultiProperties#1: %v", rootPath, specerr.ErrMultiRefMulti),
+			fmt.Errorf("%s@Resources@MultiProperties#1: %v", rootPath, specerr.ErrMissingResource),
+			fmt.Errorf("%s@Resources@MultiProperties#6@Multi#0: %v", rootPath, specerr.ErrIndexOutOfBounds),
+			fmt.Errorf("%s@Resources@MultiProperties#7: %v", rootPath, specerr.ErrMaterialMulti),
+			fmt.Errorf("%s@Resources@MultiProperties#7: %v", rootPath, specerr.ErrMultiColors),
+			fmt.Errorf("%s@Resources@MultiProperties#8: %v", rootPath, specerr.ErrMaterialMulti),
 		}},
 		{"missingTextPart", args{&go3mf.Model{
 			Resources: go3mf.Resources{Assets: []go3mf.Asset{
-				&Texture2DResource{ID: 1},
-				&Texture2DResource{ID: 2, ContentType: TextureTypePNG, Path: "/a.png"},
+				&Texture2D{ID: 1},
+				&Texture2D{ID: 2, ContentType: TextureTypePNG, Path: "/a.png"},
 			}}},
 		}, []error{
-			&specerr.AssetError{Path: rootPath, Index: 0, Name: "Texture2DResource", Err: &specerr.MissingFieldError{Name: attrPath}},
-			&specerr.AssetError{Path: rootPath, Index: 0, Name: "Texture2DResource", Err: &specerr.MissingFieldError{Name: attrContentType}},
-			&specerr.AssetError{Path: rootPath, Index: 1, Name: "Texture2DResource", Err: specerr.ErrMissingTexturePart},
+			fmt.Errorf("%s@Resources@Texture2D#0: %v", rootPath, &specerr.MissingFieldError{Name: attrPath}),
+			fmt.Errorf("%s@Resources@Texture2D#0: %v", rootPath, &specerr.MissingFieldError{Name: attrContentType}),
+			fmt.Errorf("%s@Resources@Texture2D#1: %v", rootPath, specerr.ErrMissingTexturePart),
 		}},
 		{"textureGroup", args{&go3mf.Model{
 			Attachments: []go3mf.Attachment{{Path: "/a.png"}},
 			Resources: go3mf.Resources{Assets: []go3mf.Asset{
-				&Texture2DResource{ID: 1, ContentType: TextureTypePNG, Path: "/a.png"},
+				&Texture2D{ID: 1, ContentType: TextureTypePNG, Path: "/a.png"},
 				&Texture2DGroup{ID: 2},
 				&Texture2DGroup{ID: 3, TextureID: 1, Coords: []TextureCoord{{}}},
 				&Texture2DGroup{ID: 4, TextureID: 2, Coords: []TextureCoord{{}}},
 				&Texture2DGroup{ID: 5, TextureID: 100, Coords: []TextureCoord{{}}},
 			}}},
 		}, []error{
-			&specerr.AssetError{Path: rootPath, Index: 1, Name: "Texture2DGroup", Err: &specerr.MissingFieldError{Name: attrTexID}},
-			&specerr.AssetError{Path: rootPath, Index: 1, Name: "Texture2DGroup", Err: specerr.ErrEmptyResourceProps},
-			&specerr.AssetError{Path: rootPath, Index: 3, Name: "Texture2DGroup", Err: specerr.ErrTextureReference},
-			&specerr.AssetError{Path: rootPath, Index: 4, Name: "Texture2DGroup", Err: specerr.ErrTextureReference},
+			fmt.Errorf("%s@Resources@Texture2DGroup#1: %v", rootPath, &specerr.MissingFieldError{Name: attrTexID}),
+			fmt.Errorf("%s@Resources@Texture2DGroup#1: %v", rootPath, specerr.ErrEmptyResourceProps),
+			fmt.Errorf("%s@Resources@Texture2DGroup#3: %v", rootPath, specerr.ErrTextureReference),
+			fmt.Errorf("%s@Resources@Texture2DGroup#4: %v", rootPath, specerr.ErrTextureReference),
 		}},
 		{"colorGroup", args{&go3mf.Model{
 			Resources: go3mf.Resources{Assets: []go3mf.Asset{
@@ -94,12 +91,8 @@ func TestValidate(t *testing.T) {
 				&ColorGroup{ID: 2, Colors: []color.RGBA{{R: 1}, {R: 2, G: 3, B: 4, A: 5}}},
 				&ColorGroup{ID: 3, Colors: []color.RGBA{{R: 1}, {}}},
 			}}}}, []error{
-			&specerr.AssetError{Path: rootPath, Index: 0, Name: "ColorGroup", Err: specerr.ErrEmptyResourceProps},
-			&specerr.AssetError{Path: rootPath, Index: 2, Name: "ColorGroup", Err: &specerr.IndexedError{
-				Name:  attrColor,
-				Index: 1,
-				Err:   &specerr.MissingFieldError{Name: attrColor},
-			}},
+			fmt.Errorf("%s@Resources@ColorGroup#0: %v", rootPath, specerr.ErrEmptyResourceProps),
+			fmt.Errorf("%s@Resources@ColorGroup#2@RGBA#1: %v", rootPath, &specerr.MissingFieldError{Name: attrColor}),
 		}},
 		{"composite", args{&go3mf.Model{
 			Resources: go3mf.Resources{Assets: []go3mf.Asset{
@@ -113,12 +106,12 @@ func TestValidate(t *testing.T) {
 				&CompositeMaterials{ID: 5, MaterialID: 2, Indices: []uint32{0, 1}, Composites: []Composite{{Values: []float32{1, 2}}}},
 				&CompositeMaterials{ID: 6, MaterialID: 100, Indices: []uint32{0, 1}, Composites: []Composite{{Values: []float32{1, 2}}}},
 			}}}}, []error{
-			&specerr.AssetError{Path: rootPath, Index: 1, Name: "CompositeMaterials", Err: &specerr.MissingFieldError{Name: attrMatID}},
-			&specerr.AssetError{Path: rootPath, Index: 1, Name: "CompositeMaterials", Err: &specerr.MissingFieldError{Name: attrMatIndices}},
-			&specerr.AssetError{Path: rootPath, Index: 1, Name: "CompositeMaterials", Err: specerr.ErrEmptyResourceProps},
-			&specerr.AssetError{Path: rootPath, Index: 3, Name: "CompositeMaterials", Err: specerr.ErrIndexOutOfBounds},
-			&specerr.AssetError{Path: rootPath, Index: 4, Name: "CompositeMaterials", Err: specerr.ErrCompositeBase},
-			&specerr.AssetError{Path: rootPath, Index: 5, Name: "CompositeMaterials", Err: specerr.ErrMissingResource},
+			fmt.Errorf("%s@Resources@CompositeMaterials#1: %v", rootPath, &specerr.MissingFieldError{Name: attrMatID}),
+			fmt.Errorf("%s@Resources@CompositeMaterials#1: %v", rootPath, &specerr.MissingFieldError{Name: attrMatIndices}),
+			fmt.Errorf("%s@Resources@CompositeMaterials#1: %v", rootPath, specerr.ErrEmptyResourceProps),
+			fmt.Errorf("%s@Resources@CompositeMaterials#3: %v", rootPath, specerr.ErrIndexOutOfBounds),
+			fmt.Errorf("%s@Resources@CompositeMaterials#4: %v", rootPath, specerr.ErrCompositeBase),
+			fmt.Errorf("%s@Resources@CompositeMaterials#5: %v", rootPath, specerr.ErrMissingResource),
 		}},
 	}
 	for _, tt := range tests {

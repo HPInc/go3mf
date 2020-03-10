@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestSliceStackResource_Identify(t *testing.T) {
+func TestSliceStack_Identify(t *testing.T) {
 	tests := []struct {
 		name string
 		s    *SliceStack

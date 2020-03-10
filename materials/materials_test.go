@@ -6,19 +6,19 @@ import (
 	"testing"
 )
 
-func TestTexture2DResource_Identify(t *testing.T) {
+func TestTexture2D_Identify(t *testing.T) {
 	tests := []struct {
 		name string
-		t    *Texture2DResource
+		t    *Texture2D
 		want uint32
 	}{
-		{"base", &Texture2DResource{ID: 1}, 1},
+		{"base", &Texture2D{ID: 1}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.t.Identify()
 			if got != tt.want {
-				t.Errorf("Texture2DResource.Identify() got = %v, want %v", got, tt.want)
+				t.Errorf("Texture2D.Identify() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -65,7 +65,10 @@ type Level struct {
 
 func (l *Level) String() string {
 	name := fmt.Sprintf("%T", l.Element)
-	name = strings.Replace(name, "go3mf.", "", -1)
+	s := strings.Split(name, ".")
+	if len(s) > 0 {
+		name = s[len(s)-1] // remove package name
+	}
 	name = strings.Replace(name, "*", "", -1)
 	if l.Index == -1 {
 		return name

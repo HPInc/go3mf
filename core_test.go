@@ -160,7 +160,7 @@ func TestComponent_HasTransform(t *testing.T) {
 	}
 }
 
-func TestBaseMaterialsResource_Identify(t *testing.T) {
+func TestBaseMaterials_Identify(t *testing.T) {
 	tests := []struct {
 		name string
 		ms   *BaseMaterials
