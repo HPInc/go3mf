@@ -109,36 +109,36 @@ func (t TextureCoord) V() float32 {
 	return t[1]
 }
 
-// Texture2DGroupResource acts as a container for texture coordinate properties.
-type Texture2DGroupResource struct {
+// Texture2DGroup acts as a container for texture coordinate properties.
+type Texture2DGroup struct {
 	ID        uint32
 	TextureID uint32
 	Coords    []TextureCoord
 }
 
 // Len returns the materials count.
-func (r *Texture2DGroupResource) Len() int {
+func (r *Texture2DGroup) Len() int {
 	return len(r.Coords)
 }
 
 // Identify returns the unique ID of the resource.
-func (r *Texture2DGroupResource) Identify() uint32 {
+func (r *Texture2DGroup) Identify() uint32 {
 	return r.ID
 }
 
-// ColorGroupResource acts as a container for color properties.
-type ColorGroupResource struct {
+// ColorGroup acts as a container for color properties.
+type ColorGroup struct {
 	ID     uint32
 	Colors []color.RGBA
 }
 
 // Len returns the materials count.
-func (r *ColorGroupResource) Len() int {
+func (r *ColorGroup) Len() int {
 	return len(r.Colors)
 }
 
 // Identify returns the unique ID of the resource.
-func (c *ColorGroupResource) Identify() uint32 {
+func (c *ColorGroup) Identify() uint32 {
 	return c.ID
 }
 
@@ -147,8 +147,8 @@ type Composite struct {
 	Values []float32
 }
 
-// CompositeMaterialsResource defines materials derived by mixing 2 or more base materials in defined ratios.
-type CompositeMaterialsResource struct {
+// CompositeMaterials defines materials derived by mixing 2 or more base materials in defined ratios.
+type CompositeMaterials struct {
 	ID         uint32
 	MaterialID uint32
 	Indices    []uint32
@@ -156,12 +156,12 @@ type CompositeMaterialsResource struct {
 }
 
 // Len returns the materials count.
-func (r *CompositeMaterialsResource) Len() int {
+func (r *CompositeMaterials) Len() int {
 	return len(r.Composites)
 }
 
 // Identify returns the unique ID of the resource.
-func (c *CompositeMaterialsResource) Identify() uint32 {
+func (c *CompositeMaterials) Identify() uint32 {
 	return c.ID
 }
 
@@ -170,9 +170,9 @@ type Multi struct {
 	PIndex []uint32
 }
 
-// A MultiPropertiesResource element acts as a container for Multi
+// A MultiProperties element acts as a container for Multi
 // elements which are indexable groups of property indices.
-type MultiPropertiesResource struct {
+type MultiProperties struct {
 	ID           uint32
 	PIDs         []uint32
 	BlendMethods []BlendMethod
@@ -180,12 +180,12 @@ type MultiPropertiesResource struct {
 }
 
 // Len returns the materials count.
-func (r *MultiPropertiesResource) Len() int {
+func (r *MultiProperties) Len() int {
 	return len(r.Multis)
 }
 
 // Identify returns the unique ID of the resource.
-func (c *MultiPropertiesResource) Identify() uint32 {
+func (c *MultiProperties) Identify() uint32 {
 	return c.ID
 }
 

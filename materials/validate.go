@@ -8,7 +8,7 @@ import (
 	specerr "github.com/qmuntal/go3mf/errors"
 )
 
-func (r *ColorGroupResource) Validate(m *go3mf.Model, _ string) []error {
+func (r *ColorGroup) Validate(m *go3mf.Model, _ string) []error {
 	var errs []error
 	if r.ID == 0 {
 		errs = append(errs, specerr.ErrMissingID)
@@ -28,7 +28,7 @@ func (r *ColorGroupResource) Validate(m *go3mf.Model, _ string) []error {
 	return errs
 }
 
-func (r *Texture2DGroupResource) Validate(m *go3mf.Model, path string) []error {
+func (r *Texture2DGroup) Validate(m *go3mf.Model, path string) []error {
 	var errs []error
 	if r.ID == 0 {
 		errs = append(errs, specerr.ErrMissingID)
@@ -73,7 +73,7 @@ func (r *Texture2DResource) Validate(m *go3mf.Model, path string) []error {
 	return errs
 }
 
-func (r *MultiPropertiesResource) Validate(m *go3mf.Model, path string) []error {
+func (r *MultiProperties) Validate(m *go3mf.Model, path string) []error {
 	var errs []error
 	if r.ID == 0 {
 		errs = append(errs, specerr.ErrMissingID)
@@ -100,14 +100,14 @@ func (r *MultiPropertiesResource) Validate(m *go3mf.Model, path string) []error 
 					errs = append(errs, specerr.ErrMaterialMulti)
 				}
 				lengths[j] = len(pr.Materials)
-			case *CompositeMaterialsResource:
+			case *CompositeMaterials:
 				if j != 0 {
 					errs = append(errs, specerr.ErrMaterialMulti)
 				}
 				lengths[j] = len(pr.Composites)
-			case *MultiPropertiesResource:
+			case *MultiProperties:
 				errs = append(errs, specerr.ErrMultiRefMulti)
-			case *ColorGroupResource:
+			case *ColorGroup:
 				if colorCount == 1 {
 					errs = append(errs, specerr.ErrMultiColors)
 				}
@@ -134,7 +134,7 @@ func (r *MultiPropertiesResource) Validate(m *go3mf.Model, path string) []error 
 	return errs
 }
 
-func (r *CompositeMaterialsResource) Validate(m *go3mf.Model, path string) []error {
+func (r *CompositeMaterials) Validate(m *go3mf.Model, path string) []error {
 	var errs []error
 	if r.ID == 0 {
 		errs = append(errs, specerr.ErrMissingID)

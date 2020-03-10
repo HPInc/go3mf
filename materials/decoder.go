@@ -31,7 +31,7 @@ func nodeDecoder(_ interface{}, nodeName string) (child go3mf.NodeDecoder) {
 
 type colorGroupDecoder struct {
 	baseDecoder
-	resource     ColorGroupResource
+	resource     ColorGroup
 	colorDecoder colorDecoder
 }
 
@@ -62,7 +62,7 @@ func (d *colorGroupDecoder) Start(attrs []xml.Attr) {
 
 type colorDecoder struct {
 	baseDecoder
-	resource *ColorGroupResource
+	resource *ColorGroup
 }
 
 func (d *colorDecoder) Start(attrs []xml.Attr) {
@@ -79,7 +79,7 @@ func (d *colorDecoder) Start(attrs []xml.Attr) {
 
 type tex2DCoordDecoder struct {
 	baseDecoder
-	resource *Texture2DGroupResource
+	resource *Texture2DGroup
 }
 
 func (d *tex2DCoordDecoder) Start(attrs []xml.Attr) {
@@ -104,7 +104,7 @@ func (d *tex2DCoordDecoder) Start(attrs []xml.Attr) {
 
 type tex2DGroupDecoder struct {
 	baseDecoder
-	resource          Texture2DGroupResource
+	resource          Texture2DGroup
 	tex2DCoordDecoder tex2DCoordDecoder
 }
 
@@ -179,7 +179,7 @@ func (d *texture2DDecoder) Start(attrs []xml.Attr) {
 
 type compositeMaterialsDecoder struct {
 	baseDecoder
-	resource         CompositeMaterialsResource
+	resource         CompositeMaterials
 	compositeDecoder compositeDecoder
 }
 
@@ -227,7 +227,7 @@ func (d *compositeMaterialsDecoder) Start(attrs []xml.Attr) {
 
 type compositeDecoder struct {
 	baseDecoder
-	resource *CompositeMaterialsResource
+	resource *CompositeMaterials
 }
 
 func (d *compositeDecoder) Start(attrs []xml.Attr) {
@@ -248,7 +248,7 @@ func (d *compositeDecoder) Start(attrs []xml.Attr) {
 
 type multiPropertiesDecoder struct {
 	baseDecoder
-	resource     MultiPropertiesResource
+	resource     MultiProperties
 	multiDecoder multiDecoder
 }
 
@@ -295,7 +295,7 @@ func (d *multiPropertiesDecoder) Start(attrs []xml.Attr) {
 
 type multiDecoder struct {
 	baseDecoder
-	resource *MultiPropertiesResource
+	resource *MultiProperties
 }
 
 func (d *multiDecoder) Start(attrs []xml.Attr) {

@@ -9,7 +9,7 @@ import (
 )
 
 // Marshal3MF encodes the resource.
-func (r *ColorGroupResource) Marshal3MF(x *go3mf.XMLEncoder) error {
+func (r *ColorGroup) Marshal3MF(x *go3mf.XMLEncoder) error {
 	xs := xml.StartElement{Name: xml.Name{Space: ExtensionName, Local: attrColorGroup}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(r.ID), 10)},
 	}}
@@ -26,7 +26,7 @@ func (r *ColorGroupResource) Marshal3MF(x *go3mf.XMLEncoder) error {
 }
 
 // Marshal3MF encodes the resource.
-func (r *Texture2DGroupResource) Marshal3MF(x *go3mf.XMLEncoder) error {
+func (r *Texture2DGroup) Marshal3MF(x *go3mf.XMLEncoder) error {
 	xs := xml.StartElement{Name: xml.Name{Space: ExtensionName, Local: attrTexture2DGroup}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(r.ID), 10)},
 		{Name: xml.Name{Local: attrTexID}, Value: strconv.FormatUint(uint64(r.TextureID), 10)},
@@ -45,7 +45,7 @@ func (r *Texture2DGroupResource) Marshal3MF(x *go3mf.XMLEncoder) error {
 }
 
 // Marshal3MF encodes the resource.
-func (r *CompositeMaterialsResource) Marshal3MF(x *go3mf.XMLEncoder) error {
+func (r *CompositeMaterials) Marshal3MF(x *go3mf.XMLEncoder) error {
 	indices := make([]string, len(r.Indices))
 	for i, idx := range r.Indices {
 		indices[i] = strconv.FormatUint(uint64(idx), 10)
@@ -72,7 +72,7 @@ func (r *CompositeMaterialsResource) Marshal3MF(x *go3mf.XMLEncoder) error {
 }
 
 // Marshal3MF encodes the resource.
-func (r *MultiPropertiesResource) Marshal3MF(x *go3mf.XMLEncoder) error {
+func (r *MultiProperties) Marshal3MF(x *go3mf.XMLEncoder) error {
 	pids := make([]string, len(r.PIDs))
 	for i, idx := range r.PIDs {
 		pids[i] = strconv.FormatUint(uint64(idx), 10)
