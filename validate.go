@@ -28,7 +28,7 @@ func (m *Model) Validate() []error {
 	errs = append(errs, validateRelationship(m, m.RootRelationships, "")...)
 	rootPath := m.PathOrDefault()
 	if err := m.validateNamespaces(); err != nil {
-		errs = append(errs, &specerr.Error{Path: rootPath, Err: err})
+		errs = append(errs, err)
 	}
 	sortedChilds := m.sortedChilds()
 	for _, path := range sortedChilds {
@@ -44,9 +44,13 @@ func (m *Model) Validate() []error {
 
 	for _, path := range sortedChilds {
 		c := m.Childs[path]
-		errs = append(errs, c.Resources.validate(m, path)...)
+		for _, err := range c.Resources.Validate(m, path) {
+			errs = append(errs, specerr.New(path, c.Resources, err))
+		}
 	}
-	errs = append(errs, m.Resources.validate(m, rootPath)...)
+	for _, err := range m.Resources.Validate(m, rootPath) {
+		errs = append(errs, specerr.New(rootPath, m.Resources, err))
+	}
 	for _, err := range m.Build.Validate(m, rootPath) {
 		errs = append(errs, specerr.New(rootPath, m.Build, err))
 	}
@@ -156,7 +160,7 @@ func (r *BaseMaterials) Validate(m *Model, path string) []error {
 	return errs
 }
 
-func (res *Resources) validate(m *Model, path string) []error {
+func (res *Resources) Validate(m *Model, path string) []error {
 	var errs []error
 	errs = append(errs, res.ExtensionAttr.validate(m, path)...)
 	assets := make(map[uint32]struct{})
@@ -184,9 +188,6 @@ func (res *Resources) validate(m *Model, path string) []error {
 		for _, err := range r.Validate(m, path) {
 			errs = append(errs, specerr.NewIndexed(path, r, i, err))
 		}
-	}
-	for i, err := range errs {
-		errs[i] = specerr.New(path, res, err)
 	}
 	return errs
 }

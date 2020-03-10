@@ -36,7 +36,7 @@ func TestValidate(t *testing.T) {
 			fmt.Errorf("go3mf: %s@Relationship#7: %v", path, specerr.ErrOPCDuplicatedTicket),
 		}},
 		{"namespaces", args{&Model{RequiredExtensions: []string{"fake", "other"}, Namespaces: []xml.Name{{Space: "fake", Local: "f"}}}}, []error{
-			fmt.Errorf("go3mf: %s: %v", path, specerr.ErrRequiredExt),
+			specerr.ErrRequiredExt,
 		}},
 		{"metadata", args{&Model{Namespaces: []xml.Name{{Space: "fake", Local: "f"}}, Metadata: []Metadata{
 			{Name: xml.Name{Space: "fake", Local: "issue"}}, {Name: xml.Name{Space: "f", Local: "issue"}}, {Name: xml.Name{Space: "fake", Local: "issue"}}, {Name: xml.Name{Local: "issue"}}, {},
