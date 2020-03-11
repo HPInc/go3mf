@@ -5,14 +5,14 @@ import (
 	specerr "github.com/qmuntal/go3mf/errors"
 )
 
-func (u *UUID) Validate(m *go3mf.Model, path string) []error {
+func (u *UUID) Validate(m *go3mf.Model, path string, _ interface{}) []error {
 	if validateUUID(string(*u)) != nil {
 		return []error{specerr.ErrUUID}
 	}
 	return nil
 }
 
-func (p *PathUUID) Validate(m *go3mf.Model, path string) []error {
+func (p *PathUUID) Validate(m *go3mf.Model, path string, _ interface{}) []error {
 	var errs []error
 	if p.UUID == "" {
 		errs = append(errs, &specerr.MissingFieldError{Name: attrProdUUID})

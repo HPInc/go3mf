@@ -118,7 +118,7 @@ func (r *MultiProperties) Validate(m *go3mf.Model, path string) []error {
 	for j, m := range r.Multis {
 		for k, index := range m.PIndex {
 			if k < len(r.PIDs) && lengths[k] < int(index) {
-				errs = append(errs, specerr.NewIndexed(path, m,  j, specerr.ErrIndexOutOfBounds))
+				errs = append(errs, specerr.NewIndexed(path, m, j, specerr.ErrIndexOutOfBounds))
 				break
 			}
 		}

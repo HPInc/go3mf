@@ -13,6 +13,10 @@ type validator interface {
 	Validate(*Model, string) []error
 }
 
+type attrValidator interface {
+	Validate(*Model, string, interface{}) []error
+}
+
 func (m *Model) sortedChilds() []string {
 	s := make([]string, 0, len(m.Childs))
 	for path := range m.Childs {
@@ -57,11 +61,11 @@ func (m *Model) Validate() []error {
 	return errs
 }
 
-func (ext ExtensionAttr) validate(m *Model, path string) []error {
+func (ext ExtensionAttr) validate(m *Model, path string, e interface{}) []error {
 	var errs []error
 	for _, a := range ext {
-		if a, ok := a.(validator); ok {
-			errs = append(errs, a.Validate(m, path)...)
+		if a, ok := a.(attrValidator); ok {
+			errs = append(errs, a.Validate(m, path, e)...)
 		}
 	}
 	return errs
@@ -80,13 +84,13 @@ func (item *Item) Validate(m *Model, path string) []error {
 		errs = append(errs, specerr.ErrMissingResource)
 	}
 	errs = append(errs, checkMetadadata(m, path, item.Metadata)...)
-	errs = append(errs, item.ExtensionAttr.validate(m, path)...)
+	errs = append(errs, item.ExtensionAttr.validate(m, path, item)...)
 	return errs
 }
 
 func (b *Build) Validate(m *Model, path string) []error {
 	var errs []error
-	errs = append(errs, b.ExtensionAttr.validate(m, path)...)
+	errs = append(errs, b.ExtensionAttr.validate(m, path, b)...)
 	for i, item := range b.Items {
 		for _, err := range item.Validate(m, path) {
 			errs = append(errs, specerr.NewIndexed(path, item, i, err))
@@ -162,7 +166,7 @@ func (r *BaseMaterials) Validate(m *Model, path string) []error {
 
 func (res *Resources) Validate(m *Model, path string) []error {
 	var errs []error
-	errs = append(errs, res.ExtensionAttr.validate(m, path)...)
+	errs = append(errs, res.ExtensionAttr.validate(m, path, res)...)
 	assets := make(map[uint32]struct{})
 	for i, r := range res.Assets {
 		id := r.Identify()
@@ -204,7 +208,7 @@ func (r *Object) Validate(m *Model, path string) []error {
 	if (r.Mesh != nil && len(r.Components) > 0) || (r.Mesh == nil && len(r.Components) == 0) {
 		errs = append(errs, specerr.ErrInvalidObject)
 	}
-	errs = append(errs, r.ExtensionAttr.validate(m, path)...)
+	errs = append(errs, r.ExtensionAttr.validate(m, path, r)...)
 	if r.Mesh != nil {
 		if r.DefaultPID != 0 {
 			if a, ok := res.FindAsset(r.DefaultPID); ok {
@@ -284,7 +288,7 @@ func (r *Object) validateComponents(m *Model, path string) []error {
 		} else {
 			errs = append(errs, specerr.NewIndexed(path, c, j, specerr.ErrMissingResource))
 		}
-		for _, err := range c.ExtensionAttr.validate(m, path) {
+		for _, err := range c.ExtensionAttr.validate(m, path, c) {
 			errs = append(errs, specerr.NewIndexed(path, c, j, err))
 		}
 	}

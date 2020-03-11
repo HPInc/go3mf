@@ -55,7 +55,7 @@ var (
 	ErrSliceInsufficientPolygons = errors.New("slice MUST contain at least 1 polygon")
 	ErrSliceInsufficientSegments = errors.New("slice polygon MUST contain at least 1 segment")
 	ErrSlicePolygonNotClosed     = errors.New("all polygons of all slices MUST be closed")
-	ErrSliceInvalidTranform      = errors.New("slices transforms MUST be planar")
+	ErrSliceInvalidTranform      = errors.New("any transform applied to an object that references a slice stack MUST be planar")
 )
 
 type Level struct {
