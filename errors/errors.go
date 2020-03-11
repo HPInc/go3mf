@@ -54,7 +54,7 @@ var (
 	ErrSliceInsufficientVertices = errors.New("slice MUST contain at least 2 vertices")
 	ErrSliceInsufficientPolygons = errors.New("slice MUST contain at least 1 polygon")
 	ErrSliceInsufficientSegments = errors.New("slice polygon MUST contain at least 1 segment")
-	ErrSlicePolygonNotClosed     = errors.New("all polygons of all slices MUST be closed")
+	ErrSlicePolygonNotClosed     = errors.New("objects with type 'model' and 'solidsupport' MUST not reference slices with open polygons")
 	ErrSliceInvalidTranform      = errors.New("any transform applied to an object that references a slice stack MUST be planar")
 )
 
