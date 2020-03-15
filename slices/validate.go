@@ -53,7 +53,8 @@ func (ext *SliceStackInfo) Validate(m *go3mf.Model, path string, e interface{}) 
 
 func (r *SliceStack) Validate(m *go3mf.Model, path string) []error {
 	var errs []error
-	if len(r.Slices) != 0 && len(r.Refs) != 0 {
+	if (len(r.Slices) != 0 && len(r.Refs) != 0) ||
+		(len(r.Slices) == 0 && len(r.Refs) == 0) {
 		errs = append(errs, specerr.ErrSlicesAndRefs)
 	}
 	errs = append(errs, r.validateRefs(m, path)...)
