@@ -70,11 +70,12 @@ func (r *SliceStack) validateSlices(model *go3mf.Model, path string) []error {
 		} else if slice.TopZ < r.BottomZ {
 			errs = append(errs, specerr.NewIndexed(path, slice, j, specerr.ErrSliceSmallTopZ))
 		}
-		if len(slice.Polygons) == 0 && len(slice.Vertices) == 0 {
-			continue
-		}
 		if slice.TopZ < lastTopZ {
 			errs = append(errs, specerr.NewIndexed(path, slice, j, specerr.ErrSliceNoMonotonic))
+		}
+		lastTopZ = slice.TopZ
+		if len(slice.Polygons) == 0 && len(slice.Vertices) == 0 {
+			continue
 		}
 		if len(slice.Vertices) < 2 {
 			errs = append(errs, specerr.NewIndexed(path, slice, j, specerr.ErrSliceInsufficientVertices))
@@ -91,7 +92,6 @@ func (r *SliceStack) validateSlices(model *go3mf.Model, path string) []error {
 		for _, err := range perrs {
 			errs = append(errs, specerr.NewIndexed(path, slice, j, err))
 		}
-		lastTopZ = slice.TopZ
 	}
 	return errs
 }
