@@ -28,9 +28,10 @@ func (ext *SliceStackInfo) Validate(m *go3mf.Model, path string, e interface{}) 
 			if !validateBuildTransforms(m, path, obj.ID) {
 				errs = append(errs, specerr.ErrSliceInvalidTranform)
 			}
-			if (obj.ObjectType == go3mf.ObjectTypeModel || obj.ObjectType == go3mf.ObjectTypeSolidSupport) &&
-				!checkAllClosed(m, r) {
-				errs = append(errs, specerr.ErrSlicePolygonNotClosed)
+			if obj.ObjectType == go3mf.ObjectTypeModel || obj.ObjectType == go3mf.ObjectTypeSolidSupport {
+				if !checkAllClosed(m, r) {
+					errs = append(errs, specerr.ErrSlicePolygonNotClosed)
+				}
 			}
 		} else {
 			errs = append(errs, specerr.ErrNonSliceStack)
@@ -47,7 +48,7 @@ func (ext *SliceStackInfo) Validate(m *go3mf.Model, path string, e interface{}) 
 			}
 		}
 		if !extRequired {
-			errs = append(errs, specerr.ErrProdExtRequired)
+			errs = append(errs, specerr.ErrSliceExtRequired)
 		}
 	}
 	return errs
@@ -82,7 +83,7 @@ func (r *SliceStack) validateSlices(_ *go3mf.Model, path string) []error {
 		if len(slice.Vertices) < 2 {
 			errs = append(errs, specerr.NewIndexed(path, slice, j, specerr.ErrSliceInsufficientVertices))
 		}
-		if len(slice.Polygons) < 2 {
+		if len(slice.Polygons) == 0 {
 			errs = append(errs, specerr.NewIndexed(path, slice, j, specerr.ErrSliceInsufficientPolygons))
 		}
 		var perrs []error
@@ -189,9 +190,13 @@ func validateObjectTransforms(m *go3mf.Model, o *go3mf.Object, path string, id u
 				return false
 			}
 		}
-		if o1, ok := m.FindObject(c.ObjectPath(path), c.ObjectID); ok {
-			if !validateObjectTransforms(m, o1, path, id) {
-				return false
+		if c.ObjectID == o.ID && c.ObjectPath(path) == path { // avoid circular references
+			break
+		} else {
+			if o1, ok := m.FindObject(c.ObjectPath(path), c.ObjectID); ok {
+				if !validateObjectTransforms(m, o1, path, id) {
+					return false
+				}
 			}
 		}
 	}

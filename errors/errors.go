@@ -45,6 +45,7 @@ var (
 	ErrProdExtRequired  = errors.New("a 3MF package which uses referenced objects MUST enlist the production extension as required")
 	ErrProdRefInNonRoot = errors.New("non-root model file components MUST only reference objects in the same model file")
 	// slices
+	ErrSliceExtRequired          = errors.New("a 3MF package which uses low resolution objects MUST enlist the slice extension as required")
 	ErrNonSliceStack             = errors.New("slicestackid MUST reference a slice stack resource")
 	ErrSlicesAndRefs             = errors.New("may either contain slices or refs, but they MUST NOT contain both element types")
 	ErrSliceRefSamePart          = errors.New("the path of the referenced slice stack MUST be different than the path of the original slice stack")

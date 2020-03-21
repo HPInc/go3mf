@@ -34,6 +34,7 @@ func (m *Model) Validate() []error {
 	if err := m.validateNamespaces(); err != nil {
 		errs = append(errs, err)
 	}
+	errs = append(errs, m.ExtensionAttr.validate(m, rootPath, m)...)
 	sortedChilds := m.sortedChilds()
 	for _, path := range sortedChilds {
 		c := m.Childs[path]
