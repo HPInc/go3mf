@@ -2,6 +2,7 @@ package slices
 
 import (
 	"fmt"
+	"image/color"
 	"testing"
 
 	"github.com/go-test/deep"
@@ -37,6 +38,7 @@ func TestValidate(t *testing.T) {
 						{Segments: []Segment{}},
 						{Segments: []Segment{{}}},
 					}},
+					{TopZ: 1.5},
 					{TopZ: 1.4},
 				},
 			}},
@@ -47,6 +49,38 @@ func TestValidate(t *testing.T) {
 			fmt.Errorf("%s@Resources@SliceStack#0@Slice#1: %v", rootPath, specerr.ErrSliceInsufficientPolygons),
 			fmt.Errorf("%s@Resources@SliceStack#0@Slice#2@Polygon#0: %v", rootPath, specerr.ErrSliceInsufficientSegments),
 			fmt.Errorf("%s@Resources@SliceStack#0@Slice#3: %v", rootPath, specerr.ErrSliceNoMonotonic),
+			fmt.Errorf("%s@Resources@SliceStack#0@Slice#4: %v", rootPath, specerr.ErrSliceNoMonotonic),
+		}},
+		{"sliceref", &go3mf.Model{
+			Childs: map[string]*go3mf.ChildModel{
+				"/that.model": &go3mf.ChildModel{Resources: go3mf.Resources{Assets: []go3mf.Asset{
+					&SliceStack{ID: 1, Slices: []*Slice{{TopZ: 1}, {TopZ: 2}}},
+					&SliceStack{ID: 2, Refs: []SliceRef{{SliceStackID: 1, Path: rootPath}}},
+					&go3mf.BaseMaterials{ID: 3, Materials: []go3mf.Base{{Name: "a", Color: color.RGBA{R: 1}}}},
+					&SliceStack{ID: 4, Slices: []*Slice{{TopZ: 1.5}}},
+				}}},
+			},
+			Resources: go3mf.Resources{
+				Assets: []go3mf.Asset{
+					&SliceStack{ID: 1, Slices: []*Slice{{TopZ: 1}, {TopZ: 2}}},
+					&SliceStack{ID: 3, Refs: []SliceRef{
+						{},
+						{SliceStackID: 1, Path: rootPath},
+						{SliceStackID: 1, Path: "/other.model"},
+						{SliceStackID: 2, Path: "/that.model"},
+						{SliceStackID: 3, Path: "/that.model"},
+						{SliceStackID: 1, Path: "/that.model"},
+						{SliceStackID: 4, Path: "/that.model"},
+					},
+					}},
+			}}, []error{
+			fmt.Errorf("%s@Resources@SliceStack#1@SliceRef#0: %v", rootPath, &specerr.MissingFieldError{Name: attrSlicePath}),
+			fmt.Errorf("%s@Resources@SliceStack#1@SliceRef#0: %v", rootPath, &specerr.MissingFieldError{Name: attrSliceRefID}),
+			fmt.Errorf("%s@Resources@SliceStack#1@SliceRef#1: %v", rootPath, specerr.ErrSliceRefSamePart),
+			fmt.Errorf("%s@Resources@SliceStack#1@SliceRef#2: %v", rootPath, specerr.ErrMissingResource),
+			fmt.Errorf("%s@Resources@SliceStack#1@SliceRef#3: %v", rootPath, specerr.ErrSliceRefRef),
+			fmt.Errorf("%s@Resources@SliceStack#1@SliceRef#4: %v", rootPath, specerr.ErrNonSliceStack),
+			fmt.Errorf("%s@Resources@SliceStack#1@SliceRef#6: %v", rootPath, specerr.ErrSliceNoMonotonic),
 		}},
 	}
 	for _, tt := range tests {

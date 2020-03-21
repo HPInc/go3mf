@@ -20,7 +20,7 @@ func (p *PathUUID) Validate(m *go3mf.Model, path string, _ interface{}) []error 
 		errs = append(errs, specerr.ErrUUID)
 	}
 	if p.Path != "" {
-		if m.PathOrDefault() == path { // root
+		if path == "" || path == m.PathOrDefault() { // root
 			// Path is validated as part if the core validations
 			var extRequired bool
 			for _, r := range m.RequiredExtensions {

@@ -1,6 +1,8 @@
 package slices
 
 import (
+	"math"
+
 	"github.com/qmuntal/go3mf"
 	specerr "github.com/qmuntal/go3mf/errors"
 )
@@ -61,16 +63,16 @@ func (r *SliceStack) Validate(m *go3mf.Model, path string) []error {
 	return append(errs, r.validateSlices(m, path)...)
 }
 
-func (r *SliceStack) validateSlices(model *go3mf.Model, path string) []error {
+func (r *SliceStack) validateSlices(_ *go3mf.Model, path string) []error {
 	var errs []error
-	var lastTopZ float32
+	lastTopZ := float32(-math.MaxFloat32)
 	for j, slice := range r.Slices {
 		if slice.TopZ == 0 {
 			errs = append(errs, specerr.NewIndexed(path, slice, j, &specerr.MissingFieldError{Name: attrZTop}))
 		} else if slice.TopZ < r.BottomZ {
 			errs = append(errs, specerr.NewIndexed(path, slice, j, specerr.ErrSliceSmallTopZ))
 		}
-		if slice.TopZ < lastTopZ {
+		if slice.TopZ <= lastTopZ {
 			errs = append(errs, specerr.NewIndexed(path, slice, j, specerr.ErrSliceNoMonotonic))
 		}
 		lastTopZ = slice.TopZ
@@ -96,9 +98,9 @@ func (r *SliceStack) validateSlices(model *go3mf.Model, path string) []error {
 	return errs
 }
 
-func (r *SliceStack) validateRefs(model *go3mf.Model, path string) []error {
-	var lastTopZ float32
+func (r *SliceStack) validateRefs(m *go3mf.Model, path string) []error {
 	var errs []error
+	lastTopZ := float32(-math.MaxFloat32)
 	for i, ref := range r.Refs {
 		valid := true
 		if ref.Path == "" {
@@ -115,12 +117,12 @@ func (r *SliceStack) validateRefs(model *go3mf.Model, path string) []error {
 		if !valid {
 			continue
 		}
-		if st, ok := model.FindAsset(ref.Path, ref.SliceStackID); ok {
+		if st, ok := m.FindAsset(ref.Path, ref.SliceStackID); ok {
 			if st, ok := st.(*SliceStack); ok {
 				if len(st.Refs) != 0 {
 					errs = append(errs, specerr.NewIndexed(path, ref, i, specerr.ErrSliceRefRef))
 				}
-				if len(st.Slices) > 0 && st.Slices[0].TopZ < lastTopZ {
+				if len(st.Slices) > 0 && st.Slices[0].TopZ <= lastTopZ {
 					errs = append(errs, specerr.NewIndexed(path, ref, i, specerr.ErrSliceNoMonotonic))
 				}
 				if len(st.Slices) > 0 {
