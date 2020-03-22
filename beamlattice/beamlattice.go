@@ -68,19 +68,6 @@ type BeamLattice struct {
 	CapMode                  CapMode
 }
 
-func (bl *BeamLattice) checkSanity(nodeCount uint32) bool {
-	for _, beam := range bl.Beams {
-		i0, i1 := beam.NodeIndices[0], beam.NodeIndices[1]
-		if i0 == i1 {
-			return false
-		}
-		if i0 >= nodeCount || i1 >= nodeCount {
-			return false
-		}
-	}
-	return true
-}
-
 // BeamSet defines a set of beams.
 type BeamSet struct {
 	Refs       []uint32

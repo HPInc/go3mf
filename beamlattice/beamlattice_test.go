@@ -88,27 +88,3 @@ func TestClipMode_String(t *testing.T) {
 		})
 	}
 }
-
-func TestBeamLattice_checkSanity(t *testing.T) {
-	type args struct {
-		nodeCount uint32
-	}
-	tests := []struct {
-		name string
-		m    *BeamLattice
-		args args
-		want bool
-	}{
-		{"eq", &BeamLattice{Beams: []Beam{{NodeIndices: [2]uint32{1, 1}}}}, args{0}, false},
-		{"high1", &BeamLattice{Beams: []Beam{{NodeIndices: [2]uint32{2, 1}}}}, args{2}, false},
-		{"high2", &BeamLattice{Beams: []Beam{{NodeIndices: [2]uint32{1, 2}}}}, args{2}, false},
-		{"good", &BeamLattice{Beams: []Beam{{NodeIndices: [2]uint32{1, 2}}}}, args{3}, true},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.m.checkSanity(tt.args.nodeCount); got != tt.want {
-				t.Errorf("BeamLattice.checkSanity() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
