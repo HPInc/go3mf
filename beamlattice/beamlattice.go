@@ -68,8 +68,8 @@ type BeamLattice struct {
 	CapMode                  CapMode
 }
 
-func (m *BeamLattice) checkSanity(nodeCount uint32) bool {
-	for _, beam := range m.Beams {
+func (bl *BeamLattice) checkSanity(nodeCount uint32) bool {
+	for _, beam := range bl.Beams {
 		i0, i1 := beam.NodeIndices[0], beam.NodeIndices[1]
 		if i0 == i1 {
 			return false

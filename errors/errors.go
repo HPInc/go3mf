@@ -57,6 +57,13 @@ var (
 	ErrSliceInsufficientSegments = errors.New("slice polygon MUST contain at least 1 segment")
 	ErrSlicePolygonNotClosed     = errors.New("objects with type 'model' and 'solidsupport' MUST not reference slices with open polygons")
 	ErrSliceInvalidTranform      = errors.New("any transform applied to an object that references a slice stack MUST be planar")
+	// beamlattice
+	ErrLatticeObjType       = errors.New("MUST only be added to a mesh object of type model or solidsupport")
+	ErrLatticeClippedNoMesh = errors.New("if clipping mode is not equal to none, a clippingmesh resource MUST be specified")
+	ErrLatticeSelfReference = errors.New("the clippingmesh id and representationmesh id MUST NOT be self-referencing")
+	ErrLatticeInvalidMesh   = errors.New("the clippingmesh and representationmesh MUST be a mesh object of type model and MUST NOT contain a beamlattice")
+	ErrLatticeSameVertex    = errors.New("a beam MUST consist of two distinct vertex indices")
+	ErrLatticeBeamR2        = errors.New("r2 MUST not be defined, if r1 is not defined")
 )
 
 type Level struct {
