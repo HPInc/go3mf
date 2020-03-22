@@ -23,7 +23,6 @@ func TestValidate(t *testing.T) {
 		args args
 		want []error
 	}{
-		{"empty", args{new(go3mf.Model)}, []error{}},
 		{"buildEmptyUUID", args{&go3mf.Model{Namespaces: []xml.Name{{Space: ExtensionName}}, Build: go3mf.Build{
 			ExtensionAttr: go3mf.ExtensionAttr{mustUUID("")}}}}, []error{
 			fmt.Errorf("%s@Build: %v", rootPath, specerr.ErrUUID),

@@ -18,7 +18,6 @@ func TestValidate(t *testing.T) {
 		model *go3mf.Model
 		want  []error
 	}{
-		{"empty", new(go3mf.Model), []error{}},
 		{"extRequired", &go3mf.Model{
 			ExtensionAttr:      go3mf.ExtensionAttr{&SliceStackInfo{SliceStackID: 10}},
 			Namespaces:         []xml.Name{{Space: ExtensionName, Local: "s"}},
