@@ -68,6 +68,16 @@ func (m *Model) Validate() []error {
 	return errs
 }
 
+func (ext Extension) validate(m *Model, path string, e interface{}) []error {
+	var errs []error
+	for _, a := range ext {
+		if a, ok := a.(attrValidator); ok {
+			errs = append(errs, a.Validate(m, path, e)...)
+		}
+	}
+	return errs
+}
+
 func (ext ExtensionAttr) validate(m *Model, path string, e interface{}) []error {
 	var errs []error
 	for _, a := range ext {
@@ -250,7 +260,16 @@ func (r *Object) validateMesh(m *Model, path string) []error {
 			errs = append(errs, specerr.ErrInsufficientVertices)
 		}
 		if len(r.Mesh.Faces) <= 3 {
-			errs = append(errs, specerr.ErrInsufficientTriangles)
+			var hasBeamLattice bool
+			for _, ns := range m.Namespaces {
+				if ns.Space == "http://schemas.microsoft.com/3dmanufacturing/beamlattice/2017/02" {
+					hasBeamLattice = true
+					break
+				}
+			}
+			if !hasBeamLattice {
+				errs = append(errs, specerr.ErrInsufficientTriangles)
+			}
 		}
 	}
 
@@ -279,6 +298,9 @@ func (r *Object) validateMesh(m *Model, path string) []error {
 				errs = append(errs, specerr.NewIndexed(face, i, specerr.ErrMissingResource))
 			}
 		}
+	}
+	for _, err := range r.Mesh.Extension.validate(m, path, r) {
+		errs = append(errs, err)
 	}
 	return errs
 }
