@@ -62,7 +62,7 @@ func TestValidate(t *testing.T) {
 			fmt.Errorf("%s@Build@Item#3: %v", path, specerr.ErrMissingResource),
 			fmt.Errorf("%s@Build@Item#3@Metadata#0: %v", path, specerr.ErrMetadataName),
 		}},
-		{"childs", args{&Model{Childs: map[string]*ChildModel{path: &ChildModel{}, "/a.model": &ChildModel{
+		{"childs", args{&Model{Childs: map[string]*ChildModel{path: {}, "/a.model": {
 			Relationships: make([]Relationship, 1), Resources: Resources{Objects: []*Object{{}}}}}}},
 			[]error{
 				fmt.Errorf("%s: %v", path, specerr.ErrOPCDuplicatedModelName),

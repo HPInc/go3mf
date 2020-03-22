@@ -22,10 +22,10 @@ func TestValidate(t *testing.T) {
 	}{
 		{"empty", args{new(go3mf.Model)}, []error{}},
 		{"child", args{&go3mf.Model{Childs: map[string]*go3mf.ChildModel{
-			"/other.model": &go3mf.ChildModel{Resources: go3mf.Resources{Assets: []go3mf.Asset{
+			"/other.model": {Resources: go3mf.Resources{Assets: []go3mf.Asset{
 				&ColorGroup{ID: 1},
 			}}},
-			"/that.model": &go3mf.ChildModel{Resources: go3mf.Resources{Assets: []go3mf.Asset{
+			"/that.model": {Resources: go3mf.Resources{Assets: []go3mf.Asset{
 				&MultiProperties{ID: 2},
 			}}},
 		}}}, []error{
