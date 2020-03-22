@@ -40,26 +40,26 @@ func (bl *BeamLattice) Validate(m *go3mf.Model, path string, e interface{}) []er
 
 	for i, b := range bl.Beams {
 		if b.NodeIndices[0] == b.NodeIndices[1] {
-			errs = append(errs, specerr.NewIndexed(path, b, i, specerr.ErrLatticeSameVertex))
+			errs = append(errs, specerr.NewIndexed(b, i, specerr.ErrLatticeSameVertex))
 		} else {
 			l := len(obj.Mesh.Nodes)
 			if int(b.NodeIndices[0]) >= l || int(b.NodeIndices[1]) >= l {
-				errs = append(errs, specerr.NewIndexed(path, b, i, specerr.ErrIndexOutOfBounds))
+				errs = append(errs, specerr.NewIndexed(b, i, specerr.ErrIndexOutOfBounds))
 			}
 		}
 		if b.Radius[0] != 0 && b.Radius[0] != bl.DefaultRadius && b.Radius[0] != b.Radius[1] {
-			errs = append(errs, specerr.NewIndexed(path, b, i, specerr.ErrLatticeBeamR2))
+			errs = append(errs, specerr.NewIndexed(b, i, specerr.ErrLatticeBeamR2))
 		}
 	}
 	for i, set := range bl.BeamSets {
 		var setErrs []error
 		for j, ref := range set.Refs {
 			if int(ref) >= len(set.Refs) {
-				setErrs = append(setErrs, specerr.NewIndexed(path, ref, j, specerr.ErrIndexOutOfBounds))
+				setErrs = append(setErrs, specerr.NewIndexed(ref, j, specerr.ErrIndexOutOfBounds))
 			}
 		}
 		for _, err := range setErrs {
-			errs = append(errs, specerr.NewIndexed(path, set, i, err))
+			errs = append(errs, specerr.NewIndexed(set, i, err))
 		}
 	}
 

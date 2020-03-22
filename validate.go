@@ -39,25 +39,31 @@ func (m *Model) Validate() []error {
 	for _, path := range sortedChilds {
 		c := m.Childs[path]
 		if path == rootPath {
-			errs = append(errs, &specerr.Error{Path: path, Err: specerr.ErrOPCDuplicatedModelName})
+			errs = append(errs, specerr.ErrOPCDuplicatedModelName)
 		} else {
-			errs = append(errs, validateRelationship(m, c.Relationships, path)...)
+			for _, err := range validateRelationship(m, c.Relationships, path) {
+				if err, ok := err.(*specerr.Error); ok {
+					err.Path = path
+				}
+				errs = append(errs, err)
+			}
 		}
 	}
+
 	errs = append(errs, validateRelationship(m, m.Relationships, rootPath)...)
-	errs = append(errs, checkMetadadata(m, rootPath, m.Metadata)...)
+	errs = append(errs, checkMetadadata(m, m.Metadata)...)
 
 	for _, path := range sortedChilds {
 		c := m.Childs[path]
 		for _, err := range c.Resources.Validate(m, path) {
-			errs = append(errs, specerr.New(path, c.Resources, err))
+			errs = append(errs, specerr.NewPath(c.Resources, path, err))
 		}
 	}
 	for _, err := range m.Resources.Validate(m, rootPath) {
-		errs = append(errs, specerr.New(rootPath, m.Resources, err))
+		errs = append(errs, specerr.New(m.Resources, err))
 	}
 	for _, err := range m.Build.Validate(m, rootPath) {
-		errs = append(errs, specerr.New(rootPath, m.Build, err))
+		errs = append(errs, specerr.New(m.Build, err))
 	}
 	return errs
 }
@@ -84,7 +90,7 @@ func (item *Item) Validate(m *Model, path string) []error {
 	} else {
 		errs = append(errs, specerr.ErrMissingResource)
 	}
-	errs = append(errs, checkMetadadata(m, path, item.Metadata)...)
+	errs = append(errs, checkMetadadata(m, item.Metadata)...)
 	errs = append(errs, item.ExtensionAttr.validate(m, path, item)...)
 	return errs
 }
@@ -94,7 +100,7 @@ func (b *Build) Validate(m *Model, path string) []error {
 	errs = append(errs, b.ExtensionAttr.validate(m, path, b)...)
 	for i, item := range b.Items {
 		for _, err := range item.Validate(m, path) {
-			errs = append(errs, specerr.NewIndexed(path, item, i, err))
+			errs = append(errs, specerr.NewIndexed(item, i, err))
 		}
 	}
 	return errs
@@ -131,15 +137,15 @@ func (m *Metadata) Validate(model *Model) []error {
 	return errs
 }
 
-func checkMetadadata(model *Model, path string, md []Metadata) []error {
+func checkMetadadata(model *Model, md []Metadata) []error {
 	var errs []error
 	names := make(map[xml.Name]struct{})
 	for i, m := range md {
 		for _, err := range m.Validate(model) {
-			errs = append(errs, specerr.NewIndexed(path, m, i, err))
+			errs = append(errs, specerr.NewIndexed(m, i, err))
 		}
 		if _, ok := names[m.Name]; ok {
-			errs = append(errs, specerr.NewIndexed(path, m, i, specerr.ErrMetadataDuplicated))
+			errs = append(errs, specerr.NewIndexed(m, i, specerr.ErrMetadataDuplicated))
 		}
 		names[m.Name] = struct{}{}
 	}
@@ -156,10 +162,10 @@ func (r *BaseMaterials) Validate(m *Model, path string) []error {
 	}
 	for j, b := range r.Materials {
 		if b.Name == "" {
-			errs = append(errs, specerr.NewIndexed(path, b, j, &specerr.MissingFieldError{Name: attrName}))
+			errs = append(errs, specerr.NewIndexed(b, j, &specerr.MissingFieldError{Name: attrName}))
 		}
 		if b.Color == (color.RGBA{}) {
-			errs = append(errs, specerr.NewIndexed(path, b, j, &specerr.MissingFieldError{Name: attrDisplayColor}))
+			errs = append(errs, specerr.NewIndexed(b, j, &specerr.MissingFieldError{Name: attrDisplayColor}))
 		}
 	}
 	return errs
@@ -173,25 +179,25 @@ func (res *Resources) Validate(m *Model, path string) []error {
 		id := r.Identify()
 		if id != 0 {
 			if _, ok := assets[id]; ok {
-				errs = append(errs, specerr.NewIndexed(path, r, i, specerr.ErrDuplicatedID))
+				errs = append(errs, specerr.NewIndexed(r, i, specerr.ErrDuplicatedID))
 			}
 		}
 		assets[id] = struct{}{}
 		if r, ok := r.(validator); ok {
 			for _, err := range r.Validate(m, path) {
-				errs = append(errs, specerr.NewIndexed(path, r, i, err))
+				errs = append(errs, specerr.NewIndexed(r, i, err))
 			}
 		}
 	}
 	for i, r := range res.Objects {
 		if r.ID != 0 {
 			if _, ok := assets[r.ID]; ok {
-				errs = append(errs, specerr.NewIndexed(path, r, i, specerr.ErrDuplicatedID))
+				errs = append(errs, specerr.NewIndexed(r, i, specerr.ErrDuplicatedID))
 			}
 		}
 		assets[r.ID] = struct{}{}
 		for _, err := range r.Validate(m, path) {
-			errs = append(errs, specerr.NewIndexed(path, r, i, err))
+			errs = append(errs, specerr.NewIndexed(r, i, err))
 		}
 	}
 	return errs
@@ -223,7 +229,7 @@ func (r *Object) Validate(m *Model, path string) []error {
 			}
 		}
 		for _, err := range r.validateMesh(m, path) {
-			errs = append(errs, specerr.New(path, r.Mesh, err))
+			errs = append(errs, specerr.New(r.Mesh, err))
 		}
 	}
 	if len(r.Components) > 0 {
@@ -252,10 +258,10 @@ func (r *Object) validateMesh(m *Model, path string) []error {
 	for i, face := range r.Mesh.Faces {
 		i0, i1, i2 := face.NodeIndices[0], face.NodeIndices[1], face.NodeIndices[2]
 		if i0 == i1 || i0 == i2 || i1 == i2 {
-			errs = append(errs, specerr.NewIndexed(path, face, i, specerr.ErrDuplicatedIndices))
+			errs = append(errs, specerr.NewIndexed(face, i, specerr.ErrDuplicatedIndices))
 		}
 		if i0 >= nodeCount || i1 >= nodeCount || i2 >= nodeCount {
-			errs = append(errs, specerr.NewIndexed(path, face, i, specerr.ErrIndexOutOfBounds))
+			errs = append(errs, specerr.NewIndexed(face, i, specerr.ErrIndexOutOfBounds))
 		}
 		if face.PID != 0 {
 			if face.PID == r.DefaultPID && face.PIndex[0] == r.DefaultPIndex &&
@@ -266,11 +272,11 @@ func (r *Object) validateMesh(m *Model, path string) []error {
 				if a, ok := a.(propertyGroup); ok {
 					l := a.Len()
 					if int(face.PIndex[0]) >= l || int(face.PIndex[1]) >= l || int(face.PIndex[2]) >= l {
-						errs = append(errs, specerr.NewIndexed(path, face, i, specerr.ErrIndexOutOfBounds))
+						errs = append(errs, specerr.NewIndexed(face, i, specerr.ErrIndexOutOfBounds))
 					}
 				}
 			} else {
-				errs = append(errs, specerr.NewIndexed(path, face, i, specerr.ErrMissingResource))
+				errs = append(errs, specerr.NewIndexed(face, i, specerr.ErrMissingResource))
 			}
 		}
 	}
@@ -281,16 +287,16 @@ func (r *Object) validateComponents(m *Model, path string) []error {
 	var errs []error
 	for j, c := range r.Components {
 		if c.ObjectID == 0 {
-			errs = append(errs, specerr.NewIndexed(path, c, j, &specerr.MissingFieldError{Name: attrObjectID}))
+			errs = append(errs, specerr.NewIndexed(c, j, &specerr.MissingFieldError{Name: attrObjectID}))
 		} else if ref, ok := m.FindObject(c.ObjectPath(path), c.ObjectID); ok {
 			if ref.ID == r.ID && c.ObjectPath(path) == path {
-				errs = append(errs, specerr.NewIndexed(path, c, j, specerr.ErrRecursiveComponent))
+				errs = append(errs, specerr.NewIndexed(c, j, specerr.ErrRecursiveComponent))
 			}
 		} else {
-			errs = append(errs, specerr.NewIndexed(path, c, j, specerr.ErrMissingResource))
+			errs = append(errs, specerr.NewIndexed(c, j, specerr.ErrMissingResource))
 		}
 		for _, err := range c.ExtensionAttr.validate(m, path, c) {
-			errs = append(errs, specerr.NewIndexed(path, c, j, err))
+			errs = append(errs, specerr.NewIndexed(c, j, err))
 		}
 	}
 	return errs
@@ -319,13 +325,13 @@ func validateRelationship(m *Model, rels []Relationship, path string) []error {
 	var hasPrintTicket bool
 	for i, r := range rels {
 		if r.Path == "" || r.Path[0] != '/' || strings.Contains(r.Path, "/.") {
-			errs = append(errs, specerr.NewIndexed(path, r, i, specerr.ErrOPCPartName))
+			errs = append(errs, specerr.NewIndexed(r, i, specerr.ErrOPCPartName))
 		} else {
 			if _, ok := findAttachment(m.Attachments, r.Path); !ok {
-				errs = append(errs, specerr.NewIndexed(path, r, i, specerr.ErrOPCRelTarget))
+				errs = append(errs, specerr.NewIndexed(r, i, specerr.ErrOPCRelTarget))
 			}
 			if _, ok := visitedParts[partrel{r.Path, r.Type}]; ok {
-				errs = append(errs, specerr.NewIndexed(path, r, i, specerr.ErrOPCDuplicatedRel))
+				errs = append(errs, specerr.NewIndexed(r, i, specerr.ErrOPCDuplicatedRel))
 			}
 			visitedParts[partrel{r.Path, r.Type}] = struct{}{}
 		}
@@ -333,10 +339,10 @@ func validateRelationship(m *Model, rels []Relationship, path string) []error {
 		case RelTypePrintTicket:
 			if a, ok := findAttachment(m.Attachments, r.Path); ok {
 				if a.ContentType != ContentTypePrintTicket {
-					errs = append(errs, specerr.NewIndexed(path, r, i, specerr.ErrOPCContentType))
+					errs = append(errs, specerr.NewIndexed(r, i, specerr.ErrOPCContentType))
 				}
 				if hasPrintTicket {
-					errs = append(errs, specerr.NewIndexed(path, r, i, specerr.ErrOPCDuplicatedTicket))
+					errs = append(errs, specerr.NewIndexed(r, i, specerr.ErrOPCDuplicatedTicket))
 				}
 				hasPrintTicket = true
 			}

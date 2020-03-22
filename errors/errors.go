@@ -85,25 +85,34 @@ func (l *Level) String() string {
 }
 
 type Error struct {
-	Path   string
 	Target []Level
 	Err    error
+	Path   string
 }
 
-func New(path string, element interface{}, err error) *Error {
+func New(element interface{}, err error) *Error {
 	if e, ok := err.(*Error); ok {
 		e.Target = append(e.Target, Level{element, -1})
 		return e
 	}
-	return &Error{path, []Level{{element, -1}}, err}
+	return &Error{Target: []Level{{element, -1}}, Err: err}
 }
 
-func NewIndexed(path string, element interface{}, index int, err error) *Error {
+func NewPath(element interface{}, path string, err error) *Error {
+	if e, ok := err.(*Error); ok {
+		e.Path = path
+		e.Target = append(e.Target, Level{element, -1})
+		return e
+	}
+	return &Error{Target: []Level{{element, -1}}, Err: err, Path: path}
+}
+
+func NewIndexed(element interface{}, index int, err error) *Error {
 	if e, ok := err.(*Error); ok {
 		e.Target = append(e.Target, Level{element, index})
 		return e
 	}
-	return &Error{path, []Level{{element, index}}, err}
+	return &Error{Target: []Level{{element, index}}, Err: err}
 }
 
 func (e *Error) Unwrap() error {
@@ -115,6 +124,9 @@ func (e *Error) Error() string {
 	levels[0] = e.Path
 	for i, l := range e.Target {
 		levels[len(e.Target)-i] = l.String()
+	}
+	if e.Path == "" {
+		levels = levels[1:]
 	}
 	return fmt.Sprintf("%s: %v", strings.Join(levels, "@"), e.Err)
 }

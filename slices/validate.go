@@ -61,39 +61,39 @@ func (r *SliceStack) Validate(m *go3mf.Model, path string) []error {
 		errs = append(errs, specerr.ErrSlicesAndRefs)
 	}
 	errs = append(errs, r.validateRefs(m, path)...)
-	return append(errs, r.validateSlices(m, path)...)
+	return append(errs, r.validateSlices()...)
 }
 
-func (r *SliceStack) validateSlices(_ *go3mf.Model, path string) []error {
+func (r *SliceStack) validateSlices() []error {
 	var errs []error
 	lastTopZ := float32(-math.MaxFloat32)
 	for j, slice := range r.Slices {
 		if slice.TopZ == 0 {
-			errs = append(errs, specerr.NewIndexed(path, slice, j, &specerr.MissingFieldError{Name: attrZTop}))
+			errs = append(errs, specerr.NewIndexed(slice, j, &specerr.MissingFieldError{Name: attrZTop}))
 		} else if slice.TopZ < r.BottomZ {
-			errs = append(errs, specerr.NewIndexed(path, slice, j, specerr.ErrSliceSmallTopZ))
+			errs = append(errs, specerr.NewIndexed(slice, j, specerr.ErrSliceSmallTopZ))
 		}
 		if slice.TopZ <= lastTopZ {
-			errs = append(errs, specerr.NewIndexed(path, slice, j, specerr.ErrSliceNoMonotonic))
+			errs = append(errs, specerr.NewIndexed(slice, j, specerr.ErrSliceNoMonotonic))
 		}
 		lastTopZ = slice.TopZ
 		if len(slice.Polygons) == 0 && len(slice.Vertices) == 0 {
 			continue
 		}
 		if len(slice.Vertices) < 2 {
-			errs = append(errs, specerr.NewIndexed(path, slice, j, specerr.ErrSliceInsufficientVertices))
+			errs = append(errs, specerr.NewIndexed(slice, j, specerr.ErrSliceInsufficientVertices))
 		}
 		if len(slice.Polygons) == 0 {
-			errs = append(errs, specerr.NewIndexed(path, slice, j, specerr.ErrSliceInsufficientPolygons))
+			errs = append(errs, specerr.NewIndexed(slice, j, specerr.ErrSliceInsufficientPolygons))
 		}
 		var perrs []error
 		for k, p := range slice.Polygons {
 			if len(p.Segments) < 1 {
-				perrs = append(perrs, specerr.NewIndexed(path, p, k, specerr.ErrSliceInsufficientSegments))
+				perrs = append(perrs, specerr.NewIndexed(p, k, specerr.ErrSliceInsufficientSegments))
 			}
 		}
 		for _, err := range perrs {
-			errs = append(errs, specerr.NewIndexed(path, slice, j, err))
+			errs = append(errs, specerr.NewIndexed(slice, j, err))
 		}
 	}
 	return errs
@@ -106,14 +106,14 @@ func (r *SliceStack) validateRefs(m *go3mf.Model, path string) []error {
 		valid := true
 		if ref.Path == "" {
 			valid = false
-			errs = append(errs, specerr.NewIndexed(path, ref, i, &specerr.MissingFieldError{Name: attrSlicePath}))
+			errs = append(errs, specerr.NewIndexed(ref, i, &specerr.MissingFieldError{Name: attrSlicePath}))
 		} else if ref.Path == path {
 			valid = false
-			errs = append(errs, specerr.NewIndexed(path, ref, i, specerr.ErrSliceRefSamePart))
+			errs = append(errs, specerr.NewIndexed(ref, i, specerr.ErrSliceRefSamePart))
 		}
 		if ref.SliceStackID == 0 {
 			valid = false
-			errs = append(errs, specerr.NewIndexed(path, ref, i, &specerr.MissingFieldError{Name: attrSliceRefID}))
+			errs = append(errs, specerr.NewIndexed(ref, i, &specerr.MissingFieldError{Name: attrSliceRefID}))
 		}
 		if !valid {
 			continue
@@ -121,19 +121,19 @@ func (r *SliceStack) validateRefs(m *go3mf.Model, path string) []error {
 		if st, ok := m.FindAsset(ref.Path, ref.SliceStackID); ok {
 			if st, ok := st.(*SliceStack); ok {
 				if len(st.Refs) != 0 {
-					errs = append(errs, specerr.NewIndexed(path, ref, i, specerr.ErrSliceRefRef))
+					errs = append(errs, specerr.NewIndexed(ref, i, specerr.ErrSliceRefRef))
 				}
 				if len(st.Slices) > 0 && st.Slices[0].TopZ <= lastTopZ {
-					errs = append(errs, specerr.NewIndexed(path, ref, i, specerr.ErrSliceNoMonotonic))
+					errs = append(errs, specerr.NewIndexed(ref, i, specerr.ErrSliceNoMonotonic))
 				}
 				if len(st.Slices) > 0 {
 					lastTopZ = st.Slices[len(st.Slices)-1].TopZ
 				}
 			} else {
-				errs = append(errs, specerr.NewIndexed(path, ref, i, specerr.ErrNonSliceStack))
+				errs = append(errs, specerr.NewIndexed(ref, i, specerr.ErrNonSliceStack))
 			}
 		} else {
-			errs = append(errs, specerr.NewIndexed(path, ref, i, specerr.ErrMissingResource))
+			errs = append(errs, specerr.NewIndexed(ref, i, specerr.ErrMissingResource))
 		}
 	}
 	return errs
