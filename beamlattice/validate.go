@@ -5,16 +5,20 @@ import (
 	specerr "github.com/qmuntal/go3mf/errors"
 )
 
-func (bl *BeamLattice) Validate(m *go3mf.Model, path string, e interface{}) []error {
-	var (
-		obj *go3mf.Object
-		ok  bool
-	)
-	if obj, ok = e.(*go3mf.Object); !ok || obj.Mesh == nil {
-		return nil
+type Extension struct {
+	m *go3mf.Model
+}
+
+func (e *Extension) ValidateObject(path string, obj *go3mf.Object, errs []error) []error {
+	if obj.Mesh == nil {
+		return errs
 	}
 
-	var errs []error
+	var bl *BeamLattice
+	if !obj.Mesh.Extension.Get(&bl) {
+		return errs
+	}
+
 	if obj.ObjectType != go3mf.ObjectTypeModel && obj.ObjectType != go3mf.ObjectTypeSolidSupport {
 		errs = append(errs, specerr.ErrLatticeObjType)
 	}
@@ -28,12 +32,12 @@ func (bl *BeamLattice) Validate(m *go3mf.Model, path string, e interface{}) []er
 		errs = append(errs, specerr.ErrLatticeClippedNoMesh)
 	}
 	if bl.ClippingMeshID != 0 {
-		if err := validateRefMesh(m, path, bl.ClippingMeshID, obj.ID); err != nil {
+		if err := e.validateRefMesh(path, bl.ClippingMeshID, obj.ID); err != nil {
 			errs = append(errs, err)
 		}
 	}
 	if bl.RepresentationMeshID != 0 {
-		if err := validateRefMesh(m, path, bl.RepresentationMeshID, obj.ID); err != nil {
+		if err := e.validateRefMesh(path, bl.RepresentationMeshID, obj.ID); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -66,11 +70,11 @@ func (bl *BeamLattice) Validate(m *go3mf.Model, path string, e interface{}) []er
 	return errs
 }
 
-func validateRefMesh(m *go3mf.Model, path string, meshID, selfID uint32) error {
+func (e *Extension) validateRefMesh(path string, meshID, selfID uint32) error {
 	if meshID == selfID {
 		return specerr.ErrLatticeSelfReference
 	}
-	if res, ok := m.FindResources(path); ok {
+	if res, ok := e.m.FindResources(path); ok {
 		for _, r := range res.Objects {
 			if r.ID == selfID {
 				return specerr.ErrMissingResource
