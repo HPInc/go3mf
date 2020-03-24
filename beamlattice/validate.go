@@ -5,15 +5,12 @@ import (
 	specerr "github.com/qmuntal/go3mf/errors"
 )
 
-type Extension struct {
-	m *go3mf.Model
-}
-
-func (e *Extension) ValidateObject(path string, obj *go3mf.Object, errs []error) []error {
+func (e *Extension) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) []error {
 	if obj.Mesh == nil {
-		return errs
+		return nil
 	}
 
+	var errs []error
 	var bl *BeamLattice
 	if !obj.Mesh.Extension.Get(&bl) {
 		return errs
@@ -32,12 +29,12 @@ func (e *Extension) ValidateObject(path string, obj *go3mf.Object, errs []error)
 		errs = append(errs, specerr.ErrLatticeClippedNoMesh)
 	}
 	if bl.ClippingMeshID != 0 {
-		if err := e.validateRefMesh(path, bl.ClippingMeshID, obj.ID); err != nil {
+		if err := e.validateRefMesh(m, path, bl.ClippingMeshID, obj.ID); err != nil {
 			errs = append(errs, err)
 		}
 	}
 	if bl.RepresentationMeshID != 0 {
-		if err := e.validateRefMesh(path, bl.RepresentationMeshID, obj.ID); err != nil {
+		if err := e.validateRefMesh(m, path, bl.RepresentationMeshID, obj.ID); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -56,25 +53,26 @@ func (e *Extension) ValidateObject(path string, obj *go3mf.Object, errs []error)
 		}
 	}
 	for i, set := range bl.BeamSets {
-		var setErrs []error
-		for j, ref := range set.Refs {
+		for _, ref := range set.Refs {
 			if int(ref) >= len(set.Refs) {
-				setErrs = append(setErrs, specerr.NewIndexed(ref, j, specerr.ErrIndexOutOfBounds))
+				errs = append(errs, specerr.NewIndexed(set, i, specerr.ErrIndexOutOfBounds))
+				break
 			}
 		}
-		for _, err := range setErrs {
-			errs = append(errs, specerr.NewIndexed(set, i, err))
-		}
+	}
+
+	for i, err := range errs {
+		errs[i] = specerr.New(obj.Mesh, specerr.New(bl, err))
 	}
 
 	return errs
 }
 
-func (e *Extension) validateRefMesh(path string, meshID, selfID uint32) error {
+func (e *Extension) validateRefMesh(m *go3mf.Model, path string, meshID, selfID uint32) error {
 	if meshID == selfID {
 		return specerr.ErrLatticeSelfReference
 	}
-	if res, ok := e.m.FindResources(path); ok {
+	if res, ok := m.FindResources(path); ok {
 		for _, r := range res.Objects {
 			if r.ID == selfID {
 				return specerr.ErrMissingResource
@@ -84,6 +82,7 @@ func (e *Extension) validateRefMesh(path string, meshID, selfID uint32) error {
 				if r.Mesh == nil || r.ObjectType != go3mf.ObjectTypeModel || r.Mesh.Extension.Get(&lattice) {
 					return specerr.ErrLatticeInvalidMesh
 				}
+				break
 			}
 		}
 	}

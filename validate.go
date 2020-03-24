@@ -259,17 +259,8 @@ func (r *Object) validateMesh(m *Model, path string) []error {
 		if len(r.Mesh.Nodes) < 3 {
 			errs = append(errs, specerr.ErrInsufficientVertices)
 		}
-		if len(r.Mesh.Faces) <= 3 {
-			var hasBeamLattice bool
-			for _, ns := range m.Namespaces {
-				if ns.Space == "http://schemas.microsoft.com/3dmanufacturing/beamlattice/2017/02" {
-					hasBeamLattice = true
-					break
-				}
-			}
-			if !hasBeamLattice {
-				errs = append(errs, specerr.ErrInsufficientTriangles)
-			}
+		if len(r.Mesh.Faces) <= 3 && len(r.Mesh.Extension) == 0 {
+			errs = append(errs, specerr.ErrInsufficientTriangles)
 		}
 	}
 

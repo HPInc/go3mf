@@ -3,6 +3,23 @@ package beamlattice
 // ExtensionName is the canonical name of this extension.
 const ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/beamlattice/2017/02"
 
+type Extension struct {
+	LocalName string
+}
+
+func (e Extension) Name() string { return ExtensionName }
+
+func (e Extension) Local() string {
+	if e.LocalName != "" {
+		return e.LocalName
+	}
+	return "b"
+}
+
+func (e Extension) Required() bool {
+	return true
+}
+
 // ClipMode defines the clipping modes for the beam lattices.
 type ClipMode uint8
 
