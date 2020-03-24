@@ -259,6 +259,23 @@ type ChildModel struct {
 	Extension     Extension
 }
 
+type ExtensionSpec interface {
+	Name() string
+	Local() string
+	Required() bool
+}
+
+type ExtensionSpecs []ExtensionSpec
+
+func (e ExtensionSpecs) Required(name string) bool {
+	for _, ext := range e {
+		if ext.Name() == name {
+			return ext.Required()
+		}
+	}
+	return false
+}
+
 // A Model is an in memory representation of the 3MF file.
 //
 // If path is empty, the default path '/3D/3dmodel.model' will be used.
@@ -274,6 +291,7 @@ type Model struct {
 	Resources          Resources
 	Build              Build
 	Attachments        []Attachment
+	ExtensionSpecs     ExtensionSpecs
 	Namespaces         []xml.Name
 	RequiredExtensions []string
 	Metadata           []Metadata
@@ -282,6 +300,20 @@ type Model struct {
 	Relationships      []Relationship
 	Extension          Extension
 	ExtensionAttr      ExtensionAttr
+}
+
+func (m *Model) WithExtension(extension ExtensionSpec) {
+	var exist bool
+	for _, ext := range m.ExtensionSpecs {
+		if ext.Name() == extension.Name() {
+			ext = extension
+			exist = true
+			break
+		}
+	}
+	if !exist {
+		m.ExtensionSpecs = append(m.ExtensionSpecs, extension)
+	}
 }
 
 // AddNamespace appends name to Namespaces if it does not contains name.Space.

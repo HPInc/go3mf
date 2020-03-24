@@ -1,7 +1,6 @@
 package slices
 
 import (
-	"encoding/xml"
 	"fmt"
 	"image/color"
 	"testing"
@@ -19,9 +18,8 @@ func TestValidate(t *testing.T) {
 		want  []error
 	}{
 		{"extRequired", &go3mf.Model{
-			ExtensionAttr:      go3mf.ExtensionAttr{&SliceStackInfo{SliceStackID: 10}},
-			Namespaces:         []xml.Name{{Space: ExtensionName, Local: "s"}},
-			RequiredExtensions: []string{ExtensionName}, Resources: go3mf.Resources{
+			ExtensionAttr:  go3mf.ExtensionAttr{&SliceStackInfo{SliceStackID: 10}},
+			ExtensionSpecs: go3mf.ExtensionSpecs{&Extension{IsRequired: true}}, Resources: go3mf.Resources{
 				Assets: []go3mf.Asset{
 					&SliceStack{ID: 1, Slices: []*Slice{{TopZ: 1}}},
 				},
@@ -151,9 +149,9 @@ func TestValidate(t *testing.T) {
 						SliceStackID: 11,
 					}}},
 				}}}, []error{
-			fmt.Errorf("Resources@Object#0: %v", specerr.ErrMissingResource),
 			fmt.Errorf("Resources@Object#0@Mesh: %v", specerr.ErrInsufficientVertices),
 			fmt.Errorf("Resources@Object#0@Mesh: %v", specerr.ErrInsufficientTriangles),
+			fmt.Errorf("Resources@Object#0: %v", specerr.ErrMissingResource),
 			fmt.Errorf("Resources@Object#1: %v", specerr.ErrSliceInvalidTranform),
 			fmt.Errorf("Resources@Object#1: %v", specerr.ErrSliceExtRequired),
 			fmt.Errorf("Resources@Object#2: %v", &specerr.MissingFieldError{Name: attrSliceRefID}),
@@ -167,6 +165,7 @@ func TestValidate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			tt.model.WithExtension(&Extension{})
 			got := tt.model.Validate()
 			if diff := deep.Equal(got, tt.want); diff != nil {
 				t.Errorf("Validate() = %v", diff)

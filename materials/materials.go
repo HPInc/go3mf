@@ -1,8 +1,6 @@
 package materials
 
-import (
-	"image/color"
-)
+import "image/color"
 
 const (
 	// ExtensionName is the canonical name of this extension.
@@ -10,6 +8,24 @@ const (
 	// RelTypeTexture3D is the canonical 3D texture relationship type.
 	RelTypeTexture3D = "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture"
 )
+
+type Extension struct {
+	LocalName  string
+	IsRequired bool
+}
+
+func (e Extension) Name() string { return ExtensionName }
+
+func (e Extension) Local() string {
+	if e.LocalName != "" {
+		return e.LocalName
+	}
+	return "m"
+}
+
+func (e Extension) Required() bool {
+	return e.IsRequired
+}
 
 // Texture2DType defines the allowed texture 2D types.
 type Texture2DType uint8

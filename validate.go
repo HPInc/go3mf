@@ -9,14 +9,6 @@ import (
 	specerr "github.com/qmuntal/go3mf/errors"
 )
 
-type validator interface {
-	Validate(*Model, string) []error
-}
-
-type attrValidator interface {
-	Validate(*Model, string, interface{}) []error
-}
-
 func (m *Model) sortedChilds() []string {
 	s := make([]string, 0, len(m.Childs))
 	for path := range m.Childs {
@@ -34,7 +26,6 @@ func (m *Model) Validate() []error {
 	if err := m.validateNamespaces(); err != nil {
 		errs = append(errs, err)
 	}
-	errs = append(errs, m.ExtensionAttr.validate(m, rootPath, m)...)
 	sortedChilds := m.sortedChilds()
 	for _, path := range sortedChilds {
 		c := m.Childs[path]
@@ -53,6 +44,14 @@ func (m *Model) Validate() []error {
 	errs = append(errs, validateRelationship(m, m.Relationships, rootPath)...)
 	errs = append(errs, checkMetadadata(m, m.Metadata)...)
 
+	for _, ext := range m.ExtensionSpecs {
+		if ext, ok := ext.(interface {
+			ValidateModel(*Model) []error
+		}); ok {
+			errs = append(errs, ext.ValidateModel(m)...)
+		}
+	}
+
 	for _, path := range sortedChilds {
 		c := m.Childs[path]
 		for _, err := range c.Resources.Validate(m, path) {
@@ -64,26 +63,6 @@ func (m *Model) Validate() []error {
 	}
 	for _, err := range m.Build.Validate(m, rootPath) {
 		errs = append(errs, specerr.New(m.Build, err))
-	}
-	return errs
-}
-
-func (ext Extension) validate(m *Model, path string, e interface{}) []error {
-	var errs []error
-	for _, a := range ext {
-		if a, ok := a.(attrValidator); ok {
-			errs = append(errs, a.Validate(m, path, e)...)
-		}
-	}
-	return errs
-}
-
-func (ext ExtensionAttr) validate(m *Model, path string, e interface{}) []error {
-	var errs []error
-	for _, a := range ext {
-		if a, ok := a.(attrValidator); ok {
-			errs = append(errs, a.Validate(m, path, e)...)
-		}
 	}
 	return errs
 }
@@ -101,13 +80,18 @@ func (item *Item) Validate(m *Model, path string) []error {
 		errs = append(errs, specerr.ErrMissingResource)
 	}
 	errs = append(errs, checkMetadadata(m, item.Metadata)...)
-	errs = append(errs, item.ExtensionAttr.validate(m, path, item)...)
+	for _, ext := range m.ExtensionSpecs {
+		if ext, ok := ext.(interface {
+			ValidateItem(*Item, []error) []error
+		}); ok {
+			errs = ext.ValidateItem(item, errs)
+		}
+	}
 	return errs
 }
 
 func (b *Build) Validate(m *Model, path string) []error {
 	var errs []error
-	errs = append(errs, b.ExtensionAttr.validate(m, path, b)...)
 	for i, item := range b.Items {
 		for _, err := range item.Validate(m, path) {
 			errs = append(errs, specerr.NewIndexed(item, i, err))
@@ -183,20 +167,30 @@ func (r *BaseMaterials) Validate(m *Model, path string) []error {
 
 func (res *Resources) Validate(m *Model, path string) []error {
 	var errs []error
-	errs = append(errs, res.ExtensionAttr.validate(m, path, res)...)
 	assets := make(map[uint32]struct{})
 	for i, r := range res.Assets {
+		var aErrs []error
 		id := r.Identify()
 		if id != 0 {
 			if _, ok := assets[id]; ok {
-				errs = append(errs, specerr.NewIndexed(r, i, specerr.ErrDuplicatedID))
+				aErrs = append(aErrs, specerr.ErrDuplicatedID)
 			}
 		}
 		assets[id] = struct{}{}
-		if r, ok := r.(validator); ok {
-			for _, err := range r.Validate(m, path) {
-				errs = append(errs, specerr.NewIndexed(r, i, err))
+
+		if r, ok := r.(*BaseMaterials); ok {
+			aErrs = append(aErrs, r.Validate(m, path)...)
+		}
+
+		for _, ext := range m.ExtensionSpecs {
+			if ext, ok := ext.(interface {
+				ValidateAsset(*Model, string, Asset) []error
+			}); ok {
+				aErrs = append(aErrs, ext.ValidateAsset(m, path, r)...)
 			}
+		}
+		for _, err := range aErrs {
+			errs = append(errs, specerr.NewIndexed(r, i, err))
 		}
 	}
 	for i, r := range res.Objects {
@@ -225,7 +219,6 @@ func (r *Object) Validate(m *Model, path string) []error {
 	if (r.Mesh != nil && len(r.Components) > 0) || (r.Mesh == nil && len(r.Components) == 0) {
 		errs = append(errs, specerr.ErrInvalidObject)
 	}
-	errs = append(errs, r.ExtensionAttr.validate(m, path, r)...)
 	if r.Mesh != nil {
 		if r.DefaultPID != 0 {
 			if a, ok := res.FindAsset(r.DefaultPID); ok {
@@ -247,6 +240,13 @@ func (r *Object) Validate(m *Model, path string) []error {
 			errs = append(errs, specerr.ErrComponentsPID)
 		}
 		errs = append(errs, r.validateComponents(m, path)...)
+	}
+	for _, ext := range m.ExtensionSpecs {
+		if ext, ok := ext.(interface {
+			ValidateObject(*Model, string, *Object) []error
+		}); ok {
+			errs = append(errs, ext.ValidateObject(m, path, r)...)
+		}
 	}
 	return errs
 }
@@ -299,9 +299,6 @@ func (r *Object) validateMesh(m *Model, path string) []error {
 			}
 		}
 	}
-	for _, err := range r.Mesh.Extension.validate(m, path, r) {
-		errs = append(errs, err)
-	}
 	return errs
 }
 
@@ -316,9 +313,6 @@ func (r *Object) validateComponents(m *Model, path string) []error {
 			}
 		} else {
 			errs = append(errs, specerr.NewIndexed(c, j, specerr.ErrMissingResource))
-		}
-		for _, err := range c.ExtensionAttr.validate(m, path, c) {
-			errs = append(errs, specerr.NewIndexed(c, j, err))
 		}
 	}
 	return errs

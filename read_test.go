@@ -22,6 +22,24 @@ import (
 
 const fakeExtension = "http://dummy.com/fake_ext"
 
+type fakeSpec struct {
+}
+
+func (f *fakeSpec) Name() string { return fakeExtension }
+
+func (f *fakeSpec) Required() bool { return true }
+
+func (f *fakeSpec) Local() string { return "f" }
+
+func (f *fakeSpec) ValidateModel(m *Model) []error {
+	var errs []error
+	var a *fakeAttr
+	if m.Build.ExtensionAttr.Get(&a) {
+		errs = append(errs, errors.New("Build: fake"))
+	}
+	return errs
+}
+
 type fakeAsset struct {
 	ID uint32
 }
@@ -34,8 +52,7 @@ type fakeAttr struct {
 	Value string
 }
 
-func (f *fakeAttr) ObjectPath() string                                 { return f.Value }
-func (f *fakeAttr) Validate(_ *Model, _ string, _ interface{}) []error { return []error{errors.New("")} }
+func (f *fakeAttr) ObjectPath() string { return f.Value }
 
 type fakeAssetDecoder struct {
 	baseDecoder

@@ -11,19 +11,16 @@ func validTransform(t go3mf.Matrix) bool {
 	return t[2] == 0 && t[6] == 0 && t[8] == 0 && t[9] == 0 && t[10] == 1
 }
 
-func (ext *SliceStackInfo) Validate(m *go3mf.Model, path string, e interface{}) []error {
-	var (
-		obj *go3mf.Object
-		ok  bool
-	)
-	if obj, ok = e.(*go3mf.Object); !ok {
+func (e *Extension) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) []error {
+	var sti *SliceStackInfo
+	if !obj.ExtensionAttr.Get(&sti) {
 		return nil
 	}
 	var errs []error
 	res, _ := m.FindResources(path)
-	if ext.SliceStackID == 0 {
+	if sti.SliceStackID == 0 {
 		errs = append(errs, &specerr.MissingFieldError{Name: attrSliceRefID})
-	} else if r, ok := res.FindAsset(ext.SliceStackID); ok {
+	} else if r, ok := res.FindAsset(sti.SliceStackID); ok {
 		if r, ok := r.(*SliceStack); ok {
 			if !validateBuildTransforms(m, path, obj.ID) {
 				errs = append(errs, specerr.ErrSliceInvalidTranform)
@@ -39,29 +36,29 @@ func (ext *SliceStackInfo) Validate(m *go3mf.Model, path string, e interface{}) 
 	} else {
 		errs = append(errs, specerr.ErrMissingResource)
 	}
-	if ext.SliceResolution == ResolutionLow {
-		var extRequired bool
-		for _, r := range m.RequiredExtensions {
-			if r == ExtensionName {
-				extRequired = true
-				break
-			}
-		}
-		if !extRequired {
+	if sti.SliceResolution == ResolutionLow {
+		if !m.ExtensionSpecs.Required(ExtensionName) {
 			errs = append(errs, specerr.ErrSliceExtRequired)
 		}
 	}
 	return errs
 }
 
-func (r *SliceStack) Validate(m *go3mf.Model, path string) []error {
+func (e *Extension) ValidateAsset(m *go3mf.Model, path string, r go3mf.Asset) []error {
+	var (
+		st *SliceStack
+		ok bool
+	)
+	if st, ok = r.(*SliceStack); !ok {
+		return nil
+	}
 	var errs []error
-	if (len(r.Slices) != 0 && len(r.Refs) != 0) ||
-		(len(r.Slices) == 0 && len(r.Refs) == 0) {
+	if (len(st.Slices) != 0 && len(st.Refs) != 0) ||
+		(len(st.Slices) == 0 && len(st.Refs) == 0) {
 		errs = append(errs, specerr.ErrSlicesAndRefs)
 	}
-	errs = append(errs, r.validateRefs(m, path)...)
-	return append(errs, r.validateSlices()...)
+	errs = append(errs, st.validateRefs(m, path)...)
+	return append(errs, st.validateSlices()...)
 }
 
 func (r *SliceStack) validateSlices() []error {

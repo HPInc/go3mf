@@ -7,6 +7,24 @@ import (
 // ExtensionName is the canonical name of this extension.
 const ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/slice/2015/07"
 
+type Extension struct {
+	LocalName  string
+	IsRequired bool
+}
+
+func (e Extension) Name() string { return ExtensionName }
+
+func (e Extension) Local() string {
+	if e.LocalName != "" {
+		return e.LocalName
+	}
+	return "s"
+}
+
+func (e Extension) Required() bool {
+	return e.IsRequired
+}
+
 // A Segment element represents a single line segment (or edge) of a polygon.
 // It runs from the vertex specified by the previous segment
 // (or the startv Polygon attribute for the first segment) to the specified vertex, v2.

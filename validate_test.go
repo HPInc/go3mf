@@ -51,7 +51,7 @@ func TestValidate(t *testing.T) {
 			{ObjectID: 100},
 			{ObjectID: 1, Metadata: []Metadata{{Name: xml.Name{Local: "issue"}}}},
 		}}}, []error{
-			fmt.Errorf("Build: "),
+			fmt.Errorf("Build: fake"),
 			fmt.Errorf("Build@Item#0: %v", &specerr.MissingFieldError{Name: attrObjectID}),
 			fmt.Errorf("Build@Item#1: %v", specerr.ErrOtherItem),
 			fmt.Errorf("Build@Item#2: %v", specerr.ErrMissingResource),
@@ -82,7 +82,7 @@ func TestValidate(t *testing.T) {
 			&BaseMaterials{ID: 5, Materials: []Base{{Name: "a", Color: color.RGBA{A: 1}}, {Name: "b", Color: color.RGBA{A: 1}}}},
 		}, Objects: []*Object{
 			{},
-			{ID: 1, DefaultPIndex: 1, Mesh: &Mesh{}, Components: []*Component{{ObjectID: 1, ExtensionAttr: ExtensionAttr{&fakeAttr{DefaultModelPath}}}}},
+			{ID: 1, DefaultPIndex: 1, Mesh: &Mesh{}, Components: []*Component{{ObjectID: 1}}},
 			{ID: 2, Mesh: &Mesh{Nodes: []Point3D{{}, {}, {}, {}}, Faces: []Face{
 				{NodeIndices: [3]uint32{0, 1, 2}}, {NodeIndices: [3]uint32{0, 3, 1}}, {NodeIndices: [3]uint32{0, 2, 3}}, {NodeIndices: [3]uint32{1, 3, 2}},
 			}}},
@@ -106,7 +106,6 @@ func TestValidate(t *testing.T) {
 			fmt.Errorf("Resources@Object#1@Mesh: %v", specerr.ErrInsufficientVertices),
 			fmt.Errorf("Resources@Object#1@Mesh: %v", specerr.ErrInsufficientTriangles),
 			fmt.Errorf("Resources@Object#1@Component#0: %v", specerr.ErrRecursiveComponent),
-			fmt.Errorf("Resources@Object#1@Component#0: "),
 			fmt.Errorf("Resources@Object#3: %v", specerr.ErrComponentsPID),
 			fmt.Errorf("Resources@Object#3@Component#0: %v", specerr.ErrRecursiveComponent),
 			fmt.Errorf("Resources@Object#3@Component#2: %v", &specerr.MissingFieldError{Name: attrObjectID}),
@@ -126,6 +125,7 @@ func TestValidate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			tt.model.ExtensionSpecs = append(tt.model.ExtensionSpecs, &fakeSpec{})
 			got := tt.model.Validate()
 			if diff := deep.Equal(got, tt.want); diff != nil {
 				t.Errorf("Model.Validate() = %v", diff)
