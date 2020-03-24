@@ -70,7 +70,7 @@ func (e *Extension) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Objec
 
 func (e *Extension) validateRefMesh(m *go3mf.Model, path string, meshID, selfID uint32) error {
 	if meshID == selfID {
-		return specerr.ErrLatticeSelfReference
+		return specerr.ErrRecursion
 	}
 	if res, ok := m.FindResources(path); ok {
 		for _, r := range res.Objects {

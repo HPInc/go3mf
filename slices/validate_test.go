@@ -160,7 +160,7 @@ func TestValidate(t *testing.T) {
 			fmt.Errorf("Resources@Object#4: %v", specerr.ErrSlicePolygonNotClosed),
 			fmt.Errorf("Resources@Object#5: %v", specerr.ErrSliceInvalidTranform),
 			fmt.Errorf("Resources@Object#5: %v", specerr.ErrSlicePolygonNotClosed),
-			fmt.Errorf("Resources@Object#6@Component#1: %v", specerr.ErrRecursiveComponent),
+			fmt.Errorf("Resources@Object#6@Component#1: %v", specerr.ErrRecursion),
 		}},
 	}
 	for _, tt := range tests {

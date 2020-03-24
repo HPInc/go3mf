@@ -300,7 +300,7 @@ func (r *Object) validateComponents(m *Model, path string) []error {
 			errs = append(errs, specerr.NewIndexed(c, j, &specerr.MissingFieldError{Name: attrObjectID}))
 		} else if ref, ok := m.FindObject(c.ObjectPath(path), c.ObjectID); ok {
 			if ref.ID == r.ID && c.ObjectPath(path) == path {
-				errs = append(errs, specerr.NewIndexed(c, j, specerr.ErrRecursiveComponent))
+				errs = append(errs, specerr.NewIndexed(c, j, specerr.ErrRecursion))
 			}
 		} else {
 			errs = append(errs, specerr.NewIndexed(c, j, specerr.ErrMissingResource))

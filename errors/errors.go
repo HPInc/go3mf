@@ -30,7 +30,7 @@ var (
 	ErrNonObject              = errors.New("MUST NOT reference non-object resources")
 	ErrRequiredExt            = errors.New("unsupported required extension")
 	ErrEmptyResourceProps     = errors.New("resource properties MUST NOT be empty")
-	ErrRecursiveComponent     = errors.New("MUST NOT contain recursive references")
+	ErrRecursion              = errors.New("MUST NOT contain recursive references")
 	ErrInvalidObject          = errors.New("MUST contain a mesh or components")
 	// materials
 	ErrMultiBlend         = errors.New("there MUST NOT be more blendmethods than layers – 1")
@@ -60,7 +60,6 @@ var (
 	// beamlattice
 	ErrLatticeObjType       = errors.New("MUST only be added to a mesh object of type model or solidsupport")
 	ErrLatticeClippedNoMesh = errors.New("if clipping mode is not equal to none, a clippingmesh resource MUST be specified")
-	ErrLatticeSelfReference = errors.New("the clippingmesh id and representationmesh id MUST NOT be self-referencing")
 	ErrLatticeInvalidMesh   = errors.New("the clippingmesh and representationmesh MUST be a mesh object of type model and MUST NOT contain a beamlattice")
 	ErrLatticeSameVertex    = errors.New("a beam MUST consist of two distinct vertex indices")
 	ErrLatticeBeamR2        = errors.New("r2 MUST not be defined, if r1 is not defined")

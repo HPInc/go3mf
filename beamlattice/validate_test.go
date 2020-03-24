@@ -61,7 +61,7 @@ func TestValidate(t *testing.T) {
 			}}}},
 		}}}, []error{
 			fmt.Errorf("Resources@Object#1@Mesh@BeamLattice: %v", specerr.ErrMissingResource),
-			fmt.Errorf("Resources@Object#1@Mesh@BeamLattice: %v", specerr.ErrLatticeSelfReference),
+			fmt.Errorf("Resources@Object#1@Mesh@BeamLattice: %v", specerr.ErrRecursion),
 			fmt.Errorf("Resources@Object#2@Mesh@BeamLattice: %v", specerr.ErrLatticeInvalidMesh),
 		}},
 		{"incorrect beams", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
