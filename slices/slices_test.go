@@ -3,7 +3,15 @@ package slices
 import (
 	"reflect"
 	"testing"
+
+	"github.com/qmuntal/go3mf"
 )
+
+var _ go3mf.SpecDecoder = new(Spec)
+var _ go3mf.SpecValidator = new(Spec)
+var _ go3mf.Asset = new(SliceStack)
+var _ go3mf.Marshaler = new(SliceStack)
+var _ go3mf.AttrMarshaler = new(SliceStackInfo)
 
 func TestSliceStack_Identify(t *testing.T) {
 	tests := []struct {

@@ -1,6 +1,15 @@
 package production
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/qmuntal/go3mf"
+)
+
+var _ go3mf.SpecDecoder = new(Spec)
+var _ go3mf.SpecValidator = new(Spec)
+var _ go3mf.AttrMarshaler = new(UUID)
+var _ go3mf.AttrMarshaler = new(PathUUID)
 
 func TestPathUUID_ObjectPath(t *testing.T) {
 	tests := []struct {

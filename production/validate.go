@@ -5,6 +5,10 @@ import (
 	specerr "github.com/qmuntal/go3mf/errors"
 )
 
+func (e *Spec) ValidateAsset(_ *go3mf.Model, _ string, _ go3mf.Asset) []error {
+	return nil
+}
+
 func (e *Spec) ValidateModel(m *go3mf.Model) []error {
 	var (
 		u    *UUID

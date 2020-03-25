@@ -4,7 +4,26 @@ import (
 	"image/color"
 	"reflect"
 	"testing"
+
+	"github.com/qmuntal/go3mf"
 )
+
+var _ go3mf.SpecDecoder = new(Spec)
+var _ go3mf.SpecValidator = new(Spec)
+var _ go3mf.Asset = new(Texture2D)
+var _ go3mf.Asset = new(Texture2DGroup)
+var _ go3mf.Asset = new(CompositeMaterials)
+var _ go3mf.Asset = new(MultiProperties)
+var _ go3mf.Asset = new(ColorGroup)
+var _ go3mf.Marshaler = new(Texture2D)
+var _ go3mf.Marshaler = new(Texture2DGroup)
+var _ go3mf.Marshaler = new(CompositeMaterials)
+var _ go3mf.Marshaler = new(ColorGroup)
+var _ go3mf.Marshaler = new(MultiProperties)
+var _ go3mf.PropertyGroup = new(ColorGroup)
+var _ go3mf.PropertyGroup = new(Texture2DGroup)
+var _ go3mf.PropertyGroup = new(CompositeMaterials)
+var _ go3mf.PropertyGroup = new(MultiProperties)
 
 func TestTexture2D_Identify(t *testing.T) {
 	tests := []struct {

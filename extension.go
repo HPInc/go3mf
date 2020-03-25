@@ -128,3 +128,9 @@ func (e Marshalers) encode(x *XMLEncoder) error {
 	}
 	return nil
 }
+
+type SpecValidator interface {
+	ValidateModel(*Model) []error
+	ValidateAsset(*Model, string, Asset) []error
+	ValidateObject(*Model, string, *Object) []error
+}

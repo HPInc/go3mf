@@ -11,6 +11,10 @@ func validTransform(t go3mf.Matrix) bool {
 	return t[2] == 0 && t[6] == 0 && t[8] == 0 && t[9] == 0 && t[10] == 1
 }
 
+func (e *Spec) ValidateModel(_ *go3mf.Model) []error {
+	return nil
+}
+
 func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) []error {
 	var sti *SliceStackInfo
 	if !obj.AnyAttr.Get(&sti) {

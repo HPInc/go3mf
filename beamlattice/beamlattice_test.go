@@ -3,7 +3,13 @@ package beamlattice
 import (
 	"reflect"
 	"testing"
+
+	"github.com/qmuntal/go3mf"
 )
+
+var _ go3mf.SpecDecoder = new(Spec)
+var _ go3mf.SpecValidator = new(Spec)
+var _ go3mf.Marshaler = new(BeamLattice)
 
 func TestCapMode_String(t *testing.T) {
 	tests := []struct {

@@ -8,6 +8,14 @@ import (
 	specerr "github.com/qmuntal/go3mf/errors"
 )
 
+func (e *Spec) ValidateModel(_ *go3mf.Model) []error {
+	return nil
+}
+
+func (e *Spec) ValidateObject(_ *go3mf.Model, _ string, _ *go3mf.Object) []error {
+	return nil
+}
+
 func (e *Spec) ValidateAsset(m *go3mf.Model, path string, r go3mf.Asset) []error {
 	var errs []error
 	switch r := r.(type) {

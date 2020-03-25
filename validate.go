@@ -45,29 +45,27 @@ func (m *Model) Validate() []error {
 	errs = append(errs, checkMetadadata(m, m.Metadata)...)
 
 	for _, ext := range m.Specs {
-		if ext, ok := ext.(interface {
-			ValidateModel(*Model) []error
-		}); ok {
+		if ext, ok := ext.(SpecValidator); ok {
 			errs = append(errs, ext.ValidateModel(m)...)
 		}
 	}
 
 	for _, path := range sortedChilds {
 		c := m.Childs[path]
-		for _, err := range c.Resources.Validate(m, path) {
+		for _, err := range c.Resources.validate(m, path) {
 			errs = append(errs, specerr.NewPath(c.Resources, path, err))
 		}
 	}
-	for _, err := range m.Resources.Validate(m, rootPath) {
+	for _, err := range m.Resources.validate(m, rootPath) {
 		errs = append(errs, specerr.New(m.Resources, err))
 	}
-	for _, err := range m.Build.Validate(m, rootPath) {
+	for _, err := range m.Build.validate(m, rootPath) {
 		errs = append(errs, specerr.New(m.Build, err))
 	}
 	return errs
 }
 
-func (item *Item) Validate(m *Model, path string) []error {
+func (item *Item) validate(m *Model, path string) []error {
 	var errs []error
 	opath := item.ObjectPath(path)
 	if item.ObjectID == 0 {
@@ -79,21 +77,13 @@ func (item *Item) Validate(m *Model, path string) []error {
 	} else {
 		errs = append(errs, specerr.ErrMissingResource)
 	}
-	errs = append(errs, checkMetadadata(m, item.Metadata)...)
-	for _, ext := range m.Specs {
-		if ext, ok := ext.(interface {
-			ValidateItem(*Item, []error) []error
-		}); ok {
-			errs = ext.ValidateItem(item, errs)
-		}
-	}
-	return errs
+	return append(errs, checkMetadadata(m, item.Metadata)...)
 }
 
-func (b *Build) Validate(m *Model, path string) []error {
+func (b *Build) validate(m *Model, path string) []error {
 	var errs []error
 	for i, item := range b.Items {
-		for _, err := range item.Validate(m, path) {
+		for _, err := range item.validate(m, path) {
 			errs = append(errs, specerr.NewIndexed(item, i, err))
 		}
 	}
@@ -105,7 +95,7 @@ var allowedMetadataNames = [...]string{ // sorted
 	"licenseterms", "modificationdate", "rating", "title",
 }
 
-func (m *Metadata) Validate(model *Model) []error {
+func (m *Metadata) validate(model *Model) []error {
 	if m.Name.Local == "" {
 		return []error{&specerr.MissingFieldError{Name: attrName}}
 	}
@@ -128,7 +118,7 @@ func checkMetadadata(model *Model, md []Metadata) []error {
 	var errs []error
 	names := make(map[xml.Name]struct{})
 	for i, m := range md {
-		for _, err := range m.Validate(model) {
+		for _, err := range m.validate(model) {
 			errs = append(errs, specerr.NewIndexed(m, i, err))
 		}
 		if _, ok := names[m.Name]; ok {
@@ -158,7 +148,7 @@ func (r *BaseMaterials) Validate(m *Model, path string) []error {
 	return errs
 }
 
-func (res *Resources) Validate(m *Model, path string) []error {
+func (res *Resources) validate(m *Model, path string) []error {
 	var errs []error
 	assets := make(map[uint32]struct{})
 	for i, r := range res.Assets {
@@ -176,9 +166,7 @@ func (res *Resources) Validate(m *Model, path string) []error {
 		}
 
 		for _, ext := range m.Specs {
-			if ext, ok := ext.(interface {
-				ValidateAsset(*Model, string, Asset) []error
-			}); ok {
+			if ext, ok := ext.(SpecValidator); ok {
 				aErrs = append(aErrs, ext.ValidateAsset(m, path, r)...)
 			}
 		}
@@ -235,9 +223,7 @@ func (r *Object) Validate(m *Model, path string) []error {
 		errs = append(errs, r.validateComponents(m, path)...)
 	}
 	for _, ext := range m.Specs {
-		if ext, ok := ext.(interface {
-			ValidateObject(*Model, string, *Object) []error
-		}); ok {
+		if ext, ok := ext.(SpecValidator); ok {
 			errs = append(errs, ext.ValidateObject(m, path, r)...)
 		}
 	}

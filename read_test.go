@@ -22,6 +22,8 @@ import (
 
 const fakeExtension = "http://dummy.com/fake_ext"
 
+var _ SpecValidator = new(fakeSpec)
+
 type fakeSpec struct {
 }
 
@@ -48,6 +50,14 @@ func (f *fakeSpec) DecodeAttribute(s *Scanner, parentNode interface{}, attr xml.
 	case *Component:
 		t.AnyAttr = append(t.AnyAttr, &fakeAttr{attr.Value})
 	}
+}
+
+func (f *fakeSpec) ValidateObject(_ *Model, _ string, _ *Object) []error {
+	return nil
+}
+
+func (f *fakeSpec) ValidateAsset(_ *Model, _ string, _ Asset) []error {
+	return nil
 }
 
 func (f *fakeSpec) ValidateModel(m *Model) []error {
