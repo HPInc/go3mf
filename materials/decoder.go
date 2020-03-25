@@ -37,7 +37,7 @@ func (d *colorGroupDecoder) End() {
 }
 
 func (d *colorGroupDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrColor {
+	if name.Space == ExtensionSpace && name.Local == attrColor {
 		child = &d.colorDecoder
 	}
 	return
@@ -110,7 +110,7 @@ func (d *tex2DGroupDecoder) End() {
 }
 
 func (d *tex2DGroupDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrTex2DCoord {
+	if name.Space == ExtensionSpace && name.Local == attrTex2DCoord {
 		child = &d.tex2DCoordDecoder
 	}
 	return
@@ -185,7 +185,7 @@ func (d *compositeMaterialsDecoder) End() {
 }
 
 func (d *compositeMaterialsDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrComposite {
+	if name.Space == ExtensionSpace && name.Local == attrComposite {
 		child = &d.compositeDecoder
 	}
 	return
@@ -254,7 +254,7 @@ func (d *multiPropertiesDecoder) End() {
 }
 
 func (d *multiPropertiesDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrMulti {
+	if name.Space == ExtensionSpace && name.Local == attrMulti {
 		child = &d.multiDecoder
 	}
 	return

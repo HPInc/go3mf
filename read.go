@@ -76,7 +76,7 @@ type topLevelDecoder struct {
 }
 
 func (d *topLevelDecoder) Child(name xml.Name) (child NodeDecoder) {
-	modelName := xml.Name{Space: ExtensionName, Local: attrModel}
+	modelName := xml.Name{Space: ExtensionSpace, Local: attrModel}
 	if name == modelName {
 		child = &modelDecoder{model: d.model}
 	}
@@ -92,7 +92,7 @@ func decodeModelFile(ctx context.Context, x XMLDecoder, model *Model, path strin
 	}
 	for _, ext := range model.ExtensionSpecs {
 		if ext, ok := ext.(ExtensionDecoder); ok {
-			scanner.extensionDecoder[ext.Name()] = ext
+			scanner.extensionDecoder[ext.Space()] = ext
 		}
 	}
 	state, names := make([]NodeDecoder, 0, 10), make([]xml.Name, 0, 10)

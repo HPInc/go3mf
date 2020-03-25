@@ -260,7 +260,7 @@ type ChildModel struct {
 }
 
 type ExtensionSpec interface {
-	Name() string
+	Space() string
 	Local() string
 	Required() bool
 	SetRequired(bool)
@@ -268,12 +268,12 @@ type ExtensionSpec interface {
 }
 
 type UnknownSpec struct {
-	CanonicalName string
-	LocalName     string
-	IsRequired    bool
+	SpaceName  string
+	LocalName  string
+	IsRequired bool
 }
 
-func (u *UnknownSpec) Name() string       { return u.CanonicalName }
+func (u *UnknownSpec) Space() string      { return u.SpaceName }
 func (u *UnknownSpec) Local() string      { return u.LocalName }
 func (u *UnknownSpec) Required() bool     { return u.IsRequired }
 func (u *UnknownSpec) SetLocal(l string)  { u.LocalName = l }
@@ -308,7 +308,7 @@ func (m *Model) WithExtension(extension ExtensionSpec) {
 	if m.ExtensionSpecs == nil {
 		m.ExtensionSpecs = make(map[string]ExtensionSpec)
 	}
-	m.ExtensionSpecs[extension.Name()] = extension
+	m.ExtensionSpecs[extension.Space()] = extension
 }
 
 // PathOrDefault returns Path if not empty, else DefaultModelPath.
@@ -524,8 +524,8 @@ const (
 )
 
 const (
-	// ExtensionName is the canonical name of this extension.
-	ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/core/2015/02"
+	// ExtensionSpace is the canonical name of this extension.
+	ExtensionSpace = "http://schemas.microsoft.com/3dmanufacturing/core/2015/02"
 
 	// RelType3DModel is the canonical 3D model relationship type.
 	RelType3DModel = "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"

@@ -60,7 +60,7 @@ func (d *sliceStackDecoder) End() {
 }
 
 func (d *sliceStackDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
-	if name.Space == ExtensionName {
+	if name.Space == ExtensionSpace {
 		if name.Local == attrSlice {
 			child = &sliceDecoder{resource: &d.resource}
 		} else if name.Local == attrSliceRef {
@@ -126,7 +126,7 @@ func (d *sliceDecoder) End() {
 	d.resource.Slices = append(d.resource.Slices, &d.slice)
 }
 func (d *sliceDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
-	if name.Space == ExtensionName {
+	if name.Space == ExtensionSpace {
 		if name.Local == attrVertices {
 			child = &d.polygonVerticesDecoder
 		} else if name.Local == attrPolygon {
@@ -162,7 +162,7 @@ func (d *polygonVerticesDecoder) Start(_ []xml.Attr) {
 }
 
 func (d *polygonVerticesDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrVertex {
+	if name.Space == ExtensionSpace && name.Local == attrVertex {
 		child = &d.polygonVertexDecoder
 	}
 	return
@@ -198,7 +198,7 @@ type polygonDecoder struct {
 }
 
 func (d *polygonDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrSegment {
+	if name.Space == ExtensionSpace && name.Local == attrSegment {
 		child = &d.polygonSegmentDecoder
 	}
 	return

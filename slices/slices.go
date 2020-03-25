@@ -4,15 +4,15 @@ import (
 	"github.com/qmuntal/go3mf"
 )
 
-// ExtensionName is the canonical name of this extension.
-const ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/slice/2015/07"
+// ExtensionSpace is the canonical name of this extension.
+const ExtensionSpace = "http://schemas.microsoft.com/3dmanufacturing/slice/2015/07"
 
 type Extension struct {
 	LocalName  string
 	IsRequired bool
 }
 
-func (e Extension) Name() string        { return ExtensionName }
+func (e Extension) Space() string       { return ExtensionSpace }
 func (e Extension) Required() bool      { return e.IsRequired }
 func (e *Extension) SetRequired(r bool) { e.IsRequired = r }
 func (e *Extension) SetLocal(l string)  { e.LocalName = l }

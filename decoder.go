@@ -13,7 +13,7 @@ type modelDecoder struct {
 }
 
 func (d *modelDecoder) Child(name xml.Name) (child NodeDecoder) {
-	if name.Space == ExtensionName {
+	if name.Space == ExtensionSpace {
 		switch name.Local {
 		case attrResources:
 			child = &resourceDecoder{}
@@ -75,7 +75,7 @@ func (d *modelDecoder) noCoreAttribute(a xml.Attr) {
 		if ext, ok := d.model.ExtensionSpecs[a.Value]; ok {
 			ext.SetLocal(a.Name.Local)
 		} else {
-			d.model.WithExtension(&UnknownSpec{CanonicalName: a.Value, LocalName: a.Name.Local})
+			d.model.WithExtension(&UnknownSpec{SpaceName: a.Value, LocalName: a.Name.Local})
 		}
 	default:
 		if ext, ok := d.Scanner.extensionDecoder[a.Name.Space]; ok {
@@ -90,7 +90,7 @@ type metadataGroupDecoder struct {
 }
 
 func (d *metadataGroupDecoder) Child(name xml.Name) (child NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrMetadata {
+	if name.Space == ExtensionSpace && name.Local == attrMetadata {
 		child = &metadataDecoder{metadatas: d.metadatas}
 	}
 	return
@@ -141,7 +141,7 @@ type buildDecoder struct {
 }
 
 func (d *buildDecoder) Child(name xml.Name) (child NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrItem {
+	if name.Space == ExtensionSpace && name.Local == attrItem {
 		child = &buildItemDecoder{}
 	}
 	return
@@ -166,7 +166,7 @@ func (d *buildItemDecoder) End() {
 }
 
 func (d *buildItemDecoder) Child(name xml.Name) (child NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrMetadataGroup {
+	if name.Space == ExtensionSpace && name.Local == attrMetadataGroup {
 		child = &metadataGroupDecoder{metadatas: &d.item.Metadata}
 	}
 	return
@@ -208,7 +208,7 @@ type resourceDecoder struct {
 }
 
 func (d *resourceDecoder) Child(name xml.Name) (child NodeDecoder) {
-	if name.Space == ExtensionName {
+	if name.Space == ExtensionSpace {
 		switch name.Local {
 		case attrObject:
 			child = &objectDecoder{}
@@ -232,7 +232,7 @@ func (d *baseMaterialsDecoder) End() {
 }
 
 func (d *baseMaterialsDecoder) Child(name xml.Name) (child NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrBase {
+	if name.Space == ExtensionSpace && name.Local == attrBase {
 		child = &d.baseMaterialDecoder
 	}
 	return
@@ -286,7 +286,7 @@ func (d *meshDecoder) Start(_ []xml.Attr) {
 }
 
 func (d *meshDecoder) Child(name xml.Name) (child NodeDecoder) {
-	if name.Space == ExtensionName {
+	if name.Space == ExtensionSpace {
 		if name.Local == attrVertices {
 			child = &verticesDecoder{mesh: d.resource.Mesh}
 		} else if name.Local == attrTriangles {
@@ -309,7 +309,7 @@ func (d *verticesDecoder) Start(_ []xml.Attr) {
 }
 
 func (d *verticesDecoder) Child(name xml.Name) (child NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrVertex {
+	if name.Space == ExtensionSpace && name.Local == attrVertex {
 		child = &d.vertexDecoder
 	}
 	return
@@ -356,7 +356,7 @@ func (d *trianglesDecoder) Start(_ []xml.Attr) {
 }
 
 func (d *trianglesDecoder) Child(name xml.Name) (child NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrTriangle {
+	if name.Space == ExtensionSpace && name.Local == attrTriangle {
 		child = &d.triangleDecoder
 	}
 	return
@@ -442,7 +442,7 @@ func (d *objectDecoder) Start(attrs []xml.Attr) {
 }
 
 func (d *objectDecoder) Child(name xml.Name) (child NodeDecoder) {
-	if name.Space == ExtensionName {
+	if name.Space == ExtensionSpace {
 		if name.Local == attrMesh {
 			child = &meshDecoder{resource: &d.resource}
 		} else if name.Local == attrComponents {
@@ -501,7 +501,7 @@ func (d *componentsDecoder) Start(_ []xml.Attr) {
 }
 
 func (d *componentsDecoder) Child(name xml.Name) (child NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrComponent {
+	if name.Space == ExtensionSpace && name.Local == attrComponent {
 		child = &d.componentDecoder
 	}
 	return

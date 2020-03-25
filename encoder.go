@@ -135,7 +135,7 @@ func (e *Encoder) writeAttachements(att []Attachment) error {
 
 func (e *Encoder) modelToken(x *XMLEncoder, m *Model, isRoot bool) (xml.StartElement, error) {
 	attrs := []xml.Attr{
-		{Name: xml.Name{Local: attrXmlns}, Value: ExtensionName},
+		{Name: xml.Name{Local: attrXmlns}, Value: ExtensionSpace},
 		{Name: xml.Name{Local: attrUnit}, Value: m.Units.String()},
 		{Name: xml.Name{Space: nsXML, Local: attrLang}, Value: m.Language},
 	}
@@ -144,7 +144,7 @@ func (e *Encoder) modelToken(x *XMLEncoder, m *Model, isRoot bool) (xml.StartEle
 		attrs = append(attrs, xml.Attr{Name: xml.Name{Local: attrThumbnail}, Value: m.Thumbnail})
 	}
 	for _, a := range m.ExtensionSpecs {
-		attrs = append(attrs, xml.Attr{Name: xml.Name{Space: attrXmlns, Local: a.Local()}, Value: a.Name()})
+		attrs = append(attrs, xml.Attr{Name: xml.Name{Space: attrXmlns, Local: a.Local()}, Value: a.Space()})
 	}
 	var exts []string
 	for _, a := range m.ExtensionSpecs {

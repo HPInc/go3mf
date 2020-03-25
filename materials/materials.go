@@ -3,8 +3,8 @@ package materials
 import "image/color"
 
 const (
-	// ExtensionName is the canonical name of this extension.
-	ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/material/2015/02"
+	// ExtensionSpace is the canonical name of this extension.
+	ExtensionSpace = "http://schemas.microsoft.com/3dmanufacturing/material/2015/02"
 	// RelTypeTexture3D is the canonical 3D texture relationship type.
 	RelTypeTexture3D = "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture"
 )
@@ -14,7 +14,7 @@ type Extension struct {
 	IsRequired bool
 }
 
-func (e Extension) Name() string        { return ExtensionName }
+func (e Extension) Space() string       { return ExtensionSpace }
 func (e Extension) Required() bool      { return e.IsRequired }
 func (e *Extension) SetRequired(r bool) { e.IsRequired = r }
 func (e *Extension) SetLocal(l string)  { e.LocalName = l }

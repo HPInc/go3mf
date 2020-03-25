@@ -34,7 +34,7 @@ func TestValidate(t *testing.T) {
 		{"namespaces", &Model{ExtensionSpecs: map[string]ExtensionSpec{"fake": &UnknownSpec{IsRequired: true}}}, []error{
 			specerr.ErrRequiredExt,
 		}},
-		{"metadata", &Model{ExtensionSpecs: map[string]ExtensionSpec{"fake": &UnknownSpec{CanonicalName: "fake", LocalName: "f"}}, Metadata: []Metadata{
+		{"metadata", &Model{ExtensionSpecs: map[string]ExtensionSpec{"fake": &UnknownSpec{SpaceName: "fake", LocalName: "f"}}, Metadata: []Metadata{
 			{Name: xml.Name{Space: "fake", Local: "issue"}}, {Name: xml.Name{Space: "f", Local: "issue"}}, {Name: xml.Name{Space: "fake", Local: "issue"}}, {Name: xml.Name{Local: "issue"}}, {},
 		}}, []error{
 			fmt.Errorf("Metadata#1: %v", specerr.ErrMetadataNamespace),

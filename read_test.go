@@ -25,7 +25,7 @@ const fakeExtension = "http://dummy.com/fake_ext"
 type fakeSpec struct {
 }
 
-func (f *fakeSpec) Name() string       { return fakeExtension }
+func (f *fakeSpec) Space() string      { return fakeExtension }
 func (f *fakeSpec) Required() bool     { return true }
 func (f *fakeSpec) Local() string      { return "qm" }
 func (f *fakeSpec) SetLocal(_ string)  {}
@@ -112,7 +112,7 @@ func (m *modelBuilder) withDefaultModel() *modelBuilder {
 func (m *modelBuilder) withModel(unit string, lang string, thumbnail string) *modelBuilder {
 	m.str.WriteString(`<model `)
 	m.addAttr("", "unit", unit).addAttr("xml", "lang", lang)
-	m.addAttr("", "xmlns", ExtensionName).addAttr("xmlns", "qm", fakeExtension)
+	m.addAttr("", "xmlns", ExtensionSpace).addAttr("xmlns", "qm", fakeExtension)
 	m.addAttr("", "requiredextensions", "qm")
 	if thumbnail != "" {
 		m.addAttr("", "thumbnail", thumbnail)
