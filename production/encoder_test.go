@@ -1,7 +1,6 @@
 package production
 
 import (
-	"encoding/xml"
 	"testing"
 
 	"github.com/go-test/deep"
@@ -20,7 +19,7 @@ func TestMarshalModel(t *testing.T) {
 			ObjectID: 8, Transform: go3mf.Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}},
 		},
 	}
-	m := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "p"}}, Build: go3mf.Build{
+	m := &go3mf.Model{Path: "/3D/3dmodel.model", Build: go3mf.Build{
 		ExtensionAttr: go3mf.ExtensionAttr{mustUUID("e9e25302-6428-402e-8633-cc95528d0ed3")},
 	}}
 	m.Resources = go3mf.Resources{Objects: []*go3mf.Object{components}}
@@ -34,14 +33,15 @@ func TestMarshalModel(t *testing.T) {
 		}},
 	})
 	t.Run("base", func(t *testing.T) {
+		m.WithExtension(&Extension{LocalName: "p"})
 		b, err := go3mf.MarshalModel(m)
 		if err != nil {
 			t.Errorf("production.MarshalModel() error = %v", err)
 			return
 		}
 		d := go3mf.NewDecoder(nil, 0)
-		RegisterExtension(d)
 		newModel := new(go3mf.Model)
+		newModel.WithExtension(&Extension{LocalName: "p"})
 		newModel.Path = m.Path
 		if err := d.UnmarshalModel(b, newModel); err != nil {
 			t.Errorf("production.MarshalModel() error decoding = %v, s = %s", err, string(b))

@@ -64,7 +64,7 @@ func (e *Extension) validatePathUUID(m *go3mf.Model, path string, p *PathUUID, e
 	if p.Path != "" {
 		if path == "" || path == m.PathOrDefault() { // root
 			// Path is validated as part if the core validations
-			if !m.ExtensionSpecs.Required(ExtensionName) {
+			if !e.Required() {
 				errs = append(errs, specerr.ErrProdExtRequired)
 			}
 		} else {

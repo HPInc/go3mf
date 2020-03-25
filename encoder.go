@@ -3,8 +3,8 @@ package go3mf
 import (
 	"bytes"
 	"encoding/xml"
-	"fmt"
 	"io"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -143,22 +143,17 @@ func (e *Encoder) modelToken(x *XMLEncoder, m *Model, isRoot bool) (xml.StartEle
 		x.AddRelationship(Relationship{Path: m.Thumbnail, Type: RelTypeThumbnail})
 		attrs = append(attrs, xml.Attr{Name: xml.Name{Local: attrThumbnail}, Value: m.Thumbnail})
 	}
-	for _, a := range m.Namespaces {
-		attrs = append(attrs, xml.Attr{Name: xml.Name{Space: attrXmlns, Local: a.Local}, Value: a.Space})
+	for _, a := range m.ExtensionSpecs {
+		attrs = append(attrs, xml.Attr{Name: xml.Name{Space: attrXmlns, Local: a.Local()}, Value: a.Name()})
 	}
-	if len(m.RequiredExtensions) != 0 {
-		exts := make([]string, len(m.RequiredExtensions))
-		for i, ns := range m.RequiredExtensions {
-			for _, a := range m.Namespaces {
-				if a.Space == ns {
-					exts[i] = a.Local
-					break
-				}
-			}
-			if exts[i] == "" {
-				return xml.StartElement{}, fmt.Errorf("cannot encode model with undefined required extension '%s'", ns)
-			}
+	var exts []string
+	for _, a := range m.ExtensionSpecs {
+		if a.Required() {
+			exts = append(exts, a.Local())
 		}
+	}
+	sort.Strings(exts)
+	if len(exts) != 0 {
 		attrs = append(attrs, xml.Attr{Name: xml.Name{Local: attrReqExt}, Value: strings.Join(exts, " ")})
 	}
 	tm := xml.StartElement{Name: xml.Name{Local: attrModel}, Attr: attrs}

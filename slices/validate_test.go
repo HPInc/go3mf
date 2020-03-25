@@ -19,7 +19,7 @@ func TestValidate(t *testing.T) {
 	}{
 		{"extRequired", &go3mf.Model{
 			ExtensionAttr:  go3mf.ExtensionAttr{&SliceStackInfo{SliceStackID: 10}},
-			ExtensionSpecs: go3mf.ExtensionSpecs{&Extension{IsRequired: true}}, Resources: go3mf.Resources{
+			ExtensionSpecs: map[string]go3mf.ExtensionSpec{ExtensionName: &Extension{IsRequired: true}}, Resources: go3mf.Resources{
 				Assets: []go3mf.Asset{
 					&SliceStack{ID: 1, Slices: []*Slice{{TopZ: 1}}},
 				},
@@ -165,7 +165,9 @@ func TestValidate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.model.WithExtension(&Extension{})
+			if len(tt.model.ExtensionSpecs) == 0 {
+				tt.model.WithExtension(&Extension{})
+			}
 			got := tt.model.Validate()
 			if diff := deep.Equal(got, tt.want); diff != nil {
 				t.Errorf("Validate() = %v", diff)

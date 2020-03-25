@@ -37,7 +37,7 @@ func (e *Extension) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Objec
 		errs = append(errs, specerr.ErrMissingResource)
 	}
 	if sti.SliceResolution == ResolutionLow {
-		if !m.ExtensionSpecs.Required(ExtensionName) {
+		if !e.Required() {
 			errs = append(errs, specerr.ErrSliceExtRequired)
 		}
 	}

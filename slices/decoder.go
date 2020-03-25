@@ -7,20 +7,14 @@ import (
 	"github.com/qmuntal/go3mf"
 )
 
-// RegisterExtension registers this extension in the decoder instance.
-func RegisterExtension(d *go3mf.Decoder) {
-	d.RegisterNodeDecoderExtension(ExtensionName, nodeDecoder)
-	d.RegisterDecodeAttributeExtension(ExtensionName, decodeAttribute)
-}
-
-func nodeDecoder(_ interface{}, nodeName string) go3mf.NodeDecoder {
+func (e Extension) NewNodeDecoder(_ interface{}, nodeName string) go3mf.NodeDecoder {
 	if nodeName == attrSliceStack {
 		return &sliceStackDecoder{}
 	}
 	return nil
 }
 
-func decodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
+func (e Extension) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
 	switch t := parentNode.(type) {
 	case *go3mf.Object:
 		objectAttrDecoder(s, t, attr)

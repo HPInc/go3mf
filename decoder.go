@@ -36,7 +36,7 @@ func (d *modelDecoder) Start(attrs []xml.Attr) {
 	if !d.Scanner.IsRoot {
 		return
 	}
-
+	var requiredExts []string
 	for _, a := range attrs {
 		if a.Name.Space == "" {
 			switch a.Name.Local {
@@ -48,18 +48,19 @@ func (d *modelDecoder) Start(attrs []xml.Attr) {
 			case attrThumbnail:
 				d.model.Thumbnail = a.Value
 			case attrReqExt:
-				d.model.RequiredExtensions = strings.Fields(a.Value)
+				requiredExts = strings.Fields(a.Value)
 			}
 		} else {
 			d.noCoreAttribute(a)
 		}
 	}
 
-	for i, ext := range d.model.RequiredExtensions {
-		if ns, ok := d.Scanner.namespace(ext); ok {
-			d.model.RequiredExtensions[i] = ns
-		} else {
-			d.model.RequiredExtensions[i] = ext
+	for _, ext := range requiredExts {
+		for _, x := range d.model.ExtensionSpecs {
+			if x.Local() == ext {
+				x.SetRequired(true)
+				break
+			}
 		}
 	}
 }
@@ -67,13 +68,15 @@ func (d *modelDecoder) Start(attrs []xml.Attr) {
 func (d *modelDecoder) noCoreAttribute(a xml.Attr) {
 	switch a.Name.Space {
 	case nsXML:
-		if d.Scanner.IsRoot {
-			if a.Name.Local == attrLang {
-				d.model.Language = a.Value
-			}
+		if a.Name.Local == attrLang {
+			d.model.Language = a.Value
 		}
 	case attrXmlns:
-		d.Scanner.Namespaces = append(d.Scanner.Namespaces, xml.Name{Space: a.Value, Local: a.Name.Local})
+		if ext, ok := d.model.ExtensionSpecs[a.Value]; ok {
+			ext.SetLocal(a.Name.Local)
+		} else {
+			d.model.WithExtension(&UnknownSpec{CanonicalName: a.Value, LocalName: a.Name.Local})
+		}
 	default:
 		if ext, ok := d.Scanner.extensionDecoder[a.Name.Space]; ok {
 			ext.DecodeAttribute(d.Scanner, d.model, a)

@@ -8,12 +8,7 @@ import (
 	"github.com/qmuntal/go3mf"
 )
 
-// RegisterExtension registers this extension in the decoder instance.
-func RegisterExtension(d *go3mf.Decoder) {
-	d.RegisterNodeDecoderExtension(ExtensionName, nodeDecoder)
-}
-
-func nodeDecoder(_ interface{}, nodeName string) (child go3mf.NodeDecoder) {
+func (e Extension) NewNodeDecoder(_ interface{}, nodeName string) (child go3mf.NodeDecoder) {
 	switch nodeName {
 	case attrColorGroup:
 		child = new(colorGroupDecoder)
@@ -28,6 +23,8 @@ func nodeDecoder(_ interface{}, nodeName string) (child go3mf.NodeDecoder) {
 	}
 	return
 }
+
+func (e Extension) DecodeAttribute(_ *go3mf.Scanner, _ interface{}, _ xml.Attr) {}
 
 type colorGroupDecoder struct {
 	baseDecoder

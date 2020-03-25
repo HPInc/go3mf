@@ -25,11 +25,30 @@ const fakeExtension = "http://dummy.com/fake_ext"
 type fakeSpec struct {
 }
 
-func (f *fakeSpec) Name() string { return fakeExtension }
+func (f *fakeSpec) Name() string       { return fakeExtension }
+func (f *fakeSpec) Required() bool     { return true }
+func (f *fakeSpec) Local() string      { return "qm" }
+func (f *fakeSpec) SetLocal(_ string)  {}
+func (f *fakeSpec) SetRequired(_ bool) {}
 
-func (f *fakeSpec) Required() bool { return true }
+func (f *fakeSpec) NewNodeDecoder(_ interface{}, nodeName string) NodeDecoder {
+	return &fakeAssetDecoder{}
+}
 
-func (f *fakeSpec) Local() string { return "f" }
+func (f *fakeSpec) DecodeAttribute(s *Scanner, parentNode interface{}, attr xml.Attr) {
+	switch t := parentNode.(type) {
+	case *Object:
+		t.ExtensionAttr = append(t.ExtensionAttr, &fakeAttr{attr.Value})
+	case *Build:
+		t.ExtensionAttr = append(t.ExtensionAttr, &fakeAttr{attr.Value})
+	case *Model:
+		t.ExtensionAttr = append(t.ExtensionAttr, &fakeAttr{attr.Value})
+	case *Item:
+		t.ExtensionAttr = append(t.ExtensionAttr, &fakeAttr{attr.Value})
+	case *Component:
+		t.ExtensionAttr = append(t.ExtensionAttr, &fakeAttr{attr.Value})
+	}
+}
 
 func (f *fakeSpec) ValidateModel(m *Model) []error {
 	var errs []error
@@ -62,25 +81,6 @@ func (f *fakeAssetDecoder) Start(att []xml.Attr) {
 	id, _ := strconv.ParseUint(att[0].Value, 10, 32)
 	f.Scanner.ResourceID = uint32(id)
 	f.Scanner.AddAsset(&fakeAsset{ID: uint32(id)})
-}
-
-func nodeDecoder(_ interface{}, nodeName string) NodeDecoder {
-	return &fakeAssetDecoder{}
-}
-
-func decodeAttribute(s *Scanner, parentNode interface{}, attr xml.Attr) {
-	switch t := parentNode.(type) {
-	case *Object:
-		t.ExtensionAttr = append(t.ExtensionAttr, &fakeAttr{attr.Value})
-	case *Build:
-		t.ExtensionAttr = append(t.ExtensionAttr, &fakeAttr{attr.Value})
-	case *Model:
-		t.ExtensionAttr = append(t.ExtensionAttr, &fakeAttr{attr.Value})
-	case *Item:
-		t.ExtensionAttr = append(t.ExtensionAttr, &fakeAttr{attr.Value})
-	case *Component:
-		t.ExtensionAttr = append(t.ExtensionAttr, &fakeAttr{attr.Value})
-	}
 }
 
 type modelBuilder struct {
@@ -343,8 +343,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 
 	want := &Model{
 		Units: UnitMillimeter, Language: "en-US", Path: "/3D/3dmodel.model", Thumbnail: "/thumbnail.png",
-		Namespaces:         []xml.Name{{Space: fakeExtension, Local: "qm"}},
-		RequiredExtensions: []string{fakeExtension},
+		ExtensionSpecs: map[string]ExtensionSpec{fakeExtension: &fakeSpec{}},
 		Resources: Resources{
 			Assets: []Asset{baseMaterials}, Objects: []*Object{meshRes, components},
 		},
@@ -417,11 +416,10 @@ func TestDecoder_processRootModel(t *testing.T) {
 
 	t.Run("base", func(t *testing.T) {
 		d := new(Decoder)
-		d.RegisterNodeDecoderExtension(fakeExtension, nil)
-		d.RegisterDecodeAttributeExtension(fakeExtension, nil)
 		d.Strict = true
 		d.SetDecompressor(func(r io.Reader) io.ReadCloser { return flate.NewReader(r) })
 		d.SetXMLDecoder(func(r io.Reader) XMLDecoder { return xml.NewDecoder(r) })
+		got.WithExtension(&fakeSpec{})
 		if err := d.processRootModel(context.Background(), rootFile, got); err != nil {
 			t.Errorf("Decoder.processRootModel() unexpected error = %v", err)
 			return
@@ -534,7 +532,7 @@ func Test_modelFile_Decode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if sc := decodeModelFile(tt.args.ctx, tt.args.x, new(Model), "", true, false, nil); (sc.Err != nil) != tt.wantErr {
+			if sc := decodeModelFile(tt.args.ctx, tt.args.x, new(Model), "", true, false); (sc.Err != nil) != tt.wantErr {
 				t.Errorf("modelFile.Decode() error = %v, wantErr %v", sc.Err, tt.wantErr)
 			}
 		})
@@ -552,9 +550,8 @@ func TestNewDecoder(t *testing.T) {
 		want *Decoder
 	}{
 		{"base", args{nil, 5}, &Decoder{
-			Strict:           true,
-			p:                &opcReader{ra: nil, size: 5},
-			extensionDecoder: make(map[string]*extensionDecoderWrapper),
+			Strict: true,
+			p:      &opcReader{ra: nil, size: 5},
 		}},
 	}
 	for _, tt := range tests {
@@ -649,11 +646,10 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 
 	t.Run("base", func(t *testing.T) {
 		d := new(Decoder)
-		d.RegisterNodeDecoderExtension(fakeExtension, nil)
-		d.RegisterDecodeAttributeExtension(fakeExtension, nil)
 		d.Strict = false
 		d.SetDecompressor(func(r io.Reader) io.ReadCloser { return flate.NewReader(r) })
 		d.SetXMLDecoder(func(r io.Reader) XMLDecoder { return xml.NewDecoder(r) })
+		got.WithExtension(&fakeSpec{})
 		if err := d.processRootModel(context.Background(), rootFile, got); err != nil {
 			t.Errorf("Decoder.processRootModel() unexpected error = %v", err)
 			return

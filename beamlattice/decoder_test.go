@@ -1,7 +1,6 @@
 package beamlattice
 
 import (
-	"encoding/xml"
 	"testing"
 
 	"github.com/go-test/deep"
@@ -46,7 +45,7 @@ func TestDecode(t *testing.T) {
 		{NodeIndices: [2]uint32{0, 5}, Radius: [2]float32{1.5, 2}, CapMode: [2]CapMode{CapModeHemisphere, CapModeButt}},
 	}...)
 
-	want := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "b"}}, Resources: go3mf.Resources{
+	want := &go3mf.Model{Path: "/3D/3dmodel.model", Resources: go3mf.Resources{
 		Objects: []*go3mf.Object{meshLattice},
 	}}
 	got := new(go3mf.Model)
@@ -97,8 +96,9 @@ func TestDecode(t *testing.T) {
 		`
 
 	t.Run("base", func(t *testing.T) {
+		want.WithExtension(&Extension{LocalName: "b"})
+		got.WithExtension(&Extension{LocalName: "b"})
 		d := new(go3mf.Decoder)
-		RegisterExtension(d)
 		d.Strict = true
 		if err := d.UnmarshalModel([]byte(rootFile), got); err != nil {
 			t.Errorf("DecodeRawModel() unexpected error = %v", err)
@@ -170,8 +170,8 @@ func TestDecode_warns(t *testing.T) {
 		`
 
 	t.Run("base", func(t *testing.T) {
+		got.WithExtension(&Extension{LocalName: "b"})
 		d := new(go3mf.Decoder)
-		RegisterExtension(d)
 		d.Strict = false
 		if err := d.UnmarshalModel([]byte(rootFile), got); err != nil {
 			t.Errorf("DecodeRawModel_warn() unexpected error = %v", err)

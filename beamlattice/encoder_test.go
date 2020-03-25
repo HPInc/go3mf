@@ -1,7 +1,6 @@
 package beamlattice
 
 import (
-	"encoding/xml"
 	"testing"
 
 	"github.com/go-test/deep"
@@ -45,20 +44,21 @@ func TestMarshalModel(t *testing.T) {
 		{NodeIndices: [2]uint32{0, 5}, Radius: [2]float32{1.5, 2}, CapMode: [2]CapMode{CapModeHemisphere, CapModeButt}},
 	}...)
 
-	m := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "b"}}, Resources: go3mf.Resources{
+	m := &go3mf.Model{Path: "/3D/3dmodel.model", Resources: go3mf.Resources{
 		Objects: []*go3mf.Object{meshLattice},
 	}}
 
 	t.Run("base", func(t *testing.T) {
+		m.WithExtension(&Extension{LocalName: "b"})
 		b, err := go3mf.MarshalModel(m)
 		if err != nil {
 			t.Errorf("beamlattice.MarshalModel() error = %v", err)
 			return
 		}
 		d := go3mf.NewDecoder(nil, 0)
-		RegisterExtension(d)
 		newModel := new(go3mf.Model)
 		newModel.Path = m.Path
+		newModel.WithExtension(&Extension{LocalName: "b"})
 		if err := d.UnmarshalModel(b, newModel); err != nil {
 			t.Errorf("beamlattice.MarshalModel() error decoding = %v, s = %s", err, string(b))
 			return

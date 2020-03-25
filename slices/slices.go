@@ -12,17 +12,16 @@ type Extension struct {
 	IsRequired bool
 }
 
-func (e Extension) Name() string { return ExtensionName }
+func (e Extension) Name() string        { return ExtensionName }
+func (e Extension) Required() bool      { return e.IsRequired }
+func (e *Extension) SetRequired(r bool) { e.IsRequired = r }
+func (e *Extension) SetLocal(l string)  { e.LocalName = l }
 
 func (e Extension) Local() string {
 	if e.LocalName != "" {
 		return e.LocalName
 	}
 	return "s"
-}
-
-func (e Extension) Required() bool {
-	return e.IsRequired
 }
 
 // A Segment element represents a single line segment (or edge) of a polygon.

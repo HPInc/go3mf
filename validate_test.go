@@ -31,10 +31,10 @@ func TestValidate(t *testing.T) {
 			fmt.Errorf("Relationship#7: %v", specerr.ErrOPCContentType),
 			fmt.Errorf("Relationship#7: %v", specerr.ErrOPCDuplicatedTicket),
 		}},
-		{"namespaces", &Model{RequiredExtensions: []string{"fake", "other"}, Namespaces: []xml.Name{{Space: "fake", Local: "f"}}}, []error{
+		{"namespaces", &Model{ExtensionSpecs: map[string]ExtensionSpec{"fake": &UnknownSpec{IsRequired: true}}}, []error{
 			specerr.ErrRequiredExt,
 		}},
-		{"metadata", &Model{Namespaces: []xml.Name{{Space: "fake", Local: "f"}}, Metadata: []Metadata{
+		{"metadata", &Model{ExtensionSpecs: map[string]ExtensionSpec{"fake": &UnknownSpec{CanonicalName: "fake", LocalName: "f"}}, Metadata: []Metadata{
 			{Name: xml.Name{Space: "fake", Local: "issue"}}, {Name: xml.Name{Space: "f", Local: "issue"}}, {Name: xml.Name{Space: "fake", Local: "issue"}}, {Name: xml.Name{Local: "issue"}}, {},
 		}}, []error{
 			fmt.Errorf("Metadata#1: %v", specerr.ErrMetadataNamespace),
@@ -125,7 +125,7 @@ func TestValidate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.model.ExtensionSpecs = append(tt.model.ExtensionSpecs, &fakeSpec{})
+			tt.model.WithExtension(&fakeSpec{})
 			got := tt.model.Validate()
 			if diff := deep.Equal(got, tt.want); diff != nil {
 				t.Errorf("Model.Validate() = %v", diff)

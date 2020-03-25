@@ -1,7 +1,6 @@
 package slices
 
 import (
-	"encoding/xml"
 	"image/color"
 	"testing"
 
@@ -32,20 +31,21 @@ func TestMarshalModel(t *testing.T) {
 	}
 	baseMaterial := &go3mf.BaseMaterials{ID: 10, Materials: []go3mf.Base{{Name: "a", Color: color.RGBA{R: 1}}, {Name: "b", Color: color.RGBA{R: 1}}}}
 
-	m := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "s"}}, Resources: go3mf.Resources{
+	m := &go3mf.Model{Path: "/3D/3dmodel.model", Resources: go3mf.Resources{
 		Assets: []go3mf.Asset{baseMaterial, sliceStack, sliceStackRef}, Objects: []*go3mf.Object{meshRes},
 	}}
 
 	t.Run("base", func(t *testing.T) {
+		m.WithExtension(&Extension{LocalName: "s"})
 		b, err := go3mf.MarshalModel(m)
 		if err != nil {
 			t.Errorf("slices.MarshalModel() error = %v", err)
 			return
 		}
 		d := go3mf.NewDecoder(nil, 0)
-		RegisterExtension(d)
 		newModel := new(go3mf.Model)
 		newModel.Path = m.Path
+		newModel.WithExtension(&Extension{LocalName: "s"})
 		if err := d.UnmarshalModel(b, newModel); err != nil {
 			t.Errorf("slices.MarshalModel() error decoding = %v, s = %s", err, string(b))
 			return

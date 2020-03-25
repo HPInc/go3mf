@@ -263,18 +263,21 @@ type ExtensionSpec interface {
 	Name() string
 	Local() string
 	Required() bool
+	SetRequired(bool)
+	SetLocal(string)
 }
 
-type ExtensionSpecs []ExtensionSpec
-
-func (e ExtensionSpecs) Required(name string) bool {
-	for _, ext := range e {
-		if ext.Name() == name {
-			return ext.Required()
-		}
-	}
-	return false
+type UnknownSpec struct {
+	CanonicalName string
+	LocalName     string
+	IsRequired    bool
 }
+
+func (u *UnknownSpec) Name() string       { return u.CanonicalName }
+func (u *UnknownSpec) Local() string      { return u.LocalName }
+func (u *UnknownSpec) Required() bool     { return u.IsRequired }
+func (u *UnknownSpec) SetLocal(l string)  { u.LocalName = l }
+func (u *UnknownSpec) SetRequired(r bool) { u.IsRequired = r }
 
 // A Model is an in memory representation of the 3MF file.
 //
@@ -284,69 +287,28 @@ func (e ExtensionSpecs) Required(name string) bool {
 // Childs keys cannot be an empty string.
 // RootRelationships are the OPC root relationships.
 type Model struct {
-	Path               string
-	Language           string
-	Units              Units
-	Thumbnail          string
-	Resources          Resources
-	Build              Build
-	Attachments        []Attachment
-	ExtensionSpecs     ExtensionSpecs
-	Namespaces         []xml.Name
-	RequiredExtensions []string
-	Metadata           []Metadata
-	Childs             map[string]*ChildModel // path -> child
-	RootRelationships  []Relationship
-	Relationships      []Relationship
-	Extension          Extension
-	ExtensionAttr      ExtensionAttr
+	Path              string
+	Language          string
+	Units             Units
+	Thumbnail         string
+	Resources         Resources
+	Build             Build
+	Attachments       []Attachment
+	ExtensionSpecs    map[string]ExtensionSpec
+	Metadata          []Metadata
+	Childs            map[string]*ChildModel // path -> child
+	RootRelationships []Relationship
+	Relationships     []Relationship
+	Extension         Extension
+	ExtensionAttr     ExtensionAttr
 }
 
+// WithExtension adds a new extension
 func (m *Model) WithExtension(extension ExtensionSpec) {
-	var exist bool
-	for _, ext := range m.ExtensionSpecs {
-		if ext.Name() == extension.Name() {
-			ext = extension
-			exist = true
-			break
-		}
+	if m.ExtensionSpecs == nil {
+		m.ExtensionSpecs = make(map[string]ExtensionSpec)
 	}
-	if !exist {
-		m.ExtensionSpecs = append(m.ExtensionSpecs, extension)
-	}
-}
-
-// AddNamespace appends name to Namespaces if it does not contains name.Space.
-// If required is true it does the same with RequiredExtensions.
-//
-// If name.Space already exists in Namespaces with another local name it is updated
-// with the new local name.
-func (m *Model) AddNamespace(name xml.Name, required bool) {
-	var exists bool
-	for i, ns := range m.Namespaces {
-		if ns.Space == name.Space {
-			exists = true
-			if ns.Local != name.Local {
-				m.Namespaces[i].Local = name.Local
-			}
-			break
-		}
-	}
-	if !exists {
-		m.Namespaces = append(m.Namespaces, xml.Name{Space: name.Space, Local: name.Local})
-	}
-	if required {
-		exists = false
-		for _, ns := range m.RequiredExtensions {
-			if ns == name.Space {
-				exists = true
-				break
-			}
-		}
-		if !exists {
-			m.RequiredExtensions = append(m.RequiredExtensions, name.Space)
-		}
-	}
+	m.ExtensionSpecs[extension.Name()] = extension
 }
 
 // PathOrDefault returns Path if not empty, else DefaultModelPath.

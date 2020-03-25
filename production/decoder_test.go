@@ -1,7 +1,6 @@
 package production
 
 import (
-	"encoding/xml"
 	"testing"
 
 	"github.com/go-test/deep"
@@ -27,7 +26,7 @@ func TestDecode(t *testing.T) {
 		},
 	}
 
-	want := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "p"}}, Resources: go3mf.Resources{
+	want := &go3mf.Model{Path: "/3D/3dmodel.model", Resources: go3mf.Resources{
 		Objects: []*go3mf.Object{components},
 	}, Build: go3mf.Build{ExtensionAttr: go3mf.ExtensionAttr{mustUUID("e9e25302-6428-402e-8633-cc95528d0ed3")}},
 	}
@@ -58,8 +57,9 @@ func TestDecode(t *testing.T) {
 		</model>
 		`
 	t.Run("base", func(t *testing.T) {
+		want.WithExtension(&Extension{LocalName: "p"})
+		got.WithExtension(&Extension{LocalName: "p"})
 		d := new(go3mf.Decoder)
-		RegisterExtension(d)
 		d.Strict = true
 		if err := d.UnmarshalModel([]byte(rootFile), got); err != nil {
 			t.Errorf("DecodeRawModel() unexpected error = %v", err)
@@ -102,8 +102,8 @@ func TestDecode_warns(t *testing.T) {
 		</model>`
 
 	t.Run("base", func(t *testing.T) {
+		got.WithExtension(&Extension{LocalName: "p"})
 		d := new(go3mf.Decoder)
-		RegisterExtension(d)
 		d.Strict = false
 		if err := d.UnmarshalModel([]byte(rootFile), got); err != nil {
 			t.Errorf("DecodeRawModel_warn() unexpected error = %v", err)

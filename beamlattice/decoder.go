@@ -7,17 +7,14 @@ import (
 	"github.com/qmuntal/go3mf"
 )
 
-// RegisterExtension registers this extension in the decoder instance.
-func RegisterExtension(d *go3mf.Decoder) {
-	d.RegisterNodeDecoderExtension(ExtensionName, nodeDecoder)
-}
-
-func nodeDecoder(parentNode interface{}, nodeName string) go3mf.NodeDecoder {
+func (e Extension) NewNodeDecoder(parentNode interface{}, nodeName string) go3mf.NodeDecoder {
 	if nodeName == attrBeamLattice {
 		return &beamLatticeDecoder{mesh: parentNode.(*go3mf.Mesh)}
 	}
 	return nil
 }
+
+func (e Extension) DecodeAttribute(_ *go3mf.Scanner, _ interface{}, _ xml.Attr) {}
 
 type beamLatticeDecoder struct {
 	baseDecoder

@@ -17,7 +17,7 @@ func TestDecode(t *testing.T) {
 	texGroup := &Texture2DGroup{ID: 2, TextureID: 6, Coords: []TextureCoord{{0.3, 0.5}, {0.3, 0.8}, {0.5, 0.8}, {0.5, 0.5}}}
 	compositeGroup := &CompositeMaterials{ID: 4, MaterialID: 5, Indices: []uint32{1, 2}, Composites: []Composite{{Values: []float32{0.5, 0.5}}, {Values: []float32{0.2, 0.8}}}}
 	multiGroup := &MultiProperties{ID: 9, BlendMethods: []BlendMethod{BlendMultiply}, PIDs: []uint32{5, 2}, Multis: []Multi{{PIndex: []uint32{0, 0}}, {PIndex: []uint32{1, 0}}, {PIndex: []uint32{2, 3}}}}
-	want := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "m"}}}
+	want := &go3mf.Model{Path: "/3D/3dmodel.model"}
 	want.Resources.Assets = append(want.Resources.Assets, baseTexture, colorGroup, texGroup, compositeGroup, multiGroup)
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"
@@ -45,8 +45,9 @@ func TestDecode(t *testing.T) {
 		</build>
 	</model>`
 	t.Run("base", func(t *testing.T) {
+		got.WithExtension(&Extension{LocalName: "m"})
+		want.WithExtension(&Extension{LocalName: "m"})
 		d := new(go3mf.Decoder)
-		RegisterExtension(d)
 		d.Strict = true
 		if err := d.UnmarshalModel([]byte(rootFile), got); err != nil {
 			t.Errorf("DecodeRawModel() unexpected error = %v", err)
@@ -128,8 +129,8 @@ func TestDecode_warns(t *testing.T) {
 		</build>
 	</model>`
 	t.Run("base", func(t *testing.T) {
+		got.WithExtension(&Extension{LocalName: "m"})
 		d := new(go3mf.Decoder)
-		RegisterExtension(d)
 		d.Strict = false
 		if err := d.UnmarshalModel([]byte(rootFile), got); err != nil {
 			t.Errorf("DecodeRawModel_warn() unexpected error = %v", err)

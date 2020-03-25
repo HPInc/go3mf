@@ -7,17 +7,16 @@ type Extension struct {
 	LocalName string
 }
 
-func (e Extension) Name() string { return ExtensionName }
+func (e Extension) Name() string        { return ExtensionName }
+func (e Extension) Required() bool      { return true }
+func (e *Extension) SetRequired(r bool) {}
+func (e *Extension) SetLocal(l string)  { e.LocalName = l }
 
 func (e Extension) Local() string {
 	if e.LocalName != "" {
 		return e.LocalName
 	}
 	return "b"
-}
-
-func (e Extension) Required() bool {
-	return true
 }
 
 // ClipMode defines the clipping modes for the beam lattices.

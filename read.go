@@ -15,22 +15,10 @@ import (
 
 var checkEveryBytes = int64(4 * 1024 * 1024)
 
-type extensionDecoderWrapper struct {
-	newNodeDecoder  func(interface{}, string) NodeDecoder
-	decodeAttribute func(*Scanner, interface{}, xml.Attr)
-}
-
-func (e *extensionDecoderWrapper) NewNodeDecoder(parentNode interface{}, nodeName string) NodeDecoder {
-	if e.newNodeDecoder != nil {
-		return e.newNodeDecoder(parentNode, nodeName)
-	}
-	return nil
-}
-
-func (e *extensionDecoderWrapper) DecodeAttribute(s *Scanner, parentNode interface{}, attr xml.Attr) {
-	if e.decodeAttribute != nil {
-		e.decodeAttribute(s, parentNode, attr)
-	}
+type ExtensionDecoder interface {
+	ExtensionSpec
+	NewNodeDecoder(interface{}, string) NodeDecoder
+	DecodeAttribute(*Scanner, interface{}, xml.Attr)
 }
 
 // A XMLDecoder is anything that can decode a stream of XML tokens, including a Decoder.
@@ -95,15 +83,17 @@ func (d *topLevelDecoder) Child(name xml.Name) (child NodeDecoder) {
 	return
 }
 
-func decodeModelFile(ctx context.Context, x XMLDecoder, model *Model, path string, isRoot, strict bool, extensionDecoder map[string]*extensionDecoderWrapper) *Scanner {
+func decodeModelFile(ctx context.Context, x XMLDecoder, model *Model, path string, isRoot, strict bool) *Scanner {
 	scanner := Scanner{
-		extensionDecoder: make(map[string]*extensionDecoderWrapper),
+		extensionDecoder: make(map[string]ExtensionDecoder),
 		IsRoot:           isRoot,
 		Strict:           strict,
 		ModelPath:        path,
 	}
-	if extensionDecoder != nil {
-		scanner.extensionDecoder = extensionDecoder
+	for _, ext := range model.ExtensionSpecs {
+		if ext, ok := ext.(ExtensionDecoder); ok {
+			scanner.extensionDecoder[ext.Name()] = ext
+		}
 	}
 	state, names := make([]NodeDecoder, 0, 10), make([]xml.Name, 0, 10)
 
@@ -165,21 +155,19 @@ func decodeModelFile(ctx context.Context, x XMLDecoder, model *Model, path strin
 
 // Decoder implements a 3mf file decoder.
 type Decoder struct {
-	Strict           bool
-	Warnings         []error
-	p                packageReader
-	x                func(r io.Reader) XMLDecoder
-	flate            func(r io.Reader) io.ReadCloser
-	nonRootModels    []packageFile
-	extensionDecoder map[string]*extensionDecoderWrapper
+	Strict        bool
+	Warnings      []error
+	p             packageReader
+	x             func(r io.Reader) XMLDecoder
+	flate         func(r io.Reader) io.ReadCloser
+	nonRootModels []packageFile
 }
 
 // NewDecoder returns a new Decoder reading a 3mf file from r.
 func NewDecoder(r io.ReaderAt, size int64) *Decoder {
 	return &Decoder{
-		p:                &opcReader{ra: r, size: size},
-		Strict:           true,
-		extensionDecoder: make(map[string]*extensionDecoderWrapper),
+		p:      &opcReader{ra: r, size: size},
+		Strict: true,
 	}
 }
 
@@ -196,32 +184,6 @@ func (d *Decoder) SetXMLDecoder(x func(r io.Reader) XMLDecoder) {
 // SetDecompressor sets or overrides a custom decompressor for deflating the zip package.
 func (d *Decoder) SetDecompressor(dcomp func(r io.Reader) io.ReadCloser) {
 	d.flate = dcomp
-}
-
-// RegisterNodeDecoderExtension registers a node decoding function to the associated extension key.
-// The registered function should return a NodeDecoder that will do the real decoding.
-func (d *Decoder) RegisterNodeDecoderExtension(key string, f func(parentNode interface{}, nodeName string) NodeDecoder) {
-	if e, ok := d.extensionDecoder[key]; ok {
-		e.newNodeDecoder = f
-	} else {
-		if d.extensionDecoder == nil {
-			d.extensionDecoder = make(map[string]*extensionDecoderWrapper)
-		}
-		d.extensionDecoder[key] = &extensionDecoderWrapper{newNodeDecoder: f}
-	}
-}
-
-// RegisterDecodeAttributeExtension registers a DecodeAttribute function to the associated extension key.
-// The registered function should parse the attribute and update the parentNode.
-func (d *Decoder) RegisterDecodeAttributeExtension(key string, f func(s *Scanner, parentNode interface{}, attr xml.Attr)) {
-	if e, ok := d.extensionDecoder[key]; ok {
-		e.decodeAttribute = f
-	} else {
-		if d.extensionDecoder == nil {
-			d.extensionDecoder = make(map[string]*extensionDecoderWrapper)
-		}
-		d.extensionDecoder[key] = &extensionDecoderWrapper{decodeAttribute: f}
-	}
 }
 
 // DecodeContext reads the 3mf file and unmarshall its content into the model.
@@ -256,7 +218,7 @@ func (d *Decoder) processRootModel(ctx context.Context, rootFile packageFile, mo
 		return err
 	}
 	defer f.Close()
-	scanner := decodeModelFile(ctx, d.tokenReader(f), model, rootFile.Name(), true, d.Strict, d.extensionDecoder)
+	scanner := decodeModelFile(ctx, d.tokenReader(f), model, rootFile.Name(), true, d.Strict)
 	select {
 	case <-ctx.Done():
 		scanner.Err = ctx.Err()
@@ -278,9 +240,6 @@ func (d *Decoder) addModelFile(p *Scanner, model *Model) {
 		model.Build.Items = append(model.Build.Items, bi)
 	}
 	model.Resources = p.Resources
-	for _, ns := range p.Namespaces {
-		model.Namespaces = append(model.Namespaces, ns)
-	}
 	for _, res := range p.Warnings {
 		d.Warnings = append(d.Warnings, res)
 	}
@@ -403,7 +362,7 @@ func (d *Decoder) readChildModel(ctx context.Context, i int, model *Model) (*Sca
 		return nil, err
 	}
 	defer file.Close()
-	scanner := decodeModelFile(ctx, d.tokenReader(file), model, attachment.Name(), false, d.Strict, d.extensionDecoder)
+	scanner := decodeModelFile(ctx, d.tokenReader(file), model, attachment.Name(), false, d.Strict)
 	return scanner, scanner.Err
 }
 

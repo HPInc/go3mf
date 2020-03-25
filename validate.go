@@ -117,14 +117,7 @@ func (m *Metadata) Validate(model *Model) []error {
 			errs = append(errs, specerr.ErrMetadataName)
 		}
 	} else {
-		var found bool
-		for _, ns := range model.Namespaces {
-			if ns.Space == m.Name.Space {
-				found = true
-				break
-			}
-		}
-		if !found {
+		if _, ok := model.ExtensionSpecs[m.Name.Space]; !ok {
 			errs = append(errs, specerr.ErrMetadataNamespace)
 		}
 	}
@@ -310,16 +303,11 @@ func (r *Object) validateComponents(m *Model, path string) []error {
 }
 
 func (m *Model) validateNamespaces() error {
-	for _, r := range m.RequiredExtensions {
-		var found bool
-		for _, ns := range m.Namespaces {
-			if ns.Space == r {
-				found = true
-				break
+	for _, ext := range m.ExtensionSpecs {
+		if ext.Required() {
+			if _, ok := ext.(*UnknownSpec); ok {
+				return specerr.ErrRequiredExt
 			}
-		}
-		if !found {
-			return specerr.ErrRequiredExt
 		}
 	}
 	return nil

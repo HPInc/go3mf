@@ -1,7 +1,6 @@
 package materials
 
 import (
-	"encoding/xml"
 	"image/color"
 	"testing"
 
@@ -15,18 +14,19 @@ func TestMarshalModel(t *testing.T) {
 	texGroup := &Texture2DGroup{ID: 2, TextureID: 6, Coords: []TextureCoord{{0.3, 0.5}, {0.3, 0.8}, {0.5, 0.8}, {0.5, 0.5}}}
 	compositeGroup := &CompositeMaterials{ID: 4, MaterialID: 5, Indices: []uint32{1, 2}, Composites: []Composite{{Values: []float32{0.5, 0.5}}, {Values: []float32{0.2, 0.8}}}}
 	multiGroup := &MultiProperties{ID: 9, BlendMethods: []BlendMethod{BlendMultiply}, PIDs: []uint32{5, 2}, Multis: []Multi{{PIndex: []uint32{0, 0}}, {PIndex: []uint32{1, 0}}, {PIndex: []uint32{2, 3}}}}
-	m := &go3mf.Model{Path: "/3D/3dmodel.model", Namespaces: []xml.Name{{Space: ExtensionName, Local: "m"}}}
+	m := &go3mf.Model{Path: "/3D/3dmodel.model"}
 	m.Resources.Assets = append(m.Resources.Assets, baseTexture, colorGroup, texGroup, compositeGroup, multiGroup)
 
 	t.Run("base", func(t *testing.T) {
+		m.WithExtension(&Extension{LocalName: "m"})
 		b, err := go3mf.MarshalModel(m)
 		if err != nil {
 			t.Errorf("materials.MarshalModel() error = %v", err)
 			return
 		}
 		d := go3mf.NewDecoder(nil, 0)
-		RegisterExtension(d)
 		newModel := new(go3mf.Model)
+		newModel.WithExtension(&Extension{LocalName: "m"})
 		newModel.Path = m.Path
 		if err := d.UnmarshalModel(b, newModel); err != nil {
 			t.Errorf("materials.MarshalModel() error decoding = %v, s = %s", err, string(b))
