@@ -86,7 +86,7 @@ func decodeModelFile(ctx context.Context, x XMLDecoder, model *Model, path strin
 	}
 	for _, ext := range model.Specs {
 		if ext, ok := ext.(ExtensionDecoder); ok {
-			scanner.extensionDecoder[ext.Space()] = ext
+			scanner.extensionDecoder[ext.Namespace()] = ext
 		}
 	}
 	state, names := make([]NodeDecoder, 0, 10), make([]xml.Name, 0, 10)

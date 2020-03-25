@@ -5,7 +5,7 @@ import (
 	specerr "github.com/qmuntal/go3mf/errors"
 )
 
-func (e *Extension) ValidateModel(m *go3mf.Model) []error {
+func (e *Spec) ValidateModel(m *go3mf.Model) []error {
 	var (
 		u    *UUID
 		errs []error
@@ -30,7 +30,7 @@ func (e *Extension) ValidateModel(m *go3mf.Model) []error {
 	return errs
 }
 
-func (e *Extension) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) []error {
+func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) []error {
 	var (
 		u    *UUID
 		errs []error
@@ -55,7 +55,7 @@ func (e *Extension) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Objec
 	return errs
 }
 
-func (e *Extension) validatePathUUID(m *go3mf.Model, path string, p *PathUUID, errs []error) []error {
+func (e *Spec) validatePathUUID(m *go3mf.Model, path string, p *PathUUID, errs []error) []error {
 	if p.UUID == "" {
 		errs = append(errs, &specerr.MissingFieldError{Name: attrProdUUID})
 	} else if validateUUID(string(p.UUID)) != nil {

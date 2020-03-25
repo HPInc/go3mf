@@ -5,7 +5,7 @@ import (
 	specerr "github.com/qmuntal/go3mf/errors"
 )
 
-func (e *Extension) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) []error {
+func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) []error {
 	if obj.Mesh == nil {
 		return nil
 	}
@@ -68,7 +68,7 @@ func (e *Extension) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Objec
 	return errs
 }
 
-func (e *Extension) validateRefMesh(m *go3mf.Model, path string, meshID, selfID uint32) error {
+func (e *Spec) validateRefMesh(m *go3mf.Model, path string, meshID, selfID uint32) error {
 	if meshID == selfID {
 		return specerr.ErrRecursion
 	}

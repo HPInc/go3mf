@@ -8,7 +8,7 @@ import (
 	specerr "github.com/qmuntal/go3mf/errors"
 )
 
-func (e *Extension) ValidateAsset(m *go3mf.Model, path string, r go3mf.Asset) []error {
+func (e *Spec) ValidateAsset(m *go3mf.Model, path string, r go3mf.Asset) []error {
 	var errs []error
 	switch r := r.(type) {
 	case *ColorGroup:
@@ -25,7 +25,7 @@ func (e *Extension) ValidateAsset(m *go3mf.Model, path string, r go3mf.Asset) []
 	return errs
 }
 
-func (e *Extension) validateColorGroup(path string, r *ColorGroup, errs []error) []error {
+func (e *Spec) validateColorGroup(path string, r *ColorGroup, errs []error) []error {
 	if r.ID == 0 {
 		errs = append(errs, specerr.ErrMissingID)
 	}
@@ -40,7 +40,7 @@ func (e *Extension) validateColorGroup(path string, r *ColorGroup, errs []error)
 	return errs
 }
 
-func (e *Extension) validateTexture2DGroup(m *go3mf.Model, path string, r *Texture2DGroup, errs []error) []error {
+func (e *Spec) validateTexture2DGroup(m *go3mf.Model, path string, r *Texture2DGroup, errs []error) []error {
 	if r.ID == 0 {
 		errs = append(errs, specerr.ErrMissingID)
 	}
@@ -59,7 +59,7 @@ func (e *Extension) validateTexture2DGroup(m *go3mf.Model, path string, r *Textu
 	return errs
 }
 
-func (e *Extension) validateTexture2D(m *go3mf.Model, path string, r *Texture2D, errs []error) []error {
+func (e *Spec) validateTexture2D(m *go3mf.Model, path string, r *Texture2D, errs []error) []error {
 	if r.ID == 0 {
 		errs = append(errs, specerr.ErrMissingID)
 	}
@@ -83,7 +83,7 @@ func (e *Extension) validateTexture2D(m *go3mf.Model, path string, r *Texture2D,
 	return errs
 }
 
-func (e *Extension) validateMultiProps(m *go3mf.Model, path string, r *MultiProperties, errs []error) []error {
+func (e *Spec) validateMultiProps(m *go3mf.Model, path string, r *MultiProperties, errs []error) []error {
 	if r.ID == 0 {
 		errs = append(errs, specerr.ErrMissingID)
 	}
@@ -139,7 +139,7 @@ func (e *Extension) validateMultiProps(m *go3mf.Model, path string, r *MultiProp
 	return errs
 }
 
-func (e *Extension) validateCompositeMat(m *go3mf.Model, path string, r *CompositeMaterials, errs []error) []error {
+func (e *Spec) validateCompositeMat(m *go3mf.Model, path string, r *CompositeMaterials, errs []error) []error {
 	if r.ID == 0 {
 		errs = append(errs, specerr.ErrMissingID)
 	}

@@ -11,7 +11,7 @@ func validTransform(t go3mf.Matrix) bool {
 	return t[2] == 0 && t[6] == 0 && t[8] == 0 && t[9] == 0 && t[10] == 1
 }
 
-func (e *Extension) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) []error {
+func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) []error {
 	var sti *SliceStackInfo
 	if !obj.AnyAttr.Get(&sti) {
 		return nil
@@ -44,7 +44,7 @@ func (e *Extension) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Objec
 	return errs
 }
 
-func (e *Extension) ValidateAsset(m *go3mf.Model, path string, r go3mf.Asset) []error {
+func (e *Spec) ValidateAsset(m *go3mf.Model, path string, r go3mf.Asset) []error {
 	var (
 		st *SliceStack
 		ok bool

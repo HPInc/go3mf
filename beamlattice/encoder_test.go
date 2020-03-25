@@ -49,7 +49,7 @@ func TestMarshalModel(t *testing.T) {
 	}}
 
 	t.Run("base", func(t *testing.T) {
-		m.WithExtension(&Extension{LocalName: "b"})
+		m.WithSpec(&Spec{LocalName: "b"})
 		b, err := go3mf.MarshalModel(m)
 		if err != nil {
 			t.Errorf("beamlattice.MarshalModel() error = %v", err)
@@ -58,7 +58,7 @@ func TestMarshalModel(t *testing.T) {
 		d := go3mf.NewDecoder(nil, 0)
 		newModel := new(go3mf.Model)
 		newModel.Path = m.Path
-		newModel.WithExtension(&Extension{LocalName: "b"})
+		newModel.WithSpec(&Spec{LocalName: "b"})
 		if err := d.UnmarshalModel(b, newModel); err != nil {
 			t.Errorf("beamlattice.MarshalModel() error decoding = %v, s = %s", err, string(b))
 			return

@@ -112,7 +112,7 @@ func TestValidate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.model.WithExtension(&Extension{})
+			tt.model.WithSpec(&Spec{})
 			got := tt.model.Validate()
 			if diff := deep.Equal(got, tt.want); diff != nil {
 				t.Errorf("Validate() = %v", diff)

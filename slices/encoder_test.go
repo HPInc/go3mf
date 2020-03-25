@@ -36,7 +36,7 @@ func TestMarshalModel(t *testing.T) {
 	}}
 
 	t.Run("base", func(t *testing.T) {
-		m.WithExtension(&Extension{LocalName: "s"})
+		m.WithSpec(&Spec{LocalName: "s"})
 		b, err := go3mf.MarshalModel(m)
 		if err != nil {
 			t.Errorf("slices.MarshalModel() error = %v", err)
@@ -45,7 +45,7 @@ func TestMarshalModel(t *testing.T) {
 		d := go3mf.NewDecoder(nil, 0)
 		newModel := new(go3mf.Model)
 		newModel.Path = m.Path
-		newModel.WithExtension(&Extension{LocalName: "s"})
+		newModel.WithSpec(&Spec{LocalName: "s"})
 		if err := d.UnmarshalModel(b, newModel); err != nil {
 			t.Errorf("slices.MarshalModel() error decoding = %v, s = %s", err, string(b))
 			return

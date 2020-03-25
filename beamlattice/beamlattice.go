@@ -3,16 +3,16 @@ package beamlattice
 // Namespace is the canonical name of this extension.
 const Namespace = "http://schemas.microsoft.com/3dmanufacturing/beamlattice/2017/02"
 
-type Extension struct {
+type Spec struct {
 	LocalName string
 }
 
-func (e Extension) Space() string       { return Namespace }
-func (e Extension) Required() bool      { return true }
-func (e *Extension) SetRequired(r bool) {}
-func (e *Extension) SetLocal(l string)  { e.LocalName = l }
+func (e Spec) Namespace() string   { return Namespace }
+func (e Spec) Required() bool      { return true }
+func (e *Spec) SetRequired(r bool) {}
+func (e *Spec) SetLocal(l string)  { e.LocalName = l }
 
-func (e Extension) Local() string {
+func (e Spec) Local() string {
 	if e.LocalName != "" {
 		return e.LocalName
 	}

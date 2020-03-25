@@ -181,12 +181,12 @@ type Model struct {
 	AnyAttr           AttrMarshalers
 }
 
-// WithExtension adds a new extension
-func (m *Model) WithExtension(extension Spec) {
+// WithSpec adds a new extension
+func (m *Model) WithSpec(extension Spec) {
 	if m.Specs == nil {
 		m.Specs = make(map[string]Spec)
 	}
-	m.Specs[extension.Space()] = extension
+	m.Specs[extension.Namespace()] = extension
 }
 
 // PathOrDefault returns Path if not empty, else DefaultModelPath.

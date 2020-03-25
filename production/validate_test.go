@@ -26,7 +26,7 @@ func TestValidate(t *testing.T) {
 			AnyAttr: go3mf.AttrMarshalers{mustUUID("a-b-c-d")}}}, []error{
 			fmt.Errorf("Build: %v", specerr.ErrUUID),
 		}},
-		{"extReq", &go3mf.Model{Specs: map[string]go3mf.Spec{Namespace: &Extension{IsRequired: true}},
+		{"extReq", &go3mf.Model{Specs: map[string]go3mf.Spec{Namespace: &Spec{IsRequired: true}},
 			Childs: map[string]*go3mf.ChildModel{"/other.model": {Resources: go3mf.Resources{Objects: []*go3mf.Object{validMesh}}}},
 			Resources: go3mf.Resources{Objects: []*go3mf.Object{
 				{ID: 5, AnyAttr: go3mf.AttrMarshalers{mustUUID("f47ac10b-58cc-0372-8567-0e02b2c3d481")}, Components: []*go3mf.Component{
@@ -84,7 +84,7 @@ func TestValidate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if len(tt.model.Specs) == 0 {
-				tt.model.WithExtension(&Extension{})
+				tt.model.WithSpec(&Spec{})
 			}
 			got := tt.model.Validate()
 			if diff := deep.Equal(got, tt.want); diff != nil {

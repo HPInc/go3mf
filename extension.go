@@ -9,7 +9,7 @@ var marshalerAttrType = reflect.TypeOf((*AttrMarshaler)(nil)).Elem()
 var marshalerType = reflect.TypeOf((*Marshaler)(nil)).Elem()
 
 type Spec interface {
-	Space() string
+	Namespace() string
 	Local() string
 	Required() bool
 	SetRequired(bool)
@@ -22,7 +22,7 @@ type UnknownSpec struct {
 	IsRequired bool
 }
 
-func (u *UnknownSpec) Space() string      { return u.SpaceName }
+func (u *UnknownSpec) Namespace() string  { return u.SpaceName }
 func (u *UnknownSpec) Local() string      { return u.LocalName }
 func (u *UnknownSpec) Required() bool     { return u.IsRequired }
 func (u *UnknownSpec) SetLocal(l string)  { u.LocalName = l }

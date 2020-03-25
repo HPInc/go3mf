@@ -25,7 +25,7 @@ const fakeExtension = "http://dummy.com/fake_ext"
 type fakeSpec struct {
 }
 
-func (f *fakeSpec) Space() string      { return fakeExtension }
+func (f *fakeSpec) Namespace() string  { return fakeExtension }
 func (f *fakeSpec) Required() bool     { return true }
 func (f *fakeSpec) Local() string      { return "qm" }
 func (f *fakeSpec) SetLocal(_ string)  {}
@@ -419,7 +419,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 		d.Strict = true
 		d.SetDecompressor(func(r io.Reader) io.ReadCloser { return flate.NewReader(r) })
 		d.SetXMLDecoder(func(r io.Reader) XMLDecoder { return xml.NewDecoder(r) })
-		got.WithExtension(&fakeSpec{})
+		got.WithSpec(&fakeSpec{})
 		if err := d.processRootModel(context.Background(), rootFile, got); err != nil {
 			t.Errorf("Decoder.processRootModel() unexpected error = %v", err)
 			return
@@ -649,7 +649,7 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 		d.Strict = false
 		d.SetDecompressor(func(r io.Reader) io.ReadCloser { return flate.NewReader(r) })
 		d.SetXMLDecoder(func(r io.Reader) XMLDecoder { return xml.NewDecoder(r) })
-		got.WithExtension(&fakeSpec{})
+		got.WithSpec(&fakeSpec{})
 		if err := d.processRootModel(context.Background(), rootFile, got); err != nil {
 			t.Errorf("Decoder.processRootModel() unexpected error = %v", err)
 			return

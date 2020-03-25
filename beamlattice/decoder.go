@@ -7,14 +7,14 @@ import (
 	"github.com/qmuntal/go3mf"
 )
 
-func (e Extension) NewNodeDecoder(parentNode interface{}, nodeName string) go3mf.NodeDecoder {
+func (e Spec) NewNodeDecoder(parentNode interface{}, nodeName string) go3mf.NodeDecoder {
 	if nodeName == attrBeamLattice {
 		return &beamLatticeDecoder{mesh: parentNode.(*go3mf.Mesh)}
 	}
 	return nil
 }
 
-func (e Extension) DecodeAttribute(_ *go3mf.Scanner, _ interface{}, _ xml.Attr) {}
+func (e Spec) DecodeAttribute(_ *go3mf.Scanner, _ interface{}, _ xml.Attr) {}
 
 type beamLatticeDecoder struct {
 	baseDecoder

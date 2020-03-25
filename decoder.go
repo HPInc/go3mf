@@ -75,7 +75,7 @@ func (d *modelDecoder) noCoreAttribute(a xml.Attr) {
 		if ext, ok := d.model.Specs[a.Value]; ok {
 			ext.SetLocal(a.Name.Local)
 		} else {
-			d.model.WithExtension(&UnknownSpec{SpaceName: a.Value, LocalName: a.Name.Local})
+			d.model.WithSpec(&UnknownSpec{SpaceName: a.Value, LocalName: a.Name.Local})
 		}
 	default:
 		if ext, ok := d.Scanner.extensionDecoder[a.Name.Space]; ok {

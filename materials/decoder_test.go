@@ -45,8 +45,8 @@ func TestDecode(t *testing.T) {
 		</build>
 	</model>`
 	t.Run("base", func(t *testing.T) {
-		got.WithExtension(&Extension{LocalName: "m"})
-		want.WithExtension(&Extension{LocalName: "m"})
+		got.WithSpec(&Spec{LocalName: "m"})
+		want.WithSpec(&Spec{LocalName: "m"})
 		d := new(go3mf.Decoder)
 		d.Strict = true
 		if err := d.UnmarshalModel([]byte(rootFile), got); err != nil {
@@ -129,7 +129,7 @@ func TestDecode_warns(t *testing.T) {
 		</build>
 	</model>`
 	t.Run("base", func(t *testing.T) {
-		got.WithExtension(&Extension{LocalName: "m"})
+		got.WithSpec(&Spec{LocalName: "m"})
 		d := new(go3mf.Decoder)
 		d.Strict = false
 		if err := d.UnmarshalModel([]byte(rootFile), got); err != nil {

@@ -45,7 +45,7 @@ type Scanner struct {
 func (s *Scanner) namespace(local string) (string, bool) {
 	for _, ext := range s.extensionDecoder {
 		if ext.Local() == local {
-			return ext.Space(), true
+			return ext.Namespace(), true
 		}
 	}
 	return "", false

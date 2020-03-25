@@ -144,7 +144,7 @@ func (e *Encoder) modelToken(x *XMLEncoder, m *Model, isRoot bool) (xml.StartEle
 		attrs = append(attrs, xml.Attr{Name: xml.Name{Local: attrThumbnail}, Value: m.Thumbnail})
 	}
 	for _, a := range m.Specs {
-		attrs = append(attrs, xml.Attr{Name: xml.Name{Space: attrXmlns, Local: a.Local()}, Value: a.Space()})
+		attrs = append(attrs, xml.Attr{Name: xml.Name{Space: attrXmlns, Local: a.Local()}, Value: a.Namespace()})
 	}
 	var exts []string
 	for _, a := range m.Specs {

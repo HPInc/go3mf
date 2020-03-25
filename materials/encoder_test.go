@@ -18,7 +18,7 @@ func TestMarshalModel(t *testing.T) {
 	m.Resources.Assets = append(m.Resources.Assets, baseTexture, colorGroup, texGroup, compositeGroup, multiGroup)
 
 	t.Run("base", func(t *testing.T) {
-		m.WithExtension(&Extension{LocalName: "m"})
+		m.WithSpec(&Spec{LocalName: "m"})
 		b, err := go3mf.MarshalModel(m)
 		if err != nil {
 			t.Errorf("materials.MarshalModel() error = %v", err)
@@ -26,7 +26,7 @@ func TestMarshalModel(t *testing.T) {
 		}
 		d := go3mf.NewDecoder(nil, 0)
 		newModel := new(go3mf.Model)
-		newModel.WithExtension(&Extension{LocalName: "m"})
+		newModel.WithSpec(&Spec{LocalName: "m"})
 		newModel.Path = m.Path
 		if err := d.UnmarshalModel(b, newModel); err != nil {
 			t.Errorf("materials.MarshalModel() error decoding = %v, s = %s", err, string(b))

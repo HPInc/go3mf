@@ -8,7 +8,7 @@ import (
 	"github.com/qmuntal/go3mf"
 )
 
-func (e Extension) NewNodeDecoder(_ interface{}, nodeName string) (child go3mf.NodeDecoder) {
+func (e Spec) NewNodeDecoder(_ interface{}, nodeName string) (child go3mf.NodeDecoder) {
 	switch nodeName {
 	case attrColorGroup:
 		child = new(colorGroupDecoder)
@@ -24,7 +24,7 @@ func (e Extension) NewNodeDecoder(_ interface{}, nodeName string) (child go3mf.N
 	return
 }
 
-func (e Extension) DecodeAttribute(_ *go3mf.Scanner, _ interface{}, _ xml.Attr) {}
+func (e Spec) DecodeAttribute(_ *go3mf.Scanner, _ interface{}, _ xml.Attr) {}
 
 type colorGroupDecoder struct {
 	baseDecoder
