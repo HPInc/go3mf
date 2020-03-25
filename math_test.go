@@ -213,7 +213,7 @@ func TestPoint3D_Cross(t *testing.T) {
 
 func TestMatrix_Mul(t *testing.T) {
 	type args struct {
-		m2 Matrix
+		m Matrix
 	}
 	tests := []struct {
 		name string
@@ -225,7 +225,7 @@ func TestMatrix_Mul(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.m1.Mul(tt.args.m2); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.m1.Mul(tt.args.m); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Matrix.Mul() = %v, want %v", got, tt.want)
 			}
 		})
