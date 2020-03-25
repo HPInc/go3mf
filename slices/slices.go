@@ -4,8 +4,25 @@ import (
 	"github.com/qmuntal/go3mf"
 )
 
-// ExtensionName is the canonical name of this extension.
-const ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/slice/2015/07"
+// Namespace is the canonical name of this extension.
+const Namespace = "http://schemas.microsoft.com/3dmanufacturing/slice/2015/07"
+
+type Spec struct {
+	LocalName  string
+	IsRequired bool
+}
+
+func (e Spec) Namespace() string   { return Namespace }
+func (e Spec) Required() bool      { return e.IsRequired }
+func (e *Spec) SetRequired(r bool) { e.IsRequired = r }
+func (e *Spec) SetLocal(l string)  { e.LocalName = l }
+
+func (e Spec) Local() string {
+	if e.LocalName != "" {
+		return e.LocalName
+	}
+	return "s"
+}
 
 // A Segment element represents a single line segment (or edge) of a polygon.
 // It runs from the vertex specified by the previous segment
@@ -62,9 +79,9 @@ type SliceRef struct {
 	Path         string
 }
 
-// SliceStackResource defines a slice stack resource.
+// SliceStack defines a slice stack resource.
 // It can either contain a SliceStack or a Refs slice.
-type SliceStackResource struct {
+type SliceStack struct {
 	ID      uint32
 	BottomZ float32
 	Slices  []*Slice
@@ -72,7 +89,7 @@ type SliceStackResource struct {
 }
 
 // Identify returns the unique ID of the resource.
-func (s *SliceStackResource) Identify() uint32 {
+func (s *SliceStack) Identify() uint32 {
 	return s.ID
 }
 

@@ -7,20 +7,14 @@ import (
 	"github.com/qmuntal/go3mf"
 )
 
-// RegisterExtension registers this extension in the decoder instance.
-func RegisterExtension(d *go3mf.Decoder) {
-	d.RegisterNodeDecoderExtension(ExtensionName, nodeDecoder)
-	d.RegisterDecodeAttributeExtension(ExtensionName, decodeAttribute)
-}
-
-func nodeDecoder(_ interface{}, nodeName string) go3mf.NodeDecoder {
+func (e Spec) NewNodeDecoder(_ interface{}, nodeName string) go3mf.NodeDecoder {
 	if nodeName == attrSliceStack {
 		return &sliceStackDecoder{}
 	}
 	return nil
 }
 
-func decodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
+func (e Spec) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
 	switch t := parentNode.(type) {
 	case *go3mf.Object:
 		objectAttrDecoder(s, t, attr)
@@ -37,10 +31,10 @@ func objectAttrDecoder(scanner *go3mf.Scanner, o *go3mf.Object, a xml.Attr) {
 		}
 
 		var ext *SliceStackInfo
-		if o.ExtensionAttr.Get(&ext) {
+		if o.AnyAttr.Get(&ext) {
 			ext.SliceStackID = uint32(val)
 		} else {
-			o.ExtensionAttr = append(o.ExtensionAttr, &SliceStackInfo{SliceStackID: uint32(val)})
+			o.AnyAttr = append(o.AnyAttr, &SliceStackInfo{SliceStackID: uint32(val)})
 		}
 	case attrMeshRes:
 		res, ok := newSliceResolution(a.Value)
@@ -48,17 +42,17 @@ func objectAttrDecoder(scanner *go3mf.Scanner, o *go3mf.Object, a xml.Attr) {
 			scanner.InvalidAttr(attrMeshRes, a.Value, false)
 		}
 		var ext *SliceStackInfo
-		if o.ExtensionAttr.Get(&ext) {
+		if o.AnyAttr.Get(&ext) {
 			ext.SliceResolution = res
 		} else {
-			o.ExtensionAttr = append(o.ExtensionAttr, &SliceStackInfo{SliceResolution: res})
+			o.AnyAttr = append(o.AnyAttr, &SliceStackInfo{SliceResolution: res})
 		}
 	}
 }
 
 type sliceStackDecoder struct {
 	baseDecoder
-	resource SliceStackResource
+	resource SliceStack
 }
 
 func (d *sliceStackDecoder) End() {
@@ -66,7 +60,7 @@ func (d *sliceStackDecoder) End() {
 }
 
 func (d *sliceStackDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
-	if name.Space == ExtensionName {
+	if name.Space == Namespace {
 		if name.Local == attrSlice {
 			child = &sliceDecoder{resource: &d.resource}
 		} else if name.Local == attrSliceRef {
@@ -97,7 +91,7 @@ func (d *sliceStackDecoder) Start(attrs []xml.Attr) {
 
 type sliceRefDecoder struct {
 	baseDecoder
-	resource *SliceStackResource
+	resource *SliceStack
 }
 
 func (d *sliceRefDecoder) Start(attrs []xml.Attr) {
@@ -122,7 +116,7 @@ func (d *sliceRefDecoder) Start(attrs []xml.Attr) {
 
 type sliceDecoder struct {
 	baseDecoder
-	resource               *SliceStackResource
+	resource               *SliceStack
 	slice                  Slice
 	polygonDecoder         polygonDecoder
 	polygonVerticesDecoder polygonVerticesDecoder
@@ -132,7 +126,7 @@ func (d *sliceDecoder) End() {
 	d.resource.Slices = append(d.resource.Slices, &d.slice)
 }
 func (d *sliceDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
-	if name.Space == ExtensionName {
+	if name.Space == Namespace {
 		if name.Local == attrVertices {
 			child = &d.polygonVerticesDecoder
 		} else if name.Local == attrPolygon {
@@ -168,7 +162,7 @@ func (d *polygonVerticesDecoder) Start(_ []xml.Attr) {
 }
 
 func (d *polygonVerticesDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrVertex {
+	if name.Space == Namespace && name.Local == attrVertex {
 		child = &d.polygonVertexDecoder
 	}
 	return
@@ -204,7 +198,7 @@ type polygonDecoder struct {
 }
 
 func (d *polygonDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrSegment {
+	if name.Space == Namespace && name.Local == attrSegment {
 		child = &d.polygonSegmentDecoder
 	}
 	return

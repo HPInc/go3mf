@@ -1,7 +1,23 @@
 package beamlattice
 
-// ExtensionName is the canonical name of this extension.
-const ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/beamlattice/2017/02"
+// Namespace is the canonical name of this extension.
+const Namespace = "http://schemas.microsoft.com/3dmanufacturing/beamlattice/2017/02"
+
+type Spec struct {
+	LocalName string
+}
+
+func (e Spec) Namespace() string   { return Namespace }
+func (e Spec) Required() bool      { return true }
+func (e *Spec) SetRequired(r bool) {}
+func (e *Spec) SetLocal(l string)  { e.LocalName = l }
+
+func (e Spec) Local() string {
+	if e.LocalName != "" {
+		return e.LocalName
+	}
+	return "b"
+}
 
 // ClipMode defines the clipping modes for the beam lattices.
 type ClipMode uint8
@@ -68,19 +84,6 @@ type BeamLattice struct {
 	CapMode                  CapMode
 }
 
-func (m *BeamLattice) checkSanity(nodeCount uint32) bool {
-	for _, beam := range m.Beams {
-		i0, i1 := beam.NodeIndices[0], beam.NodeIndices[1]
-		if i0 == i1 {
-			return false
-		}
-		if i0 >= nodeCount || i1 >= nodeCount {
-			return false
-		}
-	}
-	return true
-}
-
 // BeamSet defines a set of beams.
 type BeamSet struct {
 	Refs       []uint32
@@ -90,9 +93,9 @@ type BeamSet struct {
 
 // Beam defines a single beam.
 type Beam struct {
-	NodeIndices [2]uint32  // Indices of the two nodes that defines the beam.
-	Radius      [2]float32 // Radius of both ends of the beam.
-	CapMode     [2]CapMode // Capping mode.
+	Indices [2]uint32  // Indices of the two nodes that defines the beam.
+	Radius  [2]float32 // Radius of both ends of the beam.
+	CapMode [2]CapMode // Capping mode.
 }
 
 const (

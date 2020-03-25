@@ -13,7 +13,7 @@ type modelDecoder struct {
 }
 
 func (d *modelDecoder) Child(name xml.Name) (child NodeDecoder) {
-	if name.Space == ExtensionName {
+	if name.Space == Namespace {
 		switch name.Local {
 		case attrResources:
 			child = &resourceDecoder{}
@@ -36,7 +36,7 @@ func (d *modelDecoder) Start(attrs []xml.Attr) {
 	if !d.Scanner.IsRoot {
 		return
 	}
-
+	var requiredExts []string
 	for _, a := range attrs {
 		if a.Name.Space == "" {
 			switch a.Name.Local {
@@ -48,18 +48,19 @@ func (d *modelDecoder) Start(attrs []xml.Attr) {
 			case attrThumbnail:
 				d.model.Thumbnail = a.Value
 			case attrReqExt:
-				d.model.RequiredExtensions = strings.Fields(a.Value)
+				requiredExts = strings.Fields(a.Value)
 			}
 		} else {
 			d.noCoreAttribute(a)
 		}
 	}
 
-	for i, ext := range d.model.RequiredExtensions {
-		if ns, ok := d.Scanner.namespace(ext); ok {
-			d.model.RequiredExtensions[i] = ns
-		} else {
-			d.model.RequiredExtensions[i] = ext
+	for _, ext := range requiredExts {
+		for _, x := range d.model.Specs {
+			if x.Local() == ext {
+				x.SetRequired(true)
+				break
+			}
 		}
 	}
 }
@@ -67,13 +68,15 @@ func (d *modelDecoder) Start(attrs []xml.Attr) {
 func (d *modelDecoder) noCoreAttribute(a xml.Attr) {
 	switch a.Name.Space {
 	case nsXML:
-		if d.Scanner.IsRoot {
-			if a.Name.Local == attrLang {
-				d.model.Language = a.Value
-			}
+		if a.Name.Local == attrLang {
+			d.model.Language = a.Value
 		}
 	case attrXmlns:
-		d.Scanner.Namespaces = append(d.Scanner.Namespaces, xml.Name{Space: a.Value, Local: a.Name.Local})
+		if ext, ok := d.model.Specs[a.Value]; ok {
+			ext.SetLocal(a.Name.Local)
+		} else {
+			d.model.WithSpec(&UnknownSpec{SpaceName: a.Value, LocalName: a.Name.Local})
+		}
 	default:
 		if ext, ok := d.Scanner.extensionDecoder[a.Name.Space]; ok {
 			ext.DecodeAttribute(d.Scanner, d.model, a)
@@ -87,7 +90,7 @@ type metadataGroupDecoder struct {
 }
 
 func (d *metadataGroupDecoder) Child(name xml.Name) (child NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrMetadata {
+	if name.Space == Namespace && name.Local == attrMetadata {
 		child = &metadataDecoder{metadatas: d.metadatas}
 	}
 	return
@@ -138,7 +141,7 @@ type buildDecoder struct {
 }
 
 func (d *buildDecoder) Child(name xml.Name) (child NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrItem {
+	if name.Space == Namespace && name.Local == attrItem {
 		child = &buildItemDecoder{}
 	}
 	return
@@ -163,7 +166,7 @@ func (d *buildItemDecoder) End() {
 }
 
 func (d *buildItemDecoder) Child(name xml.Name) (child NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrMetadataGroup {
+	if name.Space == Namespace && name.Local == attrMetadataGroup {
 		child = &metadataGroupDecoder{metadatas: &d.item.Metadata}
 	}
 	return
@@ -205,7 +208,7 @@ type resourceDecoder struct {
 }
 
 func (d *resourceDecoder) Child(name xml.Name) (child NodeDecoder) {
-	if name.Space == ExtensionName {
+	if name.Space == Namespace {
 		switch name.Local {
 		case attrObject:
 			child = &objectDecoder{}
@@ -220,7 +223,7 @@ func (d *resourceDecoder) Child(name xml.Name) (child NodeDecoder) {
 
 type baseMaterialsDecoder struct {
 	baseDecoder
-	resource            BaseMaterialsResource
+	resource            BaseMaterials
 	baseMaterialDecoder baseMaterialDecoder
 }
 
@@ -229,7 +232,7 @@ func (d *baseMaterialsDecoder) End() {
 }
 
 func (d *baseMaterialsDecoder) Child(name xml.Name) (child NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrBase {
+	if name.Space == Namespace && name.Local == attrBase {
 		child = &d.baseMaterialDecoder
 	}
 	return
@@ -251,7 +254,7 @@ func (d *baseMaterialsDecoder) Start(attrs []xml.Attr) {
 
 type baseMaterialDecoder struct {
 	baseDecoder
-	resource *BaseMaterialsResource
+	resource *BaseMaterials
 }
 
 func (d *baseMaterialDecoder) Start(attrs []xml.Attr) {
@@ -269,7 +272,7 @@ func (d *baseMaterialDecoder) Start(attrs []xml.Attr) {
 			}
 		}
 	}
-	d.resource.Materials = append(d.resource.Materials, BaseMaterial{Name: name, Color: baseColor})
+	d.resource.Materials = append(d.resource.Materials, Base{Name: name, Color: baseColor})
 	return
 }
 
@@ -283,7 +286,7 @@ func (d *meshDecoder) Start(_ []xml.Attr) {
 }
 
 func (d *meshDecoder) Child(name xml.Name) (child NodeDecoder) {
-	if name.Space == ExtensionName {
+	if name.Space == Namespace {
 		if name.Local == attrVertices {
 			child = &verticesDecoder{mesh: d.resource.Mesh}
 		} else if name.Local == attrTriangles {
@@ -306,7 +309,7 @@ func (d *verticesDecoder) Start(_ []xml.Attr) {
 }
 
 func (d *verticesDecoder) Child(name xml.Name) (child NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrVertex {
+	if name.Space == Namespace && name.Local == attrVertex {
 		child = &d.vertexDecoder
 	}
 	return
@@ -333,7 +336,7 @@ func (d *vertexDecoder) Start(attrs []xml.Attr) {
 			z = float32(val)
 		}
 	}
-	d.mesh.Nodes = append(d.mesh.Nodes, Point3D{x, y, z})
+	d.mesh.Vertices = append(d.mesh.Vertices, Point3D{x, y, z})
 }
 
 type trianglesDecoder struct {
@@ -347,13 +350,13 @@ func (d *trianglesDecoder) Start(_ []xml.Attr) {
 	d.triangleDecoder.defaultPropertyID = d.resource.DefaultPID
 	d.triangleDecoder.defaultPropertyIndex = d.resource.DefaultPIndex
 
-	if len(d.resource.Mesh.Faces) == 0 && len(d.resource.Mesh.Nodes) > 0 {
-		d.resource.Mesh.Faces = make([]Face, 0, len(d.resource.Mesh.Nodes)-1)
+	if len(d.resource.Mesh.Triangles) == 0 && len(d.resource.Mesh.Vertices) > 0 {
+		d.resource.Mesh.Triangles = make([]Triangle, 0, len(d.resource.Mesh.Vertices)-1)
 	}
 }
 
 func (d *trianglesDecoder) Child(name xml.Name) (child NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrTriangle {
+	if name.Space == Namespace && name.Local == attrTriangle {
 		child = &d.triangleDecoder
 	}
 	return
@@ -405,10 +408,10 @@ func (d *triangleDecoder) Start(attrs []xml.Attr) {
 	p3 = applyDefault(p3, p1, hasP3)
 	pid = applyDefault(pid, d.defaultPropertyID, hasPID)
 
-	d.mesh.Faces = append(d.mesh.Faces, Face{
-		NodeIndices: [3]uint32{v1, v2, v3},
-		PID:         pid,
-		PIndex:      [3]uint32{p1, p2, p3},
+	d.mesh.Triangles = append(d.mesh.Triangles, Triangle{
+		Indices:  [3]uint32{v1, v2, v3},
+		PID:      pid,
+		PIndices: [3]uint32{p1, p2, p3},
 	})
 }
 
@@ -439,7 +442,7 @@ func (d *objectDecoder) Start(attrs []xml.Attr) {
 }
 
 func (d *objectDecoder) Child(name xml.Name) (child NodeDecoder) {
-	if name.Space == ExtensionName {
+	if name.Space == Namespace {
 		if name.Local == attrMesh {
 			child = &meshDecoder{resource: &d.resource}
 		} else if name.Local == attrComponents {
@@ -498,7 +501,7 @@ func (d *componentsDecoder) Start(_ []xml.Attr) {
 }
 
 func (d *componentsDecoder) Child(name xml.Name) (child NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrComponent {
+	if name.Space == Namespace && name.Local == attrComponent {
 		child = &d.componentDecoder
 	}
 	return

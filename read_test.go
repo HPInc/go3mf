@@ -22,6 +22,53 @@ import (
 
 const fakeExtension = "http://dummy.com/fake_ext"
 
+var _ SpecValidator = new(fakeSpec)
+
+type fakeSpec struct {
+}
+
+func (f *fakeSpec) Namespace() string  { return fakeExtension }
+func (f *fakeSpec) Required() bool     { return true }
+func (f *fakeSpec) Local() string      { return "qm" }
+func (f *fakeSpec) SetLocal(_ string)  {}
+func (f *fakeSpec) SetRequired(_ bool) {}
+
+func (f *fakeSpec) NewNodeDecoder(_ interface{}, nodeName string) NodeDecoder {
+	return &fakeAssetDecoder{}
+}
+
+func (f *fakeSpec) DecodeAttribute(s *Scanner, parentNode interface{}, attr xml.Attr) {
+	switch t := parentNode.(type) {
+	case *Object:
+		t.AnyAttr = append(t.AnyAttr, &fakeAttr{attr.Value})
+	case *Build:
+		t.AnyAttr = append(t.AnyAttr, &fakeAttr{attr.Value})
+	case *Model:
+		t.AnyAttr = append(t.AnyAttr, &fakeAttr{attr.Value})
+	case *Item:
+		t.AnyAttr = append(t.AnyAttr, &fakeAttr{attr.Value})
+	case *Component:
+		t.AnyAttr = append(t.AnyAttr, &fakeAttr{attr.Value})
+	}
+}
+
+func (f *fakeSpec) ValidateObject(_ *Model, _ string, _ *Object) []error {
+	return nil
+}
+
+func (f *fakeSpec) ValidateAsset(_ *Model, _ string, _ Asset) []error {
+	return nil
+}
+
+func (f *fakeSpec) ValidateModel(m *Model) []error {
+	var errs []error
+	var a *fakeAttr
+	if m.Build.AnyAttr.Get(&a) {
+		errs = append(errs, errors.New("Build: fake"))
+	}
+	return errs
+}
+
 type fakeAsset struct {
 	ID uint32
 }
@@ -44,25 +91,6 @@ func (f *fakeAssetDecoder) Start(att []xml.Attr) {
 	id, _ := strconv.ParseUint(att[0].Value, 10, 32)
 	f.Scanner.ResourceID = uint32(id)
 	f.Scanner.AddAsset(&fakeAsset{ID: uint32(id)})
-}
-
-func nodeDecoder(_ interface{}, nodeName string) NodeDecoder {
-	return &fakeAssetDecoder{}
-}
-
-func decodeAttribute(s *Scanner, parentNode interface{}, attr xml.Attr) {
-	switch t := parentNode.(type) {
-	case *Object:
-		t.ExtensionAttr = append(t.ExtensionAttr, &fakeAttr{attr.Value})
-	case *Build:
-		t.ExtensionAttr = append(t.ExtensionAttr, &fakeAttr{attr.Value})
-	case *Model:
-		t.ExtensionAttr = append(t.ExtensionAttr, &fakeAttr{attr.Value})
-	case *Item:
-		t.ExtensionAttr = append(t.ExtensionAttr, &fakeAttr{attr.Value})
-	case *Component:
-		t.ExtensionAttr = append(t.ExtensionAttr, &fakeAttr{attr.Value})
-	}
 }
 
 type modelBuilder struct {
@@ -94,7 +122,7 @@ func (m *modelBuilder) withDefaultModel() *modelBuilder {
 func (m *modelBuilder) withModel(unit string, lang string, thumbnail string) *modelBuilder {
 	m.str.WriteString(`<model `)
 	m.addAttr("", "unit", unit).addAttr("xml", "lang", lang)
-	m.addAttr("", "xmlns", ExtensionName).addAttr("xmlns", "qm", fakeExtension)
+	m.addAttr("", "xmlns", Namespace).addAttr("xmlns", "qm", fakeExtension)
 	m.addAttr("", "requiredextensions", "qm")
 	if thumbnail != "" {
 		m.addAttr("", "thumbnail", thumbnail)
@@ -174,7 +202,7 @@ func newMockPackage(other *mockFile) *mockPackage {
 	m := new(mockPackage)
 	m.On("Open", mock.Anything).Return(nil).Maybe()
 	m.On("Create", mock.Anything, mock.Anything).Return(nil, nil).Maybe()
-	m.On("Relationships").Return([]Relationship{{Path: DefaultPartModelName, Type: RelType3DModel}}).Maybe()
+	m.On("Relationships").Return([]Relationship{{Path: DefaultModelPath, Type: RelType3DModel}}).Maybe()
 	m.On("FindFileFromName", mock.Anything).Return(other, other != nil).Maybe()
 	return m
 }
@@ -284,7 +312,7 @@ func TestDecoder_processRootModel_Fail(t *testing.T) {
 }
 
 func TestDecoder_processRootModel(t *testing.T) {
-	baseMaterials := &BaseMaterialsResource{ID: 5, Materials: []BaseMaterial{
+	baseMaterials := &BaseMaterials{ID: 5, Materials: []Base{
 		{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 		{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
 	}}
@@ -292,7 +320,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 		Mesh: new(Mesh),
 		ID:   8, Name: "Box 1", Thumbnail: "/a.png", DefaultPID: 5, PartNumber: "11111111-1111-1111-1111-111111111111",
 	}
-	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []Point3D{
+	meshRes.Mesh.Vertices = append(meshRes.Mesh.Vertices, []Point3D{
 		{0, 0, 0},
 		{100, 0, 0},
 		{100, 100, 0},
@@ -302,19 +330,19 @@ func TestDecoder_processRootModel(t *testing.T) {
 		{100, 100, 100},
 		{0, 100, 100},
 	}...)
-	meshRes.Mesh.Faces = append(meshRes.Mesh.Faces, []Face{
-		{NodeIndices: [3]uint32{3, 2, 1}, PID: 5},
-		{NodeIndices: [3]uint32{1, 0, 3}, PID: 5},
-		{NodeIndices: [3]uint32{4, 5, 6}, PID: 5, PIndex: [3]uint32{1, 1, 1}},
-		{NodeIndices: [3]uint32{6, 7, 4}, PID: 5, PIndex: [3]uint32{1, 1, 1}},
-		{NodeIndices: [3]uint32{0, 1, 5}, PID: 5, PIndex: [3]uint32{0, 1, 2}},
-		{NodeIndices: [3]uint32{5, 4, 0}, PID: 5, PIndex: [3]uint32{3, 0, 2}},
-		{NodeIndices: [3]uint32{1, 2, 6}, PID: 5, PIndex: [3]uint32{0, 1, 2}},
-		{NodeIndices: [3]uint32{6, 5, 1}, PID: 5, PIndex: [3]uint32{2, 1, 3}},
-		{NodeIndices: [3]uint32{2, 3, 7}, PID: 5},
-		{NodeIndices: [3]uint32{7, 6, 2}, PID: 5},
-		{NodeIndices: [3]uint32{3, 0, 4}, PID: 5},
-		{NodeIndices: [3]uint32{4, 7, 3}, PID: 5},
+	meshRes.Mesh.Triangles = append(meshRes.Mesh.Triangles, []Triangle{
+		{Indices: [3]uint32{3, 2, 1}, PID: 5},
+		{Indices: [3]uint32{1, 0, 3}, PID: 5},
+		{Indices: [3]uint32{4, 5, 6}, PID: 5, PIndices: [3]uint32{1, 1, 1}},
+		{Indices: [3]uint32{6, 7, 4}, PID: 5, PIndices: [3]uint32{1, 1, 1}},
+		{Indices: [3]uint32{0, 1, 5}, PID: 5, PIndices: [3]uint32{0, 1, 2}},
+		{Indices: [3]uint32{5, 4, 0}, PID: 5, PIndices: [3]uint32{3, 0, 2}},
+		{Indices: [3]uint32{1, 2, 6}, PID: 5, PIndices: [3]uint32{0, 1, 2}},
+		{Indices: [3]uint32{6, 5, 1}, PID: 5, PIndices: [3]uint32{2, 1, 3}},
+		{Indices: [3]uint32{2, 3, 7}, PID: 5},
+		{Indices: [3]uint32{7, 6, 2}, PID: 5},
+		{Indices: [3]uint32{3, 0, 4}, PID: 5},
+		{Indices: [3]uint32{4, 7, 3}, PID: 5},
 	}...)
 
 	components := &Object{
@@ -325,8 +353,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 
 	want := &Model{
 		Units: UnitMillimeter, Language: "en-US", Path: "/3D/3dmodel.model", Thumbnail: "/thumbnail.png",
-		Namespaces:         []xml.Name{{Space: fakeExtension, Local: "qm"}},
-		RequiredExtensions: []string{fakeExtension},
+		Specs: map[string]Spec{fakeExtension: &fakeSpec{}},
 		Resources: Resources{
 			Assets: []Asset{baseMaterials}, Objects: []*Object{meshRes, components},
 		},
@@ -399,11 +426,10 @@ func TestDecoder_processRootModel(t *testing.T) {
 
 	t.Run("base", func(t *testing.T) {
 		d := new(Decoder)
-		d.RegisterNodeDecoderExtension(fakeExtension, nil)
-		d.RegisterDecodeAttributeExtension(fakeExtension, nil)
 		d.Strict = true
 		d.SetDecompressor(func(r io.Reader) io.ReadCloser { return flate.NewReader(r) })
 		d.SetXMLDecoder(func(r io.Reader) XMLDecoder { return xml.NewDecoder(r) })
+		got.WithSpec(&fakeSpec{})
 		if err := d.processRootModel(context.Background(), rootFile, got); err != nil {
 			t.Errorf("Decoder.processRootModel() unexpected error = %v", err)
 			return
@@ -442,9 +468,9 @@ func TestDecoder_processNonRootModels(t *testing.T) {
 			`).build("/3D/other.model"),
 			}}, false, &Model{
 				Childs: map[string]*ChildModel{
-					"/3D/other.model": {Resources: Resources{Assets: []Asset{&BaseMaterialsResource{ID: 6}}}},
+					"/3D/other.model": {Resources: Resources{Assets: []Asset{&BaseMaterials{ID: 6}}}},
 					"/3D/new.model": {Resources: Resources{Assets: []Asset{
-						&BaseMaterialsResource{ID: 5, Materials: []BaseMaterial{
+						&BaseMaterials{ID: 5, Materials: []Base{
 							{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 							{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
 						}}}}},
@@ -516,7 +542,7 @@ func Test_modelFile_Decode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if sc := decodeModelFile(tt.args.ctx, tt.args.x, new(Model), "", true, false, nil); (sc.Err != nil) != tt.wantErr {
+			if sc := decodeModelFile(tt.args.ctx, tt.args.x, new(Model), "", true, false); (sc.Err != nil) != tt.wantErr {
 				t.Errorf("modelFile.Decode() error = %v, wantErr %v", sc.Err, tt.wantErr)
 			}
 		})
@@ -534,9 +560,8 @@ func TestNewDecoder(t *testing.T) {
 		want *Decoder
 	}{
 		{"base", args{nil, 5}, &Decoder{
-			Strict:           true,
-			p:                &opcReader{ra: nil, size: 5},
-			extensionDecoder: make(map[string]*extensionDecoderWrapper),
+			Strict: true,
+			p:      &opcReader{ra: nil, size: 5},
 		}},
 	}
 	for _, tt := range tests {
@@ -631,11 +656,10 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 
 	t.Run("base", func(t *testing.T) {
 		d := new(Decoder)
-		d.RegisterNodeDecoderExtension(fakeExtension, nil)
-		d.RegisterDecodeAttributeExtension(fakeExtension, nil)
 		d.Strict = false
 		d.SetDecompressor(func(r io.Reader) io.ReadCloser { return flate.NewReader(r) })
 		d.SetXMLDecoder(func(r io.Reader) XMLDecoder { return xml.NewDecoder(r) })
+		got.WithSpec(&fakeSpec{})
 		if err := d.processRootModel(context.Background(), rootFile, got); err != nil {
 			t.Errorf("Decoder.processRootModel() unexpected error = %v", err)
 			return

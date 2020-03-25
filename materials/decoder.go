@@ -8,12 +8,7 @@ import (
 	"github.com/qmuntal/go3mf"
 )
 
-// RegisterExtension registers this extension in the decoder instance.
-func RegisterExtension(d *go3mf.Decoder) {
-	d.RegisterNodeDecoderExtension(ExtensionName, nodeDecoder)
-}
-
-func nodeDecoder(_ interface{}, nodeName string) (child go3mf.NodeDecoder) {
+func (e Spec) NewNodeDecoder(_ interface{}, nodeName string) (child go3mf.NodeDecoder) {
 	switch nodeName {
 	case attrColorGroup:
 		child = new(colorGroupDecoder)
@@ -29,9 +24,11 @@ func nodeDecoder(_ interface{}, nodeName string) (child go3mf.NodeDecoder) {
 	return
 }
 
+func (e Spec) DecodeAttribute(_ *go3mf.Scanner, _ interface{}, _ xml.Attr) {}
+
 type colorGroupDecoder struct {
 	baseDecoder
-	resource     ColorGroupResource
+	resource     ColorGroup
 	colorDecoder colorDecoder
 }
 
@@ -40,7 +37,7 @@ func (d *colorGroupDecoder) End() {
 }
 
 func (d *colorGroupDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrColor {
+	if name.Space == Namespace && name.Local == attrColor {
 		child = &d.colorDecoder
 	}
 	return
@@ -62,7 +59,7 @@ func (d *colorGroupDecoder) Start(attrs []xml.Attr) {
 
 type colorDecoder struct {
 	baseDecoder
-	resource *ColorGroupResource
+	resource *ColorGroup
 }
 
 func (d *colorDecoder) Start(attrs []xml.Attr) {
@@ -79,7 +76,7 @@ func (d *colorDecoder) Start(attrs []xml.Attr) {
 
 type tex2DCoordDecoder struct {
 	baseDecoder
-	resource *Texture2DGroupResource
+	resource *Texture2DGroup
 }
 
 func (d *tex2DCoordDecoder) Start(attrs []xml.Attr) {
@@ -104,7 +101,7 @@ func (d *tex2DCoordDecoder) Start(attrs []xml.Attr) {
 
 type tex2DGroupDecoder struct {
 	baseDecoder
-	resource          Texture2DGroupResource
+	resource          Texture2DGroup
 	tex2DCoordDecoder tex2DCoordDecoder
 }
 
@@ -113,7 +110,7 @@ func (d *tex2DGroupDecoder) End() {
 }
 
 func (d *tex2DGroupDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrTex2DCoord {
+	if name.Space == Namespace && name.Local == attrTex2DCoord {
 		child = &d.tex2DCoordDecoder
 	}
 	return
@@ -144,7 +141,7 @@ func (d *tex2DGroupDecoder) Start(attrs []xml.Attr) {
 
 type texture2DDecoder struct {
 	baseDecoder
-	resource Texture2DResource
+	resource Texture2D
 }
 
 func (d *texture2DDecoder) End() {
@@ -179,7 +176,7 @@ func (d *texture2DDecoder) Start(attrs []xml.Attr) {
 
 type compositeMaterialsDecoder struct {
 	baseDecoder
-	resource         CompositeMaterialsResource
+	resource         CompositeMaterials
 	compositeDecoder compositeDecoder
 }
 
@@ -188,7 +185,7 @@ func (d *compositeMaterialsDecoder) End() {
 }
 
 func (d *compositeMaterialsDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrComposite {
+	if name.Space == Namespace && name.Local == attrComposite {
 		child = &d.compositeDecoder
 	}
 	return
@@ -227,7 +224,7 @@ func (d *compositeMaterialsDecoder) Start(attrs []xml.Attr) {
 
 type compositeDecoder struct {
 	baseDecoder
-	resource *CompositeMaterialsResource
+	resource *CompositeMaterials
 }
 
 func (d *compositeDecoder) Start(attrs []xml.Attr) {
@@ -248,7 +245,7 @@ func (d *compositeDecoder) Start(attrs []xml.Attr) {
 
 type multiPropertiesDecoder struct {
 	baseDecoder
-	resource     MultiPropertiesResource
+	resource     MultiProperties
 	multiDecoder multiDecoder
 }
 
@@ -257,7 +254,7 @@ func (d *multiPropertiesDecoder) End() {
 }
 
 func (d *multiPropertiesDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrMulti {
+	if name.Space == Namespace && name.Local == attrMulti {
 		child = &d.multiDecoder
 	}
 	return
@@ -295,7 +292,7 @@ func (d *multiPropertiesDecoder) Start(attrs []xml.Attr) {
 
 type multiDecoder struct {
 	baseDecoder
-	resource *MultiPropertiesResource
+	resource *MultiProperties
 }
 
 func (d *multiDecoder) Start(attrs []xml.Attr) {
@@ -307,7 +304,7 @@ func (d *multiDecoder) Start(attrs []xml.Attr) {
 				if err != nil {
 					d.Scanner.InvalidAttr(a.Name.Local, f, true)
 				}
-				multi.PIndex = append(multi.PIndex, uint32(val))
+				multi.PIndices = append(multi.PIndices, uint32(val))
 			}
 		}
 	}

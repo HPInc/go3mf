@@ -45,55 +45,54 @@ func (m *mockPackagePart) AddRelationship(args0 Relationship) {
 func TestMarshalModel(t *testing.T) {
 	m := &Model{
 		Units: UnitMillimeter, Language: "en-US", Path: "/3D/3dmodel.model", Thumbnail: "/thumbnail.png",
-		Namespaces:         []xml.Name{{Space: fakeExtension, Local: "qm"}},
-		RequiredExtensions: []string{fakeExtension},
-		ExtensionAttr:      ExtensionAttr{&fakeAttr{Value: "model_fake"}},
+		Specs:   map[string]Spec{fakeExtension: &fakeSpec{}},
+		AnyAttr: AttrMarshalers{&fakeAttr{Value: "model_fake"}},
 		Resources: Resources{
 			Assets: []Asset{
-				&BaseMaterialsResource{ID: 5, Materials: []BaseMaterial{
+				&BaseMaterials{ID: 5, Materials: []Base{
 					{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 					{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
 				}}, &fakeAsset{ID: 25}},
 			Objects: []*Object{
 				{
 					ID: 8, Name: "Box 1", PartNumber: "11111111-1111-1111-1111-111111111111", Thumbnail: "/a.png",
-					ExtensionAttr: ExtensionAttr{&fakeAttr{Value: "object_fake"}},
-					DefaultPID:    1, DefaultPIndex: 1, ObjectType: ObjectTypeModel, Mesh: &Mesh{
-						Nodes: []Point3D{
+					AnyAttr:    AttrMarshalers{&fakeAttr{Value: "object_fake"}},
+					DefaultPID: 1, DefaultPIndex: 1, ObjectType: ObjectTypeModel, Mesh: &Mesh{
+						Vertices: []Point3D{
 							{0, 0, 0}, {100, 0, 0}, {100, 100, 0},
 							{0, 100, 0}, {0, 0, 100}, {100, 0, 100},
 							{100, 100, 100}, {0, 100, 100}},
-						Faces: []Face{
-							{NodeIndices: [3]uint32{3, 2, 1}, PID: 5},
-							{NodeIndices: [3]uint32{1, 0, 3}, PID: 5},
-							{NodeIndices: [3]uint32{4, 5, 6}, PID: 5, PIndex: [3]uint32{1, 1, 1}},
-							{NodeIndices: [3]uint32{6, 7, 4}, PID: 5, PIndex: [3]uint32{1, 1, 1}},
-							{NodeIndices: [3]uint32{0, 1, 5}, PID: 5, PIndex: [3]uint32{0, 1, 2}},
-							{NodeIndices: [3]uint32{5, 4, 0}, PID: 5, PIndex: [3]uint32{3, 0, 2}},
-							{NodeIndices: [3]uint32{1, 2, 6}, PID: 5, PIndex: [3]uint32{0, 1, 2}},
-							{NodeIndices: [3]uint32{6, 5, 1}, PID: 5, PIndex: [3]uint32{2, 1, 3}},
-							{NodeIndices: [3]uint32{2, 3, 7}, PID: 5},
-							{NodeIndices: [3]uint32{7, 6, 2}, PID: 5},
-							{NodeIndices: [3]uint32{3, 0, 4}, PID: 5},
-							{NodeIndices: [3]uint32{4, 7, 3}, PID: 5},
+						Triangles: []Triangle{
+							{Indices: [3]uint32{3, 2, 1}, PID: 5},
+							{Indices: [3]uint32{1, 0, 3}, PID: 5},
+							{Indices: [3]uint32{4, 5, 6}, PID: 5, PIndices: [3]uint32{1, 1, 1}},
+							{Indices: [3]uint32{6, 7, 4}, PID: 5, PIndices: [3]uint32{1, 1, 1}},
+							{Indices: [3]uint32{0, 1, 5}, PID: 5, PIndices: [3]uint32{0, 1, 2}},
+							{Indices: [3]uint32{5, 4, 0}, PID: 5, PIndices: [3]uint32{3, 0, 2}},
+							{Indices: [3]uint32{1, 2, 6}, PID: 5, PIndices: [3]uint32{0, 1, 2}},
+							{Indices: [3]uint32{6, 5, 1}, PID: 5, PIndices: [3]uint32{2, 1, 3}},
+							{Indices: [3]uint32{2, 3, 7}, PID: 5},
+							{Indices: [3]uint32{7, 6, 2}, PID: 5},
+							{Indices: [3]uint32{3, 0, 4}, PID: 5},
+							{Indices: [3]uint32{4, 7, 3}, PID: 5},
 						},
 					}},
 				{
 					ID: 20, ObjectType: ObjectTypeSupport,
 					Metadata: []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}, {Name: xml.Name{Space: "qm", Local: "CustomMetadata4"}, Type: "xs:boolean", Value: "2"}},
 					Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1},
-						ExtensionAttr: ExtensionAttr{&fakeAttr{Value: "component_fake"}}}},
+						AnyAttr: AttrMarshalers{&fakeAttr{Value: "component_fake"}}}},
 				},
 			},
 		},
 		Build: Build{
-			ExtensionAttr: ExtensionAttr{&fakeAttr{Value: "build_fake"}},
+			AnyAttr: AttrMarshalers{&fakeAttr{Value: "build_fake"}},
 			Items: []*Item{
 				{
 					ObjectID: 20, PartNumber: "bob", Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
 					Metadata: []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}},
 				},
-				{ObjectID: 21, ExtensionAttr: ExtensionAttr{&fakeAttr{Value: "item_fake"}}},
+				{ObjectID: 21, AnyAttr: AttrMarshalers{&fakeAttr{Value: "item_fake"}}},
 			}}, Metadata: []Metadata{
 			{Name: xml.Name{Local: "Application"}, Value: "go3mf app"},
 			{Name: xml.Name{Space: "qm", Local: "CustomMetadata1"}, Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},
@@ -106,9 +105,8 @@ func TestMarshalModel(t *testing.T) {
 			return
 		}
 		d := NewDecoder(nil, 0)
-		d.RegisterNodeDecoderExtension(fakeExtension, nodeDecoder)
-		d.RegisterDecodeAttributeExtension(fakeExtension, decodeAttribute)
 		newModel := new(Model)
+		newModel.WithSpec(&fakeSpec{})
 		newModel.Path = m.Path
 		if err := d.UnmarshalModel(b, newModel); err != nil {
 			t.Errorf("MarshalModel() error decoding = %v, s = %s", err, string(b))
@@ -178,7 +176,7 @@ func TestEncoder_Encode_Normalize(t *testing.T) {
 		args args
 		want *Model
 	}{
-		{"empty", args{new(Model)}, &Model{Path: DefaultPartModelName}},
+		{"empty", args{new(Model)}, &Model{Path: DefaultModelPath}},
 		{"withAttrs", args{&Model{Path: "a/other.ml", Thumbnail: "/Metadata/thumbnail.png", Attachments: []Attachment{
 			{ContentType: "image/png", Path: "Metadata/thumbnail.png", Stream: bytes.NewBufferString("fake")},
 		}}}, &Model{Path: "/a/other.ml", Units: UnitMillimeter, Thumbnail: "/Metadata/thumbnail.png", Attachments: []Attachment{
@@ -195,7 +193,7 @@ func TestEncoder_Encode_Normalize(t *testing.T) {
 				{ContentType: "application/vnd.ms-printing.printticket+xml", Path: "/3D/Metadata/pt.xml", Stream: bytes.NewBufferString("other")},
 				{ContentType: "image/png", Path: "/Metadata/thumbnail.png", Stream: bytes.NewBufferString("fake")},
 			}}},
-			&Model{Path: DefaultPartModelName,
+			&Model{Path: DefaultModelPath,
 				RootRelationships: []Relationship{
 					{Path: "/Metadata/thumbnail.png", Type: RelTypeThumbnail, ID: "2"},
 				},
@@ -208,7 +206,7 @@ func TestEncoder_Encode_Normalize(t *testing.T) {
 				"/other.model": {Relationships: []Relationship{
 					{Path: "/3D/Metadata/pt.xml", Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/printticket", ID: "1"}},
 				},
-			}}}, &Model{Path: DefaultPartModelName,
+			}}}, &Model{Path: DefaultModelPath,
 			Childs: map[string]*ChildModel{
 				"/empty.model": {},
 				"/other.model": {},
@@ -229,7 +227,7 @@ func TestEncoder_Encode_Normalize(t *testing.T) {
 				return
 			}
 			if tt.args.m.Path == "" {
-				tt.args.m.Path = DefaultPartModelName
+				tt.args.m.Path = DefaultModelPath
 			}
 			if diff := deep.Equal(newModel, tt.want); diff != nil {
 				t.Errorf("MarshalModel() = %v", diff)
@@ -288,7 +286,7 @@ func TestEncoder_Encode_Roundtrip(t *testing.T) {
 				return
 			}
 			if tt.args.m.Path == "" {
-				tt.args.m.Path = DefaultPartModelName
+				tt.args.m.Path = DefaultModelPath
 			}
 			if diff := deep.Equal(newModel, tt.args.m); diff != nil {
 				t.Errorf("MarshalModel() = %v", diff)

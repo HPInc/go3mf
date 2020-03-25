@@ -4,106 +4,8 @@ import (
 	"encoding/xml"
 	"image/color"
 	"io"
-	"reflect"
 	"sort"
 )
-
-// ExtensionAttr is an extension point containing <anyAttribute> information.
-// The key should be the extension namespace.
-type ExtensionAttr []MarshalerAttr
-
-var marshalerAttrType = reflect.TypeOf((*MarshalerAttr)(nil)).Elem()
-
-// Get finds the first MarshalerAttr that matches target, and if so, sets
-// target to that extension value and returns true.
-
-// A Marshallerattr matches target if the marshaller's concrete value is assignable to the value
-// pointed to by target.
-
-// Get will panic if target is not a non-nil pointer to either a type that implements
-// MarshallerAttr, or to any interface type.
-func (e ExtensionAttr) Get(target interface{}) bool {
-	if e == nil || len(e) == 0 {
-		return false
-	}
-	if target == nil {
-		panic("go3mf: target cannot be nil")
-	}
-
-	val := reflect.ValueOf(target)
-	typ := val.Type()
-	if typ.Kind() != reflect.Ptr || val.IsNil() {
-		panic("go3mf: target must be a non-nil pointer")
-	}
-	if el := typ.Elem(); el.Kind() != reflect.Interface && !el.Implements(marshalerAttrType) {
-		panic("go3mf: *target must be interface or implement MarshalerAttr")
-	}
-	targetType := typ.Elem()
-	for _, v := range e {
-		if v != nil && reflect.TypeOf(v).AssignableTo(targetType) {
-			val.Elem().Set(reflect.ValueOf(v))
-			return true
-		}
-	}
-	return false
-}
-
-func (e ExtensionAttr) encode(x *XMLEncoder, start *xml.StartElement) {
-	for _, ext := range e {
-		if att, err := ext.Marshal3MFAttr(x); err == nil {
-			start.Attr = append(start.Attr, att...)
-		}
-	}
-}
-
-// Extension is an extension point containing <any> information.
-// The key should be the extension namespace.
-type Extension []Marshaler
-
-var marshalerType = reflect.TypeOf((*Marshaler)(nil)).Elem()
-
-// Get finds the first Marshaller that matches target, and if so, sets
-// target to that extension value and returns true.
-
-// A Marshaller matches target if the marshaller's concrete value is assignable to the value
-// pointed to by target.
-
-// Get will panic if target is not a non-nil pointer to either a type that implements
-// Marshaller, or to any interface type.
-func (e Extension) Get(target interface{}) bool {
-	if e == nil || len(e) == 0 {
-		return false
-	}
-	if target == nil {
-		panic("go3mf: target cannot be nil")
-	}
-
-	val := reflect.ValueOf(target)
-	typ := val.Type()
-	if typ.Kind() != reflect.Ptr || val.IsNil() {
-		panic("go3mf: target must be a non-nil pointer")
-	}
-	if el := typ.Elem(); el.Kind() != reflect.Interface && !el.Implements(marshalerType) {
-		panic("go3mf: *target must be interface or implement Marshaler")
-	}
-	targetType := typ.Elem()
-	for _, v := range e {
-		if v != nil && reflect.TypeOf(v).AssignableTo(targetType) {
-			val.Elem().Set(reflect.ValueOf(v))
-			return true
-		}
-	}
-	return false
-}
-
-func (e Extension) encode(x *XMLEncoder) error {
-	for _, ext := range e {
-		if err := ext.Marshal3MF(x); err == nil {
-			return err
-		}
-	}
-	return nil
-}
 
 // Units define the allowed model units.
 type Units uint8
@@ -184,16 +86,16 @@ type Relationship struct {
 
 // Build contains one or more items to manufacture as part of processing the job.
 type Build struct {
-	Items         []*Item
-	ExtensionAttr ExtensionAttr
+	Items   []*Item
+	AnyAttr AttrMarshalers
 }
 
 // The Resources element acts as the root element of a library of constituent
 // pieces of the overall 3D object definition.
 type Resources struct {
-	Assets        []Asset
-	Objects       []*Object
-	ExtensionAttr ExtensionAttr
+	Assets  []Asset
+	Objects []*Object
+	AnyAttr AttrMarshalers
 }
 
 // UnusedID returns the lowest unused ID.
@@ -252,7 +154,7 @@ func (rs *Resources) FindAsset(id uint32) (Asset, bool) {
 type ChildModel struct {
 	Resources     Resources
 	Relationships []Relationship
-	Extension     Extension
+	Any           Marshalers
 }
 
 // A Model is an in memory representation of the 3MF file.
@@ -263,26 +165,41 @@ type ChildModel struct {
 // Childs keys cannot be an empty string.
 // RootRelationships are the OPC root relationships.
 type Model struct {
-	Path               string
-	Language           string
-	Units              Units
-	Thumbnail          string
-	Resources          Resources
-	Build              Build
-	Attachments        []Attachment
-	Namespaces         []xml.Name
-	RequiredExtensions []string
-	Metadata           []Metadata
-	Childs             map[string]*ChildModel // path -> child
-	RootRelationships  []Relationship
-	Relationships      []Relationship
-	Extension          Extension
-	ExtensionAttr      ExtensionAttr
+	Path              string
+	Language          string
+	Units             Units
+	Thumbnail         string
+	Resources         Resources
+	Build             Build
+	Attachments       []Attachment
+	Specs             map[string]Spec // space -> spec
+	Metadata          []Metadata
+	Childs            map[string]*ChildModel // path -> child
+	RootRelationships []Relationship
+	Relationships     []Relationship
+	Any               Marshalers
+	AnyAttr           AttrMarshalers
+}
+
+// WithSpec adds a new extension
+func (m *Model) WithSpec(extension Spec) {
+	if m.Specs == nil {
+		m.Specs = make(map[string]Spec)
+	}
+	m.Specs[extension.Namespace()] = extension
+}
+
+// PathOrDefault returns Path if not empty, else DefaultModelPath.
+func (m *Model) PathOrDefault() string {
+	if m.Path == "" {
+		return DefaultModelPath
+	}
+	return m.Path
 }
 
 // FindResources returns the resource associated with path.
 func (m *Model) FindResources(path string) (*Resources, bool) {
-	if path == "" || path == m.Path {
+	if path == "" || path == m.Path || (m.Path == "" && path == DefaultModelPath) {
 		return &m.Resources, true
 	}
 	if child, ok := m.Childs[path]; ok {
@@ -307,40 +224,45 @@ func (m *Model) FindObject(path string, id uint32) (*Object, bool) {
 	return nil, false
 }
 
-// BaseMaterial defines the Model Base Material Resource.
+// Base defines the Model Base Material Resource.
 // A model material resource is an in memory representation of the 3MF
 // material resource object.
-type BaseMaterial struct {
+type Base struct {
 	Name  string
 	Color color.RGBA
 }
 
-// BaseMaterialsResource defines a slice of BaseMaterial.
-type BaseMaterialsResource struct {
+// BaseMaterials defines a slice of Base.
+type BaseMaterials struct {
 	ID        uint32
-	Materials []BaseMaterial
+	Materials []Base
+}
+
+// Len returns the materials count.
+func (r *BaseMaterials) Len() int {
+	return len(r.Materials)
 }
 
 // Identify returns the unique ID of the resource.
-func (ms *BaseMaterialsResource) Identify() uint32 {
-	return ms.ID
+func (r *BaseMaterials) Identify() uint32 {
+	return r.ID
 }
 
 // A Item is an in memory representation of the 3MF build item.
 type Item struct {
-	ObjectID      uint32
-	Transform     Matrix
-	PartNumber    string
-	Metadata      []Metadata
-	ExtensionAttr ExtensionAttr
+	ObjectID   uint32
+	Transform  Matrix
+	PartNumber string
+	Metadata   []Metadata
+	AnyAttr    AttrMarshalers
 }
 
 // ObjectPath search an extension attribute with an ObjectPath
 // function that return a non empty path.
 // Else returns the default path.
 func (b *Item) ObjectPath(defaultPath string) string {
-	for _, att := range b.ExtensionAttr {
-		if ext, ok := att.(interface{ ObjectPath() string }); ok {
+	for _, att := range b.AnyAttr {
+		if ext, ok := att.(ObjectPather); ok {
 			path := ext.ObjectPath()
 			if path != "" {
 				return path
@@ -367,34 +289,22 @@ type Object struct {
 	Metadata      []Metadata
 	Mesh          *Mesh
 	Components    []*Component
-	ExtensionAttr ExtensionAttr
-}
-
-// NewMeshObject returns a new object resource
-// with an initialized mesh.
-func NewMeshObject() *Object {
-	return &Object{Mesh: new(Mesh)}
-}
-
-// NewComponentsObject returns a new object resource
-// with an initialized components.
-func NewComponentsObject() *Object {
-	return &Object{Components: make([]*Component, 0)}
+	AnyAttr       AttrMarshalers
 }
 
 // A Component is an in memory representation of the 3MF component.
 type Component struct {
-	ObjectID      uint32
-	Transform     Matrix
-	ExtensionAttr ExtensionAttr
+	ObjectID  uint32
+	Transform Matrix
+	AnyAttr   AttrMarshalers
 }
 
 // ObjectPath search an extension attribute with an ObjectPath
 // function that return a non empty path.
 // Else returns the default path.
 func (c *Component) ObjectPath(defaultPath string) string {
-	for _, att := range c.ExtensionAttr {
-		if ext, ok := att.(interface{ ObjectPath() string }); ok {
+	for _, att := range c.AnyAttr {
+		if ext, ok := att.(ObjectPather); ok {
 			path := ext.ObjectPath()
 			if path != "" {
 				return path
@@ -409,11 +319,11 @@ func (c *Component) HasTransform() bool {
 	return c.Transform != Matrix{} && c.Transform != Identity()
 }
 
-// Face defines a triangle of a mesh.
-type Face struct {
-	NodeIndices [3]uint32 // Coordinates of the three nodes that defines the face.
-	PID         uint32
-	PIndex      [3]uint32 // Resource subindex of the three nodes that defines the face.
+// Triangle defines a triangle of a mesh.
+type Triangle struct {
+	Indices  [3]uint32 // Coordinates of the three nodes that defines the face.
+	PID      uint32
+	PIndices [3]uint32 // Resource subindex of the three nodes that defines the face.
 }
 
 // A Mesh is an in memory representation of the 3MF mesh object.
@@ -421,17 +331,17 @@ type Face struct {
 // orientation (i.e. the face can look up or look down) and have three nodes.
 // The orientation is defined by the order of its nodes.
 type Mesh struct {
-	ExtensionAttr ExtensionAttr
-	Nodes         []Point3D
-	Faces         []Face
-	Extension     Extension
+	Vertices  []Point3D
+	Triangles []Triangle
+	AnyAttr   AttrMarshalers
+	Any       Marshalers
 }
 
 // MeshBuilder is a helper that creates mesh following a configurable criteria.
 // It must be instantiated using NewMeshBuilder.
 type MeshBuilder struct {
 	// True to automatically check if a node with the same coordinates already exists in the mesh
-	// when calling AddNode. If it exists, the return value will be the existing node and no node will be added.
+	// when calling AddVertex. If it exists, the return value will be the existing node and no node will be added.
 	// Using this option produces an speed penalty.
 	CalculateConnectivity bool
 	// Do not modify the pointer to Mesh once the build process has started.
@@ -448,15 +358,15 @@ func NewMeshBuilder(m *Mesh) *MeshBuilder {
 	}
 }
 
-// AddNode adds a node the the mesh at the target position.
-func (mb *MeshBuilder) AddNode(node Point3D) uint32 {
+// AddVertex adds a node the the mesh at the target position.
+func (mb *MeshBuilder) AddVertex(node Point3D) uint32 {
 	if mb.CalculateConnectivity {
 		if index, ok := mb.vectorTree.FindVector(node); ok {
 			return index
 		}
 	}
-	mb.Mesh.Nodes = append(mb.Mesh.Nodes, node)
-	index := uint32(len(mb.Mesh.Nodes)) - 1
+	mb.Mesh.Vertices = append(mb.Mesh.Vertices, node)
+	index := uint32(len(mb.Mesh.Vertices)) - 1
 	if mb.CalculateConnectivity {
 		mb.vectorTree.AddVector(node, index)
 	}
@@ -492,8 +402,8 @@ const (
 )
 
 const (
-	// ExtensionName is the canonical name of this extension.
-	ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/core/2015/02"
+	// Namespace is the canonical name of this extension.
+	Namespace = "http://schemas.microsoft.com/3dmanufacturing/core/2015/02"
 
 	// RelType3DModel is the canonical 3D model relationship type.
 	RelType3DModel = "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"
@@ -504,8 +414,8 @@ const (
 	// RelTypeMustPreserve is the canonical must preserve relationship type.
 	RelTypeMustPreserve = "http://schemas.openxmlformats.org/package/2006/relationships/mustpreserve"
 
-	// DefaultPartModelName is the recommended root model part name.
-	DefaultPartModelName = "/3D/3dmodel.model"
+	// DefaultModelPath is the recommended root model part name.
+	DefaultModelPath = "/3D/3dmodel.model"
 	// DefaultPrintTicketName is the recommended print ticket part name.
 	DefaultPrintTicketName = "/3D/Metadata/Model_PT.xml"
 	// Default3DTexturesDir is the recommended directory for 3D textures.

@@ -1,23 +1,43 @@
 package materials
 
 import (
+	"image/color"
 	"reflect"
 	"testing"
+
+	"github.com/qmuntal/go3mf"
 )
 
-func TestTexture2DResource_Identify(t *testing.T) {
+var _ go3mf.SpecDecoder = new(Spec)
+var _ go3mf.SpecValidator = new(Spec)
+var _ go3mf.Asset = new(Texture2D)
+var _ go3mf.Asset = new(Texture2DGroup)
+var _ go3mf.Asset = new(CompositeMaterials)
+var _ go3mf.Asset = new(MultiProperties)
+var _ go3mf.Asset = new(ColorGroup)
+var _ go3mf.Marshaler = new(Texture2D)
+var _ go3mf.Marshaler = new(Texture2DGroup)
+var _ go3mf.Marshaler = new(CompositeMaterials)
+var _ go3mf.Marshaler = new(ColorGroup)
+var _ go3mf.Marshaler = new(MultiProperties)
+var _ go3mf.PropertyGroup = new(ColorGroup)
+var _ go3mf.PropertyGroup = new(Texture2DGroup)
+var _ go3mf.PropertyGroup = new(CompositeMaterials)
+var _ go3mf.PropertyGroup = new(MultiProperties)
+
+func TestTexture2D_Identify(t *testing.T) {
 	tests := []struct {
 		name string
-		t    *Texture2DResource
+		t    *Texture2D
 		want uint32
 	}{
-		{"base", &Texture2DResource{ID: 1}, 1},
+		{"base", &Texture2D{ID: 1}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.t.Identify()
 			if got != tt.want {
-				t.Errorf("Texture2DResource.Identify() got = %v, want %v", got, tt.want)
+				t.Errorf("Texture2D.Identify() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -57,55 +77,55 @@ func TestTextureCoord_V(t *testing.T) {
 	}
 }
 
-func TestTexture2DGroupResource_Identify(t *testing.T) {
+func TestTexture2DGroup_Identify(t *testing.T) {
 	tests := []struct {
 		name string
-		t    *Texture2DGroupResource
+		t    *Texture2DGroup
 		want uint32
 	}{
-		{"base", &Texture2DGroupResource{ID: 1}, 1},
+		{"base", &Texture2DGroup{ID: 1}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.t.Identify()
 			if got != tt.want {
-				t.Errorf("Texture2DGroupResource.Identify() got = %v, want %v", got, tt.want)
+				t.Errorf("Texture2DGroup.Identify() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestColorGroupResource_Identify(t *testing.T) {
+func TestColorGroup_Identify(t *testing.T) {
 	tests := []struct {
 		name string
-		c    *ColorGroupResource
+		c    *ColorGroup
 		want uint32
 	}{
-		{"base", &ColorGroupResource{ID: 1}, 1},
+		{"base", &ColorGroup{ID: 1}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.c.Identify()
 			if got != tt.want {
-				t.Errorf("ColorGroupResource.Identify() got = %v, want %v", got, tt.want)
+				t.Errorf("ColorGroup.Identify() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestCompositeMaterialsResource_Identify(t *testing.T) {
+func TestCompositeMaterials_Identify(t *testing.T) {
 	tests := []struct {
 		name string
-		c    *CompositeMaterialsResource
+		c    *CompositeMaterials
 		want uint32
 	}{
-		{"base", &CompositeMaterialsResource{ID: 1}, 1},
+		{"base", &CompositeMaterials{ID: 1}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.c.Identify()
 			if got != tt.want {
-				t.Errorf("CompositeMaterialsResource.Identify() got = %v, want %v", got, tt.want)
+				t.Errorf("CompositeMaterials.Identify() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -182,19 +202,19 @@ func TestTextureFilter_String(t *testing.T) {
 	}
 }
 
-func TestMultiPropertiesResource_Identify(t *testing.T) {
+func TestMultiProperties_Identify(t *testing.T) {
 	tests := []struct {
 		name string
-		c    *MultiPropertiesResource
+		c    *MultiProperties
 		want uint32
 	}{
-		{"base", &MultiPropertiesResource{ID: 1}, 1},
+		{"base", &MultiProperties{ID: 1}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.c.Identify()
 			if got != tt.want {
-				t.Errorf("MultiPropertiesResource.Identify() got = %v, want %v", got, tt.want)
+				t.Errorf("MultiProperties.Identify() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -296,6 +316,78 @@ func Test_newTexture2DType(t *testing.T) {
 			}
 			if got1 != tt.want1 {
 				t.Errorf("newTexture2DType() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+
+func TestColorGroup_Len(t *testing.T) {
+	tests := []struct {
+		name string
+		r    *ColorGroup
+		want int
+	}{
+		{"empty", new(ColorGroup), 0},
+		{"base", &ColorGroup{Colors: make([]color.RGBA, 3)}, 3},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.r.Len(); got != tt.want {
+				t.Errorf("ColorGroup.Len() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCompositeMaterials_Len(t *testing.T) {
+	tests := []struct {
+		name string
+		r    *CompositeMaterials
+		want int
+	}{
+		{"empty", new(CompositeMaterials), 0},
+		{"base", &CompositeMaterials{Composites: make([]Composite, 3)}, 3},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.r.Len(); got != tt.want {
+				t.Errorf("CompositeMaterials.Len() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMultiProperties_Len(t *testing.T) {
+	tests := []struct {
+		name string
+		r    *MultiProperties
+		want int
+	}{
+		{"empty", new(MultiProperties), 0},
+		{"base", &MultiProperties{Multis: make([]Multi, 3)}, 3},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.r.Len(); got != tt.want {
+				t.Errorf("MultiProperties.Len() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestTexture2DGroup_Len(t *testing.T) {
+	tests := []struct {
+		name string
+		r    *Texture2DGroup
+		want int
+	}{
+		{"empty", new(Texture2DGroup), 0},
+		{"base", &Texture2DGroup{Coords: make([]TextureCoord, 3)}, 3},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.r.Len(); got != tt.want {
+				t.Errorf("Texture2DGroup.Len() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -2,6 +2,7 @@ package go3mf
 
 import (
 	"encoding/xml"
+	"fmt"
 	"image/color"
 	"testing"
 
@@ -10,126 +11,124 @@ import (
 )
 
 func TestValidate(t *testing.T) {
-	path := DefaultPartModelName
-	type args struct {
-		model *Model
-	}
 	tests := []struct {
-		name string
-		args args
-		want []error
+		name  string
+		model *Model
+		want  []error
 	}{
-		{"empty", args{new(Model)}, nil},
-		{"rels", args{&Model{Attachments: []Attachment{{Path: "/a.png"}}, Relationships: []Relationship{
+		{"empty", new(Model), []error{}},
+		{"rels", &Model{Attachments: []Attachment{{Path: "/a.png"}}, Relationships: []Relationship{
 			{}, {Path: "/.png"}, {Path: "/a.png"}, {Path: "a.png"}, {Path: "/b.png"}, {Path: "/a.png"},
 			{Path: "/a.png", Type: RelTypePrintTicket}, {Path: "/a.png", Type: RelTypePrintTicket},
-		}}}, []error{
-			&specerr.RelationshipError{Path: path, Index: 0, Err: specerr.ErrOPCPartName},
-			&specerr.RelationshipError{Path: path, Index: 1, Err: specerr.ErrOPCPartName},
-			&specerr.RelationshipError{Path: path, Index: 3, Err: specerr.ErrOPCPartName},
-			&specerr.RelationshipError{Path: path, Index: 4, Err: specerr.ErrOPCRelTarget},
-			&specerr.RelationshipError{Path: path, Index: 5, Err: specerr.ErrOPCDuplicatedRel},
-			&specerr.RelationshipError{Path: path, Index: 6, Err: specerr.ErrOPCContentType},
-			&specerr.RelationshipError{Path: path, Index: 7, Err: specerr.ErrOPCDuplicatedRel},
-			&specerr.RelationshipError{Path: path, Index: 7, Err: specerr.ErrOPCContentType},
-			&specerr.RelationshipError{Path: path, Index: 7, Err: specerr.ErrOPCDuplicatedTicket},
+		}}, []error{
+			fmt.Errorf("Relationship#0: %v", specerr.ErrOPCPartName),
+			fmt.Errorf("Relationship#1: %v", specerr.ErrOPCPartName),
+			fmt.Errorf("Relationship#3: %v", specerr.ErrOPCPartName),
+			fmt.Errorf("Relationship#4: %v", specerr.ErrOPCRelTarget),
+			fmt.Errorf("Relationship#5: %v", specerr.ErrOPCDuplicatedRel),
+			fmt.Errorf("Relationship#6: %v", specerr.ErrOPCContentType),
+			fmt.Errorf("Relationship#7: %v", specerr.ErrOPCDuplicatedRel),
+			fmt.Errorf("Relationship#7: %v", specerr.ErrOPCContentType),
+			fmt.Errorf("Relationship#7: %v", specerr.ErrOPCDuplicatedTicket),
 		}},
-		{"namespaces", args{&Model{RequiredExtensions: []string{"fake", "other"}, Namespaces: []xml.Name{{Space: "fake", Local: "f"}}}}, []error{
+		{"namespaces", &Model{Specs: map[string]Spec{"fake": &UnknownSpec{IsRequired: true}}}, []error{
 			specerr.ErrRequiredExt,
 		}},
-		{"metadata", args{&Model{Namespaces: []xml.Name{{Space: "fake", Local: "f"}}, Metadata: []Metadata{
+		{"metadata", &Model{Specs: map[string]Spec{"fake": &UnknownSpec{SpaceName: "fake", LocalName: "f"}}, Metadata: []Metadata{
 			{Name: xml.Name{Space: "fake", Local: "issue"}}, {Name: xml.Name{Space: "f", Local: "issue"}}, {Name: xml.Name{Space: "fake", Local: "issue"}}, {Name: xml.Name{Local: "issue"}}, {},
-		}}}, []error{
-			&specerr.MetadataError{Index: 1, Err: specerr.ErrMetadataNamespace},
-			&specerr.MetadataError{Index: 2, Err: specerr.ErrMetadataDuplicated},
-			&specerr.MetadataError{Index: 3, Err: specerr.ErrMetadataName},
-			&specerr.MetadataError{Index: 4, Err: &specerr.MissingFieldError{Name: attrName}},
+		}}, []error{
+			fmt.Errorf("Metadata#1: %v", specerr.ErrMetadataNamespace),
+			fmt.Errorf("Metadata#2: %v", specerr.ErrMetadataDuplicated),
+			fmt.Errorf("Metadata#3: %v", specerr.ErrMetadataName),
+			fmt.Errorf("Metadata#4: %v", &specerr.MissingFieldError{Name: attrName}),
 		}},
-		{"build", args{&Model{Resources: Resources{Assets: []Asset{&BaseMaterialsResource{ID: 1, Materials: []BaseMaterial{{Name: "a", Color: color.RGBA{}}}}}, Objects: []*Object{
-			{ID: 2, ObjectType: ObjectTypeOther, Mesh: &Mesh{Nodes: []Point3D{{}, {}, {}, {}}, Faces: []Face{
-				{NodeIndices: [3]uint32{0, 1, 2}}, {NodeIndices: [3]uint32{0, 3, 1}}, {NodeIndices: [3]uint32{0, 2, 3}}, {NodeIndices: [3]uint32{1, 3, 2}},
-			}}}}}, Build: Build{Items: []*Item{
+		{"build", &Model{Resources: Resources{Assets: []Asset{&BaseMaterials{ID: 1, Materials: []Base{{Name: "a", Color: color.RGBA{A: 1}}}}}, Objects: []*Object{
+			{ID: 2, ObjectType: ObjectTypeOther, Mesh: &Mesh{Vertices: []Point3D{{}, {}, {}, {}}, Triangles: []Triangle{
+				{Indices: [3]uint32{0, 1, 2}}, {Indices: [3]uint32{0, 3, 1}}, {Indices: [3]uint32{0, 2, 3}}, {Indices: [3]uint32{1, 3, 2}},
+			}}}}}, Build: Build{AnyAttr: AttrMarshalers{&fakeAttr{}}, Items: []*Item{
 			{},
 			{ObjectID: 2},
 			{ObjectID: 100},
 			{ObjectID: 1, Metadata: []Metadata{{Name: xml.Name{Local: "issue"}}}},
-		}}}}, []error{
-			&specerr.ItemError{Index: 0, Err: &specerr.MissingFieldError{Name: attrObjectID}},
-			&specerr.ItemError{Index: 1, Err: specerr.ErrOtherItem},
-			&specerr.ItemError{Index: 2, Err: specerr.ErrMissingResource},
-			&specerr.ItemError{Index: 3, Err: specerr.ErrNonObject},
-			&specerr.ItemError{Index: 3, Err: &specerr.MetadataError{Index: 0, Err: specerr.ErrMetadataName}},
+		}}}, []error{
+			fmt.Errorf("Build: fake"),
+			fmt.Errorf("Build@Item#0: %v", &specerr.MissingFieldError{Name: attrObjectID}),
+			fmt.Errorf("Build@Item#1: %v", specerr.ErrOtherItem),
+			fmt.Errorf("Build@Item#2: %v", specerr.ErrMissingResource),
+			fmt.Errorf("Build@Item#3: %v", specerr.ErrMissingResource),
+			fmt.Errorf("Build@Item#3@Metadata#0: %v", specerr.ErrMetadataName),
 		}},
-		{"childs", args{&Model{Childs: map[string]*ChildModel{path: &ChildModel{}, "/a.model": &ChildModel{
-			Relationships: make([]Relationship, 1), Resources: Resources{Objects: []*Object{{}}}}}}},
+		{"childs", &Model{Childs: map[string]*ChildModel{DefaultModelPath: {}, "/a.model": {
+			Relationships: make([]Relationship, 1), Resources: Resources{Objects: []*Object{{}}}}}},
 			[]error{
 				specerr.ErrOPCDuplicatedModelName,
-				&specerr.RelationshipError{Path: "/a.model", Index: 0, Err: specerr.ErrOPCPartName},
-				&specerr.ObjectError{Path: "/a.model", Index: 0, Err: specerr.ErrMissingID},
-				&specerr.ObjectError{Path: "/a.model", Index: 0, Err: specerr.ErrInvalidObject},
+				fmt.Errorf("/a.model@Relationship#0: %v", specerr.ErrOPCPartName),
+				fmt.Errorf("/a.model@Resources@Object#0: %v", specerr.ErrMissingID),
+				fmt.Errorf("/a.model@Resources@Object#0: %v", specerr.ErrInvalidObject),
 			}},
-		{"assets", args{&Model{Resources: Resources{Assets: []Asset{
-			&BaseMaterialsResource{Materials: []BaseMaterial{{Color: color.RGBA{}}}},
-			&BaseMaterialsResource{ID: 1, Materials: []BaseMaterial{{Name: "a", Color: color.RGBA{}}}},
-			&BaseMaterialsResource{ID: 1},
-		}}}}, []error{
-			&specerr.AssetError{Path: path, Index: 0, Err: specerr.ErrMissingID},
-			&specerr.AssetError{Path: path, Index: 0, Err: &specerr.BaseError{Index: 0, Err: &specerr.MissingFieldError{Name: attrName}}},
-			&specerr.AssetError{Path: path, Index: 2, Err: specerr.ErrDuplicatedID},
-			&specerr.AssetError{Path: path, Index: 2, Err: specerr.ErrEmptySlice},
+		{"assets", &Model{Resources: Resources{Assets: []Asset{
+			&BaseMaterials{Materials: []Base{{Color: color.RGBA{}}}},
+			&BaseMaterials{ID: 1, Materials: []Base{{Name: "a", Color: color.RGBA{A: 1}}}},
+			&BaseMaterials{ID: 1},
+		}}}, []error{
+			fmt.Errorf("Resources@BaseMaterials#0: %v", specerr.ErrMissingID),
+			fmt.Errorf("Resources@BaseMaterials#0@Base#0: %v", &specerr.MissingFieldError{Name: attrName}),
+			fmt.Errorf("Resources@BaseMaterials#0@Base#0: %v", &specerr.MissingFieldError{Name: attrDisplayColor}),
+			fmt.Errorf("Resources@BaseMaterials#2: %v", specerr.ErrDuplicatedID),
+			fmt.Errorf("Resources@BaseMaterials#2: %v", specerr.ErrEmptyResourceProps),
 		}},
-		{"objects", args{&Model{Resources: Resources{Assets: []Asset{
-			&BaseMaterialsResource{ID: 1, Materials: []BaseMaterial{{Name: "a", Color: color.RGBA{}}, {Name: "b", Color: color.RGBA{}}}},
-			&BaseMaterialsResource{ID: 5, Materials: []BaseMaterial{{Name: "a", Color: color.RGBA{}}, {Name: "b", Color: color.RGBA{}}}},
+		{"objects", &Model{Resources: Resources{Assets: []Asset{
+			&BaseMaterials{ID: 1, Materials: []Base{{Name: "a", Color: color.RGBA{A: 1}}, {Name: "b", Color: color.RGBA{A: 1}}}},
+			&BaseMaterials{ID: 5, Materials: []Base{{Name: "a", Color: color.RGBA{A: 1}}, {Name: "b", Color: color.RGBA{A: 1}}}},
 		}, Objects: []*Object{
 			{},
 			{ID: 1, DefaultPIndex: 1, Mesh: &Mesh{}, Components: []*Component{{ObjectID: 1}}},
-			{ID: 2, Mesh: &Mesh{Nodes: []Point3D{{}, {}, {}, {}}, Faces: []Face{
-				{NodeIndices: [3]uint32{0, 1, 2}}, {NodeIndices: [3]uint32{0, 3, 1}}, {NodeIndices: [3]uint32{0, 2, 3}}, {NodeIndices: [3]uint32{1, 3, 2}},
+			{ID: 2, Mesh: &Mesh{Vertices: []Point3D{{}, {}, {}, {}}, Triangles: []Triangle{
+				{Indices: [3]uint32{0, 1, 2}}, {Indices: [3]uint32{0, 3, 1}}, {Indices: [3]uint32{0, 2, 3}}, {Indices: [3]uint32{1, 3, 2}},
 			}}},
 			{ID: 3, DefaultPID: 5, Components: []*Component{
 				{ObjectID: 3}, {ObjectID: 2}, {}, {ObjectID: 5}, {ObjectID: 100},
 			}},
-			{ID: 4, DefaultPID: 100, Mesh: &Mesh{Nodes: make([]Point3D, 2), Faces: make([]Face, 3)}},
-			{ID: 6, DefaultPID: 5, DefaultPIndex: 3, Mesh: &Mesh{Nodes: []Point3D{{}, {}, {}, {}},
-				Faces: []Face{
-					{NodeIndices: [3]uint32{0, 1, 2}, PID: 5, PIndex: [3]uint32{4, 0, 0}},
-					{NodeIndices: [3]uint32{0, 1, 4}},
-					{NodeIndices: [3]uint32{0, 2, 3}, PID: 5, PIndex: [3]uint32{1, 2, 0}},
-					{NodeIndices: [3]uint32{1, 2, 3}, PID: 100},
+			{ID: 4, DefaultPID: 100, Mesh: &Mesh{Vertices: make([]Point3D, 2), Triangles: make([]Triangle, 3)}},
+			{ID: 6, DefaultPID: 5, DefaultPIndex: 2, Mesh: &Mesh{Vertices: []Point3D{{}, {}, {}, {}},
+				Triangles: []Triangle{
+					{Indices: [3]uint32{0, 1, 2}, PID: 5, PIndices: [3]uint32{2, 0, 0}},
+					{Indices: [3]uint32{0, 1, 4}, PID: 5, PIndices: [3]uint32{2, 2, 2}},
+					{Indices: [3]uint32{0, 2, 3}, PID: 5, PIndices: [3]uint32{1, 1, 0}},
+					{Indices: [3]uint32{1, 2, 3}, PID: 100},
 				}}},
-		}}}}, []error{
-			&specerr.ObjectError{Path: path, Index: 0, Err: specerr.ErrMissingID},
-			&specerr.ObjectError{Path: path, Index: 0, Err: specerr.ErrInvalidObject},
-			&specerr.ObjectError{Path: path, Index: 1, Err: specerr.ErrDuplicatedID},
-			&specerr.ObjectError{Path: path, Index: 1, Err: &specerr.MissingFieldError{Name: attrPID}},
-			&specerr.ObjectError{Path: path, Index: 1, Err: specerr.ErrInvalidObject},
-			&specerr.ObjectError{Path: path, Index: 1, Err: specerr.ErrInsufficientVertices},
-			&specerr.ObjectError{Path: path, Index: 1, Err: specerr.ErrInsufficientTriangles},
-			&specerr.ObjectError{Path: path, Index: 1, Err: &specerr.ComponentError{Index: 0, Err: specerr.ErrRecursiveComponent}},
-			&specerr.ObjectError{Path: path, Index: 3, Err: specerr.ErrComponentsPID},
-			&specerr.ObjectError{Path: path, Index: 3, Err: &specerr.ComponentError{Index: 0, Err: specerr.ErrRecursiveComponent}},
-			&specerr.ObjectError{Path: path, Index: 3, Err: &specerr.ComponentError{Index: 2, Err: &specerr.MissingFieldError{Name: attrObjectID}}},
-			&specerr.ObjectError{Path: path, Index: 3, Err: &specerr.ComponentError{Index: 3, Err: specerr.ErrNonObject}},
-			&specerr.ObjectError{Path: path, Index: 3, Err: &specerr.ComponentError{Index: 4, Err: specerr.ErrMissingResource}},
-			&specerr.ObjectError{Path: path, Index: 4, Err: specerr.ErrMissingResource},
-			&specerr.ObjectError{Path: path, Index: 4, Err: specerr.ErrInsufficientVertices},
-			&specerr.ObjectError{Path: path, Index: 4, Err: specerr.ErrInsufficientTriangles},
-			&specerr.ObjectError{Path: path, Index: 4, Err: &specerr.TriangleError{Index: 0, Err: specerr.ErrDuplicatedIndices}},
-			&specerr.ObjectError{Path: path, Index: 4, Err: &specerr.TriangleError{Index: 1, Err: specerr.ErrDuplicatedIndices}},
-			&specerr.ObjectError{Path: path, Index: 4, Err: &specerr.TriangleError{Index: 2, Err: specerr.ErrDuplicatedIndices}},
-			&specerr.ObjectError{Path: path, Index: 5, Err: specerr.ErrIndexOutOfBounds},
-			&specerr.ObjectError{Path: path, Index: 5, Err: &specerr.TriangleError{Index: 0, Err: specerr.ErrIndexOutOfBounds}},
-			&specerr.ObjectError{Path: path, Index: 5, Err: &specerr.TriangleError{Index: 1, Err: specerr.ErrIndexOutOfBounds}},
-			&specerr.ObjectError{Path: path, Index: 5, Err: &specerr.TriangleError{Index: 2, Err: specerr.ErrBaseMaterialGradient}},
-			&specerr.ObjectError{Path: path, Index: 5, Err: &specerr.TriangleError{Index: 3, Err: specerr.ErrMissingResource}},
+		}}}, []error{
+			fmt.Errorf("Resources@Object#0: %v", specerr.ErrMissingID),
+			fmt.Errorf("Resources@Object#0: %v", specerr.ErrInvalidObject),
+			fmt.Errorf("Resources@Object#1: %v", specerr.ErrDuplicatedID),
+			fmt.Errorf("Resources@Object#1: %v", &specerr.MissingFieldError{Name: attrPID}),
+			fmt.Errorf("Resources@Object#1: %v", specerr.ErrInvalidObject),
+			fmt.Errorf("Resources@Object#1@Mesh: %v", specerr.ErrInsufficientVertices),
+			fmt.Errorf("Resources@Object#1@Mesh: %v", specerr.ErrInsufficientTriangles),
+			fmt.Errorf("Resources@Object#1@Component#0: %v", specerr.ErrRecursion),
+			fmt.Errorf("Resources@Object#3: %v", specerr.ErrComponentsPID),
+			fmt.Errorf("Resources@Object#3@Component#0: %v", specerr.ErrRecursion),
+			fmt.Errorf("Resources@Object#3@Component#2: %v", &specerr.MissingFieldError{Name: attrObjectID}),
+			fmt.Errorf("Resources@Object#3@Component#3: %v", specerr.ErrMissingResource),
+			fmt.Errorf("Resources@Object#3@Component#4: %v", specerr.ErrMissingResource),
+			fmt.Errorf("Resources@Object#4: %v", specerr.ErrMissingResource),
+			fmt.Errorf("Resources@Object#4@Mesh: %v", specerr.ErrInsufficientVertices),
+			fmt.Errorf("Resources@Object#4@Mesh: %v", specerr.ErrInsufficientTriangles),
+			fmt.Errorf("Resources@Object#4@Mesh@Triangle#0: %v", specerr.ErrDuplicatedIndices),
+			fmt.Errorf("Resources@Object#4@Mesh@Triangle#1: %v", specerr.ErrDuplicatedIndices),
+			fmt.Errorf("Resources@Object#4@Mesh@Triangle#2: %v", specerr.ErrDuplicatedIndices),
+			fmt.Errorf("Resources@Object#5: %v", specerr.ErrIndexOutOfBounds),
+			fmt.Errorf("Resources@Object#5@Mesh@Triangle#0: %v", specerr.ErrIndexOutOfBounds),
+			fmt.Errorf("Resources@Object#5@Mesh@Triangle#1: %v", specerr.ErrIndexOutOfBounds),
+			fmt.Errorf("Resources@Object#5@Mesh@Triangle#3: %v", specerr.ErrMissingResource),
 		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := Validate(tt.args.model)
+			tt.model.WithSpec(&fakeSpec{})
+			got := tt.model.Validate()
 			if diff := deep.Equal(got, tt.want); diff != nil {
-				t.Errorf("Validate() = %v", diff)
+				t.Errorf("Model.Validate() = %v", diff)
 			}
 		})
 	}
