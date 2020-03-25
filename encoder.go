@@ -375,7 +375,7 @@ func (e *Encoder) writeMesh(x *XMLEncoder, r *Object, m *Mesh) {
 	xvt := xml.StartElement{Name: xml.Name{Local: attrTriangles}}
 	x.EncodeToken(xvt)
 	x.SetAutoClose(true)
-	for _, v := range m.Faces {
+	for _, v := range m.Triangles {
 		t := xml.StartElement{
 			Name: xml.Name{Local: attrTriangle},
 			Attr: []xml.Attr{

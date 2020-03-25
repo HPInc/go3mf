@@ -441,8 +441,8 @@ func (c *Component) HasTransform() bool {
 	return c.Transform != Matrix{} && c.Transform != Identity()
 }
 
-// Face defines a triangle of a mesh.
-type Face struct {
+// Triangle defines a triangle of a mesh.
+type Triangle struct {
 	NodeIndices [3]uint32 // Coordinates of the three nodes that defines the face.
 	PID         uint32
 	PIndex      [3]uint32 // Resource subindex of the three nodes that defines the face.
@@ -454,7 +454,7 @@ type Face struct {
 // The orientation is defined by the order of its nodes.
 type Mesh struct {
 	Vertices      []Point3D
-	Faces         []Face
+	Triangles     []Triangle
 	ExtensionAttr ExtensionAttr
 	Extension     Extension
 }

@@ -252,13 +252,13 @@ func (r *Object) validateMesh(m *Model, path string) []error {
 		if len(r.Mesh.Vertices) < 3 {
 			errs = append(errs, specerr.ErrInsufficientVertices)
 		}
-		if len(r.Mesh.Faces) <= 3 && len(r.Mesh.Extension) == 0 {
+		if len(r.Mesh.Triangles) <= 3 && len(r.Mesh.Extension) == 0 {
 			errs = append(errs, specerr.ErrInsufficientTriangles)
 		}
 	}
 
 	nodeCount := uint32(len(r.Mesh.Vertices))
-	for i, face := range r.Mesh.Faces {
+	for i, face := range r.Mesh.Triangles {
 		i0, i1, i2 := face.NodeIndices[0], face.NodeIndices[1], face.NodeIndices[2]
 		if i0 == i1 || i0 == i2 || i1 == i2 {
 			errs = append(errs, specerr.NewIndexed(face, i, specerr.ErrDuplicatedIndices))

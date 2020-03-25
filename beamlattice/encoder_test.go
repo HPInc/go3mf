@@ -12,7 +12,7 @@ func TestMarshalModel(t *testing.T) {
 	meshLattice := &go3mf.Object{
 		ID: 15, Name: "Box",
 		Mesh: &go3mf.Mesh{
-			Faces:     []go3mf.Face{},
+			Triangles: []go3mf.Triangle{},
 			Extension: go3mf.Extension{beamLattice}},
 	}
 	beamLattice.MinLength = 0.0001

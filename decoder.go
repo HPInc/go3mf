@@ -350,8 +350,8 @@ func (d *trianglesDecoder) Start(_ []xml.Attr) {
 	d.triangleDecoder.defaultPropertyID = d.resource.DefaultPID
 	d.triangleDecoder.defaultPropertyIndex = d.resource.DefaultPIndex
 
-	if len(d.resource.Mesh.Faces) == 0 && len(d.resource.Mesh.Vertices) > 0 {
-		d.resource.Mesh.Faces = make([]Face, 0, len(d.resource.Mesh.Vertices)-1)
+	if len(d.resource.Mesh.Triangles) == 0 && len(d.resource.Mesh.Vertices) > 0 {
+		d.resource.Mesh.Triangles = make([]Triangle, 0, len(d.resource.Mesh.Vertices)-1)
 	}
 }
 
@@ -408,7 +408,7 @@ func (d *triangleDecoder) Start(attrs []xml.Attr) {
 	p3 = applyDefault(p3, p1, hasP3)
 	pid = applyDefault(pid, d.defaultPropertyID, hasPID)
 
-	d.mesh.Faces = append(d.mesh.Faces, Face{
+	d.mesh.Triangles = append(d.mesh.Triangles, Triangle{
 		NodeIndices: [3]uint32{v1, v2, v3},
 		PID:         pid,
 		PIndex:      [3]uint32{p1, p2, p3},

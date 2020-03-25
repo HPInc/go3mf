@@ -41,7 +41,7 @@ func (d *binaryDecoder) decode(ctx context.Context, m *go3mf.Mesh) error {
 			break
 		}
 		d.decodeFace(&facet, mb)
-		if len(m.Faces) > nextFaceCheck {
+		if len(m.Triangles) > nextFaceCheck {
 			select {
 			case <-ctx.Done():
 				err = ctx.Err()
@@ -61,7 +61,7 @@ func (d *binaryDecoder) decodeFace(facet *binaryFace, mb *go3mf.MeshBuilder) {
 		pos := facet.Vertices[nVertex]
 		nodes[nVertex] = mb.AddNode(go3mf.Point3D{pos[0], pos[1], pos[2]})
 	}
-	mb.Mesh.Faces = append(mb.Mesh.Faces, go3mf.Face{
+	mb.Mesh.Triangles = append(mb.Mesh.Triangles, go3mf.Triangle{
 		NodeIndices: [3]uint32{nodes[0], nodes[1], nodes[2]},
 	})
 }

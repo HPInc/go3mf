@@ -62,7 +62,7 @@ func TestMarshalModel(t *testing.T) {
 							{0, 0, 0}, {100, 0, 0}, {100, 100, 0},
 							{0, 100, 0}, {0, 0, 100}, {100, 0, 100},
 							{100, 100, 100}, {0, 100, 100}},
-						Faces: []Face{
+						Triangles: []Triangle{
 							{NodeIndices: [3]uint32{3, 2, 1}, PID: 5},
 							{NodeIndices: [3]uint32{1, 0, 3}, PID: 5},
 							{NodeIndices: [3]uint32{4, 5, 6}, PID: 5, PIndex: [3]uint32{1, 1, 1}},
