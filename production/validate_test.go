@@ -26,7 +26,7 @@ func TestValidate(t *testing.T) {
 			AnyAttr: go3mf.AttrMarshalers{mustUUID("a-b-c-d")}}}, []error{
 			fmt.Errorf("Build: %v", specerr.ErrUUID),
 		}},
-		{"extReq", &go3mf.Model{Specs: map[string]go3mf.Spec{ExtensionSpace: &Extension{IsRequired: true}},
+		{"extReq", &go3mf.Model{Specs: map[string]go3mf.Spec{Namespace: &Extension{IsRequired: true}},
 			Childs: map[string]*go3mf.ChildModel{"/other.model": {Resources: go3mf.Resources{Objects: []*go3mf.Object{validMesh}}}},
 			Resources: go3mf.Resources{Objects: []*go3mf.Object{
 				{ID: 5, AnyAttr: go3mf.AttrMarshalers{mustUUID("f47ac10b-58cc-0372-8567-0e02b2c3d481")}, Components: []*go3mf.Component{

@@ -402,8 +402,8 @@ const (
 )
 
 const (
-	// ExtensionSpace is the canonical name of this extension.
-	ExtensionSpace = "http://schemas.microsoft.com/3dmanufacturing/core/2015/02"
+	// Namespace is the canonical name of this extension.
+	Namespace = "http://schemas.microsoft.com/3dmanufacturing/core/2015/02"
 
 	// RelType3DModel is the canonical 3D model relationship type.
 	RelType3DModel = "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"

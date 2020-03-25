@@ -42,7 +42,6 @@ type Scanner struct {
 	extensionDecoder map[string]ExtensionDecoder
 }
 
-// Namespace returns the space of the associated local, if existing.
 func (s *Scanner) namespace(local string) (string, bool) {
 	for _, ext := range s.extensionDecoder {
 		if ext.Local() == local {

@@ -70,7 +70,7 @@ func (d *beamLatticeDecoder) Start(attrs []xml.Attr) {
 }
 
 func (d *beamLatticeDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
-	if name.Space == ExtensionSpace {
+	if name.Space == Namespace {
 		if name.Local == attrBeams {
 			child = &beamsDecoder{mesh: d.mesh}
 		} else if name.Local == attrBeamSets {
@@ -91,7 +91,7 @@ func (d *beamsDecoder) Start(_ []xml.Attr) {
 }
 
 func (d *beamsDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
-	if name.Space == ExtensionSpace && name.Local == attrBeam {
+	if name.Space == Namespace && name.Local == attrBeam {
 		child = &d.beamDecoder
 	}
 	return
@@ -173,7 +173,7 @@ type beamSetsDecoder struct {
 }
 
 func (d *beamSetsDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
-	if name.Space == ExtensionSpace && name.Local == attrBeamSet {
+	if name.Space == Namespace && name.Local == attrBeamSet {
 		child = &beamSetDecoder{mesh: d.mesh}
 	}
 	return
@@ -208,7 +208,7 @@ func (d *beamSetDecoder) Start(attrs []xml.Attr) {
 }
 
 func (d *beamSetDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
-	if name.Space == ExtensionSpace && name.Local == attrRef {
+	if name.Space == Namespace && name.Local == attrRef {
 		child = &d.beamRefDecoder
 	}
 	return

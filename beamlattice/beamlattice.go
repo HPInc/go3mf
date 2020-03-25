@@ -1,13 +1,13 @@
 package beamlattice
 
-// ExtensionSpace is the canonical name of this extension.
-const ExtensionSpace = "http://schemas.microsoft.com/3dmanufacturing/beamlattice/2017/02"
+// Namespace is the canonical name of this extension.
+const Namespace = "http://schemas.microsoft.com/3dmanufacturing/beamlattice/2017/02"
 
 type Extension struct {
 	LocalName string
 }
 
-func (e Extension) Space() string       { return ExtensionSpace }
+func (e Extension) Space() string       { return Namespace }
 func (e Extension) Required() bool      { return true }
 func (e *Extension) SetRequired(r bool) {}
 func (e *Extension) SetLocal(l string)  { e.LocalName = l }

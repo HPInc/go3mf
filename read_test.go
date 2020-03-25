@@ -112,7 +112,7 @@ func (m *modelBuilder) withDefaultModel() *modelBuilder {
 func (m *modelBuilder) withModel(unit string, lang string, thumbnail string) *modelBuilder {
 	m.str.WriteString(`<model `)
 	m.addAttr("", "unit", unit).addAttr("xml", "lang", lang)
-	m.addAttr("", "xmlns", ExtensionSpace).addAttr("xmlns", "qm", fakeExtension)
+	m.addAttr("", "xmlns", Namespace).addAttr("xmlns", "qm", fakeExtension)
 	m.addAttr("", "requiredextensions", "qm")
 	if thumbnail != "" {
 		m.addAttr("", "thumbnail", thumbnail)

@@ -9,7 +9,7 @@ import (
 
 // Marshal3MF encodes the resource.
 func (m *BeamLattice) Marshal3MF(x *go3mf.XMLEncoder) error {
-	xs := xml.StartElement{Name: xml.Name{Space: ExtensionSpace, Local: attrBeamLattice}, Attr: []xml.Attr{
+	xs := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrBeamLattice}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrMinLength}, Value: strconv.FormatFloat(float64(m.MinLength), 'f', x.FloatPresicion(), 32)},
 		{Name: xml.Name{Local: attrRadius}, Value: strconv.FormatFloat(float64(m.DefaultRadius), 'f', x.FloatPresicion(), 32)},
 	}}
@@ -41,10 +41,10 @@ func (m *BeamLattice) Marshal3MF(x *go3mf.XMLEncoder) error {
 }
 
 func marshalBeamsets(x *go3mf.XMLEncoder, m *BeamLattice) {
-	xb := xml.StartElement{Name: xml.Name{Space: ExtensionSpace, Local: attrBeamSets}}
+	xb := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrBeamSets}}
 	x.EncodeToken(xb)
 	for _, bs := range m.BeamSets {
-		xbs := xml.StartElement{Name: xml.Name{Space: ExtensionSpace, Local: attrBeamSet}}
+		xbs := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrBeamSet}}
 		if bs.Name != "" {
 			xbs.Attr = append(xbs.Attr, xml.Attr{Name: xml.Name{Local: attrName}, Value: bs.Name})
 		}
@@ -54,7 +54,7 @@ func marshalBeamsets(x *go3mf.XMLEncoder, m *BeamLattice) {
 		x.EncodeToken(xbs)
 		x.SetAutoClose(true)
 		for _, ref := range bs.Refs {
-			x.EncodeToken(xml.StartElement{Name: xml.Name{Space: ExtensionSpace, Local: attrRef}, Attr: []xml.Attr{
+			x.EncodeToken(xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrRef}, Attr: []xml.Attr{
 				{Name: xml.Name{Local: attrIndex}, Value: strconv.FormatUint(uint64(ref), 10)},
 			}})
 		}
@@ -65,11 +65,11 @@ func marshalBeamsets(x *go3mf.XMLEncoder, m *BeamLattice) {
 }
 
 func marshalBeams(x *go3mf.XMLEncoder, m *BeamLattice) {
-	xb := xml.StartElement{Name: xml.Name{Space: ExtensionSpace, Local: attrBeams}}
+	xb := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrBeams}}
 	x.EncodeToken(xb)
 	x.SetAutoClose(true)
 	for _, b := range m.Beams {
-		xbeam := xml.StartElement{Name: xml.Name{Space: ExtensionSpace, Local: attrBeam}, Attr: []xml.Attr{
+		xbeam := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrBeam}, Attr: []xml.Attr{
 			{Name: xml.Name{Local: attrV1}, Value: strconv.FormatUint(uint64(b.NodeIndices[0]), 10)},
 			{Name: xml.Name{Local: attrV2}, Value: strconv.FormatUint(uint64(b.NodeIndices[1]), 10)},
 		}}

@@ -135,7 +135,7 @@ func (e *Encoder) writeAttachements(att []Attachment) error {
 
 func (e *Encoder) modelToken(x *XMLEncoder, m *Model, isRoot bool) (xml.StartElement, error) {
 	attrs := []xml.Attr{
-		{Name: xml.Name{Local: attrXmlns}, Value: ExtensionSpace},
+		{Name: xml.Name{Local: attrXmlns}, Value: Namespace},
 		{Name: xml.Name{Local: attrUnit}, Value: m.Units.String()},
 		{Name: xml.Name{Space: nsXML, Local: attrLang}, Value: m.Language},
 	}

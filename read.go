@@ -70,7 +70,7 @@ type topLevelDecoder struct {
 }
 
 func (d *topLevelDecoder) Child(name xml.Name) (child NodeDecoder) {
-	modelName := xml.Name{Space: ExtensionSpace, Local: attrModel}
+	modelName := xml.Name{Space: Namespace, Local: attrModel}
 	if name == modelName {
 		child = &modelDecoder{model: d.model}
 	}

@@ -19,7 +19,7 @@ func TestValidate(t *testing.T) {
 	}{
 		{"extRequired", &go3mf.Model{
 			AnyAttr: go3mf.AttrMarshalers{&SliceStackInfo{SliceStackID: 10}},
-			Specs:   map[string]go3mf.Spec{ExtensionSpace: &Extension{IsRequired: true}}, Resources: go3mf.Resources{
+			Specs:   map[string]go3mf.Spec{Namespace: &Extension{IsRequired: true}}, Resources: go3mf.Resources{
 				Assets: []go3mf.Asset{
 					&SliceStack{ID: 1, Slices: []*Slice{{TopZ: 1}}},
 				},

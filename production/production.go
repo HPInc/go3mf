@@ -1,14 +1,14 @@
 package production
 
-// ExtensionSpace is the canonical name of this extension.
-const ExtensionSpace = "http://schemas.microsoft.com/3dmanufacturing/production/2015/06"
+// Namespace is the canonical name of this extension.
+const Namespace = "http://schemas.microsoft.com/3dmanufacturing/production/2015/06"
 
 type Extension struct {
 	LocalName  string
 	IsRequired bool
 }
 
-func (e Extension) Space() string       { return ExtensionSpace }
+func (e Extension) Space() string       { return Namespace }
 func (e Extension) Required() bool      { return e.IsRequired }
 func (e *Extension) SetRequired(r bool) { e.IsRequired = r }
 func (e *Extension) SetLocal(l string)  { e.LocalName = l }
