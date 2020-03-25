@@ -453,9 +453,9 @@ type Face struct {
 // orientation (i.e. the face can look up or look down) and have three nodes.
 // The orientation is defined by the order of its nodes.
 type Mesh struct {
-	ExtensionAttr ExtensionAttr
-	Nodes         []Point3D
+	Vertices      []Point3D
 	Faces         []Face
+	ExtensionAttr ExtensionAttr
 	Extension     Extension
 }
 
@@ -487,8 +487,8 @@ func (mb *MeshBuilder) AddNode(node Point3D) uint32 {
 			return index
 		}
 	}
-	mb.Mesh.Nodes = append(mb.Mesh.Nodes, node)
-	index := uint32(len(mb.Mesh.Nodes)) - 1
+	mb.Mesh.Vertices = append(mb.Mesh.Vertices, node)
+	index := uint32(len(mb.Mesh.Vertices)) - 1
 	if mb.CalculateConnectivity {
 		mb.vectorTree.AddVector(node, index)
 	}

@@ -251,7 +251,7 @@ func TestMeshBuilder_AddNode(t *testing.T) {
 		want uint32
 	}{
 		{"existing", existingStruct, args{pos}, 0},
-		{"base", &MeshBuilder{Mesh: &Mesh{Nodes: []Point3D{{}}}, CalculateConnectivity: false}, args{pos}, 1},
+		{"base", &MeshBuilder{Mesh: &Mesh{Vertices: []Point3D{{}}}, CalculateConnectivity: false}, args{pos}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -58,7 +58,7 @@ func TestMarshalModel(t *testing.T) {
 					ID: 8, Name: "Box 1", PartNumber: "11111111-1111-1111-1111-111111111111", Thumbnail: "/a.png",
 					ExtensionAttr: ExtensionAttr{&fakeAttr{Value: "object_fake"}},
 					DefaultPID:    1, DefaultPIndex: 1, ObjectType: ObjectTypeModel, Mesh: &Mesh{
-						Nodes: []Point3D{
+						Vertices: []Point3D{
 							{0, 0, 0}, {100, 0, 0}, {100, 100, 0},
 							{0, 100, 0}, {0, 0, 100}, {100, 0, 100},
 							{100, 100, 100}, {0, 100, 100}},

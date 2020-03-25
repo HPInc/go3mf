@@ -52,11 +52,11 @@ func TestValidate(t *testing.T) {
 			fmt.Errorf("Resources@Object#2@Mesh@BeamLattice: %v", specerr.ErrLatticeObjType),
 		}},
 		{"incorrect mesh references", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
-			{ID: 1, Mesh: &go3mf.Mesh{Nodes: []go3mf.Point3D{{}, {}, {}}, Extension: go3mf.Extension{nil}}},
-			{ID: 2, Mesh: &go3mf.Mesh{Nodes: []go3mf.Point3D{{}, {}, {}}, Extension: go3mf.Extension{&BeamLattice{
+			{ID: 1, Mesh: &go3mf.Mesh{Vertices: []go3mf.Point3D{{}, {}, {}}, Extension: go3mf.Extension{nil}}},
+			{ID: 2, Mesh: &go3mf.Mesh{Vertices: []go3mf.Point3D{{}, {}, {}}, Extension: go3mf.Extension{&BeamLattice{
 				MinLength: 1, DefaultRadius: 1, ClippingMeshID: 100, RepresentationMeshID: 2,
 			}}}},
-			{ID: 3, Mesh: &go3mf.Mesh{Nodes: []go3mf.Point3D{{}, {}, {}}, Extension: go3mf.Extension{&BeamLattice{
+			{ID: 3, Mesh: &go3mf.Mesh{Vertices: []go3mf.Point3D{{}, {}, {}}, Extension: go3mf.Extension{&BeamLattice{
 				MinLength: 1, DefaultRadius: 1, ClippingMeshID: 1, RepresentationMeshID: 2,
 			}}}},
 		}}}, []error{
@@ -65,7 +65,7 @@ func TestValidate(t *testing.T) {
 			fmt.Errorf("Resources@Object#2@Mesh@BeamLattice: %v", specerr.ErrLatticeInvalidMesh),
 		}},
 		{"incorrect beams", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
-			{ID: 2, Mesh: &go3mf.Mesh{Nodes: []go3mf.Point3D{{}, {}, {}}, Extension: go3mf.Extension{&BeamLattice{
+			{ID: 2, Mesh: &go3mf.Mesh{Vertices: []go3mf.Point3D{{}, {}, {}}, Extension: go3mf.Extension{&BeamLattice{
 				MinLength: 1, DefaultRadius: 1, ClipMode: ClipInside, Beams: []Beam{
 					{}, {NodeIndices: [2]uint32{1, 1}, Radius: [2]float32{0.5, 0}}, {NodeIndices: [2]uint32{1, 3}},
 				},
@@ -77,7 +77,7 @@ func TestValidate(t *testing.T) {
 			fmt.Errorf("Resources@Object#0@Mesh@BeamLattice@Beam#2: %v", specerr.ErrIndexOutOfBounds),
 		}},
 		{"incorrect beamseat", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
-			{ID: 2, Mesh: &go3mf.Mesh{Nodes: []go3mf.Point3D{{}, {}, {}}, Extension: go3mf.Extension{&BeamLattice{
+			{ID: 2, Mesh: &go3mf.Mesh{Vertices: []go3mf.Point3D{{}, {}, {}}, Extension: go3mf.Extension{&BeamLattice{
 				MinLength: 1, DefaultRadius: 1, ClipMode: ClipInside, Beams: []Beam{
 					{NodeIndices: [2]uint32{1, 2}},
 				}, BeamSets: []BeamSet{{Refs: []uint32{0, 2, 3}}},

@@ -359,7 +359,7 @@ func (e *Encoder) writeMesh(x *XMLEncoder, r *Object, m *Mesh) {
 	xvs := xml.StartElement{Name: xml.Name{Local: attrVertices}}
 	x.EncodeToken(xvs)
 	x.SetAutoClose(true)
-	for _, v := range m.Nodes {
+	for _, v := range m.Vertices {
 		x.EncodeToken(xml.StartElement{
 			Name: xml.Name{Local: attrVertex},
 			Attr: []xml.Attr{

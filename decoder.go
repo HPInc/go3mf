@@ -336,7 +336,7 @@ func (d *vertexDecoder) Start(attrs []xml.Attr) {
 			z = float32(val)
 		}
 	}
-	d.mesh.Nodes = append(d.mesh.Nodes, Point3D{x, y, z})
+	d.mesh.Vertices = append(d.mesh.Vertices, Point3D{x, y, z})
 }
 
 type trianglesDecoder struct {
@@ -350,8 +350,8 @@ func (d *trianglesDecoder) Start(_ []xml.Attr) {
 	d.triangleDecoder.defaultPropertyID = d.resource.DefaultPID
 	d.triangleDecoder.defaultPropertyIndex = d.resource.DefaultPIndex
 
-	if len(d.resource.Mesh.Faces) == 0 && len(d.resource.Mesh.Nodes) > 0 {
-		d.resource.Mesh.Faces = make([]Face, 0, len(d.resource.Mesh.Nodes)-1)
+	if len(d.resource.Mesh.Faces) == 0 && len(d.resource.Mesh.Vertices) > 0 {
+		d.resource.Mesh.Faces = make([]Face, 0, len(d.resource.Mesh.Vertices)-1)
 	}
 }
 

@@ -310,7 +310,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 		Mesh: new(Mesh),
 		ID:   8, Name: "Box 1", Thumbnail: "/a.png", DefaultPID: 5, PartNumber: "11111111-1111-1111-1111-111111111111",
 	}
-	meshRes.Mesh.Nodes = append(meshRes.Mesh.Nodes, []Point3D{
+	meshRes.Mesh.Vertices = append(meshRes.Mesh.Vertices, []Point3D{
 		{0, 0, 0},
 		{100, 0, 0},
 		{100, 100, 0},

@@ -249,7 +249,7 @@ func (r *Object) validateMesh(m *Model, path string) []error {
 	var errs []error
 	switch r.ObjectType {
 	case ObjectTypeModel, ObjectTypeSolidSupport:
-		if len(r.Mesh.Nodes) < 3 {
+		if len(r.Mesh.Vertices) < 3 {
 			errs = append(errs, specerr.ErrInsufficientVertices)
 		}
 		if len(r.Mesh.Faces) <= 3 && len(r.Mesh.Extension) == 0 {
@@ -257,7 +257,7 @@ func (r *Object) validateMesh(m *Model, path string) []error {
 		}
 	}
 
-	nodeCount := uint32(len(r.Mesh.Nodes))
+	nodeCount := uint32(len(r.Mesh.Vertices))
 	for i, face := range r.Mesh.Faces {
 		i0, i1, i2 := face.NodeIndices[0], face.NodeIndices[1], face.NodeIndices[2]
 		if i0 == i1 || i0 == i2 || i1 == i2 {

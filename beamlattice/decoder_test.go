@@ -19,7 +19,7 @@ func TestDecode(t *testing.T) {
 	beamLattice.MinLength = 0.0001
 	beamLattice.CapMode = CapModeHemisphere
 	beamLattice.DefaultRadius = 1
-	meshLattice.Mesh.Nodes = append(meshLattice.Mesh.Nodes, []go3mf.Point3D{
+	meshLattice.Mesh.Vertices = append(meshLattice.Mesh.Vertices, []go3mf.Point3D{
 		{45, 55, 55},
 		{45, 45, 55},
 		{45, 55, 45},
