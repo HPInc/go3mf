@@ -39,7 +39,7 @@ type Scanner struct {
 	ResourceID       uint32
 	Err              error
 	Warnings         []error
-	extensionDecoder map[string]ExtensionDecoder
+	extensionDecoder map[string]SpecDecoder
 }
 
 func (s *Scanner) namespace(local string) (string, bool) {

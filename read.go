@@ -79,13 +79,13 @@ func (d *topLevelDecoder) Child(name xml.Name) (child NodeDecoder) {
 
 func decodeModelFile(ctx context.Context, x XMLDecoder, model *Model, path string, isRoot, strict bool) *Scanner {
 	scanner := Scanner{
-		extensionDecoder: make(map[string]ExtensionDecoder),
+		extensionDecoder: make(map[string]SpecDecoder),
 		IsRoot:           isRoot,
 		Strict:           strict,
 		ModelPath:        path,
 	}
 	for _, ext := range model.Specs {
-		if ext, ok := ext.(ExtensionDecoder); ok {
+		if ext, ok := ext.(SpecDecoder); ok {
 			scanner.extensionDecoder[ext.Namespace()] = ext
 		}
 	}
