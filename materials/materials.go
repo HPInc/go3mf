@@ -182,7 +182,7 @@ func (c *CompositeMaterials) Identify() uint32 {
 
 // The Multi element combines the constituent materials and properties.
 type Multi struct {
-	PIndex []uint32
+	PIndices []uint32
 }
 
 // A MultiProperties element acts as a container for Multi

@@ -321,18 +321,18 @@ func TestDecoder_processRootModel(t *testing.T) {
 		{0, 100, 100},
 	}...)
 	meshRes.Mesh.Triangles = append(meshRes.Mesh.Triangles, []Triangle{
-		{NodeIndices: [3]uint32{3, 2, 1}, PID: 5},
-		{NodeIndices: [3]uint32{1, 0, 3}, PID: 5},
-		{NodeIndices: [3]uint32{4, 5, 6}, PID: 5, PIndex: [3]uint32{1, 1, 1}},
-		{NodeIndices: [3]uint32{6, 7, 4}, PID: 5, PIndex: [3]uint32{1, 1, 1}},
-		{NodeIndices: [3]uint32{0, 1, 5}, PID: 5, PIndex: [3]uint32{0, 1, 2}},
-		{NodeIndices: [3]uint32{5, 4, 0}, PID: 5, PIndex: [3]uint32{3, 0, 2}},
-		{NodeIndices: [3]uint32{1, 2, 6}, PID: 5, PIndex: [3]uint32{0, 1, 2}},
-		{NodeIndices: [3]uint32{6, 5, 1}, PID: 5, PIndex: [3]uint32{2, 1, 3}},
-		{NodeIndices: [3]uint32{2, 3, 7}, PID: 5},
-		{NodeIndices: [3]uint32{7, 6, 2}, PID: 5},
-		{NodeIndices: [3]uint32{3, 0, 4}, PID: 5},
-		{NodeIndices: [3]uint32{4, 7, 3}, PID: 5},
+		{Indices: [3]uint32{3, 2, 1}, PID: 5},
+		{Indices: [3]uint32{1, 0, 3}, PID: 5},
+		{Indices: [3]uint32{4, 5, 6}, PID: 5, PIndices: [3]uint32{1, 1, 1}},
+		{Indices: [3]uint32{6, 7, 4}, PID: 5, PIndices: [3]uint32{1, 1, 1}},
+		{Indices: [3]uint32{0, 1, 5}, PID: 5, PIndices: [3]uint32{0, 1, 2}},
+		{Indices: [3]uint32{5, 4, 0}, PID: 5, PIndices: [3]uint32{3, 0, 2}},
+		{Indices: [3]uint32{1, 2, 6}, PID: 5, PIndices: [3]uint32{0, 1, 2}},
+		{Indices: [3]uint32{6, 5, 1}, PID: 5, PIndices: [3]uint32{2, 1, 3}},
+		{Indices: [3]uint32{2, 3, 7}, PID: 5},
+		{Indices: [3]uint32{7, 6, 2}, PID: 5},
+		{Indices: [3]uint32{3, 0, 4}, PID: 5},
+		{Indices: [3]uint32{4, 7, 3}, PID: 5},
 	}...)
 
 	components := &Object{

@@ -304,7 +304,7 @@ func (d *multiDecoder) Start(attrs []xml.Attr) {
 				if err != nil {
 					d.Scanner.InvalidAttr(a.Name.Local, f, true)
 				}
-				multi.PIndex = append(multi.PIndex, uint32(val))
+				multi.PIndices = append(multi.PIndices, uint32(val))
 			}
 		}
 	}

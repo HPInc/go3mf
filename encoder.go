@@ -379,13 +379,13 @@ func (e *Encoder) writeMesh(x *XMLEncoder, r *Object, m *Mesh) {
 		t := xml.StartElement{
 			Name: xml.Name{Local: attrTriangle},
 			Attr: []xml.Attr{
-				{Name: xml.Name{Local: attrV1}, Value: strconv.FormatUint(uint64(v.NodeIndices[0]), 10)},
-				{Name: xml.Name{Local: attrV2}, Value: strconv.FormatUint(uint64(v.NodeIndices[1]), 10)},
-				{Name: xml.Name{Local: attrV3}, Value: strconv.FormatUint(uint64(v.NodeIndices[2]), 10)},
+				{Name: xml.Name{Local: attrV1}, Value: strconv.FormatUint(uint64(v.Indices[0]), 10)},
+				{Name: xml.Name{Local: attrV2}, Value: strconv.FormatUint(uint64(v.Indices[1]), 10)},
+				{Name: xml.Name{Local: attrV3}, Value: strconv.FormatUint(uint64(v.Indices[2]), 10)},
 			},
 		}
 		if v.PID != 0 {
-			p1, p2, p3 := v.PIndex[0], v.PIndex[1], v.PIndex[2]
+			p1, p2, p3 := v.PIndices[0], v.PIndices[1], v.PIndices[2]
 			if (p1 != p2) || (p1 != p3) {
 				t.Attr = append(t.Attr,
 					xml.Attr{Name: xml.Name{Local: attrPID}, Value: strconv.FormatUint(uint64(v.PID), 10)},

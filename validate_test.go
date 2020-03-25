@@ -44,7 +44,7 @@ func TestValidate(t *testing.T) {
 		}},
 		{"build", &Model{Resources: Resources{Assets: []Asset{&BaseMaterials{ID: 1, Materials: []Base{{Name: "a", Color: color.RGBA{A: 1}}}}}, Objects: []*Object{
 			{ID: 2, ObjectType: ObjectTypeOther, Mesh: &Mesh{Vertices: []Point3D{{}, {}, {}, {}}, Triangles: []Triangle{
-				{NodeIndices: [3]uint32{0, 1, 2}}, {NodeIndices: [3]uint32{0, 3, 1}}, {NodeIndices: [3]uint32{0, 2, 3}}, {NodeIndices: [3]uint32{1, 3, 2}},
+				{Indices: [3]uint32{0, 1, 2}}, {Indices: [3]uint32{0, 3, 1}}, {Indices: [3]uint32{0, 2, 3}}, {Indices: [3]uint32{1, 3, 2}},
 			}}}}}, Build: Build{ExtensionAttr: ExtensionAttr{&fakeAttr{}}, Items: []*Item{
 			{},
 			{ObjectID: 2},
@@ -84,7 +84,7 @@ func TestValidate(t *testing.T) {
 			{},
 			{ID: 1, DefaultPIndex: 1, Mesh: &Mesh{}, Components: []*Component{{ObjectID: 1}}},
 			{ID: 2, Mesh: &Mesh{Vertices: []Point3D{{}, {}, {}, {}}, Triangles: []Triangle{
-				{NodeIndices: [3]uint32{0, 1, 2}}, {NodeIndices: [3]uint32{0, 3, 1}}, {NodeIndices: [3]uint32{0, 2, 3}}, {NodeIndices: [3]uint32{1, 3, 2}},
+				{Indices: [3]uint32{0, 1, 2}}, {Indices: [3]uint32{0, 3, 1}}, {Indices: [3]uint32{0, 2, 3}}, {Indices: [3]uint32{1, 3, 2}},
 			}}},
 			{ID: 3, DefaultPID: 5, Components: []*Component{
 				{ObjectID: 3}, {ObjectID: 2}, {}, {ObjectID: 5}, {ObjectID: 100},
@@ -92,10 +92,10 @@ func TestValidate(t *testing.T) {
 			{ID: 4, DefaultPID: 100, Mesh: &Mesh{Vertices: make([]Point3D, 2), Triangles: make([]Triangle, 3)}},
 			{ID: 6, DefaultPID: 5, DefaultPIndex: 2, Mesh: &Mesh{Vertices: []Point3D{{}, {}, {}, {}},
 				Triangles: []Triangle{
-					{NodeIndices: [3]uint32{0, 1, 2}, PID: 5, PIndex: [3]uint32{2, 0, 0}},
-					{NodeIndices: [3]uint32{0, 1, 4}, PID: 5, PIndex: [3]uint32{2, 2, 2}},
-					{NodeIndices: [3]uint32{0, 2, 3}, PID: 5, PIndex: [3]uint32{1, 1, 0}},
-					{NodeIndices: [3]uint32{1, 2, 3}, PID: 100},
+					{Indices: [3]uint32{0, 1, 2}, PID: 5, PIndices: [3]uint32{2, 0, 0}},
+					{Indices: [3]uint32{0, 1, 4}, PID: 5, PIndices: [3]uint32{2, 2, 2}},
+					{Indices: [3]uint32{0, 2, 3}, PID: 5, PIndices: [3]uint32{1, 1, 0}},
+					{Indices: [3]uint32{1, 2, 3}, PID: 100},
 				}}},
 		}}}, []error{
 			fmt.Errorf("Resources@Object#0: %v", specerr.ErrMissingID),

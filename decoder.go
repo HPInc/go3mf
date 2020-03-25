@@ -409,9 +409,9 @@ func (d *triangleDecoder) Start(attrs []xml.Attr) {
 	pid = applyDefault(pid, d.defaultPropertyID, hasPID)
 
 	d.mesh.Triangles = append(d.mesh.Triangles, Triangle{
-		NodeIndices: [3]uint32{v1, v2, v3},
-		PID:         pid,
-		PIndex:      [3]uint32{p1, p2, p3},
+		Indices:  [3]uint32{v1, v2, v3},
+		PID:      pid,
+		PIndices: [3]uint32{p1, p2, p3},
 	})
 }
 

@@ -89,8 +89,8 @@ func (r *MultiProperties) Marshal3MF(x *go3mf.XMLEncoder) error {
 	x.EncodeToken(xs)
 	x.SetAutoClose(true)
 	for _, mu := range r.Multis {
-		indices := make([]string, len(mu.PIndex))
-		for i, v := range mu.PIndex {
+		indices := make([]string, len(mu.PIndices))
+		for i, v := range mu.PIndices {
 			indices[i] = strconv.FormatUint(uint64(v), 10)
 		}
 		x.EncodeToken(xml.StartElement{Name: xml.Name{Space: ExtensionSpace, Local: attrMulti}, Attr: []xml.Attr{

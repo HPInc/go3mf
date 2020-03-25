@@ -259,7 +259,7 @@ func (r *Object) validateMesh(m *Model, path string) []error {
 
 	nodeCount := uint32(len(r.Mesh.Vertices))
 	for i, face := range r.Mesh.Triangles {
-		i0, i1, i2 := face.NodeIndices[0], face.NodeIndices[1], face.NodeIndices[2]
+		i0, i1, i2 := face.Indices[0], face.Indices[1], face.Indices[2]
 		if i0 == i1 || i0 == i2 || i1 == i2 {
 			errs = append(errs, specerr.NewIndexed(face, i, specerr.ErrDuplicatedIndices))
 		}
@@ -267,14 +267,14 @@ func (r *Object) validateMesh(m *Model, path string) []error {
 			errs = append(errs, specerr.NewIndexed(face, i, specerr.ErrIndexOutOfBounds))
 		}
 		if face.PID != 0 {
-			if face.PID == r.DefaultPID && face.PIndex[0] == r.DefaultPIndex &&
-				face.PIndex[1] == r.DefaultPIndex && face.PIndex[2] == r.DefaultPIndex {
+			if face.PID == r.DefaultPID && face.PIndices[0] == r.DefaultPIndex &&
+				face.PIndices[1] == r.DefaultPIndex && face.PIndices[2] == r.DefaultPIndex {
 				continue
 			}
 			if a, ok := res.FindAsset(face.PID); ok {
 				if a, ok := a.(propertyGroup); ok {
 					l := a.Len()
-					if int(face.PIndex[0]) >= l || int(face.PIndex[1]) >= l || int(face.PIndex[2]) >= l {
+					if int(face.PIndices[0]) >= l || int(face.PIndices[1]) >= l || int(face.PIndices[2]) >= l {
 						errs = append(errs, specerr.NewIndexed(face, i, specerr.ErrIndexOutOfBounds))
 					}
 				}

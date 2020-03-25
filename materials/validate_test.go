@@ -32,17 +32,17 @@ func TestValidate(t *testing.T) {
 		{"multi", &go3mf.Model{
 			Resources: go3mf.Resources{Assets: []go3mf.Asset{
 				&MultiProperties{ID: 4},
-				&MultiProperties{ID: 5, Multis: []Multi{{PIndex: []uint32{}}}, PIDs: []uint32{4, 100}},
+				&MultiProperties{ID: 5, Multis: []Multi{{PIndices: []uint32{}}}, PIDs: []uint32{4, 100}},
 				&go3mf.BaseMaterials{ID: 1, Materials: []go3mf.Base{
 					{Name: "a", Color: color.RGBA{R: 1}},
 					{Name: "b", Color: color.RGBA{G: 1}},
 				}},
 				&ColorGroup{ID: 6, Colors: []color.RGBA{{R: 1}, {R: 2, G: 3, B: 4, A: 5}}},
 				&CompositeMaterials{ID: 3, MaterialID: 1, Indices: []uint32{0, 1}, Composites: []Composite{{Values: []float32{1, 2}}}},
-				&MultiProperties{ID: 2, Multis: []Multi{{PIndex: []uint32{1, 0}}}, PIDs: []uint32{1, 6}},
-				&MultiProperties{ID: 7, Multis: []Multi{{PIndex: []uint32{1, 3}}}, PIDs: []uint32{1, 6}},
-				&MultiProperties{ID: 8, Multis: []Multi{{PIndex: []uint32{}}}, PIDs: []uint32{6, 1, 6}},
-				&MultiProperties{ID: 9, Multis: []Multi{{PIndex: []uint32{}}}, PIDs: []uint32{1, 3}},
+				&MultiProperties{ID: 2, Multis: []Multi{{PIndices: []uint32{1, 0}}}, PIDs: []uint32{1, 6}},
+				&MultiProperties{ID: 7, Multis: []Multi{{PIndices: []uint32{1, 3}}}, PIDs: []uint32{1, 6}},
+				&MultiProperties{ID: 8, Multis: []Multi{{PIndices: []uint32{}}}, PIDs: []uint32{6, 1, 6}},
+				&MultiProperties{ID: 9, Multis: []Multi{{PIndices: []uint32{}}}, PIDs: []uint32{1, 3}},
 			}},
 		}, []error{
 			fmt.Errorf("Resources@MultiProperties#0: %v", &specerr.MissingFieldError{Name: attrPIDs}),

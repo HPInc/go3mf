@@ -443,9 +443,9 @@ func (c *Component) HasTransform() bool {
 
 // Triangle defines a triangle of a mesh.
 type Triangle struct {
-	NodeIndices [3]uint32 // Coordinates of the three nodes that defines the face.
-	PID         uint32
-	PIndex      [3]uint32 // Resource subindex of the three nodes that defines the face.
+	Indices  [3]uint32 // Coordinates of the three nodes that defines the face.
+	PID      uint32
+	PIndices [3]uint32 // Resource subindex of the three nodes that defines the face.
 }
 
 // A Mesh is an in memory representation of the 3MF mesh object.

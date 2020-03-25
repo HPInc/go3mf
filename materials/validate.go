@@ -129,7 +129,7 @@ func (e *Extension) validateMultiProps(m *go3mf.Model, path string, r *MultiProp
 		}
 	}
 	for j, m := range r.Multis {
-		for k, index := range m.PIndex {
+		for k, index := range m.PIndices {
 			if k < len(r.PIDs) && lengths[k] < int(index) {
 				errs = append(errs, specerr.NewIndexed(m, j, specerr.ErrIndexOutOfBounds))
 				break
