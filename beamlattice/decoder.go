@@ -23,7 +23,7 @@ type beamLatticeDecoder struct {
 
 func (d *beamLatticeDecoder) Start(attrs []xml.Attr) {
 	beamLattice := new(BeamLattice)
-	d.mesh.Extension = append(d.mesh.Extension, beamLattice)
+	d.mesh.Any = append(d.mesh.Any, beamLattice)
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
@@ -108,7 +108,7 @@ func (d *beamDecoder) Start(attrs []xml.Attr) {
 		hasCap1, hasCap2 bool
 	)
 	var beamLattice *BeamLattice
-	d.mesh.Extension.Get(&beamLattice)
+	d.mesh.Any.Get(&beamLattice)
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
@@ -188,7 +188,7 @@ type beamSetDecoder struct {
 
 func (d *beamSetDecoder) End() {
 	var beamLattice *BeamLattice
-	d.mesh.Extension.Get(&beamLattice)
+	d.mesh.Any.Get(&beamLattice)
 	beamLattice.BeamSets = append(beamLattice.BeamSets, d.beamSet)
 }
 

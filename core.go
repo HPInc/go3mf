@@ -87,7 +87,7 @@ type Relationship struct {
 // Build contains one or more items to manufacture as part of processing the job.
 type Build struct {
 	Items   []*Item
-	AnyAttr AnyAttr
+	AnyAttr AttrMarshalers
 }
 
 // The Resources element acts as the root element of a library of constituent
@@ -95,7 +95,7 @@ type Build struct {
 type Resources struct {
 	Assets  []Asset
 	Objects []*Object
-	AnyAttr AnyAttr
+	AnyAttr AttrMarshalers
 }
 
 // UnusedID returns the lowest unused ID.
@@ -154,7 +154,7 @@ func (rs *Resources) FindAsset(id uint32) (Asset, bool) {
 type ChildModel struct {
 	Resources     Resources
 	Relationships []Relationship
-	Extension     Extension
+	Any           Marshalers
 }
 
 // A Model is an in memory representation of the 3MF file.
@@ -177,8 +177,8 @@ type Model struct {
 	Childs            map[string]*ChildModel // path -> child
 	RootRelationships []Relationship
 	Relationships     []Relationship
-	Extension         Extension
-	AnyAttr           AnyAttr
+	Any               Marshalers
+	AnyAttr           AttrMarshalers
 }
 
 // WithExtension adds a new extension
@@ -254,7 +254,7 @@ type Item struct {
 	Transform  Matrix
 	PartNumber string
 	Metadata   []Metadata
-	AnyAttr    AnyAttr
+	AnyAttr    AttrMarshalers
 }
 
 // ObjectPath search an extension attribute with an ObjectPath
@@ -289,14 +289,14 @@ type Object struct {
 	Metadata      []Metadata
 	Mesh          *Mesh
 	Components    []*Component
-	AnyAttr       AnyAttr
+	AnyAttr       AttrMarshalers
 }
 
 // A Component is an in memory representation of the 3MF component.
 type Component struct {
 	ObjectID  uint32
 	Transform Matrix
-	AnyAttr   AnyAttr
+	AnyAttr   AttrMarshalers
 }
 
 // ObjectPath search an extension attribute with an ObjectPath
@@ -333,8 +333,8 @@ type Triangle struct {
 type Mesh struct {
 	Vertices  []Point3D
 	Triangles []Triangle
-	AnyAttr   AnyAttr
-	Extension Extension
+	AnyAttr   AttrMarshalers
+	Any       Marshalers
 }
 
 // MeshBuilder is a helper that creates mesh following a configurable criteria.

@@ -12,7 +12,7 @@ func (e *Extension) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Objec
 
 	var errs []error
 	var bl *BeamLattice
-	if !obj.Mesh.Extension.Get(&bl) {
+	if !obj.Mesh.Any.Get(&bl) {
 		return errs
 	}
 
@@ -79,7 +79,7 @@ func (e *Extension) validateRefMesh(m *go3mf.Model, path string, meshID, selfID 
 			}
 			var lattice *BeamLattice
 			if r.ID == meshID {
-				if r.Mesh == nil || r.ObjectType != go3mf.ObjectTypeModel || r.Mesh.Extension.Get(&lattice) {
+				if r.Mesh == nil || r.ObjectType != go3mf.ObjectTypeModel || r.Mesh.Any.Get(&lattice) {
 					return specerr.ErrLatticeInvalidMesh
 				}
 				break

@@ -13,7 +13,7 @@ func TestDecode(t *testing.T) {
 	meshLattice := &go3mf.Object{
 		ID: 15, Name: "Box",
 		Mesh: &go3mf.Mesh{
-			Extension: go3mf.Extension{beamLattice},
+			Any: go3mf.Marshalers{beamLattice},
 		},
 	}
 	beamLattice.MinLength = 0.0001

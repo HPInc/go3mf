@@ -19,31 +19,31 @@ func TestValidate(t *testing.T) {
 		want  []error
 	}{
 		{"buildEmptyUUID", &go3mf.Model{Build: go3mf.Build{
-			AnyAttr: go3mf.AnyAttr{mustUUID("")}}}, []error{
+			AnyAttr: go3mf.AttrMarshalers{mustUUID("")}}}, []error{
 			fmt.Errorf("Build: %v", specerr.ErrUUID),
 		}},
 		{"buildNonValidUUID", &go3mf.Model{Build: go3mf.Build{
-			AnyAttr: go3mf.AnyAttr{mustUUID("a-b-c-d")}}}, []error{
+			AnyAttr: go3mf.AttrMarshalers{mustUUID("a-b-c-d")}}}, []error{
 			fmt.Errorf("Build: %v", specerr.ErrUUID),
 		}},
 		{"extReq", &go3mf.Model{Specs: map[string]go3mf.Spec{ExtensionSpace: &Extension{IsRequired: true}},
 			Childs: map[string]*go3mf.ChildModel{"/other.model": {Resources: go3mf.Resources{Objects: []*go3mf.Object{validMesh}}}},
 			Resources: go3mf.Resources{Objects: []*go3mf.Object{
-				{ID: 5, AnyAttr: go3mf.AnyAttr{mustUUID("f47ac10b-58cc-0372-8567-0e02b2c3d481")}, Components: []*go3mf.Component{
-					{ObjectID: 1, AnyAttr: go3mf.AnyAttr{
+				{ID: 5, AnyAttr: go3mf.AttrMarshalers{mustUUID("f47ac10b-58cc-0372-8567-0e02b2c3d481")}, Components: []*go3mf.Component{
+					{ObjectID: 1, AnyAttr: go3mf.AttrMarshalers{
 						&PathUUID{Path: "/other.model", UUID: UUID("f47ac10b-58cc-0372-8567-0e02b2c3d480")},
 					}}}}}}, Build: go3mf.Build{
-				AnyAttr: go3mf.AnyAttr{mustUUID("f47ac10b-58cc-0372-8567-0e02b2c3d479")}, Items: []*go3mf.Item{
-					{ObjectID: 1, AnyAttr: go3mf.AnyAttr{&PathUUID{UUID: UUID("f47ac10b-58cc-0372-8567-0e02b2c3d478"), Path: "/other.model"}}},
+				AnyAttr: go3mf.AttrMarshalers{mustUUID("f47ac10b-58cc-0372-8567-0e02b2c3d479")}, Items: []*go3mf.Item{
+					{ObjectID: 1, AnyAttr: go3mf.AttrMarshalers{&PathUUID{UUID: UUID("f47ac10b-58cc-0372-8567-0e02b2c3d478"), Path: "/other.model"}}},
 				}}}, []error{
 			fmt.Errorf("/other.model@Resources@Object#0: %v", &specerr.MissingFieldError{Name: attrProdUUID}),
 		}},
 		{"items", &go3mf.Model{Build: go3mf.Build{
-			AnyAttr: go3mf.AnyAttr{mustUUID("f47ac10b-58cc-0372-8567-0e02b2c3d479")}, Items: []*go3mf.Item{
-				{ObjectID: 1, AnyAttr: go3mf.AnyAttr{&PathUUID{UUID: UUID("f47ac10b-58cc-0372-8567-0e02b2c3d478"), Path: "/other.model"}}},
+			AnyAttr: go3mf.AttrMarshalers{mustUUID("f47ac10b-58cc-0372-8567-0e02b2c3d479")}, Items: []*go3mf.Item{
+				{ObjectID: 1, AnyAttr: go3mf.AttrMarshalers{&PathUUID{UUID: UUID("f47ac10b-58cc-0372-8567-0e02b2c3d478"), Path: "/other.model"}}},
 				{ObjectID: 1},
-				{ObjectID: 1, AnyAttr: go3mf.AnyAttr{&PathUUID{UUID: ""}}},
-				{ObjectID: 1, AnyAttr: go3mf.AnyAttr{&PathUUID{UUID: "a-b-c-d"}}},
+				{ObjectID: 1, AnyAttr: go3mf.AttrMarshalers{&PathUUID{UUID: ""}}},
+				{ObjectID: 1, AnyAttr: go3mf.AttrMarshalers{&PathUUID{UUID: "a-b-c-d"}}},
 			}},
 			Childs:    map[string]*go3mf.ChildModel{"/other.model": {Resources: go3mf.Resources{Objects: []*go3mf.Object{validMesh}}}},
 			Resources: go3mf.Resources{Objects: []*go3mf.Object{{ID: 1, Mesh: validMesh.Mesh}}}}, []error{
@@ -56,23 +56,23 @@ func TestValidate(t *testing.T) {
 		}},
 		{"components", &go3mf.Model{Resources: go3mf.Resources{
 			Objects: []*go3mf.Object{
-				{ID: 2, Mesh: validMesh.Mesh, AnyAttr: go3mf.AnyAttr{mustUUID("a-b-c-d")}},
-				{ID: 3, AnyAttr: go3mf.AnyAttr{mustUUID("f47ac10b-58cc-0372-8567-0e02b2c3d483")}, Components: []*go3mf.Component{
-					{ObjectID: 2, AnyAttr: go3mf.AnyAttr{&PathUUID{UUID: UUID("")}}},
-					{ObjectID: 2, AnyAttr: go3mf.AnyAttr{&PathUUID{UUID: UUID("a-b-c-d")}}},
+				{ID: 2, Mesh: validMesh.Mesh, AnyAttr: go3mf.AttrMarshalers{mustUUID("a-b-c-d")}},
+				{ID: 3, AnyAttr: go3mf.AttrMarshalers{mustUUID("f47ac10b-58cc-0372-8567-0e02b2c3d483")}, Components: []*go3mf.Component{
+					{ObjectID: 2, AnyAttr: go3mf.AttrMarshalers{&PathUUID{UUID: UUID("")}}},
+					{ObjectID: 2, AnyAttr: go3mf.AttrMarshalers{&PathUUID{UUID: UUID("a-b-c-d")}}},
 				}},
 			},
-		}, Build: go3mf.Build{AnyAttr: go3mf.AnyAttr{mustUUID("f47ac10b-58cc-0372-8567-0e02b2c3d479")}}}, []error{
+		}, Build: go3mf.Build{AnyAttr: go3mf.AttrMarshalers{mustUUID("f47ac10b-58cc-0372-8567-0e02b2c3d479")}}}, []error{
 			fmt.Errorf("Resources@Object#0: %v", specerr.ErrUUID),
 			fmt.Errorf("Resources@Object#1@Component#0: %v", &specerr.MissingFieldError{Name: attrProdUUID}),
 			fmt.Errorf("Resources@Object#1@Component#1: %v", specerr.ErrUUID),
 		}},
-		{"child", &go3mf.Model{Build: go3mf.Build{AnyAttr: go3mf.AnyAttr{mustUUID("f47ac10b-58cc-0372-8567-0e02b2c3d479")}},
+		{"child", &go3mf.Model{Build: go3mf.Build{AnyAttr: go3mf.AttrMarshalers{mustUUID("f47ac10b-58cc-0372-8567-0e02b2c3d479")}},
 			Childs: map[string]*go3mf.ChildModel{
 				"/b.model": {Resources: go3mf.Resources{Objects: []*go3mf.Object{validMesh}}},
 				"/other.model": {Resources: go3mf.Resources{Objects: []*go3mf.Object{
 					{ID: 2, Components: []*go3mf.Component{
-						{ObjectID: 1, AnyAttr: go3mf.AnyAttr{&PathUUID{Path: "/b.model"}}},
+						{ObjectID: 1, AnyAttr: go3mf.AttrMarshalers{&PathUUID{Path: "/b.model"}}},
 					}},
 				}}}}}, []error{
 			fmt.Errorf("/b.model@Resources@Object#0: %v", &specerr.MissingFieldError{Name: attrProdUUID}),

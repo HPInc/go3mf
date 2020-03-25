@@ -28,9 +28,9 @@ type Marshaler interface {
 	Marshal3MF(x *XMLEncoder) error
 }
 
-// MarshalerAttr is the interface implemented by objects that can marshal
+// AttrMarshaler is the interface implemented by objects that can marshal
 // themselves into valid XML attributes.
-type MarshalerAttr interface {
+type AttrMarshaler interface {
 	Marshal3MFAttr(*XMLEncoder) ([]xml.Attr, error)
 }
 
@@ -173,7 +173,7 @@ func (e *Encoder) writeChildModel(x *XMLEncoder, m *Model, path string) error {
 	xb := xml.StartElement{Name: xml.Name{Local: attrBuild}}
 	x.EncodeToken(xb)
 	x.EncodeToken(xb.End())
-	child.Extension.encode(x)
+	child.Any.encode(x)
 	x.EncodeToken(tm.End())
 	return x.Flush()
 }
@@ -190,7 +190,7 @@ func (e *Encoder) writeModel(x *XMLEncoder, m *Model) error {
 		return err
 	}
 	e.writeBuild(x, m)
-	m.Extension.encode(x)
+	m.Any.encode(x)
 	x.EncodeToken(tm.End())
 	return x.Flush()
 }
@@ -404,7 +404,7 @@ func (e *Encoder) writeMesh(x *XMLEncoder, r *Object, m *Mesh) {
 	}
 	x.SetAutoClose(false)
 	x.EncodeToken(xvt.End())
-	m.Extension.encode(x)
+	m.Any.encode(x)
 	x.EncodeToken(xm.End())
 }
 

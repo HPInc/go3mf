@@ -252,7 +252,7 @@ func (r *Object) validateMesh(m *Model, path string) []error {
 		if len(r.Mesh.Vertices) < 3 {
 			errs = append(errs, specerr.ErrInsufficientVertices)
 		}
-		if len(r.Mesh.Triangles) <= 3 && len(r.Mesh.Extension) == 0 {
+		if len(r.Mesh.Triangles) <= 3 && len(r.Mesh.Any) == 0 {
 			errs = append(errs, specerr.ErrInsufficientTriangles)
 		}
 	}
