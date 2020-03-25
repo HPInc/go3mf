@@ -10,14 +10,14 @@ import (
 // Marshal3MFAttr encodes the resource attributes.
 func (s *SliceStackInfo) Marshal3MFAttr(_ *go3mf.XMLEncoder) ([]xml.Attr, error) {
 	return []xml.Attr{
-		{Name: xml.Name{Space: ExtensionName, Local: attrSliceRefID}, Value: strconv.FormatUint(uint64(s.SliceStackID), 10)},
-		{Name: xml.Name{Space: ExtensionName, Local: attrMeshRes}, Value: s.SliceResolution.String()},
+		{Name: xml.Name{Space: Namespace, Local: attrSliceRefID}, Value: strconv.FormatUint(uint64(s.SliceStackID), 10)},
+		{Name: xml.Name{Space: Namespace, Local: attrMeshRes}, Value: s.SliceResolution.String()},
 	}, nil
 }
 
 // Marshal3MF encodes the resource.
-func (s *SliceStackResource) Marshal3MF(x *go3mf.XMLEncoder) error {
-	xs := xml.StartElement{Name: xml.Name{Space: ExtensionName, Local: attrSliceStack}, Attr: []xml.Attr{
+func (s *SliceStack) Marshal3MF(x *go3mf.XMLEncoder) error {
+	xs := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrSliceStack}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(s.ID), 10)},
 	}}
 	if s.BottomZ != 0 {
@@ -32,7 +32,7 @@ func (s *SliceStackResource) Marshal3MF(x *go3mf.XMLEncoder) error {
 	}
 	x.SetAutoClose(true)
 	for _, r := range s.Refs {
-		x.EncodeToken(xml.StartElement{Name: xml.Name{Space: ExtensionName, Local: attrSliceRef}, Attr: []xml.Attr{
+		x.EncodeToken(xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrSliceRef}, Attr: []xml.Attr{
 			{Name: xml.Name{Local: attrSliceRefID}, Value: strconv.FormatUint(uint64(r.SliceStackID), 10)},
 			{Name: xml.Name{Local: attrSlicePath}, Value: r.Path},
 		}})
@@ -43,7 +43,7 @@ func (s *SliceStackResource) Marshal3MF(x *go3mf.XMLEncoder) error {
 }
 
 func (s *Slice) marshal3MF(x *go3mf.XMLEncoder) {
-	xs := xml.StartElement{Name: xml.Name{Space: ExtensionName, Local: attrSlice}, Attr: []xml.Attr{
+	xs := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrSlice}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrZTop}, Value: strconv.FormatFloat(float64(s.TopZ), 'f', x.FloatPresicion(), 32)},
 	}}
 	x.EncodeToken(xs)
@@ -56,13 +56,13 @@ func (s *Slice) marshal3MF(x *go3mf.XMLEncoder) {
 
 func marshalPolygons(x *go3mf.XMLEncoder, ply []Polygon) {
 	for _, p := range ply {
-		xp := xml.StartElement{Name: xml.Name{Space: ExtensionName, Local: attrPolygon}, Attr: []xml.Attr{
+		xp := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrPolygon}, Attr: []xml.Attr{
 			{Name: xml.Name{Local: attrStartV}, Value: strconv.FormatUint(uint64(p.StartV), 10)},
 		}}
 		x.EncodeToken(xp)
 		x.SetAutoClose(true)
 		for _, s := range p.Segments {
-			xs := xml.StartElement{Name: xml.Name{Space: ExtensionName, Local: attrSegment}, Attr: []xml.Attr{
+			xs := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrSegment}, Attr: []xml.Attr{
 				{Name: xml.Name{Local: attrV2}, Value: strconv.FormatUint(uint64(s.V2), 10)},
 			}}
 			if s.PID != 0 {
@@ -87,11 +87,11 @@ func marshalPolygons(x *go3mf.XMLEncoder, ply []Polygon) {
 }
 
 func marshalVertices(x *go3mf.XMLEncoder, vs []go3mf.Point2D) {
-	xv := xml.StartElement{Name: xml.Name{Space: ExtensionName, Local: attrVertices}}
+	xv := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrVertices}}
 	x.EncodeToken(xv)
 	x.SetAutoClose(true)
 	for _, v := range vs {
-		x.EncodeToken(xml.StartElement{Name: xml.Name{Space: ExtensionName, Local: attrVertex}, Attr: []xml.Attr{
+		x.EncodeToken(xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrVertex}, Attr: []xml.Attr{
 			{Name: xml.Name{Local: attrX}, Value: strconv.FormatFloat(float64(v.X()), 'f', x.FloatPresicion(), 32)},
 			{Name: xml.Name{Local: attrY}, Value: strconv.FormatFloat(float64(v.Y()), 'f', x.FloatPresicion(), 32)},
 		}})

@@ -6,12 +6,11 @@ import (
 	"github.com/qmuntal/go3mf"
 )
 
-// RegisterExtension registers this extension in the decoder instance.
-func RegisterExtension(d *go3mf.Decoder) {
-	d.RegisterDecodeAttributeExtension(ExtensionName, decodeAttribute)
+func (e Spec) NewNodeDecoder(_ interface{}, _ string) go3mf.NodeDecoder {
+	return nil
 }
 
-func decodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
+func (e Spec) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
 	var (
 		uuid UUID
 		err  error
@@ -22,7 +21,7 @@ func decodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
 			if uuid, err = NewUUID(attr.Value); err != nil {
 				s.InvalidAttr(attr.Name.Local, attr.Value, true)
 			}
-			t.ExtensionAttr = append(t.ExtensionAttr, &uuid)
+			t.AnyAttr = append(t.AnyAttr, &uuid)
 		}
 	case *go3mf.Item:
 		switch attr.Name.Local {
@@ -31,17 +30,17 @@ func decodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
 				s.InvalidAttr(attr.Name.Local, attr.Value, true)
 			}
 			var ext *PathUUID
-			if t.ExtensionAttr.Get(&ext) {
+			if t.AnyAttr.Get(&ext) {
 				ext.UUID = uuid
 			} else {
-				t.ExtensionAttr = append(t.ExtensionAttr, &PathUUID{UUID: uuid})
+				t.AnyAttr = append(t.AnyAttr, &PathUUID{UUID: uuid})
 			}
 		case attrPath:
 			var ext *PathUUID
-			if t.ExtensionAttr.Get(&ext) {
+			if t.AnyAttr.Get(&ext) {
 				ext.Path = attr.Value
 			} else {
-				t.ExtensionAttr = append(t.ExtensionAttr, &PathUUID{Path: attr.Value})
+				t.AnyAttr = append(t.AnyAttr, &PathUUID{Path: attr.Value})
 			}
 		}
 	case *go3mf.Object:
@@ -49,7 +48,7 @@ func decodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
 			if uuid, err = NewUUID(attr.Value); err != nil {
 				s.InvalidAttr(attr.Name.Local, attr.Value, true)
 			}
-			t.ExtensionAttr = append(t.ExtensionAttr, &uuid)
+			t.AnyAttr = append(t.AnyAttr, &uuid)
 		}
 	case *go3mf.Component:
 		switch attr.Name.Local {
@@ -58,17 +57,17 @@ func decodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
 				s.InvalidAttr(attr.Name.Local, attr.Value, true)
 			}
 			var ext *PathUUID
-			if t.ExtensionAttr.Get(&ext) {
+			if t.AnyAttr.Get(&ext) {
 				ext.UUID = uuid
 			} else {
-				t.ExtensionAttr = append(t.ExtensionAttr, &PathUUID{UUID: uuid})
+				t.AnyAttr = append(t.AnyAttr, &PathUUID{UUID: uuid})
 			}
 		case attrPath:
 			var ext *PathUUID
-			if t.ExtensionAttr.Get(&ext) {
+			if t.AnyAttr.Get(&ext) {
 				ext.Path = attr.Value
 			} else {
-				t.ExtensionAttr = append(t.ExtensionAttr, &PathUUID{Path: attr.Value})
+				t.AnyAttr = append(t.AnyAttr, &PathUUID{Path: attr.Value})
 			}
 		}
 	}

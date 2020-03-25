@@ -6,8 +6,8 @@ import (
 )
 
 func TestResources_FindAsset(t *testing.T) {
-	id1 := &BaseMaterialsResource{ID: 0}
-	id2 := &BaseMaterialsResource{ID: 1}
+	id1 := &BaseMaterials{ID: 0}
+	id2 := &BaseMaterials{ID: 1}
 	type args struct {
 		id uint32
 	}
@@ -37,9 +37,9 @@ func TestResources_FindAsset(t *testing.T) {
 
 func TestModel_FindAsset(t *testing.T) {
 	model := &Model{Path: "/3D/model.model"}
-	id1 := &BaseMaterialsResource{ID: 0}
-	id2 := &BaseMaterialsResource{ID: 1}
-	id3 := &BaseMaterialsResource{ID: 1}
+	id1 := &BaseMaterials{ID: 0}
+	id2 := &BaseMaterials{ID: 1}
+	id3 := &BaseMaterials{ID: 1}
 	model.Resources = Resources{Assets: []Asset{id1, id2}}
 	model.Childs = map[string]*ChildModel{
 		"/3D/other.model": {Resources: Resources{Assets: []Asset{id3}}},
@@ -157,19 +157,19 @@ func TestComponent_HasTransform(t *testing.T) {
 	}
 }
 
-func TestBaseMaterialsResource_Identify(t *testing.T) {
+func TestBaseMaterials_Identify(t *testing.T) {
 	tests := []struct {
 		name string
-		ms   *BaseMaterialsResource
+		ms   *BaseMaterials
 		want uint32
 	}{
-		{"base", &BaseMaterialsResource{ID: 1}, 1},
+		{"base", &BaseMaterials{ID: 1}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.ms.Identify()
 			if got != tt.want {
-				t.Errorf("BaseMaterialsResource.Identify() got = %v, want %v", got, tt.want)
+				t.Errorf("BaseMaterials.Identify() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -182,11 +182,11 @@ func TestResources_UnusedID(t *testing.T) {
 		want uint32
 	}{
 		{"empty", new(Resources), 1},
-		{"one-asset", &Resources{Assets: []Asset{&BaseMaterialsResource{ID: 2}}}, 1},
+		{"one-asset", &Resources{Assets: []Asset{&BaseMaterials{ID: 2}}}, 1},
 		{"one-object", &Resources{Objects: []*Object{{ID: 2}}}, 1},
-		{"two", &Resources{Assets: []Asset{&BaseMaterialsResource{ID: 1}}}, 2},
-		{"sequence", &Resources{Assets: []Asset{&BaseMaterialsResource{ID: 1}}, Objects: []*Object{{ID: 2}}}, 3},
-		{"sparce", &Resources{Assets: []Asset{&BaseMaterialsResource{ID: 1}}, Objects: []*Object{{ID: 3}}}, 2},
+		{"two", &Resources{Assets: []Asset{&BaseMaterials{ID: 1}}}, 2},
+		{"sequence", &Resources{Assets: []Asset{&BaseMaterials{ID: 1}}, Objects: []*Object{{ID: 2}}}, 3},
+		{"sparce", &Resources{Assets: []Asset{&BaseMaterials{ID: 1}}, Objects: []*Object{{ID: 3}}}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -237,10 +237,10 @@ func TestUnits_String(t *testing.T) {
 	}
 }
 
-func TestMeshBuilder_AddNode(t *testing.T) {
+func TestMeshBuilder_AddVertex(t *testing.T) {
 	pos := Point3D{1.0, 2.0, 3.0}
 	existingStruct := NewMeshBuilder(new(Mesh))
-	existingStruct.AddNode(pos)
+	existingStruct.AddVertex(pos)
 	type args struct {
 		position Point3D
 	}
@@ -251,13 +251,13 @@ func TestMeshBuilder_AddNode(t *testing.T) {
 		want uint32
 	}{
 		{"existing", existingStruct, args{pos}, 0},
-		{"base", &MeshBuilder{Mesh: &Mesh{Nodes: []Point3D{{}}}, CalculateConnectivity: false}, args{pos}, 1},
+		{"base", &MeshBuilder{Mesh: &Mesh{Vertices: []Point3D{{}}}, CalculateConnectivity: false}, args{pos}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.m.AddNode(tt.args.position)
+			got := tt.m.AddVertex(tt.args.position)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("MeshBuilder.AddNode() = %v, want %v", got, tt.want)
+				t.Errorf("MeshBuilder.AddVertex() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -316,144 +316,6 @@ func Test_newUnits(t *testing.T) {
 	}
 }
 
-func TestNewMeshObject(t *testing.T) {
-	tests := []struct {
-		name string
-		want *Object
-	}{
-		{"base", &Object{Mesh: new(Mesh)}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewMeshObject(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewMeshObject() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestNewComponentsObject(t *testing.T) {
-	tests := []struct {
-		name string
-		want *Object
-	}{
-		{"base", &Object{Components: make([]*Component, 0)}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewComponentsObject(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewComponentsObject() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestExtensionAttr_Get(t *testing.T) {
-	tests := []struct {
-		name   string
-		e      ExtensionAttr
-		want   interface{}
-		wantOK bool
-	}{
-		{"nil", nil, new(fakeAttr), false},
-		{"empty", ExtensionAttr{}, new(fakeAttr), false},
-		{"non-exist", ExtensionAttr{nil}, new(fakeAttr), false},
-		{"exist", ExtensionAttr{&fakeAttr{Value: "1"}}, &fakeAttr{Value: "1"}, true},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			target := new(fakeAttr)
-			if got := tt.e.Get(&target); got != tt.wantOK {
-				t.Errorf("ExtensionAttr.Get() = %v, wantOK %v", got, tt.wantOK)
-				return
-			}
-			if !reflect.DeepEqual(target, tt.want) {
-				t.Errorf("ExtensionAttr.Get() = %v, want %v", target, tt.want)
-			}
-		})
-	}
-}
-
-func TestExtension_Get(t *testing.T) {
-	tests := []struct {
-		name   string
-		e      Extension
-		want   interface{}
-		wantOK bool
-	}{
-		{"nil", nil, new(fakeAsset), false},
-		{"empty", Extension{}, new(fakeAsset), false},
-		{"non-exist", Extension{nil}, new(fakeAsset), false},
-		{"exist", Extension{&fakeAsset{ID: 1}}, &fakeAsset{ID: 1}, true},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			target := new(fakeAsset)
-			if got := tt.e.Get(&target); got != tt.wantOK {
-				t.Errorf("Extension.Get() = %v, wantOK %v", got, tt.wantOK)
-				return
-			}
-			if !reflect.DeepEqual(target, tt.want) {
-				t.Errorf("Extension.Get() = %v, want %v", target, tt.want)
-			}
-		})
-	}
-}
-
-func TestExtension_Get_Panic(t *testing.T) {
-	type args struct {
-		target interface{}
-	}
-	tests := []struct {
-		name string
-		e    Extension
-		args args
-	}{
-		{"nil", Extension{&fakeAsset{ID: 1}}, args{nil}},
-		{"int", Extension{&fakeAsset{ID: 1}}, args{1}},
-		{"nonPtrToPtr", Extension{&fakeAsset{ID: 1}}, args{new(fakeAsset)}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			defer func() {
-				if err := recover(); err == nil {
-					t.Error("Extension.Get() did not panic")
-				}
-			}()
-			if tt.e.Get(tt.args.target) {
-				t.Error("Extension.Get() want false")
-			}
-		})
-	}
-}
-
-func TestExtensionAttr_Get_Panic(t *testing.T) {
-	type args struct {
-		target interface{}
-	}
-	tests := []struct {
-		name string
-		e    ExtensionAttr
-		args args
-	}{
-		{"nil", ExtensionAttr{&fakeAttr{Value: "1"}}, args{nil}},
-		{"int", ExtensionAttr{&fakeAttr{Value: "1"}}, args{1}},
-		{"nonPtrToPtr", ExtensionAttr{&fakeAttr{Value: "1"}}, args{new(fakeAttr)}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			defer func() {
-				if err := recover(); err == nil {
-					t.Error("ExtensionAttr.Get() did not panic")
-				}
-			}()
-			if tt.e.Get(tt.args.target) {
-				t.Error("ExtensionAttr.Get() want false")
-			}
-		})
-	}
-}
-
 func TestComponent_ObjectPath(t *testing.T) {
 	type args struct {
 		defaultPath string
@@ -465,8 +327,8 @@ func TestComponent_ObjectPath(t *testing.T) {
 		want string
 	}{
 		{"emptyattr", &Component{}, args{"/other.model"}, "/other.model"},
-		{"emptypath", &Component{ExtensionAttr: ExtensionAttr{&fakeAttr{}}}, args{"/other.model"}, "/other.model"},
-		{"emptyattr", &Component{ExtensionAttr: ExtensionAttr{&fakeAttr{Value: "/3dmodel.model"}}}, args{"/other.model"}, "/3dmodel.model"},
+		{"emptypath", &Component{AnyAttr: AttrMarshalers{&fakeAttr{}}}, args{"/other.model"}, "/other.model"},
+		{"emptyattr", &Component{AnyAttr: AttrMarshalers{&fakeAttr{Value: "/3dmodel.model"}}}, args{"/other.model"}, "/3dmodel.model"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -488,8 +350,8 @@ func TestItem_ObjectPath(t *testing.T) {
 		want string
 	}{
 		{"emptyattr", &Item{}, args{"/other.model"}, "/other.model"},
-		{"emptypath", &Item{ExtensionAttr: ExtensionAttr{&fakeAttr{}}}, args{"/other.model"}, "/other.model"},
-		{"emptyattr", &Item{ExtensionAttr: ExtensionAttr{&fakeAttr{Value: "/3dmodel.model"}}}, args{"/other.model"}, "/3dmodel.model"},
+		{"emptypath", &Item{AnyAttr: AttrMarshalers{&fakeAttr{}}}, args{"/other.model"}, "/other.model"},
+		{"emptyattr", &Item{AnyAttr: AttrMarshalers{&fakeAttr{Value: "/3dmodel.model"}}}, args{"/other.model"}, "/3dmodel.model"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

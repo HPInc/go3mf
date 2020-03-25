@@ -3,8 +3,8 @@ package go3mf
 import (
 	"bytes"
 	"encoding/xml"
-	"fmt"
 	"io"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -28,9 +28,9 @@ type Marshaler interface {
 	Marshal3MF(x *XMLEncoder) error
 }
 
-// MarshalerAttr is the interface implemented by objects that can marshal
+// AttrMarshaler is the interface implemented by objects that can marshal
 // themselves into valid XML attributes.
-type MarshalerAttr interface {
+type AttrMarshaler interface {
 	Marshal3MFAttr(*XMLEncoder) ([]xml.Attr, error)
 }
 
@@ -64,10 +64,7 @@ func (e *Encoder) Encode(m *Model) error {
 	if err := e.writeAttachements(m.Attachments); err != nil {
 		return err
 	}
-	rootName := m.Path
-	if rootName == "" {
-		rootName = DefaultPartModelName
-	}
+	rootName := m.PathOrDefault()
 	e.w.AddRelationship(Relationship{Type: RelType3DModel, Path: rootName})
 	for _, r := range m.RootRelationships {
 		e.w.AddRelationship(r)
@@ -138,7 +135,7 @@ func (e *Encoder) writeAttachements(att []Attachment) error {
 
 func (e *Encoder) modelToken(x *XMLEncoder, m *Model, isRoot bool) (xml.StartElement, error) {
 	attrs := []xml.Attr{
-		{Name: xml.Name{Local: attrXmlns}, Value: ExtensionName},
+		{Name: xml.Name{Local: attrXmlns}, Value: Namespace},
 		{Name: xml.Name{Local: attrUnit}, Value: m.Units.String()},
 		{Name: xml.Name{Space: nsXML, Local: attrLang}, Value: m.Language},
 	}
@@ -146,26 +143,21 @@ func (e *Encoder) modelToken(x *XMLEncoder, m *Model, isRoot bool) (xml.StartEle
 		x.AddRelationship(Relationship{Path: m.Thumbnail, Type: RelTypeThumbnail})
 		attrs = append(attrs, xml.Attr{Name: xml.Name{Local: attrThumbnail}, Value: m.Thumbnail})
 	}
-	for _, a := range m.Namespaces {
-		attrs = append(attrs, xml.Attr{Name: xml.Name{Space: attrXmlns, Local: a.Local}, Value: a.Space})
+	for _, a := range m.Specs {
+		attrs = append(attrs, xml.Attr{Name: xml.Name{Space: attrXmlns, Local: a.Local()}, Value: a.Namespace()})
 	}
-	if len(m.RequiredExtensions) != 0 {
-		exts := make([]string, len(m.RequiredExtensions))
-		for i, ns := range m.RequiredExtensions {
-			for _, a := range m.Namespaces {
-				if a.Space == ns {
-					exts[i] = a.Local
-					break
-				}
-			}
-			if exts[i] == "" {
-				return xml.StartElement{}, fmt.Errorf("go3mf: cannot encode model with undefined required extension '%s'", ns)
-			}
+	var exts []string
+	for _, a := range m.Specs {
+		if a.Required() {
+			exts = append(exts, a.Local())
 		}
+	}
+	sort.Strings(exts)
+	if len(exts) != 0 {
 		attrs = append(attrs, xml.Attr{Name: xml.Name{Local: attrReqExt}, Value: strings.Join(exts, " ")})
 	}
 	tm := xml.StartElement{Name: xml.Name{Local: attrModel}, Attr: attrs}
-	m.ExtensionAttr.encode(x, &tm)
+	m.AnyAttr.encode(x, &tm)
 	return tm, nil
 }
 
@@ -181,7 +173,7 @@ func (e *Encoder) writeChildModel(x *XMLEncoder, m *Model, path string) error {
 	xb := xml.StartElement{Name: xml.Name{Local: attrBuild}}
 	x.EncodeToken(xb)
 	x.EncodeToken(xb.End())
-	child.Extension.encode(x)
+	child.Any.encode(x)
 	x.EncodeToken(tm.End())
 	return x.Flush()
 }
@@ -198,7 +190,7 @@ func (e *Encoder) writeModel(x *XMLEncoder, m *Model) error {
 		return err
 	}
 	e.writeBuild(x, m)
-	m.Extension.encode(x)
+	m.Any.encode(x)
 	x.EncodeToken(tm.End())
 	return x.Flush()
 }
@@ -212,7 +204,7 @@ func (e *Encoder) writeMetadataGroup(x *XMLEncoder, m []Metadata) {
 
 func (e *Encoder) writeBuild(x *XMLEncoder, m *Model) {
 	xb := xml.StartElement{Name: xml.Name{Local: attrBuild}}
-	m.Build.ExtensionAttr.encode(x, &xb)
+	m.Build.AnyAttr.encode(x, &xb)
 	x.EncodeToken(xb)
 	x.SetAutoClose(true)
 	for _, item := range m.Build.Items {
@@ -229,7 +221,7 @@ func (e *Encoder) writeBuild(x *XMLEncoder, m *Model) {
 				Name: xml.Name{Local: attrPartNumber}, Value: item.PartNumber,
 			})
 		}
-		item.ExtensionAttr.encode(x, &xi)
+		item.AnyAttr.encode(x, &xi)
 		if len(item.Metadata) != 0 {
 			x.SetAutoClose(false)
 			x.EncodeToken(xi)
@@ -249,7 +241,7 @@ func (e *Encoder) writeResources(x *XMLEncoder, rs *Resources) error {
 	x.EncodeToken(xt)
 	for _, r := range rs.Assets {
 		switch r := r.(type) {
-		case *BaseMaterialsResource:
+		case *BaseMaterials:
 			e.writeBaseMaterial(x, r)
 		case Marshaler:
 			if err := r.Marshal3MF(x); err != nil {
@@ -325,7 +317,7 @@ func (e *Encoder) writeObject(x *XMLEncoder, r *Object) {
 			})
 		}
 	}
-	r.ExtensionAttr.encode(x, &xo)
+	r.AnyAttr.encode(x, &xo)
 	x.EncodeToken(xo)
 
 	if len(r.Metadata) != 0 {
@@ -353,7 +345,7 @@ func (e *Encoder) writeComponents(x *XMLEncoder, comps []*Component) {
 		if c.HasTransform() {
 			xt.Attr = append(xt.Attr, xml.Attr{Name: xml.Name{Local: attrTransform}, Value: c.Transform.String()})
 		}
-		c.ExtensionAttr.encode(x, &xt)
+		c.AnyAttr.encode(x, &xt)
 		x.EncodeToken(xt)
 	}
 	x.SetAutoClose(false)
@@ -362,12 +354,12 @@ func (e *Encoder) writeComponents(x *XMLEncoder, comps []*Component) {
 
 func (e *Encoder) writeMesh(x *XMLEncoder, r *Object, m *Mesh) {
 	xm := xml.StartElement{Name: xml.Name{Local: attrMesh}}
-	m.ExtensionAttr.encode(x, &xm)
+	m.AnyAttr.encode(x, &xm)
 	x.EncodeToken(xm)
 	xvs := xml.StartElement{Name: xml.Name{Local: attrVertices}}
 	x.EncodeToken(xvs)
 	x.SetAutoClose(true)
-	for _, v := range m.Nodes {
+	for _, v := range m.Vertices {
 		x.EncodeToken(xml.StartElement{
 			Name: xml.Name{Local: attrVertex},
 			Attr: []xml.Attr{
@@ -383,17 +375,17 @@ func (e *Encoder) writeMesh(x *XMLEncoder, r *Object, m *Mesh) {
 	xvt := xml.StartElement{Name: xml.Name{Local: attrTriangles}}
 	x.EncodeToken(xvt)
 	x.SetAutoClose(true)
-	for _, v := range m.Faces {
+	for _, v := range m.Triangles {
 		t := xml.StartElement{
 			Name: xml.Name{Local: attrTriangle},
 			Attr: []xml.Attr{
-				{Name: xml.Name{Local: attrV1}, Value: strconv.FormatUint(uint64(v.NodeIndices[0]), 10)},
-				{Name: xml.Name{Local: attrV2}, Value: strconv.FormatUint(uint64(v.NodeIndices[1]), 10)},
-				{Name: xml.Name{Local: attrV3}, Value: strconv.FormatUint(uint64(v.NodeIndices[2]), 10)},
+				{Name: xml.Name{Local: attrV1}, Value: strconv.FormatUint(uint64(v.Indices[0]), 10)},
+				{Name: xml.Name{Local: attrV2}, Value: strconv.FormatUint(uint64(v.Indices[1]), 10)},
+				{Name: xml.Name{Local: attrV3}, Value: strconv.FormatUint(uint64(v.Indices[2]), 10)},
 			},
 		}
 		if v.PID != 0 {
-			p1, p2, p3 := v.PIndex[0], v.PIndex[1], v.PIndex[2]
+			p1, p2, p3 := v.PIndices[0], v.PIndices[1], v.PIndices[2]
 			if (p1 != p2) || (p1 != p3) {
 				t.Attr = append(t.Attr,
 					xml.Attr{Name: xml.Name{Local: attrPID}, Value: strconv.FormatUint(uint64(v.PID), 10)},
@@ -412,11 +404,11 @@ func (e *Encoder) writeMesh(x *XMLEncoder, r *Object, m *Mesh) {
 	}
 	x.SetAutoClose(false)
 	x.EncodeToken(xvt.End())
-	m.Extension.encode(x)
+	m.Any.encode(x)
 	x.EncodeToken(xm.End())
 }
 
-func (e *Encoder) writeBaseMaterial(x *XMLEncoder, r *BaseMaterialsResource) {
+func (e *Encoder) writeBaseMaterial(x *XMLEncoder, r *BaseMaterials) {
 	xt := xml.StartElement{Name: xml.Name{Local: attrBaseMaterials}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(r.ID), 10)},
 	}}

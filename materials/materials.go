@@ -3,11 +3,28 @@ package materials
 import "image/color"
 
 const (
-	// ExtensionName is the canonical name of this extension.
-	ExtensionName = "http://schemas.microsoft.com/3dmanufacturing/material/2015/02"
+	// Namespace is the canonical name of this extension.
+	Namespace = "http://schemas.microsoft.com/3dmanufacturing/material/2015/02"
 	// RelTypeTexture3D is the canonical 3D texture relationship type.
 	RelTypeTexture3D = "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture"
 )
+
+type Spec struct {
+	LocalName  string
+	IsRequired bool
+}
+
+func (e Spec) Namespace() string   { return Namespace }
+func (e Spec) Required() bool      { return e.IsRequired }
+func (e *Spec) SetRequired(r bool) { e.IsRequired = r }
+func (e *Spec) SetLocal(l string)  { e.LocalName = l }
+
+func (e Spec) Local() string {
+	if e.LocalName != "" {
+		return e.LocalName
+	}
+	return "m"
+}
 
 // Texture2DType defines the allowed texture 2D types.
 type Texture2DType uint8
@@ -79,8 +96,8 @@ func (b BlendMethod) String() string {
 	}[b]
 }
 
-// Texture2DResource defines the Model Texture 2D.
-type Texture2DResource struct {
+// Texture2D defines the Model Texture 2D.
+type Texture2D struct {
 	ID          uint32
 	Path        string
 	ContentType Texture2DType
@@ -90,7 +107,7 @@ type Texture2DResource struct {
 }
 
 // Identify returns the unique ID of the resource.
-func (t *Texture2DResource) Identify() uint32 {
+func (t *Texture2D) Identify() uint32 {
 	return t.ID
 }
 
@@ -107,26 +124,36 @@ func (t TextureCoord) V() float32 {
 	return t[1]
 }
 
-// Texture2DGroupResource acts as a container for texture coordinate properties.
-type Texture2DGroupResource struct {
+// Texture2DGroup acts as a container for texture coordinate properties.
+type Texture2DGroup struct {
 	ID        uint32
 	TextureID uint32
 	Coords    []TextureCoord
 }
 
-// Identify returns the unique ID of the resource.
-func (t *Texture2DGroupResource) Identify() uint32 {
-	return t.ID
+// Len returns the materials count.
+func (r *Texture2DGroup) Len() int {
+	return len(r.Coords)
 }
 
-// ColorGroupResource acts as a container for color properties.
-type ColorGroupResource struct {
+// Identify returns the unique ID of the resource.
+func (r *Texture2DGroup) Identify() uint32 {
+	return r.ID
+}
+
+// ColorGroup acts as a container for color properties.
+type ColorGroup struct {
 	ID     uint32
 	Colors []color.RGBA
 }
 
+// Len returns the materials count.
+func (r *ColorGroup) Len() int {
+	return len(r.Colors)
+}
+
 // Identify returns the unique ID of the resource.
-func (c *ColorGroupResource) Identify() uint32 {
+func (c *ColorGroup) Identify() uint32 {
 	return c.ID
 }
 
@@ -135,35 +162,45 @@ type Composite struct {
 	Values []float32
 }
 
-// CompositeMaterialsResource defines materials derived by mixing 2 or more base materials in defined ratios.
-type CompositeMaterialsResource struct {
+// CompositeMaterials defines materials derived by mixing 2 or more base materials in defined ratios.
+type CompositeMaterials struct {
 	ID         uint32
 	MaterialID uint32
 	Indices    []uint32
 	Composites []Composite
 }
 
+// Len returns the materials count.
+func (r *CompositeMaterials) Len() int {
+	return len(r.Composites)
+}
+
 // Identify returns the unique ID of the resource.
-func (c *CompositeMaterialsResource) Identify() uint32 {
+func (c *CompositeMaterials) Identify() uint32 {
 	return c.ID
 }
 
 // The Multi element combines the constituent materials and properties.
 type Multi struct {
-	PIndex []uint32
+	PIndices []uint32
 }
 
-// A MultiPropertiesResource element acts as a container for Multi
+// A MultiProperties element acts as a container for Multi
 // elements which are indexable groups of property indices.
-type MultiPropertiesResource struct {
+type MultiProperties struct {
 	ID           uint32
 	PIDs         []uint32
 	BlendMethods []BlendMethod
 	Multis       []Multi
 }
 
+// Len returns the materials count.
+func (r *MultiProperties) Len() int {
+	return len(r.Multis)
+}
+
 // Identify returns the unique ID of the resource.
-func (c *MultiPropertiesResource) Identify() uint32 {
+func (c *MultiProperties) Identify() uint32 {
 	return c.ID
 }
 

@@ -7,17 +7,14 @@ import (
 	"github.com/qmuntal/go3mf"
 )
 
-// RegisterExtension registers this extension in the decoder instance.
-func RegisterExtension(d *go3mf.Decoder) {
-	d.RegisterNodeDecoderExtension(ExtensionName, nodeDecoder)
-}
-
-func nodeDecoder(parentNode interface{}, nodeName string) go3mf.NodeDecoder {
+func (e Spec) NewNodeDecoder(parentNode interface{}, nodeName string) go3mf.NodeDecoder {
 	if nodeName == attrBeamLattice {
 		return &beamLatticeDecoder{mesh: parentNode.(*go3mf.Mesh)}
 	}
 	return nil
 }
+
+func (e Spec) DecodeAttribute(_ *go3mf.Scanner, _ interface{}, _ xml.Attr) {}
 
 type beamLatticeDecoder struct {
 	baseDecoder
@@ -26,7 +23,7 @@ type beamLatticeDecoder struct {
 
 func (d *beamLatticeDecoder) Start(attrs []xml.Attr) {
 	beamLattice := new(BeamLattice)
-	d.mesh.Extension = append(d.mesh.Extension, beamLattice)
+	d.mesh.Any = append(d.mesh.Any, beamLattice)
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
@@ -73,7 +70,7 @@ func (d *beamLatticeDecoder) Start(attrs []xml.Attr) {
 }
 
 func (d *beamLatticeDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
-	if name.Space == ExtensionName {
+	if name.Space == Namespace {
 		if name.Local == attrBeams {
 			child = &beamsDecoder{mesh: d.mesh}
 		} else if name.Local == attrBeamSets {
@@ -94,7 +91,7 @@ func (d *beamsDecoder) Start(_ []xml.Attr) {
 }
 
 func (d *beamsDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrBeam {
+	if name.Space == Namespace && name.Local == attrBeam {
 		child = &d.beamDecoder
 	}
 	return
@@ -111,7 +108,7 @@ func (d *beamDecoder) Start(attrs []xml.Attr) {
 		hasCap1, hasCap2 bool
 	)
 	var beamLattice *BeamLattice
-	d.mesh.Extension.Get(&beamLattice)
+	d.mesh.Any.Get(&beamLattice)
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
@@ -122,13 +119,13 @@ func (d *beamDecoder) Start(attrs []xml.Attr) {
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
 			}
-			beam.NodeIndices[0] = uint32(val)
+			beam.Indices[0] = uint32(val)
 		case attrV2:
 			val, err := strconv.ParseUint(a.Value, 10, 32)
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
 			}
-			beam.NodeIndices[1] = uint32(val)
+			beam.Indices[1] = uint32(val)
 		case attrR1:
 			val, err := strconv.ParseFloat(a.Value, 32)
 			if err != nil {
@@ -176,7 +173,7 @@ type beamSetsDecoder struct {
 }
 
 func (d *beamSetsDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrBeamSet {
+	if name.Space == Namespace && name.Local == attrBeamSet {
 		child = &beamSetDecoder{mesh: d.mesh}
 	}
 	return
@@ -191,7 +188,7 @@ type beamSetDecoder struct {
 
 func (d *beamSetDecoder) End() {
 	var beamLattice *BeamLattice
-	d.mesh.Extension.Get(&beamLattice)
+	d.mesh.Any.Get(&beamLattice)
 	beamLattice.BeamSets = append(beamLattice.BeamSets, d.beamSet)
 }
 
@@ -211,7 +208,7 @@ func (d *beamSetDecoder) Start(attrs []xml.Attr) {
 }
 
 func (d *beamSetDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
-	if name.Space == ExtensionName && name.Local == attrRef {
+	if name.Space == Namespace && name.Local == attrRef {
 		child = &d.beamRefDecoder
 	}
 	return
