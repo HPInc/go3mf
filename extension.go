@@ -8,6 +8,10 @@ import (
 var marshalerAttrType = reflect.TypeOf((*AttrMarshaler)(nil)).Elem()
 var marshalerType = reflect.TypeOf((*Marshaler)(nil)).Elem()
 
+type ObjectPather interface {
+	ObjectPath() string
+}
+
 type Spec interface {
 	Namespace() string
 	Local() string

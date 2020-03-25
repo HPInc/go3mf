@@ -262,7 +262,7 @@ type Item struct {
 // Else returns the default path.
 func (b *Item) ObjectPath(defaultPath string) string {
 	for _, att := range b.AnyAttr {
-		if ext, ok := att.(interface{ ObjectPath() string }); ok {
+		if ext, ok := att.(ObjectPather); ok {
 			path := ext.ObjectPath()
 			if path != "" {
 				return path
@@ -304,7 +304,7 @@ type Component struct {
 // Else returns the default path.
 func (c *Component) ObjectPath(defaultPath string) string {
 	for _, att := range c.AnyAttr {
-		if ext, ok := att.(interface{ ObjectPath() string }); ok {
+		if ext, ok := att.(ObjectPather); ok {
 			path := ext.ObjectPath()
 			if path != "" {
 				return path
