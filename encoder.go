@@ -143,11 +143,11 @@ func (e *Encoder) modelToken(x *XMLEncoder, m *Model, isRoot bool) (xml.StartEle
 		x.AddRelationship(Relationship{Path: m.Thumbnail, Type: RelTypeThumbnail})
 		attrs = append(attrs, xml.Attr{Name: xml.Name{Local: attrThumbnail}, Value: m.Thumbnail})
 	}
-	for _, a := range m.ExtensionSpecs {
+	for _, a := range m.Specs {
 		attrs = append(attrs, xml.Attr{Name: xml.Name{Space: attrXmlns, Local: a.Local()}, Value: a.Space()})
 	}
 	var exts []string
-	for _, a := range m.ExtensionSpecs {
+	for _, a := range m.Specs {
 		if a.Required() {
 			exts = append(exts, a.Local())
 		}
@@ -157,7 +157,7 @@ func (e *Encoder) modelToken(x *XMLEncoder, m *Model, isRoot bool) (xml.StartEle
 		attrs = append(attrs, xml.Attr{Name: xml.Name{Local: attrReqExt}, Value: strings.Join(exts, " ")})
 	}
 	tm := xml.StartElement{Name: xml.Name{Local: attrModel}, Attr: attrs}
-	m.ExtensionAttr.encode(x, &tm)
+	m.AnyAttr.encode(x, &tm)
 	return tm, nil
 }
 
@@ -204,7 +204,7 @@ func (e *Encoder) writeMetadataGroup(x *XMLEncoder, m []Metadata) {
 
 func (e *Encoder) writeBuild(x *XMLEncoder, m *Model) {
 	xb := xml.StartElement{Name: xml.Name{Local: attrBuild}}
-	m.Build.ExtensionAttr.encode(x, &xb)
+	m.Build.AnyAttr.encode(x, &xb)
 	x.EncodeToken(xb)
 	x.SetAutoClose(true)
 	for _, item := range m.Build.Items {
@@ -221,7 +221,7 @@ func (e *Encoder) writeBuild(x *XMLEncoder, m *Model) {
 				Name: xml.Name{Local: attrPartNumber}, Value: item.PartNumber,
 			})
 		}
-		item.ExtensionAttr.encode(x, &xi)
+		item.AnyAttr.encode(x, &xi)
 		if len(item.Metadata) != 0 {
 			x.SetAutoClose(false)
 			x.EncodeToken(xi)
@@ -317,7 +317,7 @@ func (e *Encoder) writeObject(x *XMLEncoder, r *Object) {
 			})
 		}
 	}
-	r.ExtensionAttr.encode(x, &xo)
+	r.AnyAttr.encode(x, &xo)
 	x.EncodeToken(xo)
 
 	if len(r.Metadata) != 0 {
@@ -345,7 +345,7 @@ func (e *Encoder) writeComponents(x *XMLEncoder, comps []*Component) {
 		if c.HasTransform() {
 			xt.Attr = append(xt.Attr, xml.Attr{Name: xml.Name{Local: attrTransform}, Value: c.Transform.String()})
 		}
-		c.ExtensionAttr.encode(x, &xt)
+		c.AnyAttr.encode(x, &xt)
 		x.EncodeToken(xt)
 	}
 	x.SetAutoClose(false)
@@ -354,7 +354,7 @@ func (e *Encoder) writeComponents(x *XMLEncoder, comps []*Component) {
 
 func (e *Encoder) writeMesh(x *XMLEncoder, r *Object, m *Mesh) {
 	xm := xml.StartElement{Name: xml.Name{Local: attrMesh}}
-	m.ExtensionAttr.encode(x, &xm)
+	m.AnyAttr.encode(x, &xm)
 	x.EncodeToken(xm)
 	xvs := xml.StartElement{Name: xml.Name{Local: attrVertices}}
 	x.EncodeToken(xvs)

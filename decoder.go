@@ -56,7 +56,7 @@ func (d *modelDecoder) Start(attrs []xml.Attr) {
 	}
 
 	for _, ext := range requiredExts {
-		for _, x := range d.model.ExtensionSpecs {
+		for _, x := range d.model.Specs {
 			if x.Local() == ext {
 				x.SetRequired(true)
 				break
@@ -72,7 +72,7 @@ func (d *modelDecoder) noCoreAttribute(a xml.Attr) {
 			d.model.Language = a.Value
 		}
 	case attrXmlns:
-		if ext, ok := d.model.ExtensionSpecs[a.Value]; ok {
+		if ext, ok := d.model.Specs[a.Value]; ok {
 			ext.SetLocal(a.Name.Local)
 		} else {
 			d.model.WithExtension(&UnknownSpec{SpaceName: a.Value, LocalName: a.Name.Local})

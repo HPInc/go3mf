@@ -38,22 +38,22 @@ func (f *fakeSpec) NewNodeDecoder(_ interface{}, nodeName string) NodeDecoder {
 func (f *fakeSpec) DecodeAttribute(s *Scanner, parentNode interface{}, attr xml.Attr) {
 	switch t := parentNode.(type) {
 	case *Object:
-		t.ExtensionAttr = append(t.ExtensionAttr, &fakeAttr{attr.Value})
+		t.AnyAttr = append(t.AnyAttr, &fakeAttr{attr.Value})
 	case *Build:
-		t.ExtensionAttr = append(t.ExtensionAttr, &fakeAttr{attr.Value})
+		t.AnyAttr = append(t.AnyAttr, &fakeAttr{attr.Value})
 	case *Model:
-		t.ExtensionAttr = append(t.ExtensionAttr, &fakeAttr{attr.Value})
+		t.AnyAttr = append(t.AnyAttr, &fakeAttr{attr.Value})
 	case *Item:
-		t.ExtensionAttr = append(t.ExtensionAttr, &fakeAttr{attr.Value})
+		t.AnyAttr = append(t.AnyAttr, &fakeAttr{attr.Value})
 	case *Component:
-		t.ExtensionAttr = append(t.ExtensionAttr, &fakeAttr{attr.Value})
+		t.AnyAttr = append(t.AnyAttr, &fakeAttr{attr.Value})
 	}
 }
 
 func (f *fakeSpec) ValidateModel(m *Model) []error {
 	var errs []error
 	var a *fakeAttr
-	if m.Build.ExtensionAttr.Get(&a) {
+	if m.Build.AnyAttr.Get(&a) {
 		errs = append(errs, errors.New("Build: fake"))
 	}
 	return errs
@@ -343,7 +343,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 
 	want := &Model{
 		Units: UnitMillimeter, Language: "en-US", Path: "/3D/3dmodel.model", Thumbnail: "/thumbnail.png",
-		ExtensionSpecs: map[string]ExtensionSpec{fakeExtension: &fakeSpec{}},
+		Specs: map[string]Spec{fakeExtension: &fakeSpec{}},
 		Resources: Resources{
 			Assets: []Asset{baseMaterials}, Objects: []*Object{meshRes, components},
 		},

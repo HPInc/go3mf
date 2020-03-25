@@ -21,7 +21,7 @@ func (e Extension) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, att
 			if uuid, err = NewUUID(attr.Value); err != nil {
 				s.InvalidAttr(attr.Name.Local, attr.Value, true)
 			}
-			t.ExtensionAttr = append(t.ExtensionAttr, &uuid)
+			t.AnyAttr = append(t.AnyAttr, &uuid)
 		}
 	case *go3mf.Item:
 		switch attr.Name.Local {
@@ -30,17 +30,17 @@ func (e Extension) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, att
 				s.InvalidAttr(attr.Name.Local, attr.Value, true)
 			}
 			var ext *PathUUID
-			if t.ExtensionAttr.Get(&ext) {
+			if t.AnyAttr.Get(&ext) {
 				ext.UUID = uuid
 			} else {
-				t.ExtensionAttr = append(t.ExtensionAttr, &PathUUID{UUID: uuid})
+				t.AnyAttr = append(t.AnyAttr, &PathUUID{UUID: uuid})
 			}
 		case attrPath:
 			var ext *PathUUID
-			if t.ExtensionAttr.Get(&ext) {
+			if t.AnyAttr.Get(&ext) {
 				ext.Path = attr.Value
 			} else {
-				t.ExtensionAttr = append(t.ExtensionAttr, &PathUUID{Path: attr.Value})
+				t.AnyAttr = append(t.AnyAttr, &PathUUID{Path: attr.Value})
 			}
 		}
 	case *go3mf.Object:
@@ -48,7 +48,7 @@ func (e Extension) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, att
 			if uuid, err = NewUUID(attr.Value); err != nil {
 				s.InvalidAttr(attr.Name.Local, attr.Value, true)
 			}
-			t.ExtensionAttr = append(t.ExtensionAttr, &uuid)
+			t.AnyAttr = append(t.AnyAttr, &uuid)
 		}
 	case *go3mf.Component:
 		switch attr.Name.Local {
@@ -57,17 +57,17 @@ func (e Extension) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, att
 				s.InvalidAttr(attr.Name.Local, attr.Value, true)
 			}
 			var ext *PathUUID
-			if t.ExtensionAttr.Get(&ext) {
+			if t.AnyAttr.Get(&ext) {
 				ext.UUID = uuid
 			} else {
-				t.ExtensionAttr = append(t.ExtensionAttr, &PathUUID{UUID: uuid})
+				t.AnyAttr = append(t.AnyAttr, &PathUUID{UUID: uuid})
 			}
 		case attrPath:
 			var ext *PathUUID
-			if t.ExtensionAttr.Get(&ext) {
+			if t.AnyAttr.Get(&ext) {
 				ext.Path = attr.Value
 			} else {
-				t.ExtensionAttr = append(t.ExtensionAttr, &PathUUID{Path: attr.Value})
+				t.AnyAttr = append(t.AnyAttr, &PathUUID{Path: attr.Value})
 			}
 		}
 	}

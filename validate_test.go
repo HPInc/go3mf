@@ -31,10 +31,10 @@ func TestValidate(t *testing.T) {
 			fmt.Errorf("Relationship#7: %v", specerr.ErrOPCContentType),
 			fmt.Errorf("Relationship#7: %v", specerr.ErrOPCDuplicatedTicket),
 		}},
-		{"namespaces", &Model{ExtensionSpecs: map[string]ExtensionSpec{"fake": &UnknownSpec{IsRequired: true}}}, []error{
+		{"namespaces", &Model{Specs: map[string]Spec{"fake": &UnknownSpec{IsRequired: true}}}, []error{
 			specerr.ErrRequiredExt,
 		}},
-		{"metadata", &Model{ExtensionSpecs: map[string]ExtensionSpec{"fake": &UnknownSpec{SpaceName: "fake", LocalName: "f"}}, Metadata: []Metadata{
+		{"metadata", &Model{Specs: map[string]Spec{"fake": &UnknownSpec{SpaceName: "fake", LocalName: "f"}}, Metadata: []Metadata{
 			{Name: xml.Name{Space: "fake", Local: "issue"}}, {Name: xml.Name{Space: "f", Local: "issue"}}, {Name: xml.Name{Space: "fake", Local: "issue"}}, {Name: xml.Name{Local: "issue"}}, {},
 		}}, []error{
 			fmt.Errorf("Metadata#1: %v", specerr.ErrMetadataNamespace),
@@ -45,7 +45,7 @@ func TestValidate(t *testing.T) {
 		{"build", &Model{Resources: Resources{Assets: []Asset{&BaseMaterials{ID: 1, Materials: []Base{{Name: "a", Color: color.RGBA{A: 1}}}}}, Objects: []*Object{
 			{ID: 2, ObjectType: ObjectTypeOther, Mesh: &Mesh{Vertices: []Point3D{{}, {}, {}, {}}, Triangles: []Triangle{
 				{Indices: [3]uint32{0, 1, 2}}, {Indices: [3]uint32{0, 3, 1}}, {Indices: [3]uint32{0, 2, 3}}, {Indices: [3]uint32{1, 3, 2}},
-			}}}}}, Build: Build{ExtensionAttr: ExtensionAttr{&fakeAttr{}}, Items: []*Item{
+			}}}}}, Build: Build{AnyAttr: AnyAttr{&fakeAttr{}}, Items: []*Item{
 			{},
 			{ObjectID: 2},
 			{ObjectID: 100},

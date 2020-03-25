@@ -13,7 +13,7 @@ func validTransform(t go3mf.Matrix) bool {
 
 func (e *Extension) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) []error {
 	var sti *SliceStackInfo
-	if !obj.ExtensionAttr.Get(&sti) {
+	if !obj.AnyAttr.Get(&sti) {
 		return nil
 	}
 	var errs []error

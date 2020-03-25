@@ -18,13 +18,13 @@ func TestValidate(t *testing.T) {
 		want  []error
 	}{
 		{"extRequired", &go3mf.Model{
-			ExtensionAttr:  go3mf.ExtensionAttr{&SliceStackInfo{SliceStackID: 10}},
-			ExtensionSpecs: map[string]go3mf.ExtensionSpec{ExtensionSpace: &Extension{IsRequired: true}}, Resources: go3mf.Resources{
+			AnyAttr: go3mf.AnyAttr{&SliceStackInfo{SliceStackID: 10}},
+			Specs:   map[string]go3mf.Spec{ExtensionSpace: &Extension{IsRequired: true}}, Resources: go3mf.Resources{
 				Assets: []go3mf.Asset{
 					&SliceStack{ID: 1, Slices: []*Slice{{TopZ: 1}}},
 				},
 				Objects: []*go3mf.Object{
-					{ID: 2, ExtensionAttr: go3mf.ExtensionAttr{&SliceStackInfo{
+					{ID: 2, AnyAttr: go3mf.AnyAttr{&SliceStackInfo{
 						SliceStackID: 1, SliceResolution: ResolutionLow,
 					}}},
 				}},
@@ -122,30 +122,30 @@ func TestValidate(t *testing.T) {
 					}}}},
 				},
 				Objects: []*go3mf.Object{
-					{ID: 1, Mesh: &go3mf.Mesh{}, ExtensionAttr: go3mf.ExtensionAttr{&SliceStackInfo{
+					{ID: 1, Mesh: &go3mf.Mesh{}, AnyAttr: go3mf.AnyAttr{&SliceStackInfo{
 						SliceStackID: 1,
 					}}},
-					{ID: 2, ObjectType: go3mf.ObjectTypeSupport, Components: []*go3mf.Component{{ObjectID: 1}}, ExtensionAttr: go3mf.ExtensionAttr{&SliceStackInfo{
+					{ID: 2, ObjectType: go3mf.ObjectTypeSupport, Components: []*go3mf.Component{{ObjectID: 1}}, AnyAttr: go3mf.AnyAttr{&SliceStackInfo{
 						SliceStackID: 3, SliceResolution: ResolutionLow,
 					}}},
 					{ID: 4, Components: []*go3mf.Component{{ObjectID: 10, Transform: go3mf.Matrix{2, 3, 0, 0, 1, 3, 0, 0, 0, 0, 2, 0, 2, 3, 4, 1}}},
-						ExtensionAttr: go3mf.ExtensionAttr{&SliceStackInfo{
+						AnyAttr: go3mf.AnyAttr{&SliceStackInfo{
 							SliceStackID: 0,
 						}}},
-					{ID: 5, Components: []*go3mf.Component{{ObjectID: 12}}, ExtensionAttr: go3mf.ExtensionAttr{&SliceStackInfo{
+					{ID: 5, Components: []*go3mf.Component{{ObjectID: 12}}, AnyAttr: go3mf.AnyAttr{&SliceStackInfo{
 						SliceStackID: 6,
 					}}},
-					{ID: 7, Components: []*go3mf.Component{{ObjectID: 1}, {ObjectID: 4}}, ExtensionAttr: go3mf.ExtensionAttr{&SliceStackInfo{
+					{ID: 7, Components: []*go3mf.Component{{ObjectID: 1}, {ObjectID: 4}}, AnyAttr: go3mf.AnyAttr{&SliceStackInfo{
 						SliceStackID: 9,
 					}}},
-					{ID: 10, ObjectType: go3mf.ObjectTypeSolidSupport, Components: []*go3mf.Component{{ObjectID: 1}}, ExtensionAttr: go3mf.ExtensionAttr{&SliceStackInfo{
+					{ID: 10, ObjectType: go3mf.ObjectTypeSolidSupport, Components: []*go3mf.Component{{ObjectID: 1}}, AnyAttr: go3mf.AnyAttr{&SliceStackInfo{
 						SliceStackID: 3,
 					}}},
 					{ID: 12, Components: []*go3mf.Component{
 						{ObjectID: 7, Transform: go3mf.Matrix{2, 3, 0, 0, 1, 3, 1, 0, 0, 0, 1, 0, 2, 3, 4, 1}},
 						{ObjectID: 12},
 						{ObjectID: 5},
-					}, ExtensionAttr: go3mf.ExtensionAttr{&SliceStackInfo{
+					}, AnyAttr: go3mf.AnyAttr{&SliceStackInfo{
 						SliceStackID: 11,
 					}}},
 				}}}, []error{
@@ -165,7 +165,7 @@ func TestValidate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if len(tt.model.ExtensionSpecs) == 0 {
+			if len(tt.model.Specs) == 0 {
 				tt.model.WithExtension(&Extension{})
 			}
 			got := tt.model.Validate()

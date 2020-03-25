@@ -44,7 +44,7 @@ func (m *Model) Validate() []error {
 	errs = append(errs, validateRelationship(m, m.Relationships, rootPath)...)
 	errs = append(errs, checkMetadadata(m, m.Metadata)...)
 
-	for _, ext := range m.ExtensionSpecs {
+	for _, ext := range m.Specs {
 		if ext, ok := ext.(interface {
 			ValidateModel(*Model) []error
 		}); ok {
@@ -80,7 +80,7 @@ func (item *Item) Validate(m *Model, path string) []error {
 		errs = append(errs, specerr.ErrMissingResource)
 	}
 	errs = append(errs, checkMetadadata(m, item.Metadata)...)
-	for _, ext := range m.ExtensionSpecs {
+	for _, ext := range m.Specs {
 		if ext, ok := ext.(interface {
 			ValidateItem(*Item, []error) []error
 		}); ok {
@@ -117,7 +117,7 @@ func (m *Metadata) Validate(model *Model) []error {
 			errs = append(errs, specerr.ErrMetadataName)
 		}
 	} else {
-		if _, ok := model.ExtensionSpecs[m.Name.Space]; !ok {
+		if _, ok := model.Specs[m.Name.Space]; !ok {
 			errs = append(errs, specerr.ErrMetadataNamespace)
 		}
 	}
@@ -175,7 +175,7 @@ func (res *Resources) Validate(m *Model, path string) []error {
 			aErrs = append(aErrs, r.Validate(m, path)...)
 		}
 
-		for _, ext := range m.ExtensionSpecs {
+		for _, ext := range m.Specs {
 			if ext, ok := ext.(interface {
 				ValidateAsset(*Model, string, Asset) []error
 			}); ok {
@@ -215,7 +215,7 @@ func (r *Object) Validate(m *Model, path string) []error {
 	if r.Mesh != nil {
 		if r.DefaultPID != 0 {
 			if a, ok := res.FindAsset(r.DefaultPID); ok {
-				if a, ok := a.(propertyGroup); ok {
+				if a, ok := a.(PropertyGroup); ok {
 					if int(r.DefaultPIndex) >= a.Len() {
 						errs = append(errs, specerr.ErrIndexOutOfBounds)
 					}
@@ -234,7 +234,7 @@ func (r *Object) Validate(m *Model, path string) []error {
 		}
 		errs = append(errs, r.validateComponents(m, path)...)
 	}
-	for _, ext := range m.ExtensionSpecs {
+	for _, ext := range m.Specs {
 		if ext, ok := ext.(interface {
 			ValidateObject(*Model, string, *Object) []error
 		}); ok {
@@ -272,7 +272,7 @@ func (r *Object) validateMesh(m *Model, path string) []error {
 				continue
 			}
 			if a, ok := res.FindAsset(face.PID); ok {
-				if a, ok := a.(propertyGroup); ok {
+				if a, ok := a.(PropertyGroup); ok {
 					l := a.Len()
 					if int(face.PIndices[0]) >= l || int(face.PIndices[1]) >= l || int(face.PIndices[2]) >= l {
 						errs = append(errs, specerr.NewIndexed(face, i, specerr.ErrIndexOutOfBounds))
@@ -303,7 +303,7 @@ func (r *Object) validateComponents(m *Model, path string) []error {
 }
 
 func (m *Model) validateNamespaces() error {
-	for _, ext := range m.ExtensionSpecs {
+	for _, ext := range m.Specs {
 		if ext.Required() {
 			if _, ok := ext.(*UnknownSpec); ok {
 				return specerr.ErrRequiredExt

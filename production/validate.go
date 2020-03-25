@@ -10,7 +10,7 @@ func (e *Extension) ValidateModel(m *go3mf.Model) []error {
 		u    *UUID
 		errs []error
 	)
-	if !m.Build.ExtensionAttr.Get(&u) {
+	if !m.Build.AnyAttr.Get(&u) {
 		errs = append(errs, specerr.New(m.Build, &specerr.MissingFieldError{Name: attrProdUUID}))
 	} else if validateUUID(string(*u)) != nil {
 		errs = append(errs, specerr.New(m.Build, specerr.ErrUUID))
@@ -18,7 +18,7 @@ func (e *Extension) ValidateModel(m *go3mf.Model) []error {
 	for i, item := range m.Build.Items {
 		var iErrs []error
 		var p *PathUUID
-		if !item.ExtensionAttr.Get(&p) {
+		if !item.AnyAttr.Get(&p) {
 			iErrs = append(iErrs, &specerr.MissingFieldError{Name: attrProdUUID})
 		} else {
 			iErrs = e.validatePathUUID(m, "", p, iErrs)
@@ -35,7 +35,7 @@ func (e *Extension) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Objec
 		u    *UUID
 		errs []error
 	)
-	if !obj.ExtensionAttr.Get(&u) {
+	if !obj.AnyAttr.Get(&u) {
 		errs = append(errs, &specerr.MissingFieldError{Name: attrProdUUID})
 	} else if validateUUID(string(*u)) != nil {
 		errs = append(errs, specerr.ErrUUID)
@@ -43,7 +43,7 @@ func (e *Extension) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Objec
 	var p *PathUUID
 	for i, c := range obj.Components {
 		var cErrs []error
-		if !c.ExtensionAttr.Get(&p) {
+		if !c.AnyAttr.Get(&p) {
 			cErrs = append(cErrs, &specerr.MissingFieldError{Name: attrProdUUID})
 		} else {
 			cErrs = e.validatePathUUID(m, path, p, cErrs)

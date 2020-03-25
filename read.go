@@ -15,12 +15,6 @@ import (
 
 var checkEveryBytes = int64(4 * 1024 * 1024)
 
-type ExtensionDecoder interface {
-	ExtensionSpec
-	NewNodeDecoder(interface{}, string) NodeDecoder
-	DecodeAttribute(*Scanner, interface{}, xml.Attr)
-}
-
 // A XMLDecoder is anything that can decode a stream of XML tokens, including a Decoder.
 type XMLDecoder interface {
 	xml.TokenReader
@@ -90,7 +84,7 @@ func decodeModelFile(ctx context.Context, x XMLDecoder, model *Model, path strin
 		Strict:           strict,
 		ModelPath:        path,
 	}
-	for _, ext := range model.ExtensionSpecs {
+	for _, ext := range model.Specs {
 		if ext, ok := ext.(ExtensionDecoder); ok {
 			scanner.extensionDecoder[ext.Space()] = ext
 		}

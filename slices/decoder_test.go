@@ -29,10 +29,10 @@ func TestDecode(t *testing.T) {
 	meshRes := &go3mf.Object{
 		Mesh: new(go3mf.Mesh),
 		ID:   8, Name: "Box 1",
-		ExtensionAttr: go3mf.ExtensionAttr{&SliceStackInfo{SliceStackID: 3, SliceResolution: ResolutionLow}},
+		AnyAttr: go3mf.AnyAttr{&SliceStackInfo{SliceStackID: 3, SliceResolution: ResolutionLow}},
 	}
 
-	want := &go3mf.Model{Path: "/3D/3dmodel.model", ExtensionSpecs: map[string]go3mf.ExtensionSpec{ExtensionSpace: &Extension{LocalName: "s"}},
+	want := &go3mf.Model{Path: "/3D/3dmodel.model", Specs: map[string]go3mf.Spec{ExtensionSpace: &Extension{LocalName: "s"}},
 		Resources: go3mf.Resources{
 			Assets: []go3mf.Asset{sliceStack, sliceStackRef}, Objects: []*go3mf.Object{meshRes},
 		}}
