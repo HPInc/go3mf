@@ -48,12 +48,12 @@ func Test_binaryDecoder_decode(t *testing.T) {
 func createMeshTriangle(id uint32) *go3mf.Object {
 	m := &go3mf.Object{ID: id, Mesh: new(go3mf.Mesh)}
 	mb := go3mf.NewMeshBuilder(m.Mesh)
-	n1 := mb.AddNode(go3mf.Point3D{-20.0, -20.0, 0.0})
-	n2 := mb.AddNode(go3mf.Point3D{20.0, -20.0, 0.0})
-	n3 := mb.AddNode(go3mf.Point3D{0.0019989014, 0.0019989014, 39.998})
-	n4 := mb.AddNode(go3mf.Point3D{-20.0, 20.0, 0.0})
-	n5 := mb.AddNode(go3mf.Point3D{0.0, 0.0019989014, 39.998})
-	n6 := mb.AddNode(go3mf.Point3D{20.0, 20.0, 0.0})
+	n1 := mb.AddVertex(go3mf.Point3D{-20.0, -20.0, 0.0})
+	n2 := mb.AddVertex(go3mf.Point3D{20.0, -20.0, 0.0})
+	n3 := mb.AddVertex(go3mf.Point3D{0.0019989014, 0.0019989014, 39.998})
+	n4 := mb.AddVertex(go3mf.Point3D{-20.0, 20.0, 0.0})
+	n5 := mb.AddVertex(go3mf.Point3D{0.0, 0.0019989014, 39.998})
+	n6 := mb.AddVertex(go3mf.Point3D{20.0, 20.0, 0.0})
 	m.Mesh.Triangles = append(m.Mesh.Triangles,
 		go3mf.Triangle{Indices: [3]uint32{n1, n2, n3}},
 		go3mf.Triangle{Indices: [3]uint32{n4, n2, n1}},

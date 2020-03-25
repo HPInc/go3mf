@@ -237,10 +237,10 @@ func TestUnits_String(t *testing.T) {
 	}
 }
 
-func TestMeshBuilder_AddNode(t *testing.T) {
+func TestMeshBuilder_AddVertex(t *testing.T) {
 	pos := Point3D{1.0, 2.0, 3.0}
 	existingStruct := NewMeshBuilder(new(Mesh))
-	existingStruct.AddNode(pos)
+	existingStruct.AddVertex(pos)
 	type args struct {
 		position Point3D
 	}
@@ -255,9 +255,9 @@ func TestMeshBuilder_AddNode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.m.AddNode(tt.args.position)
+			got := tt.m.AddVertex(tt.args.position)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("MeshBuilder.AddNode() = %v, want %v", got, tt.want)
+				t.Errorf("MeshBuilder.AddVertex() = %v, want %v", got, tt.want)
 			}
 		})
 	}

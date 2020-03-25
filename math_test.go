@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestNode2D_X(t *testing.T) {
+func TestPoint2D_X(t *testing.T) {
 	tests := []struct {
 		name string
 		n    Point2D
@@ -23,7 +23,7 @@ func TestNode2D_X(t *testing.T) {
 	}
 }
 
-func TestNode2D_Y(t *testing.T) {
+func TestPoint2D_Y(t *testing.T) {
 	tests := []struct {
 		name string
 		n    Point2D

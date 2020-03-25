@@ -341,7 +341,7 @@ type Mesh struct {
 // It must be instantiated using NewMeshBuilder.
 type MeshBuilder struct {
 	// True to automatically check if a node with the same coordinates already exists in the mesh
-	// when calling AddNode. If it exists, the return value will be the existing node and no node will be added.
+	// when calling AddVertex. If it exists, the return value will be the existing node and no node will be added.
 	// Using this option produces an speed penalty.
 	CalculateConnectivity bool
 	// Do not modify the pointer to Mesh once the build process has started.
@@ -358,8 +358,8 @@ func NewMeshBuilder(m *Mesh) *MeshBuilder {
 	}
 }
 
-// AddNode adds a node the the mesh at the target position.
-func (mb *MeshBuilder) AddNode(node Point3D) uint32 {
+// AddVertex adds a node the the mesh at the target position.
+func (mb *MeshBuilder) AddVertex(node Point3D) uint32 {
 	if mb.CalculateConnectivity {
 		if index, ok := mb.vectorTree.FindVector(node); ok {
 			return index

@@ -48,11 +48,11 @@ func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) []
 	}
 
 	for i, b := range bl.Beams {
-		if b.NodeIndices[0] == b.NodeIndices[1] {
+		if b.Indices[0] == b.Indices[1] {
 			errs = append(errs, specerr.NewIndexed(b, i, specerr.ErrLatticeSameVertex))
 		} else {
 			l := len(obj.Mesh.Vertices)
-			if int(b.NodeIndices[0]) >= l || int(b.NodeIndices[1]) >= l {
+			if int(b.Indices[0]) >= l || int(b.Indices[1]) >= l {
 				errs = append(errs, specerr.NewIndexed(b, i, specerr.ErrIndexOutOfBounds))
 			}
 		}

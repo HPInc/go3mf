@@ -67,7 +67,7 @@ func TestValidate(t *testing.T) {
 		{"incorrect beams", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
 			{ID: 2, Mesh: &go3mf.Mesh{Vertices: []go3mf.Point3D{{}, {}, {}}, Any: go3mf.Marshalers{&BeamLattice{
 				MinLength: 1, DefaultRadius: 1, ClipMode: ClipInside, Beams: []Beam{
-					{}, {NodeIndices: [2]uint32{1, 1}, Radius: [2]float32{0.5, 0}}, {NodeIndices: [2]uint32{1, 3}},
+					{}, {Indices: [2]uint32{1, 1}, Radius: [2]float32{0.5, 0}}, {Indices: [2]uint32{1, 3}},
 				},
 			}}}},
 		}}}, []error{
@@ -79,7 +79,7 @@ func TestValidate(t *testing.T) {
 		{"incorrect beamseat", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
 			{ID: 2, Mesh: &go3mf.Mesh{Vertices: []go3mf.Point3D{{}, {}, {}}, Any: go3mf.Marshalers{&BeamLattice{
 				MinLength: 1, DefaultRadius: 1, ClipMode: ClipInside, Beams: []Beam{
-					{NodeIndices: [2]uint32{1, 2}},
+					{Indices: [2]uint32{1, 2}},
 				}, BeamSets: []BeamSet{{Refs: []uint32{0, 2, 3}}},
 			}}}},
 		}}}, []error{

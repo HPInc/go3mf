@@ -119,13 +119,13 @@ func (d *beamDecoder) Start(attrs []xml.Attr) {
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
 			}
-			beam.NodeIndices[0] = uint32(val)
+			beam.Indices[0] = uint32(val)
 		case attrV2:
 			val, err := strconv.ParseUint(a.Value, 10, 32)
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
 			}
-			beam.NodeIndices[1] = uint32(val)
+			beam.Indices[1] = uint32(val)
 		case attrR1:
 			val, err := strconv.ParseFloat(a.Value, 32)
 			if err != nil {

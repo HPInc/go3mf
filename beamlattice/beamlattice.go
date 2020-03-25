@@ -93,9 +93,9 @@ type BeamSet struct {
 
 // Beam defines a single beam.
 type Beam struct {
-	NodeIndices [2]uint32  // Indices of the two nodes that defines the beam.
-	Radius      [2]float32 // Radius of both ends of the beam.
-	CapMode     [2]CapMode // Capping mode.
+	Indices [2]uint32  // Indices of the two nodes that defines the beam.
+	Radius  [2]float32 // Radius of both ends of the beam.
+	CapMode [2]CapMode // Capping mode.
 }
 
 const (
