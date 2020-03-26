@@ -24,11 +24,10 @@ func TestMarshalModel(t *testing.T) {
 			t.Errorf("materials.MarshalModel() error = %v", err)
 			return
 		}
-		d := go3mf.NewDecoder(nil, 0)
 		newModel := new(go3mf.Model)
 		newModel.WithSpec(&Spec{LocalName: "m"})
 		newModel.Path = m.Path
-		if err := d.UnmarshalModel(b, newModel); err != nil {
+		if err := go3mf.UnmarshalModel(b, newModel); err != nil {
 			t.Errorf("materials.MarshalModel() error decoding = %v, s = %s", err, string(b))
 			return
 		}

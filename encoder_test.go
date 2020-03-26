@@ -104,11 +104,10 @@ func TestMarshalModel(t *testing.T) {
 			t.Errorf("MarshalModel() error = %v", err)
 			return
 		}
-		d := NewDecoder(nil, 0)
 		newModel := new(Model)
 		newModel.WithSpec(&fakeSpec{})
 		newModel.Path = m.Path
-		if err := d.UnmarshalModel(b, newModel); err != nil {
+		if err := UnmarshalModel(b, newModel); err != nil {
 			t.Errorf("MarshalModel() error decoding = %v, s = %s", err, string(b))
 			return
 		}

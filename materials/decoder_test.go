@@ -47,9 +47,7 @@ func TestDecode(t *testing.T) {
 	t.Run("base", func(t *testing.T) {
 		got.WithSpec(&Spec{LocalName: "m"})
 		want.WithSpec(&Spec{LocalName: "m"})
-		d := new(go3mf.Decoder)
-		d.Strict = true
-		if err := d.UnmarshalModel([]byte(rootFile), got); err != nil {
+		if err := go3mf.UnmarshalModel([]byte(rootFile), got); err != nil {
 			t.Errorf("DecodeRawModel() unexpected error = %v", err)
 			return
 		}
@@ -130,9 +128,7 @@ func TestDecode_warns(t *testing.T) {
 	</model>`
 	t.Run("base", func(t *testing.T) {
 		got.WithSpec(&Spec{LocalName: "m"})
-		d := new(go3mf.Decoder)
-		d.Strict = false
-		err := d.UnmarshalModel([]byte(rootFile), got)
+		err := go3mf.UnmarshalModel([]byte(rootFile), got)
 		if diff := deep.Equal(err, want); diff != nil {
 			t.Errorf("UnmarshalModel_warn() = %v", diff)
 			return
