@@ -19,7 +19,7 @@ func (m *Model) sortedChilds() []string {
 }
 
 // Validate checks that the model is conformant with the 3MF spec.
-func (m *Model) Validate() []error {
+func (m *Model) Validate() error {
 	errs := []error{}
 	errs = append(errs, validateRelationship(m, m.RootRelationships, "")...)
 	rootPath := m.PathOrDefault()
@@ -62,7 +62,7 @@ func (m *Model) Validate() []error {
 	for _, err := range m.Build.validate(m, rootPath) {
 		errs = append(errs, specerr.New(m.Build, err))
 	}
-	return errs
+	return &specerr.ErrorList{Errors: errs}
 }
 
 func (item *Item) validate(m *Model, path string) []error {

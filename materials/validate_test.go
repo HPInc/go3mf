@@ -114,7 +114,7 @@ func TestValidate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.model.WithSpec(&Spec{})
 			got := tt.model.Validate()
-			if diff := deep.Equal(got, tt.want); diff != nil {
+			if diff := deep.Equal(got.(*specerr.ErrorList).Errors, tt.want); diff != nil {
 				t.Errorf("Validate() = %v", diff)
 			}
 		})
