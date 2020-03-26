@@ -49,7 +49,7 @@ func (d *colorGroupDecoder) Start(attrs []xml.Attr) {
 		if a.Name.Space == "" && a.Name.Local == attrID {
 			id, err := strconv.ParseUint(a.Value, 10, 32)
 			if err != nil {
-				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+				d.Scanner.InvalidAttr(a.Name.Local, true)
 			}
 			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
 			break
@@ -67,7 +67,7 @@ func (d *colorDecoder) Start(attrs []xml.Attr) {
 		if a.Name.Space == "" && a.Name.Local == attrColor {
 			c, err := go3mf.ParseRGBA(a.Value)
 			if err != nil {
-				d.Scanner.InvalidAttr(attrColor, a.Value, true)
+				d.Scanner.InvalidAttr(attrColor, true)
 			}
 			d.resource.Colors = append(d.resource.Colors, c)
 		}
@@ -87,7 +87,7 @@ func (d *tex2DCoordDecoder) Start(attrs []xml.Attr) {
 		}
 		val, err := strconv.ParseFloat(a.Value, 32)
 		if err != nil {
-			d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+			d.Scanner.InvalidAttr(a.Name.Local, true)
 		}
 		switch a.Name.Local {
 		case attrU:
@@ -126,13 +126,13 @@ func (d *tex2DGroupDecoder) Start(attrs []xml.Attr) {
 		case attrID:
 			id, err := strconv.ParseUint(a.Value, 10, 32)
 			if err != nil {
-				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+				d.Scanner.InvalidAttr(a.Name.Local, true)
 			}
 			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
 		case attrTexID:
 			val, err := strconv.ParseUint(a.Value, 10, 32)
 			if err != nil {
-				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+				d.Scanner.InvalidAttr(a.Name.Local, true)
 			}
 			d.resource.TextureID = uint32(val)
 		}
@@ -157,7 +157,7 @@ func (d *texture2DDecoder) Start(attrs []xml.Attr) {
 		case attrID:
 			id, err := strconv.ParseUint(a.Value, 10, 32)
 			if err != nil {
-				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+				d.Scanner.InvalidAttr(a.Name.Local, true)
 			}
 			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
 		case attrPath:
@@ -201,20 +201,20 @@ func (d *compositeMaterialsDecoder) Start(attrs []xml.Attr) {
 		case attrID:
 			id, err := strconv.ParseUint(a.Value, 10, 32)
 			if err != nil {
-				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+				d.Scanner.InvalidAttr(a.Name.Local, true)
 			}
 			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
 		case attrMatID:
 			val, err := strconv.ParseUint(a.Value, 10, 32)
 			if err != nil {
-				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+				d.Scanner.InvalidAttr(a.Name.Local, true)
 			}
 			d.resource.MaterialID = uint32(val)
 		case attrMatIndices:
 			for _, f := range strings.Fields(a.Value) {
 				val, err := strconv.ParseUint(f, 10, 32)
 				if err != nil {
-					d.Scanner.InvalidAttr(a.Name.Local, f, true)
+					d.Scanner.InvalidAttr(a.Name.Local, true)
 				}
 				d.resource.Indices = append(d.resource.Indices, uint32(val))
 			}
@@ -234,7 +234,7 @@ func (d *compositeDecoder) Start(attrs []xml.Attr) {
 			for _, f := range strings.Fields(a.Value) {
 				val, err := strconv.ParseFloat(f, 32)
 				if err != nil {
-					d.Scanner.InvalidAttr(a.Name.Local, f, true)
+					d.Scanner.InvalidAttr(a.Name.Local, true)
 				}
 				composite.Values = append(composite.Values, float32(val))
 			}
@@ -270,7 +270,7 @@ func (d *multiPropertiesDecoder) Start(attrs []xml.Attr) {
 		case attrID:
 			id, err := strconv.ParseUint(a.Value, 10, 32)
 			if err != nil {
-				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+				d.Scanner.InvalidAttr(a.Name.Local, true)
 			}
 			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
 		case attrBlendMethods:
@@ -282,7 +282,7 @@ func (d *multiPropertiesDecoder) Start(attrs []xml.Attr) {
 			for _, f := range strings.Fields(a.Value) {
 				val, err := strconv.ParseUint(f, 10, 32)
 				if err != nil {
-					d.Scanner.InvalidAttr(a.Name.Local, f, true)
+					d.Scanner.InvalidAttr(a.Name.Local, true)
 				}
 				d.resource.PIDs = append(d.resource.PIDs, uint32(val))
 			}
@@ -302,7 +302,7 @@ func (d *multiDecoder) Start(attrs []xml.Attr) {
 			for _, f := range strings.Fields(a.Value) {
 				val, err := strconv.ParseUint(f, 10, 32)
 				if err != nil {
-					d.Scanner.InvalidAttr(a.Name.Local, f, true)
+					d.Scanner.InvalidAttr(a.Name.Local, true)
 				}
 				multi.PIndices = append(multi.PIndices, uint32(val))
 			}

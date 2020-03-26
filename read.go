@@ -77,11 +77,10 @@ func (d *topLevelDecoder) Child(name xml.Name) (child NodeDecoder) {
 	return
 }
 
-func decodeModelFile(ctx context.Context, x XMLDecoder, model *Model, path string, isRoot, strict bool) *Scanner {
+func decodeModelFile(ctx context.Context, x XMLDecoder, model *Model, path string, isRoot, strict bool) (*Scanner, error) {
 	scanner := Scanner{
 		extensionDecoder: make(map[string]SpecDecoder),
 		IsRoot:           isRoot,
-		Strict:           strict,
 		ModelPath:        path,
 	}
 	for _, ext := range model.Specs {
@@ -99,10 +98,10 @@ func decodeModelFile(ctx context.Context, x XMLDecoder, model *Model, path strin
 	nextBytesCheck := checkEveryBytes
 	currentDecoder = &topLevelDecoder{isRoot: isRoot, model: model}
 	currentDecoder.SetScanner(&scanner)
-
+	var err error
 	for {
-		t, scanner.Err = x.Token()
-		if scanner.Err != nil {
+		t, err = x.Token()
+		if err != nil {
 			break
 		}
 		switch tp := t.(type) {
@@ -112,18 +111,17 @@ func decodeModelFile(ctx context.Context, x XMLDecoder, model *Model, path strin
 				tmpDecoder.SetScanner(&scanner)
 				state = append(state, currentDecoder)
 				names = append(names, currentName)
+				scanner.contex = append(names, tp.Name)
 				currentName = tp.Name
-				scanner.Element = tp.Name.Local
 				currentDecoder = tmpDecoder
 				currentDecoder.Start(tp.Attr)
 			} else {
-				scanner.Err = x.Skip()
+				x.Skip()
 			}
 		case xml.CharData:
 			currentDecoder.Text(tp)
 		case xml.EndElement:
 			if currentName == tp.Name {
-				scanner.Element = tp.Name.Local
 				currentDecoder.End()
 				currentDecoder, state = state[len(state)-1], state[:len(state)-1]
 				currentName, names = names[len(names)-1], names[:len(names)-1]
@@ -131,26 +129,32 @@ func decodeModelFile(ctx context.Context, x XMLDecoder, model *Model, path strin
 			if x.InputOffset() > nextBytesCheck {
 				select {
 				case <-ctx.Done():
-					scanner.Err = ctx.Err()
+					err = ctx.Err()
 				default: // Default is must to avoid blocking
 				}
 				nextBytesCheck += checkEveryBytes
 			}
 		}
-		if scanner.Err != nil {
+		if err != nil || (strict && scanner.Err.Len() != 0) {
 			break
 		}
 	}
-	if scanner.Err == io.EOF {
-		scanner.Err = nil
+	if err == io.EOF {
+		err = nil
 	}
-	return &scanner
+	if err == nil && scanner.Err.Len() != 0 {
+		if strict || scanner.Err.Len() == 1 {
+			err = scanner.Err.Unwrap()
+		} else {
+			err = &scanner.Err
+		}
+	}
+	return &scanner, err
 }
 
 // Decoder implements a 3mf file decoder.
 type Decoder struct {
 	Strict        bool
-	Warnings      []error
 	p             packageReader
 	x             func(r io.Reader) XMLDecoder
 	flate         func(r io.Reader) io.ReadCloser
@@ -212,21 +216,16 @@ func (d *Decoder) processRootModel(ctx context.Context, rootFile packageFile, mo
 		return err
 	}
 	defer f.Close()
-	scanner := decodeModelFile(ctx, d.tokenReader(f), model, rootFile.Name(), true, d.Strict)
-	select {
-	case <-ctx.Done():
-		scanner.Err = ctx.Err()
-	default: // Default is must to avoid blocking
+	scanner, err := decodeModelFile(ctx, d.tokenReader(f), model, rootFile.Name(), true, d.Strict)
+	if err != nil {
+		return err
 	}
 	d.addModelFile(scanner, model)
-	return scanner.Err
+	return nil
 }
 
 func (d *Decoder) addChildModelFile(p *Scanner, model *Model) {
 	model.Childs[p.ModelPath].Resources = p.Resources
-	for _, res := range p.Warnings {
-		d.Warnings = append(d.Warnings, res)
-	}
 }
 
 func (d *Decoder) addModelFile(p *Scanner, model *Model) {
@@ -234,9 +233,6 @@ func (d *Decoder) addModelFile(p *Scanner, model *Model) {
 		model.Build.Items = append(model.Build.Items, bi)
 	}
 	model.Resources = p.Resources
-	for _, res := range p.Warnings {
-		d.Warnings = append(d.Warnings, res)
-	}
 }
 
 func (d *Decoder) processNonRootModels(ctx context.Context, model *Model) (err error) {
@@ -356,8 +352,8 @@ func (d *Decoder) readChildModel(ctx context.Context, i int, model *Model) (*Sca
 		return nil, err
 	}
 	defer file.Close()
-	scanner := decodeModelFile(ctx, d.tokenReader(file), model, attachment.Name(), false, d.Strict)
-	return scanner, scanner.Err
+	scanner, err := decodeModelFile(ctx, d.tokenReader(file), model, attachment.Name(), false, d.Strict)
+	return scanner, err
 }
 
 func copyFile(file packageFile) (io.Reader, error) {

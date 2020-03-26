@@ -94,17 +94,17 @@ func TestDecode(t *testing.T) {
 }
 
 func TestDecode_warns(t *testing.T) {
-	want := []error{
-		&specerr.ParseFieldError{ResourceID: 3, Element: "slicestack", Name: "zbottom", Value: "a", ModelPath: "/3D/3dmodel.model", Required: false},
-		&specerr.ParseFieldError{ResourceID: 3, Element: "vertex", Name: "x", Value: "a", ModelPath: "/3D/3dmodel.model", Required: true},
-		&specerr.ParseFieldError{ResourceID: 3, Element: "vertex", Name: "y", Value: "b", ModelPath: "/3D/3dmodel.model", Required: true},
-		&specerr.ParseFieldError{ResourceID: 3, Element: "slice", Name: "ztop", Value: "a", ModelPath: "/3D/3dmodel.model", Required: true},
-		&specerr.ParseFieldError{ResourceID: 3, Element: "polygon", Name: "startv", Value: "a", ModelPath: "/3D/3dmodel.model", Required: true},
-		&specerr.ParseFieldError{ResourceID: 3, Element: "segment", Name: "v2", Value: "a", ModelPath: "/3D/3dmodel.model", Required: true},
-		&specerr.ParseFieldError{ResourceID: 3, Element: "sliceref", Name: "slicestackid", Value: "a", ModelPath: "/3D/3dmodel.model", Required: true},
-		&specerr.ParseFieldError{ResourceID: 8, Element: "object", ModelPath: "/3D/3dmodel.model", Name: "meshresolution", Value: "invalid", Required: false},
-		&specerr.ParseFieldError{ResourceID: 8, Element: "object", ModelPath: "/3D/3dmodel.model", Name: "slicestackid", Value: "a", Required: true},
-	}
+	want := &specerr.ErrorList{Errors: []error{
+		&specerr.ParseFieldError{Required: false, ResourceID: 3, Name: "zbottom", Context: "model@resources@slicestack"},
+		&specerr.ParseFieldError{Required: true, ResourceID: 3, Name: "x", Context: "model@resources@slicestack@slice@vertices@vertex"},
+		&specerr.ParseFieldError{Required: true, ResourceID: 3, Name: "y", Context: "model@resources@slicestack@slice@vertices@vertex"},
+		&specerr.ParseFieldError{Required: true, ResourceID: 3, Name: "ztop", Context: "model@resources@slicestack@slice"},
+		&specerr.ParseFieldError{Required: true, ResourceID: 3, Name: "startv", Context: "model@resources@slicestack@slice@polygon"},
+		&specerr.ParseFieldError{Required: true, ResourceID: 3, Name: "v2", Context: "model@resources@slicestack@slice@polygon@segment"},
+		&specerr.ParseFieldError{Required: true, ResourceID: 3, Name: "slicestackid", Context: "model@resources@slicestack@sliceref"},
+		&specerr.ParseFieldError{Required: false, ResourceID: 8, Name: "meshresolution", Context: "model@resources@object"},
+		&specerr.ParseFieldError{Required: true, ResourceID: 8, Name: "slicestackid", Context: "model@resources@object"},
+	}}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"
 	rootFile := `
@@ -173,13 +173,9 @@ func TestDecode_warns(t *testing.T) {
 		d := new(go3mf.Decoder)
 		got.WithSpec(&Spec{})
 		d.Strict = false
-		if err := d.UnmarshalModel([]byte(rootFile), got); err != nil {
-			t.Errorf("DecodeRawModel_warn() unexpected error = %v", err)
-			return
-		}
-		deep.MaxDiff = 1
-		if diff := deep.Equal(d.Warnings, want); diff != nil {
-			t.Errorf("DecodeRawModel_warn() = %v", diff)
+		err := d.UnmarshalModel([]byte(rootFile), got)
+		if diff := deep.Equal(err, want); diff != nil {
+			t.Errorf("UnmarshalModel_warn() = %v", diff)
 			return
 		}
 	})

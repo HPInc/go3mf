@@ -63,16 +63,16 @@ func TestDecode(t *testing.T) {
 }
 
 func TestDecode_warns(t *testing.T) {
-	want := []error{
-		&specerr.ParseFieldError{ResourceID: 0, Element: "texture2d", Name: "id", Value: "b", ModelPath: "/3D/3dmodel.model", Required: true},
-		&specerr.ParseFieldError{ResourceID: 1, Element: "color", Name: "color", Value: "#FFFFF", ModelPath: "/3D/3dmodel.model", Required: true},
-		&specerr.ParseFieldError{ResourceID: 2, Element: "texture2dgroup", Name: "texid", Value: "a", ModelPath: "/3D/3dmodel.model", Required: true},
-		&specerr.ParseFieldError{ResourceID: 2, Element: "tex2coord", Name: "u", Value: "b", ModelPath: "/3D/3dmodel.model", Required: true},
-		&specerr.ParseFieldError{ResourceID: 2, Element: "tex2coord", Name: "v", Value: "c", ModelPath: "/3D/3dmodel.model", Required: true},
-		&specerr.ParseFieldError{ResourceID: 4, Element: "compositematerials", Name: "matid", Value: "a", ModelPath: "/3D/3dmodel.model", Required: true},
-		&specerr.ParseFieldError{ResourceID: 4, Element: "composite", Name: "values", Value: "a", ModelPath: "/3D/3dmodel.model", Required: true},
-		&specerr.ParseFieldError{ResourceID: 9, Element: "multiproperties", ModelPath: "/3D/3dmodel.model", Name: "pids", Value: "a", Required: true},
-	}
+	want := &specerr.ErrorList{Errors: []error{
+		&specerr.ParseFieldError{Required: true, ResourceID: 0, Name: "id", Context: "model@resources@texture2d"},
+		&specerr.ParseFieldError{Required: true, ResourceID: 1, Name: "color", Context: "model@resources@colorgroup@color"},
+		&specerr.ParseFieldError{Required: true, ResourceID: 2, Name: "texid", Context: "model@resources@texture2dgroup"},
+		&specerr.ParseFieldError{Required: true, ResourceID: 2, Name: "u", Context: "model@resources@texture2dgroup@tex2coord"},
+		&specerr.ParseFieldError{Required: true, ResourceID: 2, Name: "v", Context: "model@resources@texture2dgroup@tex2coord"},
+		&specerr.ParseFieldError{Required: true, ResourceID: 4, Name: "matid", Context: "model@resources@compositematerials"},
+		&specerr.ParseFieldError{Required: true, ResourceID: 4, Name: "values", Context: "model@resources@compositematerials@composite"},
+		&specerr.ParseFieldError{Required: true, ResourceID: 9, Name: "pids", Context: "model@resources@multiproperties"},
+	}}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"
 	rootFile := `
@@ -132,13 +132,9 @@ func TestDecode_warns(t *testing.T) {
 		got.WithSpec(&Spec{LocalName: "m"})
 		d := new(go3mf.Decoder)
 		d.Strict = false
-		if err := d.UnmarshalModel([]byte(rootFile), got); err != nil {
-			t.Errorf("DecodeRawModel_warn() unexpected error = %v", err)
-			return
-		}
-		deep.MaxDiff = 1
-		if diff := deep.Equal(d.Warnings, want); diff != nil {
-			t.Errorf("DecodeRawModel_warn() = %v", diff)
+		err := d.UnmarshalModel([]byte(rootFile), got)
+		if diff := deep.Equal(err, want); diff != nil {
+			t.Errorf("UnmarshalModel_warn() = %v", diff)
 			return
 		}
 	})

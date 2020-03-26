@@ -19,7 +19,7 @@ func (e Spec) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml
 	case *go3mf.Build:
 		if attr.Name.Local == attrProdUUID {
 			if uuid, err = NewUUID(attr.Value); err != nil {
-				s.InvalidAttr(attr.Name.Local, attr.Value, true)
+				s.InvalidAttr(attr.Name.Local, true)
 			}
 			t.AnyAttr = append(t.AnyAttr, &uuid)
 		}
@@ -27,7 +27,7 @@ func (e Spec) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml
 		switch attr.Name.Local {
 		case attrProdUUID:
 			if uuid, err = NewUUID(attr.Value); err != nil {
-				s.InvalidAttr(attr.Name.Local, attr.Value, true)
+				s.InvalidAttr(attr.Name.Local, true)
 			}
 			var ext *PathUUID
 			if t.AnyAttr.Get(&ext) {
@@ -46,7 +46,7 @@ func (e Spec) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml
 	case *go3mf.Object:
 		if attr.Name.Local == attrProdUUID {
 			if uuid, err = NewUUID(attr.Value); err != nil {
-				s.InvalidAttr(attr.Name.Local, attr.Value, true)
+				s.InvalidAttr(attr.Name.Local, true)
 			}
 			t.AnyAttr = append(t.AnyAttr, &uuid)
 		}
@@ -54,7 +54,7 @@ func (e Spec) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml
 		switch attr.Name.Local {
 		case attrProdUUID:
 			if uuid, err = NewUUID(attr.Value); err != nil {
-				s.InvalidAttr(attr.Name.Local, attr.Value, true)
+				s.InvalidAttr(attr.Name.Local, true)
 			}
 			var ext *PathUUID
 			if t.AnyAttr.Get(&ext) {

@@ -43,7 +43,7 @@ func (d *modelDecoder) Start(attrs []xml.Attr) {
 			case attrUnit:
 				var ok bool
 				if d.model.Units, ok = newUnits(a.Value); !ok {
-					d.Scanner.InvalidAttr(a.Name.Local, a.Value, false)
+					d.Scanner.InvalidAttr(a.Name.Local, false)
 				}
 			case attrThumbnail:
 				d.model.Thumbnail = a.Value
@@ -188,7 +188,7 @@ func (d *buildItemDecoder) parseCoreAttr(a xml.Attr) {
 	case attrObjectID:
 		val, err := strconv.ParseUint(a.Value, 10, 32)
 		if err != nil {
-			d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+			d.Scanner.InvalidAttr(a.Name.Local, true)
 		}
 		d.item.ObjectID = uint32(val)
 		d.Scanner.ResourceID = d.item.ObjectID
@@ -198,7 +198,7 @@ func (d *buildItemDecoder) parseCoreAttr(a xml.Attr) {
 		var ok bool
 		d.item.Transform, ok = ParseMatrix(a.Value)
 		if !ok {
-			d.Scanner.InvalidAttr(a.Name.Local, a.Value, false)
+			d.Scanner.InvalidAttr(a.Name.Local, false)
 		}
 	}
 }
@@ -244,7 +244,7 @@ func (d *baseMaterialsDecoder) Start(attrs []xml.Attr) {
 		if a.Name.Space == "" && a.Name.Local == attrID {
 			id, err := strconv.ParseUint(a.Value, 10, 32)
 			if err != nil {
-				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+				d.Scanner.InvalidAttr(a.Name.Local, true)
 			}
 			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
 			break
@@ -268,7 +268,7 @@ func (d *baseMaterialDecoder) Start(attrs []xml.Attr) {
 			var err error
 			baseColor, err = ParseRGBA(a.Value)
 			if err != nil {
-				d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+				d.Scanner.InvalidAttr(a.Name.Local, true)
 			}
 		}
 	}
@@ -325,7 +325,7 @@ func (d *vertexDecoder) Start(attrs []xml.Attr) {
 	for _, a := range attrs {
 		val, err := strconv.ParseFloat(a.Value, 32)
 		if err != nil {
-			d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+			d.Scanner.InvalidAttr(a.Name.Local, true)
 		}
 		switch a.Name.Local {
 		case attrX:
@@ -399,7 +399,7 @@ func (d *triangleDecoder) Start(attrs []xml.Attr) {
 			required = false
 		}
 		if err != nil {
-			d.Scanner.InvalidAttr(a.Name.Local, a.Value, required)
+			d.Scanner.InvalidAttr(a.Name.Local, required)
 		}
 	}
 
@@ -459,14 +459,14 @@ func (d *objectDecoder) parseCoreAttr(a xml.Attr) {
 	case attrID:
 		id, err := strconv.ParseUint(a.Value, 10, 32)
 		if err != nil {
-			d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+			d.Scanner.InvalidAttr(a.Name.Local, true)
 		}
 		d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
 	case attrType:
 		var ok bool
 		d.resource.ObjectType, ok = newObjectType(a.Value)
 		if !ok {
-			d.Scanner.InvalidAttr(a.Name.Local, a.Value, false)
+			d.Scanner.InvalidAttr(a.Name.Local, false)
 		}
 	case attrThumbnail:
 		d.resource.Thumbnail = a.Value
@@ -477,13 +477,13 @@ func (d *objectDecoder) parseCoreAttr(a xml.Attr) {
 	case attrPID:
 		val, err := strconv.ParseUint(a.Value, 10, 32)
 		if err != nil {
-			d.Scanner.InvalidAttr(a.Name.Local, a.Value, false)
+			d.Scanner.InvalidAttr(a.Name.Local, false)
 		}
 		d.resource.DefaultPID = uint32(val)
 	case attrPIndex:
 		val, err := strconv.ParseUint(a.Value, 10, 32)
 		if err != nil {
-			d.Scanner.InvalidAttr(a.Name.Local, a.Value, false)
+			d.Scanner.InvalidAttr(a.Name.Local, false)
 		}
 		d.resource.DefaultPIndex = uint32(val)
 	}
@@ -519,14 +519,14 @@ func (d *componentDecoder) Start(attrs []xml.Attr) {
 			if a.Name.Local == attrObjectID {
 				val, err := strconv.ParseUint(a.Value, 10, 32)
 				if err != nil {
-					d.Scanner.InvalidAttr(a.Name.Local, a.Value, true)
+					d.Scanner.InvalidAttr(a.Name.Local, true)
 				}
 				component.ObjectID = uint32(val)
 			} else if a.Name.Local == attrTransform {
 				var ok bool
 				component.Transform, ok = ParseMatrix(a.Value)
 				if !ok {
-					d.Scanner.InvalidAttr(a.Name.Local, a.Value, false)
+					d.Scanner.InvalidAttr(a.Name.Local, false)
 				}
 			}
 		} else if ext, ok := d.Scanner.extensionDecoder[a.Name.Space]; ok {

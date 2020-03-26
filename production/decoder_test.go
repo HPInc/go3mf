@@ -75,12 +75,12 @@ func TestDecode(t *testing.T) {
 }
 
 func TestDecode_warns(t *testing.T) {
-	want := []error{
-		&specerr.ParseFieldError{ResourceID: 20, Element: "object", ModelPath: "/3D/3dmodel.model", Name: "UUID", Value: "cb8286808895-4e08-a1fc-be63e033df15", Required: true},
-		&specerr.ParseFieldError{ResourceID: 20, Element: "component", ModelPath: "/3D/3dmodel.model", Name: "UUID", Value: "cb8286808895-4e08-a1fc-be63e033df16", Required: true},
-		&specerr.ParseFieldError{ResourceID: 0, Element: "build", Name: "UUID", Value: "e9e25302-6428-402e-8633ed2", ModelPath: "/3D/3dmodel.model", Required: true},
-		&specerr.ParseFieldError{ResourceID: 20, Element: "item", ModelPath: "/3D/3dmodel.model", Name: "UUID", Value: "invalid-uuid", Required: true},
-	}
+	want := &specerr.ErrorList{Errors: []error{
+		&specerr.ParseFieldError{Required: true, ResourceID: 20, Name: "UUID", Context: "model@resources@object"},
+		&specerr.ParseFieldError{Required: true, ResourceID: 20, Name: "UUID", Context: "model@resources@object@components@component"},
+		&specerr.ParseFieldError{Required: true, ResourceID: 0, Name: "UUID", Context: "model@build"},
+		&specerr.ParseFieldError{Required: true, ResourceID: 20, Name: "UUID", Context: "model@build@item"},
+	}}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"
 	rootFile := `
@@ -105,13 +105,9 @@ func TestDecode_warns(t *testing.T) {
 		got.WithSpec(&Spec{LocalName: "p"})
 		d := new(go3mf.Decoder)
 		d.Strict = false
-		if err := d.UnmarshalModel([]byte(rootFile), got); err != nil {
-			t.Errorf("DecodeRawModel_warn() unexpected error = %v", err)
-			return
-		}
-		deep.MaxDiff = 1
-		if diff := deep.Equal(d.Warnings, want); diff != nil {
-			t.Errorf("DecodeRawModel_warn() = %v", diff)
+		err := d.UnmarshalModel([]byte(rootFile), got)
+		if diff := deep.Equal(err, want); diff != nil {
+			t.Errorf("UnmarshalModel_warn() = %v", diff)
 			return
 		}
 	})

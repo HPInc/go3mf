@@ -114,11 +114,11 @@ func TestDecode(t *testing.T) {
 }
 
 func TestDecode_warns(t *testing.T) {
-	want := []error{
-		&specerr.ParseFieldError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3D/3dmodel.model", Name: "cap", Value: "invalid", Required: false},
-		&specerr.ParseFieldError{ResourceID: 15, Element: "beamlattice", ModelPath: "/3D/3dmodel.model", Name: "clippingmode", Value: "invalid2", Required: false},
-		&specerr.ParseFieldError{ResourceID: 15, Element: "ref", Name: "index", Value: "a", ModelPath: "/3D/3dmodel.model", Required: true},
-	}
+	want := &specerr.ErrorList{Errors: []error{
+		&specerr.ParseFieldError{Required: false, ResourceID: 15, Name: "cap", Context: "model@resources@object@mesh@beamlattice"},
+		&specerr.ParseFieldError{Required: false, ResourceID: 15, Name: "clippingmode", Context: "model@resources@object@mesh@beamlattice"},
+		&specerr.ParseFieldError{Required: true, ResourceID: 15, Name: "index", Context: "model@resources@object@mesh@beamlattice@beamsets@beamset@ref"},
+	}}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"
 	rootFile := `
@@ -173,13 +173,9 @@ func TestDecode_warns(t *testing.T) {
 		got.WithSpec(&Spec{LocalName: "b"})
 		d := new(go3mf.Decoder)
 		d.Strict = false
-		if err := d.UnmarshalModel([]byte(rootFile), got); err != nil {
-			t.Errorf("DecodeRawModel_warn() unexpected error = %v", err)
-			return
-		}
-		deep.MaxDiff = 1
-		if diff := deep.Equal(d.Warnings, want); diff != nil {
-			t.Errorf("DecodeRawModel_warn() = %v", diff)
+		err := d.UnmarshalModel([]byte(rootFile), got)
+		if diff := deep.Equal(err, want); diff != nil {
+			t.Errorf("UnmarshalModel_warn() = %v", diff)
 			return
 		}
 	})

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"image/color"
+	"strings"
 
 	specerr "github.com/qmuntal/go3mf/errors"
 )
@@ -32,14 +33,12 @@ func (d *baseDecoder) SetScanner(s *Scanner)      { d.Scanner = s }
 type Scanner struct {
 	Resources        Resources
 	BuildItems       []*Item
-	Strict           bool
 	ModelPath        string
 	IsRoot           bool
-	Element          string
 	ResourceID       uint32
-	Err              error
-	Warnings         []error
+	Err              specerr.ErrorList
 	extensionDecoder map[string]SpecDecoder
+	contex           []xml.Name
 }
 
 func (s *Scanner) namespace(local string) (string, bool) {
@@ -63,14 +62,18 @@ func (s *Scanner) AddObject(r *Object) {
 	s.ResourceID = 0
 }
 
-// InvalidAttr adds the error to the warnings.
+// InvalidAttr adds the error to the errors.
 // Returns false if scanning cannot continue.
-func (s *Scanner) InvalidAttr(attr string, val string, required bool) {
-	err := &specerr.ParseFieldError{ResourceID: s.ResourceID, Element: s.Element, Name: attr, Value: val, ModelPath: s.ModelPath, Required: required}
-	s.Warnings = append(s.Warnings, err)
-	if s.Strict {
-		s.Err = err
+func (s *Scanner) InvalidAttr(attr string, required bool) {
+	ct := make([]string, len(s.contex))
+	ct[0] = s.ModelPath
+	for i, s := range s.contex[1:] {
+		ct[i+1] = s.Local
 	}
+	if s.IsRoot {
+		ct = ct[1:] // don't add path in case happend in root file
+	}
+	s.Err.Append(&specerr.ParseFieldError{Context: strings.Join(ct, "@"), Name: attr, ResourceID: s.ResourceID, Required: required})
 }
 
 // ParseRGBA parses s as a RGBA color.

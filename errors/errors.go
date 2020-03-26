@@ -141,12 +141,11 @@ func (e *MissingFieldError) Error() string {
 // A &specerr.ParseFieldError represents an error while decoding a required or an optional property.
 // If ResourceID is 0 means that the error took place while parsing the resource property before the ID appeared.
 // When Element is 'item' the ResourceID is the objectID property of a build item.
+// Field value is not reported to avoid leaking confidential information.
 type ParseFieldError struct {
+	Context    string
 	ResourceID uint32
-	ModelPath  string
-	Element    string
 	Name       string
-	Value      string
 	Required   bool
 }
 
@@ -155,5 +154,44 @@ func (e *ParseFieldError) Error() string {
 	if !e.Required {
 		req = "optional"
 	}
-	return fmt.Sprintf("[%s] error parsing property '%s = %s' of element '%s' in resource '%s:%d'", req, e.Name, e.Value, e.Element, e.ModelPath, e.ResourceID)
+	return fmt.Sprintf("%s#%d: error parsing %s attribute '%s'", e.Context, e.ResourceID, req, e.Name)
+}
+
+type ErrorList struct {
+	Errors []error
+}
+
+func (e *ErrorList) Append(err error) {
+	e.Errors = append(e.Errors, err)
+}
+
+func (e *ErrorList) Len() int {
+	return len(e.Errors)
+}
+
+func (e *ErrorList) Error() string {
+	return listFormatFunc(e.Errors)
+}
+
+// Unwrap returns the first error of the chain if not empty.
+func (e *ErrorList) Unwrap() error {
+	if len(e.Errors) == 0 {
+		return nil
+	}
+	return e.Errors[0]
+}
+
+func listFormatFunc(es []error) string {
+	if len(es) == 1 {
+		return fmt.Sprintf("1 error occurred:\n\t* %s\n\n", es[0])
+	}
+
+	points := make([]string, len(es))
+	for i, err := range es {
+		points[i] = fmt.Sprintf("* %s", err)
+	}
+
+	return fmt.Sprintf(
+		"%d errors occurred:\n\t%s\n\n",
+		len(es), strings.Join(points, "\n\t"))
 }

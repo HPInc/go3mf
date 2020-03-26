@@ -299,7 +299,7 @@ func TestDecoder_processRootModel_Fail(t *testing.T) {
 	}{
 		{"errOpen", newMockFile("/a.model", nil, nil, true), true},
 		{"errEncode", new(modelBuilder).withEncoding("utf16").build(""), true},
-		{"invalidUnits", new(modelBuilder).withModel("other", "en-US", "").build(""), false},
+		{"invalidUnits", new(modelBuilder).withModel("other", "en-US", "").build(""), true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -542,8 +542,8 @@ func Test_modelFile_Decode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if sc := decodeModelFile(tt.args.ctx, tt.args.x, new(Model), "", true, false); (sc.Err != nil) != tt.wantErr {
-				t.Errorf("modelFile.Decode() error = %v, wantErr %v", sc.Err, tt.wantErr)
+			if _, err := decodeModelFile(tt.args.ctx, tt.args.x, new(Model), "", true, false); (err != nil) != tt.wantErr {
+				t.Errorf("modelFile.Decode() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
@@ -574,19 +574,19 @@ func TestNewDecoder(t *testing.T) {
 }
 
 func TestDecoder_processRootModel_warns(t *testing.T) {
-	want := []error{
-		&specerr.ParseFieldError{ResourceID: 0, Element: "base", Name: "displaycolor", Value: "0000FF", ModelPath: "/3D/3dmodel.model", Required: true},
-		&specerr.ParseFieldError{ResourceID: 0, Element: "basematerials", Name: "id", Value: "a", ModelPath: "/3D/3dmodel.model", Required: true},
-		&specerr.ParseFieldError{ResourceID: 8, Element: "vertex", Name: "x", ModelPath: "/3D/3dmodel.model", Value: "a", Required: true},
-		&specerr.ParseFieldError{ResourceID: 8, Element: "triangle", ModelPath: "/3D/3dmodel.model", Name: "v1", Value: "a", Required: true},
-		&specerr.ParseFieldError{ResourceID: 22, Element: "object", ModelPath: "/3D/3dmodel.model", Name: "pid", Value: "a", Required: false},
-		&specerr.ParseFieldError{ResourceID: 22, Element: "object", ModelPath: "/3D/3dmodel.model", Name: "pindex", Value: "a", Required: false},
-		&specerr.ParseFieldError{ResourceID: 22, Element: "object", ModelPath: "/3D/3dmodel.model", Name: "type", Value: "invalid", Required: false},
-		&specerr.ParseFieldError{ResourceID: 20, Element: "component", ModelPath: "/3D/3dmodel.model", Name: "transform", Value: "0 0 0 1 0 0 0 2 -66.4 -87.1 8.8", Required: false},
-		&specerr.ParseFieldError{ResourceID: 20, Element: "component", ModelPath: "/3D/3dmodel.model", Name: "objectid", Value: "a", Required: true},
-		&specerr.ParseFieldError{ResourceID: 20, Element: "item", Name: "transform", Value: "1 0 0 0 2 0 0 0 3 -66.4 -87.1", ModelPath: "/3D/3dmodel.model", Required: false},
-		&specerr.ParseFieldError{Element: "item", Name: "objectid", Value: "a", ModelPath: "/3D/3dmodel.model", Required: true},
-	}
+	want := &specerr.ErrorList{Errors: []error{
+		&specerr.ParseFieldError{Required: true, ResourceID: 0, Name: "displaycolor", Context: "model@resources@basematerials@base"},
+		&specerr.ParseFieldError{Required: true, ResourceID: 0, Name: "id", Context: "model@resources@basematerials"},
+		&specerr.ParseFieldError{Required: true, ResourceID: 8, Name: "x", Context: "model@resources@object@mesh@vertices@vertex"},
+		&specerr.ParseFieldError{Required: true, ResourceID: 8, Name: "v1", Context: "model@resources@object@mesh@triangles@triangle"},
+		&specerr.ParseFieldError{Required: false, ResourceID: 22, Name: "pid", Context: "model@resources@object"},
+		&specerr.ParseFieldError{Required: false, ResourceID: 22, Name: "pindex", Context: "model@resources@object"},
+		&specerr.ParseFieldError{Required: false, ResourceID: 22, Name: "type", Context: "model@resources@object"},
+		&specerr.ParseFieldError{Required: false, ResourceID: 20, Name: "transform", Context: "model@resources@object@components@component"},
+		&specerr.ParseFieldError{Required: true, ResourceID: 20, Name: "objectid", Context: "model@resources@object@components@component"},
+		&specerr.ParseFieldError{Required: false, ResourceID: 20, Name: "transform", Context: "model@build@item"},
+		&specerr.ParseFieldError{Required: true, ResourceID: 0, Name: "objectid", Context: "model@build@item"},
+	}}
 	got := new(Model)
 	got.Path = "/3D/3dmodel.model"
 	rootFile := new(modelBuilder).withElement(`
@@ -660,12 +660,8 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 		d.SetDecompressor(func(r io.Reader) io.ReadCloser { return flate.NewReader(r) })
 		d.SetXMLDecoder(func(r io.Reader) XMLDecoder { return xml.NewDecoder(r) })
 		got.WithSpec(&fakeSpec{})
-		if err := d.processRootModel(context.Background(), rootFile, got); err != nil {
-			t.Errorf("Decoder.processRootModel() unexpected error = %v", err)
-			return
-		}
-		deep.MaxDiff = 1
-		if diff := deep.Equal(d.Warnings, want); diff != nil {
+		err := d.processRootModel(context.Background(), rootFile, got)
+		if diff := deep.Equal(err, want); diff != nil {
 			t.Errorf("Decoder.processRootModel() = %v", diff)
 			return
 		}
