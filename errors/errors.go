@@ -161,8 +161,8 @@ type ErrorList struct {
 	Errors []error
 }
 
-func (e *ErrorList) Append(err error) {
-	e.Errors = append(e.Errors, err)
+func (e *ErrorList) Append(err ...error) {
+	e.Errors = append(e.Errors, err...)
 }
 
 func (e *ErrorList) Len() int {
