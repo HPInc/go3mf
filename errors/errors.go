@@ -90,10 +90,14 @@ type Error struct {
 }
 
 func New(element interface{}, err error) error {
+	if err == nil {
+		return nil
+	}
 	if e, ok := err.(*Error); ok {
 		e.Target = append(e.Target, Level{element, -1})
 		return e
-	} else if e, ok := err.(*ErrorList); ok {
+	}
+	if e, ok := err.(*ErrorList); ok {
 		for i, e1 := range e.Errors {
 			e.Errors[i] = New(element, e1)
 		}
@@ -103,11 +107,15 @@ func New(element interface{}, err error) error {
 }
 
 func NewPath(element interface{}, path string, err error) error {
+	if err == nil {
+		return nil
+	}
 	if e, ok := err.(*Error); ok {
 		e.Path = path
 		e.Target = append(e.Target, Level{element, -1})
 		return e
-	} else if e, ok := err.(*ErrorList); ok {
+	}
+	if e, ok := err.(*ErrorList); ok {
 		for i, e1 := range e.Errors {
 			e.Errors[i] = NewPath(element, path, e1)
 		}
@@ -117,10 +125,14 @@ func NewPath(element interface{}, path string, err error) error {
 }
 
 func NewIndexed(element interface{}, index int, err error) error {
+	if err == nil {
+		return nil
+	}
 	if e, ok := err.(*Error); ok {
 		e.Target = append(e.Target, Level{element, index})
 		return e
-	} else if e, ok := err.(*ErrorList); ok {
+	}
+	if e, ok := err.(*ErrorList); ok {
 		for i, e1 := range e.Errors {
 			e.Errors[i] = NewIndexed(element, index, e1)
 		}
@@ -178,6 +190,17 @@ type ErrorList struct {
 
 func NewErrorList(errs []error) *ErrorList {
 	return &ErrorList{Errors: errs}
+}
+
+func (e *ErrorList) ErrorOrNil() error {
+	if e == nil {
+		return nil
+	}
+	if len(e.Errors) == 0 {
+		return nil
+	}
+
+	return e
 }
 
 func (e *ErrorList) Append(errs ...error) {

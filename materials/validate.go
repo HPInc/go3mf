@@ -30,7 +30,7 @@ func (e *Spec) ValidateAsset(m *go3mf.Model, path string, r go3mf.Asset) error {
 	case *CompositeMaterials:
 		e.validateCompositeMat(m, path, r, errs)
 	}
-	return errs
+	return errs.ErrorOrNil()
 }
 
 func (e *Spec) validateColorGroup(path string, r *ColorGroup, errs *errors.ErrorList) {

@@ -146,6 +146,14 @@ func Identity() Matrix {
 	return Matrix{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}
 }
 
+// Translate returns a matrix with a relative translation applied.
+func (m Matrix) Translate(x, y, z float32) Matrix {
+	m[12] += x
+	m[13] += y
+	m[14] += z
+	return m
+}
+
 // Mul performs a "matrix product" between this matrix
 // and another of the given dimension.
 func (m Matrix) Mul(m2 Matrix) Matrix {

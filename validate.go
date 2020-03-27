@@ -53,7 +53,7 @@ func (m *Model) Validate() error {
 
 	err = m.Build.validate(m, rootPath)
 	errs.Append(errors.New(m.Build, err))
-	return errs
+	return errs.ErrorOrNil()
 }
 
 func (item *Item) validate(m *Model, path string) error {
@@ -69,7 +69,7 @@ func (item *Item) validate(m *Model, path string) error {
 		errs.Append(errors.ErrMissingResource)
 	}
 	errs.Append(checkMetadadata(m, item.Metadata))
-	return errs
+	return errs.ErrorOrNil()
 }
 
 func (b *Build) validate(m *Model, path string) error {
@@ -78,7 +78,7 @@ func (b *Build) validate(m *Model, path string) error {
 		err := item.validate(m, path)
 		errs.Append(errors.NewIndexed(item, i, err))
 	}
-	return errs
+	return errs.ErrorOrNil()
 }
 
 var allowedMetadataNames = [...]string{ // sorted
@@ -102,7 +102,7 @@ func (m *Metadata) validate(model *Model) error {
 			errs.Append(errors.ErrMetadataNamespace)
 		}
 	}
-	return errs
+	return errs.ErrorOrNil()
 }
 
 func checkMetadadata(model *Model, md []Metadata) error {
@@ -116,7 +116,7 @@ func checkMetadadata(model *Model, md []Metadata) error {
 		}
 		names[m.Name] = struct{}{}
 	}
-	return errs
+	return errs.ErrorOrNil()
 }
 
 func (r *BaseMaterials) Validate(m *Model, path string) error {
@@ -135,7 +135,7 @@ func (r *BaseMaterials) Validate(m *Model, path string) error {
 			errs.Append(errors.NewIndexed(b, j, &errors.MissingFieldError{Name: attrDisplayColor}))
 		}
 	}
-	return errs
+	return errs.ErrorOrNil()
 }
 
 func (res *Resources) validate(m *Model, path string) error {
@@ -172,7 +172,7 @@ func (res *Resources) validate(m *Model, path string) error {
 		err := r.Validate(m, path)
 		errs.Append(errors.NewIndexed(r, i, err))
 	}
-	return errs
+	return errs.ErrorOrNil()
 }
 
 func (r *Object) Validate(m *Model, path string) error {
@@ -213,7 +213,7 @@ func (r *Object) Validate(m *Model, path string) error {
 			errs.Append(ext.ValidateObject(m, path, r))
 		}
 	}
-	return errs
+	return errs.ErrorOrNil()
 }
 
 func (r *Object) validateMesh(m *Model, path string) error {
@@ -255,7 +255,7 @@ func (r *Object) validateMesh(m *Model, path string) error {
 			}
 		}
 	}
-	return errs
+	return errs.ErrorOrNil()
 }
 
 func (r *Object) validateComponents(m *Model, path string) error {
@@ -271,7 +271,7 @@ func (r *Object) validateComponents(m *Model, path string) error {
 			errs.Append(errors.NewIndexed(c, j, errors.ErrMissingResource))
 		}
 	}
-	return errs
+	return errs.ErrorOrNil()
 }
 
 func (m *Model) validateNamespaces() error {
@@ -322,7 +322,7 @@ func validateRelationship(m *Model, rels []Relationship, path string) error {
 			}
 		}
 	}
-	return errs
+	return errs.ErrorOrNil()
 }
 
 func findAttachment(att []Attachment, path string) (*Attachment, bool) {

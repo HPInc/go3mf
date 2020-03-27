@@ -29,7 +29,7 @@ func (e *Spec) ValidateModel(m *go3mf.Model) error {
 		}
 		errs.Append(specerr.New(m.Build, specerr.NewIndexed(item, i, iErrs)))
 	}
-	return errs
+	return errs.ErrorOrNil()
 }
 
 func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) error {
@@ -52,7 +52,7 @@ func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) er
 		}
 		errs.Append(specerr.NewIndexed(c, i, cErrs))
 	}
-	return errs
+	return errs.ErrorOrNil()
 }
 
 func (e *Spec) validatePathUUID(m *go3mf.Model, path string, p *PathUUID) error {
@@ -72,5 +72,5 @@ func (e *Spec) validatePathUUID(m *go3mf.Model, path string, p *PathUUID) error 
 			errs.Append(specerr.ErrProdRefInNonRoot)
 		}
 	}
-	return errs
+	return errs.ErrorOrNil()
 }

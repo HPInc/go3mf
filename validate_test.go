@@ -127,6 +127,13 @@ func TestValidate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.model.WithSpec(&fakeSpec{})
 			got := tt.model.Validate()
+			if tt.want == nil {
+				if got != nil {
+					t.Errorf("Model.Validate() err = %v", got)
+
+				}
+				return
+			}
 			if diff := deep.Equal(got.(*errors.ErrorList).Errors, tt.want); diff != nil {
 				t.Errorf("Model.Validate() = %v", diff)
 			}

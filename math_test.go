@@ -277,3 +277,28 @@ func TestParseToMatrixOptional(t *testing.T) {
 		})
 	}
 }
+
+func TestMatrix_Translate(t *testing.T) {
+	type args struct {
+		x float32
+		y float32
+		z float32
+	}
+	tests := []struct {
+		name string
+		m    Matrix
+		args args
+		want Matrix
+	}{
+		{"zero", Matrix{}, args{0, 0, 0}, Matrix{}},
+		{"identity", Identity(), args{1, 2, 3}, Matrix{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 2, 3, 1}},
+		{"other", Matrix{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 0}, args{1, 2, 3}, Matrix{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 4, 6, 0}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.Translate(tt.args.x, tt.args.y, tt.args.z); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Matrix.Translate() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

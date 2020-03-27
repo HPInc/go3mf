@@ -45,7 +45,7 @@ func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) er
 			errs.Append(errors.ErrSliceExtRequired)
 		}
 	}
-	return errs
+	return errs.ErrorOrNil()
 }
 
 func (e *Spec) ValidateAsset(m *go3mf.Model, path string, r go3mf.Asset) error {
@@ -63,7 +63,7 @@ func (e *Spec) ValidateAsset(m *go3mf.Model, path string, r go3mf.Asset) error {
 	}
 	errs.Append(st.validateRefs(m, path))
 	errs.Append(st.validateSlices())
-	return errs
+	return errs.ErrorOrNil()
 }
 
 func (r *SliceStack) validateSlices() error {
@@ -96,7 +96,7 @@ func (r *SliceStack) validateSlices() error {
 		}
 		errs.Append(errors.NewIndexed(slice, j, perrs))
 	}
-	return errs
+	return errs.ErrorOrNil()
 }
 
 func (r *SliceStack) validateRefs(m *go3mf.Model, path string) error {
@@ -136,7 +136,7 @@ func (r *SliceStack) validateRefs(m *go3mf.Model, path string) error {
 			errs.Append(errors.NewIndexed(ref, i, errors.ErrMissingResource))
 		}
 	}
-	return errs
+	return errs.ErrorOrNil()
 }
 
 func isSliceStackClosed(r *SliceStack) bool {

@@ -662,3 +662,47 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 		}
 	})
 }
+
+func TestOpenReader(t *testing.T) {
+	r, err := OpenReader("testdata/cube.3mf")
+	if err != nil {
+		t.Errorf("OpenReader err = %v", err)
+		return
+	}
+	defer r.Close()
+	m := new(Model)
+	err = r.Decode(m)
+	if err != nil {
+		t.Errorf("OpenReader.Decode err = %v", err)
+		return
+	}
+	want := &Model{
+		Language: "en-US", Path: "/3D/3dmodel.model",
+		Resources: Resources{Objects: []*Object{
+			{ID: 1, Name: "Cube", Mesh: &Mesh{
+				Vertices: []Point3D{
+					{100, 100, 100}, {100, 0, 100}, {100, 100, 0}, {0, 100, 0}, {100, 0, 0}, {}, {0, 0, 100}, {0, 100, 100},
+				}, Triangles: []Triangle{
+					{Indices: [3]uint32{0, 1, 2}}, {Indices: [3]uint32{3, 0, 2}}, {Indices: [3]uint32{4, 3, 2}},
+					{Indices: [3]uint32{5, 3, 4}}, {Indices: [3]uint32{4, 6, 5}}, {Indices: [3]uint32{6, 7, 5}},
+					{Indices: [3]uint32{7, 6, 0}}, {Indices: [3]uint32{1, 6, 4}}, {Indices: [3]uint32{5, 7, 3}},
+					{Indices: [3]uint32{7, 0, 3}}, {Indices: [3]uint32{2, 1, 4}}, {Indices: [3]uint32{0, 6, 1}},
+				}},
+			},
+		}},
+		Build: Build{
+			Items: []*Item{{
+				ObjectID:  1,
+				Transform: Identity().Translate(30, 30, 50),
+			}},
+		},
+	}
+	if diff := deep.Equal(m, want); diff != nil {
+		t.Errorf("OpenReader.Decode() = %v", diff)
+		return
+	}
+	if err = m.Validate(); err != nil {
+		t.Errorf("OpenReader.Validate() err= %v", err)
+		return
+	}
+}
