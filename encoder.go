@@ -12,7 +12,7 @@ import (
 	xml3mf "github.com/qmuntal/go3mf/internal/xml"
 )
 
-const defaultFloatPrecision = 6
+const defaultFloatPrecision = 4
 
 // XMLEncoder is based on the encoding/xml.Encoder implementation.
 // It is modified to allow custom local namespaces and selfclosing nodes.
