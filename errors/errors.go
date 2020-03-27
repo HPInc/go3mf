@@ -129,6 +129,10 @@ func NewIndexed(element interface{}, index int, err error) error {
 	return &Error{Target: []Level{{element, index}}, Err: err}
 }
 
+func (e *Error) Unwrap() error {
+	return e.Err
+}
+
 func (e *Error) Error() string {
 	levels := make([]string, len(e.Target)+1)
 	levels[0] = e.Path
