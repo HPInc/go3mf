@@ -1,15 +1,71 @@
 package go3mf
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/xml"
 	"io"
 	"sort"
 	"strconv"
 	"strings"
+
+	xml3mf "github.com/qmuntal/go3mf/internal/xml"
 )
 
 const defaultFloatPrecision = 6
+
+// XMLEncoder is based on the encoding/xml.Encoder implementation.
+// It is modified to allow custom local namespaces and selfclosing nodes.
+type XMLEncoder struct {
+	floatPresicion int
+	relationships  []Relationship
+	p              xml3mf.Printer
+}
+
+// newXMLEncoder returns a new encoder that writes to w.
+func newXMLEncoder(w io.Writer, floatPresicion int) *XMLEncoder {
+	return &XMLEncoder{
+		floatPresicion: floatPresicion,
+		p:              xml3mf.Printer{Writer: bufio.NewWriter(w)},
+	}
+}
+
+// AddRelationship adds a relationship to the encoded model.
+// Duplicated relationships will be removed before encoding.
+func (enc *XMLEncoder) AddRelationship(r Relationship) {
+	enc.relationships = append(enc.relationships, r)
+}
+
+// FloatPresicion returns the float presicion to use
+// when encoding floats.
+func (enc *XMLEncoder) FloatPresicion() int {
+	return enc.floatPresicion
+}
+
+// EncodeToken writes the given XML token to the stream.
+func (enc *XMLEncoder) EncodeToken(t xml.Token) {
+	p := &enc.p
+	switch t := t.(type) {
+	case xml.StartElement:
+		p.WriteStart(&t)
+	case xml.EndElement:
+		p.WriteEnd(t.Name)
+	case xml.CharData:
+		xml.EscapeText(p, t)
+	}
+}
+
+// Flush flushes any buffered XML to the underlying writer.
+func (enc *XMLEncoder) Flush() error {
+	return enc.p.Flush()
+}
+
+// SetAutoClose define if a start token will be self closed.
+// Callers should not end the start token if the encode is in
+// auto close mode.
+func (enc *XMLEncoder) SetAutoClose(autoClose bool) {
+	enc.p.AutoClose = autoClose
+}
 
 type packagePart interface {
 	io.Writer
