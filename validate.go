@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	specerr "github.com/qmuntal/go3mf/errors"
+	"github.com/qmuntal/go3mf/errors"
 )
 
 func (m *Model) sortedChilds() []string {
@@ -20,72 +20,63 @@ func (m *Model) sortedChilds() []string {
 
 // Validate checks that the model is conformant with the 3MF spec.
 func (m *Model) Validate() error {
-	errs := []error{}
-	errs = append(errs, validateRelationship(m, m.RootRelationships, "")...)
+	errs := new(errors.ErrorList)
+	errs.Append(validateRelationship(m, m.RootRelationships, ""))
+	errs.Append(m.validateNamespaces())
 	rootPath := m.PathOrDefault()
-	if err := m.validateNamespaces(); err != nil {
-		errs = append(errs, err)
-	}
 	sortedChilds := m.sortedChilds()
 	for _, path := range sortedChilds {
 		c := m.Childs[path]
 		if path == rootPath {
-			errs = append(errs, specerr.ErrOPCDuplicatedModelName)
+			errs.Append(errors.ErrOPCDuplicatedModelName)
 		} else {
-			for _, err := range validateRelationship(m, c.Relationships, path) {
-				if err, ok := err.(*specerr.Error); ok {
-					err.Path = path
-				}
-				errs = append(errs, err)
-			}
+			errs.Append(validateRelationship(m, c.Relationships, path))
 		}
 	}
 
-	errs = append(errs, validateRelationship(m, m.Relationships, rootPath)...)
-	errs = append(errs, checkMetadadata(m, m.Metadata)...)
+	errs.Append(validateRelationship(m, m.Relationships, rootPath))
+	errs.Append(checkMetadadata(m, m.Metadata))
 
 	for _, ext := range m.Specs {
 		if ext, ok := ext.(SpecValidator); ok {
-			errs = append(errs, ext.ValidateModel(m)...)
+			errs.Append(ext.ValidateModel(m))
 		}
 	}
 
 	for _, path := range sortedChilds {
 		c := m.Childs[path]
-		for _, err := range c.Resources.validate(m, path) {
-			errs = append(errs, specerr.NewPath(c.Resources, path, err))
-		}
+		err := c.Resources.validate(m, path)
+		errs.Append(errors.NewPath(c.Resources, path, err))
 	}
-	for _, err := range m.Resources.validate(m, rootPath) {
-		errs = append(errs, specerr.New(m.Resources, err))
-	}
-	for _, err := range m.Build.validate(m, rootPath) {
-		errs = append(errs, specerr.New(m.Build, err))
-	}
-	return &specerr.ErrorList{Errors: errs}
+	err := m.Resources.validate(m, rootPath)
+	errs.Append(errors.New(m.Resources, err))
+
+	err = m.Build.validate(m, rootPath)
+	errs.Append(errors.New(m.Build, err))
+	return errs
 }
 
-func (item *Item) validate(m *Model, path string) []error {
-	var errs []error
+func (item *Item) validate(m *Model, path string) error {
+	errs := new(errors.ErrorList)
 	opath := item.ObjectPath(path)
 	if item.ObjectID == 0 {
-		errs = append(errs, &specerr.MissingFieldError{Name: attrObjectID})
+		errs.Append(&errors.MissingFieldError{Name: attrObjectID})
 	} else if obj, ok := m.FindObject(opath, item.ObjectID); ok {
 		if obj.ObjectType == ObjectTypeOther {
-			errs = append(errs, specerr.ErrOtherItem)
+			errs.Append(errors.ErrOtherItem)
 		}
 	} else {
-		errs = append(errs, specerr.ErrMissingResource)
+		errs.Append(errors.ErrMissingResource)
 	}
-	return append(errs, checkMetadadata(m, item.Metadata)...)
+	errs.Append(checkMetadadata(m, item.Metadata))
+	return errs
 }
 
-func (b *Build) validate(m *Model, path string) []error {
-	var errs []error
+func (b *Build) validate(m *Model, path string) error {
+	errs := new(errors.ErrorList)
 	for i, item := range b.Items {
-		for _, err := range item.validate(m, path) {
-			errs = append(errs, specerr.NewIndexed(item, i, err))
-		}
+		err := item.validate(m, path)
+		errs.Append(errors.NewIndexed(item, i, err))
 	}
 	return errs
 }
@@ -95,151 +86,146 @@ var allowedMetadataNames = [...]string{ // sorted
 	"licenseterms", "modificationdate", "rating", "title",
 }
 
-func (m *Metadata) validate(model *Model) []error {
+func (m *Metadata) validate(model *Model) error {
 	if m.Name.Local == "" {
-		return []error{&specerr.MissingFieldError{Name: attrName}}
+		return &errors.MissingFieldError{Name: attrName}
 	}
-	var errs []error
+	errs := new(errors.ErrorList)
 	if m.Name.Space == "" {
 		nm := strings.ToLower(m.Name.Local)
 		n := sort.SearchStrings(allowedMetadataNames[:], nm)
 		if n >= len(allowedMetadataNames) || allowedMetadataNames[n] != nm {
-			errs = append(errs, specerr.ErrMetadataName)
+			errs.Append(errors.ErrMetadataName)
 		}
 	} else {
 		if _, ok := model.Specs[m.Name.Space]; !ok {
-			errs = append(errs, specerr.ErrMetadataNamespace)
+			errs.Append(errors.ErrMetadataNamespace)
 		}
 	}
 	return errs
 }
 
-func checkMetadadata(model *Model, md []Metadata) []error {
-	var errs []error
+func checkMetadadata(model *Model, md []Metadata) error {
+	errs := new(errors.ErrorList)
 	names := make(map[xml.Name]struct{})
 	for i, m := range md {
-		for _, err := range m.validate(model) {
-			errs = append(errs, specerr.NewIndexed(m, i, err))
-		}
+		err := m.validate(model)
+		errs.Append(errors.NewIndexed(m, i, err))
 		if _, ok := names[m.Name]; ok {
-			errs = append(errs, specerr.NewIndexed(m, i, specerr.ErrMetadataDuplicated))
+			errs.Append(errors.NewIndexed(m, i, errors.ErrMetadataDuplicated))
 		}
 		names[m.Name] = struct{}{}
 	}
 	return errs
 }
 
-func (r *BaseMaterials) Validate(m *Model, path string) []error {
-	var errs []error
+func (r *BaseMaterials) Validate(m *Model, path string) error {
+	errs := new(errors.ErrorList)
 	if r.ID == 0 {
-		errs = append(errs, specerr.ErrMissingID)
+		errs.Append(errors.ErrMissingID)
 	}
 	if len(r.Materials) == 0 {
-		errs = append(errs, specerr.ErrEmptyResourceProps)
+		errs.Append(errors.ErrEmptyResourceProps)
 	}
 	for j, b := range r.Materials {
 		if b.Name == "" {
-			errs = append(errs, specerr.NewIndexed(b, j, &specerr.MissingFieldError{Name: attrName}))
+			errs.Append(errors.NewIndexed(b, j, &errors.MissingFieldError{Name: attrName}))
 		}
 		if b.Color == (color.RGBA{}) {
-			errs = append(errs, specerr.NewIndexed(b, j, &specerr.MissingFieldError{Name: attrDisplayColor}))
+			errs.Append(errors.NewIndexed(b, j, &errors.MissingFieldError{Name: attrDisplayColor}))
 		}
 	}
 	return errs
 }
 
-func (res *Resources) validate(m *Model, path string) []error {
-	var errs []error
+func (res *Resources) validate(m *Model, path string) error {
+	errs := new(errors.ErrorList)
 	assets := make(map[uint32]struct{})
 	for i, r := range res.Assets {
-		var aErrs []error
+		aErrs := new(errors.ErrorList)
 		id := r.Identify()
 		if id != 0 {
 			if _, ok := assets[id]; ok {
-				aErrs = append(aErrs, specerr.ErrDuplicatedID)
+				aErrs.Append(errors.ErrDuplicatedID)
 			}
 		}
 		assets[id] = struct{}{}
 
 		if r, ok := r.(*BaseMaterials); ok {
-			aErrs = append(aErrs, r.Validate(m, path)...)
+			aErrs.Append(r.Validate(m, path))
 		}
 
 		for _, ext := range m.Specs {
 			if ext, ok := ext.(SpecValidator); ok {
-				aErrs = append(aErrs, ext.ValidateAsset(m, path, r)...)
+				aErrs.Append(ext.ValidateAsset(m, path, r))
 			}
 		}
-		for _, err := range aErrs {
-			errs = append(errs, specerr.NewIndexed(r, i, err))
-		}
+		errs.Append(errors.NewIndexed(r, i, aErrs))
 	}
 	for i, r := range res.Objects {
 		if r.ID != 0 {
 			if _, ok := assets[r.ID]; ok {
-				errs = append(errs, specerr.NewIndexed(r, i, specerr.ErrDuplicatedID))
+				errs.Append(errors.NewIndexed(r, i, errors.ErrDuplicatedID))
 			}
 		}
 		assets[r.ID] = struct{}{}
-		for _, err := range r.Validate(m, path) {
-			errs = append(errs, specerr.NewIndexed(r, i, err))
-		}
+		err := r.Validate(m, path)
+		errs.Append(errors.NewIndexed(r, i, err))
 	}
 	return errs
 }
 
-func (r *Object) Validate(m *Model, path string) []error {
+func (r *Object) Validate(m *Model, path string) error {
 	res, _ := m.FindResources(path)
-	var errs []error
+	errs := new(errors.ErrorList)
 	if r.ID == 0 {
-		errs = append(errs, specerr.ErrMissingID)
+		errs.Append(errors.ErrMissingID)
 	}
 	if r.DefaultPIndex != 0 && r.DefaultPID == 0 {
-		errs = append(errs, &specerr.MissingFieldError{Name: attrPID})
+		errs.Append(&errors.MissingFieldError{Name: attrPID})
 	}
 	if (r.Mesh != nil && len(r.Components) > 0) || (r.Mesh == nil && len(r.Components) == 0) {
-		errs = append(errs, specerr.ErrInvalidObject)
+		errs.Append(errors.ErrInvalidObject)
 	}
 	if r.Mesh != nil {
 		if r.DefaultPID != 0 {
 			if a, ok := res.FindAsset(r.DefaultPID); ok {
 				if a, ok := a.(PropertyGroup); ok {
 					if int(r.DefaultPIndex) >= a.Len() {
-						errs = append(errs, specerr.ErrIndexOutOfBounds)
+						errs.Append(errors.ErrIndexOutOfBounds)
 					}
 				}
 			} else {
-				errs = append(errs, specerr.ErrMissingResource)
+				errs.Append(errors.ErrMissingResource)
 			}
 		}
-		for _, err := range r.validateMesh(m, path) {
-			errs = append(errs, specerr.New(r.Mesh, err))
-		}
+		err := r.validateMesh(m, path)
+		errs.Append(errors.New(r.Mesh, err))
 	}
 	if len(r.Components) > 0 {
 		if r.DefaultPID != 0 {
-			errs = append(errs, specerr.ErrComponentsPID)
+			errs.Append(errors.ErrComponentsPID)
 		}
-		errs = append(errs, r.validateComponents(m, path)...)
+		errs.Append(r.validateComponents(m, path))
 	}
 	for _, ext := range m.Specs {
 		if ext, ok := ext.(SpecValidator); ok {
-			errs = append(errs, ext.ValidateObject(m, path, r)...)
+			errs.Append(ext.ValidateObject(m, path, r))
 		}
 	}
 	return errs
 }
 
-func (r *Object) validateMesh(m *Model, path string) []error {
+func (r *Object) validateMesh(m *Model, path string) error {
 	res, _ := m.FindResources(path)
-	var errs []error
+	errs := new(errors.ErrorList)
 	switch r.ObjectType {
 	case ObjectTypeModel, ObjectTypeSolidSupport:
 		if len(r.Mesh.Vertices) < 3 {
-			errs = append(errs, specerr.ErrInsufficientVertices)
+			errs.Append(errors.ErrInsufficientVertices)
 		}
 		if len(r.Mesh.Triangles) <= 3 && len(r.Mesh.Any) == 0 {
-			errs = append(errs, specerr.ErrInsufficientTriangles)
+			errs.Append(errors.ErrInsufficientTriangles)
 		}
 	}
 
@@ -247,10 +233,10 @@ func (r *Object) validateMesh(m *Model, path string) []error {
 	for i, face := range r.Mesh.Triangles {
 		i0, i1, i2 := face.Indices[0], face.Indices[1], face.Indices[2]
 		if i0 == i1 || i0 == i2 || i1 == i2 {
-			errs = append(errs, specerr.NewIndexed(face, i, specerr.ErrDuplicatedIndices))
+			errs.Append(errors.NewIndexed(face, i, errors.ErrDuplicatedIndices))
 		}
 		if i0 >= nodeCount || i1 >= nodeCount || i2 >= nodeCount {
-			errs = append(errs, specerr.NewIndexed(face, i, specerr.ErrIndexOutOfBounds))
+			errs.Append(errors.NewIndexed(face, i, errors.ErrIndexOutOfBounds))
 		}
 		if face.PID != 0 {
 			if face.PID == r.DefaultPID && face.PIndices[0] == r.DefaultPIndex &&
@@ -261,28 +247,28 @@ func (r *Object) validateMesh(m *Model, path string) []error {
 				if a, ok := a.(PropertyGroup); ok {
 					l := a.Len()
 					if int(face.PIndices[0]) >= l || int(face.PIndices[1]) >= l || int(face.PIndices[2]) >= l {
-						errs = append(errs, specerr.NewIndexed(face, i, specerr.ErrIndexOutOfBounds))
+						errs.Append(errors.NewIndexed(face, i, errors.ErrIndexOutOfBounds))
 					}
 				}
 			} else {
-				errs = append(errs, specerr.NewIndexed(face, i, specerr.ErrMissingResource))
+				errs.Append(errors.NewIndexed(face, i, errors.ErrMissingResource))
 			}
 		}
 	}
 	return errs
 }
 
-func (r *Object) validateComponents(m *Model, path string) []error {
-	var errs []error
+func (r *Object) validateComponents(m *Model, path string) error {
+	errs := new(errors.ErrorList)
 	for j, c := range r.Components {
 		if c.ObjectID == 0 {
-			errs = append(errs, specerr.NewIndexed(c, j, &specerr.MissingFieldError{Name: attrObjectID}))
+			errs.Append(errors.NewIndexed(c, j, &errors.MissingFieldError{Name: attrObjectID}))
 		} else if ref, ok := m.FindObject(c.ObjectPath(path), c.ObjectID); ok {
 			if ref.ID == r.ID && c.ObjectPath(path) == path {
-				errs = append(errs, specerr.NewIndexed(c, j, specerr.ErrRecursion))
+				errs.Append(errors.NewIndexed(c, j, errors.ErrRecursion))
 			}
 		} else {
-			errs = append(errs, specerr.NewIndexed(c, j, specerr.ErrMissingResource))
+			errs.Append(errors.NewIndexed(c, j, errors.ErrMissingResource))
 		}
 	}
 	return errs
@@ -292,27 +278,27 @@ func (m *Model) validateNamespaces() error {
 	for _, ext := range m.Specs {
 		if ext.Required() {
 			if _, ok := ext.(*UnknownSpec); ok {
-				return specerr.ErrRequiredExt
+				return errors.ErrRequiredExt
 			}
 		}
 	}
 	return nil
 }
 
-func validateRelationship(m *Model, rels []Relationship, path string) []error {
-	var errs []error
+func validateRelationship(m *Model, rels []Relationship, path string) error {
+	errs := new(errors.ErrorList)
 	type partrel struct{ path, rel string }
 	visitedParts := make(map[partrel]struct{})
 	var hasPrintTicket bool
 	for i, r := range rels {
 		if r.Path == "" || r.Path[0] != '/' || strings.Contains(r.Path, "/.") {
-			errs = append(errs, specerr.NewIndexed(r, i, specerr.ErrOPCPartName))
+			errs.Append(errors.NewIndexed(r, i, errors.ErrOPCPartName))
 		} else {
 			if _, ok := findAttachment(m.Attachments, r.Path); !ok {
-				errs = append(errs, specerr.NewIndexed(r, i, specerr.ErrOPCRelTarget))
+				errs.Append(errors.NewIndexed(r, i, errors.ErrOPCRelTarget))
 			}
 			if _, ok := visitedParts[partrel{r.Path, r.Type}]; ok {
-				errs = append(errs, specerr.NewIndexed(r, i, specerr.ErrOPCDuplicatedRel))
+				errs.Append(errors.NewIndexed(r, i, errors.ErrOPCDuplicatedRel))
 			}
 			visitedParts[partrel{r.Path, r.Type}] = struct{}{}
 		}
@@ -320,12 +306,19 @@ func validateRelationship(m *Model, rels []Relationship, path string) []error {
 		case RelTypePrintTicket:
 			if a, ok := findAttachment(m.Attachments, r.Path); ok {
 				if a.ContentType != ContentTypePrintTicket {
-					errs = append(errs, specerr.NewIndexed(r, i, specerr.ErrOPCContentType))
+					errs.Append(errors.NewIndexed(r, i, errors.ErrOPCContentType))
 				}
 				if hasPrintTicket {
-					errs = append(errs, specerr.NewIndexed(r, i, specerr.ErrOPCDuplicatedTicket))
+					errs.Append(errors.NewIndexed(r, i, errors.ErrOPCDuplicatedTicket))
 				}
 				hasPrintTicket = true
+			}
+		}
+	}
+	if path != "" {
+		for _, err := range errs.Errors {
+			if err, ok := err.(*errors.Error); ok {
+				err.Path = path
 			}
 		}
 	}

@@ -89,33 +89,44 @@ type Error struct {
 	Path   string
 }
 
-func New(element interface{}, err error) *Error {
+func New(element interface{}, err error) error {
 	if e, ok := err.(*Error); ok {
 		e.Target = append(e.Target, Level{element, -1})
+		return e
+	} else if e, ok := err.(*ErrorList); ok {
+		for i, e1 := range e.Errors {
+			e.Errors[i] = New(element, e1)
+		}
 		return e
 	}
 	return &Error{Target: []Level{{element, -1}}, Err: err}
 }
 
-func NewPath(element interface{}, path string, err error) *Error {
+func NewPath(element interface{}, path string, err error) error {
 	if e, ok := err.(*Error); ok {
 		e.Path = path
 		e.Target = append(e.Target, Level{element, -1})
+		return e
+	} else if e, ok := err.(*ErrorList); ok {
+		for i, e1 := range e.Errors {
+			e.Errors[i] = NewPath(element, path, e1)
+		}
 		return e
 	}
 	return &Error{Target: []Level{{element, -1}}, Err: err, Path: path}
 }
 
-func NewIndexed(element interface{}, index int, err error) *Error {
+func NewIndexed(element interface{}, index int, err error) error {
 	if e, ok := err.(*Error); ok {
 		e.Target = append(e.Target, Level{element, index})
 		return e
+	} else if e, ok := err.(*ErrorList); ok {
+		for i, e1 := range e.Errors {
+			e.Errors[i] = NewIndexed(element, index, e1)
+		}
+		return e
 	}
 	return &Error{Target: []Level{{element, index}}, Err: err}
-}
-
-func (e *Error) Unwrap() error {
-	return e.Err
 }
 
 func (e *Error) Error() string {
@@ -161,8 +172,21 @@ type ErrorList struct {
 	Errors []error
 }
 
-func (e *ErrorList) Append(err ...error) {
-	e.Errors = append(e.Errors, err...)
+func NewErrorList(errs []error) *ErrorList {
+	return &ErrorList{Errors: errs}
+}
+
+func (e *ErrorList) Append(errs ...error) {
+	for _, err := range errs {
+		if err == nil {
+			continue
+		}
+		if err1, ok := err.(*ErrorList); ok {
+			e.Append(err1.Errors...)
+		} else {
+			e.Errors = append(e.Errors, err)
+		}
+	}
 }
 
 func (e *ErrorList) Len() int {

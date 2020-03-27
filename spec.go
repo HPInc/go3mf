@@ -130,7 +130,7 @@ func (e Marshalers) encode(x *XMLEncoder) error {
 }
 
 type SpecValidator interface {
-	ValidateModel(*Model) []error
-	ValidateAsset(*Model, string, Asset) []error
-	ValidateObject(*Model, string, *Object) []error
+	ValidateModel(*Model) error
+	ValidateAsset(*Model, string, Asset) error
+	ValidateObject(*Model, string, *Object) error
 }

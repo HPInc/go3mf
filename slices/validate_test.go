@@ -7,7 +7,7 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/qmuntal/go3mf"
-	specerr "github.com/qmuntal/go3mf/errors"
+	"github.com/qmuntal/go3mf/errors"
 )
 
 func TestValidate(t *testing.T) {
@@ -29,7 +29,7 @@ func TestValidate(t *testing.T) {
 					}}},
 				}},
 		}, []error{
-			fmt.Errorf("Resources@Object#0: %v", specerr.ErrInvalidObject),
+			fmt.Errorf("Resources@Object#0: %v", errors.ErrInvalidObject),
 		}},
 		{"child", &go3mf.Model{Childs: map[string]*go3mf.ChildModel{
 			"/other.model": {Resources: go3mf.Resources{Assets: []go3mf.Asset{
@@ -39,8 +39,8 @@ func TestValidate(t *testing.T) {
 				&SliceStack{ID: 2},
 			}}},
 		}}, []error{
-			fmt.Errorf("/other.model@Resources@SliceStack#0: %v", specerr.ErrSlicesAndRefs),
-			fmt.Errorf("/that.model@Resources@SliceStack#0: %v", specerr.ErrSlicesAndRefs),
+			fmt.Errorf("/other.model@Resources@SliceStack#0: %v", errors.ErrSlicesAndRefs),
+			fmt.Errorf("/that.model@Resources@SliceStack#0: %v", errors.ErrSlicesAndRefs),
 		}},
 		{"slicestack", &go3mf.Model{Resources: go3mf.Resources{
 			Assets: []go3mf.Asset{&SliceStack{
@@ -56,13 +56,13 @@ func TestValidate(t *testing.T) {
 				},
 			}},
 		}}, []error{
-			fmt.Errorf("Resources@SliceStack#0@Slice#0: %v", &specerr.MissingFieldError{Name: attrZTop}),
-			fmt.Errorf("Resources@SliceStack#0@Slice#1: %v", specerr.ErrSliceSmallTopZ),
-			fmt.Errorf("Resources@SliceStack#0@Slice#1: %v", specerr.ErrSliceInsufficientVertices),
-			fmt.Errorf("Resources@SliceStack#0@Slice#1: %v", specerr.ErrSliceInsufficientPolygons),
-			fmt.Errorf("Resources@SliceStack#0@Slice#2@Polygon#0: %v", specerr.ErrSliceInsufficientSegments),
-			fmt.Errorf("Resources@SliceStack#0@Slice#3: %v", specerr.ErrSliceNoMonotonic),
-			fmt.Errorf("Resources@SliceStack#0@Slice#4: %v", specerr.ErrSliceNoMonotonic),
+			fmt.Errorf("Resources@SliceStack#0@Slice#0: %v", &errors.MissingFieldError{Name: attrZTop}),
+			fmt.Errorf("Resources@SliceStack#0@Slice#1: %v", errors.ErrSliceSmallTopZ),
+			fmt.Errorf("Resources@SliceStack#0@Slice#1: %v", errors.ErrSliceInsufficientVertices),
+			fmt.Errorf("Resources@SliceStack#0@Slice#1: %v", errors.ErrSliceInsufficientPolygons),
+			fmt.Errorf("Resources@SliceStack#0@Slice#2@Polygon#0: %v", errors.ErrSliceInsufficientSegments),
+			fmt.Errorf("Resources@SliceStack#0@Slice#3: %v", errors.ErrSliceNoMonotonic),
+			fmt.Errorf("Resources@SliceStack#0@Slice#4: %v", errors.ErrSliceNoMonotonic),
 		}},
 		{"sliceref", &go3mf.Model{
 			Childs: map[string]*go3mf.ChildModel{
@@ -87,13 +87,13 @@ func TestValidate(t *testing.T) {
 					},
 					}},
 			}}, []error{
-			fmt.Errorf("Resources@SliceStack#1@SliceRef#0: %v", &specerr.MissingFieldError{Name: attrSlicePath}),
-			fmt.Errorf("Resources@SliceStack#1@SliceRef#0: %v", &specerr.MissingFieldError{Name: attrSliceRefID}),
-			fmt.Errorf("Resources@SliceStack#1@SliceRef#1: %v", specerr.ErrSliceRefSamePart),
-			fmt.Errorf("Resources@SliceStack#1@SliceRef#2: %v", specerr.ErrMissingResource),
-			fmt.Errorf("Resources@SliceStack#1@SliceRef#3: %v", specerr.ErrSliceRefRef),
-			fmt.Errorf("Resources@SliceStack#1@SliceRef#4: %v", specerr.ErrNonSliceStack),
-			fmt.Errorf("Resources@SliceStack#1@SliceRef#6: %v", specerr.ErrSliceNoMonotonic),
+			fmt.Errorf("Resources@SliceStack#1@SliceRef#0: %v", &errors.MissingFieldError{Name: attrSlicePath}),
+			fmt.Errorf("Resources@SliceStack#1@SliceRef#0: %v", &errors.MissingFieldError{Name: attrSliceRefID}),
+			fmt.Errorf("Resources@SliceStack#1@SliceRef#1: %v", errors.ErrSliceRefSamePart),
+			fmt.Errorf("Resources@SliceStack#1@SliceRef#2: %v", errors.ErrMissingResource),
+			fmt.Errorf("Resources@SliceStack#1@SliceRef#3: %v", errors.ErrSliceRefRef),
+			fmt.Errorf("Resources@SliceStack#1@SliceRef#4: %v", errors.ErrNonSliceStack),
+			fmt.Errorf("Resources@SliceStack#1@SliceRef#6: %v", errors.ErrSliceNoMonotonic),
 		}},
 		{"info", &go3mf.Model{Build: go3mf.Build{Items: []*go3mf.Item{
 			{ObjectID: 7},
@@ -149,18 +149,18 @@ func TestValidate(t *testing.T) {
 						SliceStackID: 11,
 					}}},
 				}}}, []error{
-			fmt.Errorf("Resources@Object#0@Mesh: %v", specerr.ErrInsufficientVertices),
-			fmt.Errorf("Resources@Object#0@Mesh: %v", specerr.ErrInsufficientTriangles),
-			fmt.Errorf("Resources@Object#0: %v", specerr.ErrMissingResource),
-			fmt.Errorf("Resources@Object#1: %v", specerr.ErrSliceInvalidTranform),
-			fmt.Errorf("Resources@Object#1: %v", specerr.ErrSliceExtRequired),
-			fmt.Errorf("Resources@Object#2: %v", &specerr.MissingFieldError{Name: attrSliceRefID}),
-			fmt.Errorf("Resources@Object#3: %v", specerr.ErrNonSliceStack),
-			fmt.Errorf("Resources@Object#4: %v", specerr.ErrSliceInvalidTranform),
-			fmt.Errorf("Resources@Object#4: %v", specerr.ErrSlicePolygonNotClosed),
-			fmt.Errorf("Resources@Object#5: %v", specerr.ErrSliceInvalidTranform),
-			fmt.Errorf("Resources@Object#5: %v", specerr.ErrSlicePolygonNotClosed),
-			fmt.Errorf("Resources@Object#6@Component#1: %v", specerr.ErrRecursion),
+			fmt.Errorf("Resources@Object#0@Mesh: %v", errors.ErrInsufficientVertices),
+			fmt.Errorf("Resources@Object#0@Mesh: %v", errors.ErrInsufficientTriangles),
+			fmt.Errorf("Resources@Object#0: %v", errors.ErrMissingResource),
+			fmt.Errorf("Resources@Object#1: %v", errors.ErrSliceInvalidTranform),
+			fmt.Errorf("Resources@Object#1: %v", errors.ErrSliceExtRequired),
+			fmt.Errorf("Resources@Object#2: %v", &errors.MissingFieldError{Name: attrSliceRefID}),
+			fmt.Errorf("Resources@Object#3: %v", errors.ErrNonSliceStack),
+			fmt.Errorf("Resources@Object#4: %v", errors.ErrSliceInvalidTranform),
+			fmt.Errorf("Resources@Object#4: %v", errors.ErrSlicePolygonNotClosed),
+			fmt.Errorf("Resources@Object#5: %v", errors.ErrSliceInvalidTranform),
+			fmt.Errorf("Resources@Object#5: %v", errors.ErrSlicePolygonNotClosed),
+			fmt.Errorf("Resources@Object#6@Component#1: %v", errors.ErrRecursion),
 		}},
 	}
 	for _, tt := range tests {
@@ -169,7 +169,7 @@ func TestValidate(t *testing.T) {
 				tt.model.WithSpec(&Spec{})
 			}
 			got := tt.model.Validate()
-			if diff := deep.Equal(got.(*specerr.ErrorList).Errors, tt.want); diff != nil {
+			if diff := deep.Equal(got.(*errors.ErrorList).Errors, tt.want); diff != nil {
 				t.Errorf("Validate() = %v", diff)
 			}
 		})

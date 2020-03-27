@@ -52,21 +52,21 @@ func (f *fakeSpec) DecodeAttribute(s *Scanner, parentNode interface{}, attr xml.
 	}
 }
 
-func (f *fakeSpec) ValidateObject(_ *Model, _ string, _ *Object) []error {
+func (f *fakeSpec) ValidateObject(_ *Model, _ string, _ *Object) error {
 	return nil
 }
 
-func (f *fakeSpec) ValidateAsset(_ *Model, _ string, _ Asset) []error {
+func (f *fakeSpec) ValidateAsset(_ *Model, _ string, _ Asset) error {
 	return nil
 }
 
-func (f *fakeSpec) ValidateModel(m *Model) []error {
+func (f *fakeSpec) ValidateModel(m *Model) error {
 	var errs []error
 	var a *fakeAttr
 	if m.Build.AnyAttr.Get(&a) {
 		errs = append(errs, errors.New("Build: fake"))
 	}
-	return errs
+	return specerr.NewErrorList(errs)
 }
 
 type fakeAsset struct {

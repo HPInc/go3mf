@@ -4,51 +4,51 @@ import (
 	"math"
 
 	"github.com/qmuntal/go3mf"
-	specerr "github.com/qmuntal/go3mf/errors"
+	"github.com/qmuntal/go3mf/errors"
 )
 
 func validTransform(t go3mf.Matrix) bool {
 	return t[2] == 0 && t[6] == 0 && t[8] == 0 && t[9] == 0 && t[10] == 1
 }
 
-func (e *Spec) ValidateModel(_ *go3mf.Model) []error {
+func (e *Spec) ValidateModel(_ *go3mf.Model) error {
 	return nil
 }
 
-func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) []error {
+func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) error {
 	var sti *SliceStackInfo
 	if !obj.AnyAttr.Get(&sti) {
 		return nil
 	}
-	var errs []error
+	errs := new(errors.ErrorList)
 	res, _ := m.FindResources(path)
 	if sti.SliceStackID == 0 {
-		errs = append(errs, &specerr.MissingFieldError{Name: attrSliceRefID})
+		errs.Append(&errors.MissingFieldError{Name: attrSliceRefID})
 	} else if r, ok := res.FindAsset(sti.SliceStackID); ok {
 		if r, ok := r.(*SliceStack); ok {
 			if !validateBuildTransforms(m, path, obj.ID) {
-				errs = append(errs, specerr.ErrSliceInvalidTranform)
+				errs.Append(errors.ErrSliceInvalidTranform)
 			}
 			if obj.ObjectType == go3mf.ObjectTypeModel || obj.ObjectType == go3mf.ObjectTypeSolidSupport {
 				if !checkAllClosed(m, r) {
-					errs = append(errs, specerr.ErrSlicePolygonNotClosed)
+					errs.Append(errors.ErrSlicePolygonNotClosed)
 				}
 			}
 		} else {
-			errs = append(errs, specerr.ErrNonSliceStack)
+			errs.Append(errors.ErrNonSliceStack)
 		}
 	} else {
-		errs = append(errs, specerr.ErrMissingResource)
+		errs.Append(errors.ErrMissingResource)
 	}
 	if sti.SliceResolution == ResolutionLow {
 		if !e.Required() {
-			errs = append(errs, specerr.ErrSliceExtRequired)
+			errs.Append(errors.ErrSliceExtRequired)
 		}
 	}
 	return errs
 }
 
-func (e *Spec) ValidateAsset(m *go3mf.Model, path string, r go3mf.Asset) []error {
+func (e *Spec) ValidateAsset(m *go3mf.Model, path string, r go3mf.Asset) error {
 	var (
 		st *SliceStack
 		ok bool
@@ -56,65 +56,64 @@ func (e *Spec) ValidateAsset(m *go3mf.Model, path string, r go3mf.Asset) []error
 	if st, ok = r.(*SliceStack); !ok {
 		return nil
 	}
-	var errs []error
+	errs := new(errors.ErrorList)
 	if (len(st.Slices) != 0 && len(st.Refs) != 0) ||
 		(len(st.Slices) == 0 && len(st.Refs) == 0) {
-		errs = append(errs, specerr.ErrSlicesAndRefs)
+		errs.Append(errors.ErrSlicesAndRefs)
 	}
-	errs = append(errs, st.validateRefs(m, path)...)
-	return append(errs, st.validateSlices()...)
+	errs.Append(st.validateRefs(m, path))
+	errs.Append(st.validateSlices())
+	return errs
 }
 
-func (r *SliceStack) validateSlices() []error {
-	var errs []error
+func (r *SliceStack) validateSlices() error {
+	errs := new(errors.ErrorList)
 	lastTopZ := float32(-math.MaxFloat32)
 	for j, slice := range r.Slices {
 		if slice.TopZ == 0 {
-			errs = append(errs, specerr.NewIndexed(slice, j, &specerr.MissingFieldError{Name: attrZTop}))
+			errs.Append(errors.NewIndexed(slice, j, &errors.MissingFieldError{Name: attrZTop}))
 		} else if slice.TopZ < r.BottomZ {
-			errs = append(errs, specerr.NewIndexed(slice, j, specerr.ErrSliceSmallTopZ))
+			errs.Append(errors.NewIndexed(slice, j, errors.ErrSliceSmallTopZ))
 		}
 		if slice.TopZ <= lastTopZ {
-			errs = append(errs, specerr.NewIndexed(slice, j, specerr.ErrSliceNoMonotonic))
+			errs.Append(errors.NewIndexed(slice, j, errors.ErrSliceNoMonotonic))
 		}
 		lastTopZ = slice.TopZ
 		if len(slice.Polygons) == 0 && len(slice.Vertices) == 0 {
 			continue
 		}
 		if len(slice.Vertices) < 2 {
-			errs = append(errs, specerr.NewIndexed(slice, j, specerr.ErrSliceInsufficientVertices))
+			errs.Append(errors.NewIndexed(slice, j, errors.ErrSliceInsufficientVertices))
 		}
 		if len(slice.Polygons) == 0 {
-			errs = append(errs, specerr.NewIndexed(slice, j, specerr.ErrSliceInsufficientPolygons))
+			errs.Append(errors.NewIndexed(slice, j, errors.ErrSliceInsufficientPolygons))
 		}
-		var perrs []error
+		perrs := new(errors.ErrorList)
 		for k, p := range slice.Polygons {
 			if len(p.Segments) < 1 {
-				perrs = append(perrs, specerr.NewIndexed(p, k, specerr.ErrSliceInsufficientSegments))
+				perrs.Append(errors.NewIndexed(p, k, errors.ErrSliceInsufficientSegments))
 			}
 		}
-		for _, err := range perrs {
-			errs = append(errs, specerr.NewIndexed(slice, j, err))
-		}
+		errs.Append(errors.NewIndexed(slice, j, perrs))
 	}
 	return errs
 }
 
-func (r *SliceStack) validateRefs(m *go3mf.Model, path string) []error {
-	var errs []error
+func (r *SliceStack) validateRefs(m *go3mf.Model, path string) error {
+	errs := new(errors.ErrorList)
 	lastTopZ := float32(-math.MaxFloat32)
 	for i, ref := range r.Refs {
 		valid := true
 		if ref.Path == "" {
 			valid = false
-			errs = append(errs, specerr.NewIndexed(ref, i, &specerr.MissingFieldError{Name: attrSlicePath}))
+			errs.Append(errors.NewIndexed(ref, i, &errors.MissingFieldError{Name: attrSlicePath}))
 		} else if ref.Path == path {
 			valid = false
-			errs = append(errs, specerr.NewIndexed(ref, i, specerr.ErrSliceRefSamePart))
+			errs.Append(errors.NewIndexed(ref, i, errors.ErrSliceRefSamePart))
 		}
 		if ref.SliceStackID == 0 {
 			valid = false
-			errs = append(errs, specerr.NewIndexed(ref, i, &specerr.MissingFieldError{Name: attrSliceRefID}))
+			errs.Append(errors.NewIndexed(ref, i, &errors.MissingFieldError{Name: attrSliceRefID}))
 		}
 		if !valid {
 			continue
@@ -122,19 +121,19 @@ func (r *SliceStack) validateRefs(m *go3mf.Model, path string) []error {
 		if st, ok := m.FindAsset(ref.Path, ref.SliceStackID); ok {
 			if st, ok := st.(*SliceStack); ok {
 				if len(st.Refs) != 0 {
-					errs = append(errs, specerr.NewIndexed(ref, i, specerr.ErrSliceRefRef))
+					errs.Append(errors.NewIndexed(ref, i, errors.ErrSliceRefRef))
 				}
 				if len(st.Slices) > 0 && st.Slices[0].TopZ <= lastTopZ {
-					errs = append(errs, specerr.NewIndexed(ref, i, specerr.ErrSliceNoMonotonic))
+					errs.Append(errors.NewIndexed(ref, i, errors.ErrSliceNoMonotonic))
 				}
 				if len(st.Slices) > 0 {
 					lastTopZ = st.Slices[len(st.Slices)-1].TopZ
 				}
 			} else {
-				errs = append(errs, specerr.NewIndexed(ref, i, specerr.ErrNonSliceStack))
+				errs.Append(errors.NewIndexed(ref, i, errors.ErrNonSliceStack))
 			}
 		} else {
-			errs = append(errs, specerr.NewIndexed(ref, i, specerr.ErrMissingResource))
+			errs.Append(errors.NewIndexed(ref, i, errors.ErrMissingResource))
 		}
 	}
 	return errs
