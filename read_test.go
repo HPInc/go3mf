@@ -2,7 +2,6 @@ package go3mf
 
 import (
 	"bytes"
-	"compress/flate"
 	"context"
 	"encoding/xml"
 	"errors"
@@ -427,7 +426,6 @@ func TestDecoder_processRootModel(t *testing.T) {
 	t.Run("base", func(t *testing.T) {
 		d := new(Decoder)
 		d.Strict = true
-		d.SetDecompressor(func(r io.Reader) io.ReadCloser { return flate.NewReader(r) })
 		d.SetXMLDecoder(func(r io.Reader) XMLDecoder { return xml.NewDecoder(r) })
 		got.WithSpec(&fakeSpec{})
 		if err := d.processRootModel(context.Background(), rootFile, got); err != nil {
@@ -657,7 +655,6 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 	t.Run("base", func(t *testing.T) {
 		d := new(Decoder)
 		d.Strict = false
-		d.SetDecompressor(func(r io.Reader) io.ReadCloser { return flate.NewReader(r) })
 		d.SetXMLDecoder(func(r io.Reader) XMLDecoder { return xml.NewDecoder(r) })
 		got.WithSpec(&fakeSpec{})
 		err := d.processRootModel(context.Background(), rootFile, got)

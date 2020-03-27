@@ -10,8 +10,7 @@ The 3D Manufacturing Format (3MF) is a 3D printing format that allows design app
 
 ## Features
 * High parsing speed and moderate memory consumption
-  * [x] Customizable XML reader, by default using the standard encode/xml.
-  * [x] Customizable ZIP Flate method, by default using the standard flate/zip.
+  * [x] Optimized xml decoding for dealing with 3MF files.
   * [x] Concurrent 3MF parsing when using Production spec and multiple model files.
 * Full 3MF Core spec implementation.
 * Clean API.

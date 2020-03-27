@@ -179,11 +179,6 @@ func (d *Decoder) SetXMLDecoder(x func(r io.Reader) XMLDecoder) {
 	d.x = x
 }
 
-// SetDecompressor sets or overrides a custom decompressor for deflating the zip package.
-func (d *Decoder) SetDecompressor(dcomp func(r io.Reader) io.ReadCloser) {
-	d.flate = dcomp
-}
-
 // DecodeContext reads the 3mf file and unmarshall its content into the model.
 func (d *Decoder) DecodeContext(ctx context.Context, model *Model) error {
 	rootFile, err := d.processOPC(model)
