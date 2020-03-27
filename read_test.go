@@ -426,7 +426,6 @@ func TestDecoder_processRootModel(t *testing.T) {
 	t.Run("base", func(t *testing.T) {
 		d := new(Decoder)
 		d.Strict = true
-		d.SetXMLDecoder(func(r io.Reader) XMLDecoder { return xml.NewDecoder(r) })
 		got.WithSpec(&fakeSpec{})
 		if err := d.processRootModel(context.Background(), rootFile, got); err != nil {
 			t.Errorf("Decoder.processRootModel() unexpected error = %v", err)
@@ -517,30 +516,30 @@ func Test_modelFile_Decode(t *testing.T) {
 	checkEveryBytes = 108
 	type args struct {
 		ctx context.Context
-		x   *xml.Decoder
+		r   io.Reader
 	}
 	tests := []struct {
 		name    string
 		args    args
 		wantErr bool
 	}{
-		{"nochild", args{context.Background(), xml.NewDecoder(bytes.NewBufferString(`
+		{"nochild", args{context.Background(), bytes.NewBufferString(`
 			<a></a>
 			<b></b>
-		`))}, false},
-		{"eof", args{context.Background(), xml.NewDecoder(bytes.NewBufferString(`
+		`)}, false},
+		{"eof", args{context.Background(), bytes.NewBufferString(`
 			<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">
 				<build></build>
-		`))}, true},
-		{"canceled", args{ctx, xml.NewDecoder(bytes.NewBufferString(`
+		`)}, true},
+		{"canceled", args{ctx, bytes.NewBufferString(`
 			<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">
 				<build></build>
 			</model>
-		`))}, true},
+		`)}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if _, err := decodeModelFile(tt.args.ctx, tt.args.x, new(Model), "", true, false); (err != nil) != tt.wantErr {
+			if _, err := decodeModelFile(tt.args.ctx, tt.args.r, new(Model), "", true, false); (err != nil) != tt.wantErr {
 				t.Errorf("modelFile.Decode() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -655,7 +654,6 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 	t.Run("base", func(t *testing.T) {
 		d := new(Decoder)
 		d.Strict = false
-		d.SetXMLDecoder(func(r io.Reader) XMLDecoder { return xml.NewDecoder(r) })
 		got.WithSpec(&fakeSpec{})
 		err := d.processRootModel(context.Background(), rootFile, got)
 		if diff := deep.Equal(err, want); diff != nil {

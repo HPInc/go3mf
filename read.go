@@ -11,18 +11,11 @@ import (
 	"sort"
 	"strings"
 	"sync"
+
+	xml3mf "github.com/qmuntal/go3mf/internal/xml"
 )
 
 var checkEveryBytes = int64(4 * 1024 * 1024)
-
-// A XMLDecoder is anything that can decode a stream of XML tokens, including a Decoder.
-type XMLDecoder interface {
-	xml.TokenReader
-	// Skip reads tokens until it has consumed the end element matching the most recent start element already consumed.
-	Skip() error
-	// InputOffset returns the input stream byte offset of the current decoder position.
-	InputOffset() int64
-}
 
 type packageFile interface {
 	Name() string
@@ -77,7 +70,8 @@ func (d *topLevelDecoder) Child(name xml.Name) (child NodeDecoder) {
 	return
 }
 
-func decodeModelFile(ctx context.Context, x XMLDecoder, model *Model, path string, isRoot, strict bool) (*Scanner, error) {
+func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string, isRoot, strict bool) (*Scanner, error) {
+	x := xml3mf.NewDecoder(r)
 	scanner := Scanner{
 		extensionDecoder: make(map[string]SpecDecoder),
 		IsRoot:           isRoot,
@@ -156,7 +150,6 @@ func decodeModelFile(ctx context.Context, x XMLDecoder, model *Model, path strin
 type Decoder struct {
 	Strict        bool
 	p             packageReader
-	x             func(r io.Reader) XMLDecoder
 	flate         func(r io.Reader) io.ReadCloser
 	nonRootModels []packageFile
 }
@@ -174,11 +167,6 @@ func (d *Decoder) Decode(model *Model) error {
 	return d.DecodeContext(context.Background(), model)
 }
 
-// SetXMLDecoder sets the XML decoder to use when reading XML files.
-func (d *Decoder) SetXMLDecoder(x func(r io.Reader) XMLDecoder) {
-	d.x = x
-}
-
 // DecodeContext reads the 3mf file and unmarshall its content into the model.
 func (d *Decoder) DecodeContext(ctx context.Context, model *Model) error {
 	rootFile, err := d.processOPC(model)
@@ -189,13 +177,6 @@ func (d *Decoder) DecodeContext(ctx context.Context, model *Model) error {
 		return err
 	}
 	return d.processRootModel(ctx, rootFile, model)
-}
-
-func (d *Decoder) tokenReader(r io.Reader) XMLDecoder {
-	if d.x == nil {
-		return xml.NewDecoder(r)
-	}
-	return d.x(r)
 }
 
 // UnmarshalModel fills a model with the data of a root model file
@@ -212,7 +193,7 @@ func (d *Decoder) processRootModel(ctx context.Context, rootFile packageFile, mo
 		return err
 	}
 	defer f.Close()
-	scanner, err := decodeModelFile(ctx, d.tokenReader(f), model, rootFile.Name(), true, d.Strict)
+	scanner, err := decodeModelFile(ctx, f, model, rootFile.Name(), true, d.Strict)
 	if err != nil {
 		return err
 	}
@@ -348,7 +329,7 @@ func (d *Decoder) readChildModel(ctx context.Context, i int, model *Model) (*Sca
 		return nil, err
 	}
 	defer file.Close()
-	scanner, err := decodeModelFile(ctx, d.tokenReader(file), model, attachment.Name(), false, d.Strict)
+	scanner, err := decodeModelFile(ctx, file, model, attachment.Name(), false, d.Strict)
 	return scanner, err
 }
 
