@@ -102,8 +102,6 @@ func TestDecode(t *testing.T) {
 			t.Errorf("DecodeRawModel() unexpected error = %v", err)
 			return
 		}
-		deep.CompareUnexportedFields = true
-		deep.MaxDepth = 20
 		if diff := deep.Equal(got, want); diff != nil {
 			t.Errorf("DecodeRawModel() = %v", diff)
 			return

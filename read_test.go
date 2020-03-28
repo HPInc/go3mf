@@ -431,8 +431,6 @@ func TestDecoder_processRootModel(t *testing.T) {
 			t.Errorf("Decoder.processRootModel() unexpected error = %v", err)
 			return
 		}
-		deep.CompareUnexportedFields = true
-		deep.MaxDepth = 20
 		if diff := deep.Equal(got, want); diff != nil {
 			t.Errorf("Decoder.processRootModel() = %v", diff)
 			return
@@ -481,8 +479,6 @@ func TestDecoder_processNonRootModels(t *testing.T) {
 				t.Errorf("Decoder.processNonRootModels() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			deep.CompareUnexportedFields = true
-			deep.MaxDepth = 20
 			if diff := deep.Equal(tt.model, tt.want); diff != nil {
 				t.Errorf("Decoder.processNonRootModels() = %v", diff)
 				return
