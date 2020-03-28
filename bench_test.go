@@ -8,7 +8,23 @@ func BenchmarkUnmarshalModel(b *testing.B) {
 		m := new(Model)
 		err := UnmarshalModel(bt, m)
 		if err != nil {
-			b.Errorf("UnmarshalModel err %v", err)
+			b.Errorf("UnmarshalModel err = %v", err)
+		}
+	}
+}
+
+func BenchmarkModel_Validate(b *testing.B) {
+	bt := []byte(cubeModel)
+	m := new(Model)
+	err := UnmarshalModel(bt, m)
+	if err != nil {
+		b.Errorf("Model_Validate err = %v", err)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		err = m.Validate()
+		if err != nil {
+			b.Errorf("Model_Validate err = %v", err)
 		}
 	}
 }
