@@ -2,7 +2,7 @@ package production
 
 import (
 	"github.com/qmuntal/go3mf"
-	specerr "github.com/qmuntal/go3mf/errors"
+	"github.com/qmuntal/go3mf/errors"
 )
 
 func (e *Spec) ValidateAsset(_ *go3mf.Model, _ string, _ go3mf.Asset) error {
@@ -12,65 +12,69 @@ func (e *Spec) ValidateAsset(_ *go3mf.Model, _ string, _ go3mf.Asset) error {
 func (e *Spec) ValidateModel(m *go3mf.Model) error {
 	var (
 		u    *UUID
-		errs = new(specerr.ErrorList)
+		errs error
 	)
 	if !m.Build.AnyAttr.Get(&u) {
-		errs.Append(specerr.New(m.Build, &specerr.MissingFieldError{Name: attrProdUUID}))
+		errs = errors.Append(errs, errors.New(m.Build, &errors.MissingFieldError{Name: attrProdUUID}))
 	} else if validateUUID(string(*u)) != nil {
-		errs.Append(specerr.New(m.Build, specerr.ErrUUID))
+		errs = errors.Append(errs, errors.New(m.Build, errors.ErrUUID))
 	}
 	for i, item := range m.Build.Items {
-		iErrs := new(specerr.ErrorList)
+		var iErrs error
 		var p *PathUUID
 		if !item.AnyAttr.Get(&p) {
-			iErrs.Append(&specerr.MissingFieldError{Name: attrProdUUID})
+			iErrs = errors.Append(iErrs, &errors.MissingFieldError{Name: attrProdUUID})
 		} else {
-			iErrs.Append(e.validatePathUUID(m, "", p))
+			iErrs = errors.Append(iErrs, e.validatePathUUID(m, "", p))
 		}
-		errs.Append(specerr.New(m.Build, specerr.NewIndexed(item, i, iErrs)))
+		if iErrs != nil {
+			errs = errors.Append(errs, errors.New(m.Build, errors.NewIndexed(item, i, iErrs)))
+		}
 	}
-	return errs.ErrorOrNil()
+	return errs
 }
 
 func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) error {
 	var (
 		u    *UUID
-		errs = new(specerr.ErrorList)
+		errs error
 	)
 	if !obj.AnyAttr.Get(&u) {
-		errs.Append(&specerr.MissingFieldError{Name: attrProdUUID})
+		errs = errors.Append(errs, &errors.MissingFieldError{Name: attrProdUUID})
 	} else if validateUUID(string(*u)) != nil {
-		errs.Append(specerr.ErrUUID)
+		errs = errors.Append(errs, errors.ErrUUID)
 	}
 	var p *PathUUID
 	for i, c := range obj.Components {
-		cErrs := new(specerr.ErrorList)
+		var cErrs error
 		if !c.AnyAttr.Get(&p) {
-			cErrs.Append(&specerr.MissingFieldError{Name: attrProdUUID})
+			cErrs = errors.Append(cErrs, &errors.MissingFieldError{Name: attrProdUUID})
 		} else {
-			cErrs.Append(e.validatePathUUID(m, path, p))
+			cErrs = errors.Append(cErrs, e.validatePathUUID(m, path, p))
 		}
-		errs.Append(specerr.NewIndexed(c, i, cErrs))
+		if cErrs != nil {
+			errs = errors.Append(errs, errors.NewIndexed(c, i, cErrs))
+		}
 	}
-	return errs.ErrorOrNil()
+	return errs
 }
 
 func (e *Spec) validatePathUUID(m *go3mf.Model, path string, p *PathUUID) error {
-	errs := new(specerr.ErrorList)
+	var errs error
 	if p.UUID == "" {
-		errs.Append(&specerr.MissingFieldError{Name: attrProdUUID})
+		errs = errors.Append(errs, &errors.MissingFieldError{Name: attrProdUUID})
 	} else if validateUUID(string(p.UUID)) != nil {
-		errs.Append(specerr.ErrUUID)
+		errs = errors.Append(errs, errors.ErrUUID)
 	}
 	if p.Path != "" {
 		if path == "" || path == m.PathOrDefault() { // root
 			// Path is validated as part if the core validations
 			if !e.Required() {
-				errs.Append(specerr.ErrProdExtRequired)
+				errs = errors.Append(errs, errors.ErrProdExtRequired)
 			}
 		} else {
-			errs.Append(specerr.ErrProdRefInNonRoot)
+			errs = errors.Append(errs, errors.ErrProdRefInNonRoot)
 		}
 	}
-	return errs.ErrorOrNil()
+	return errs
 }

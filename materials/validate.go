@@ -16,61 +16,62 @@ func (e *Spec) ValidateObject(_ *go3mf.Model, _ string, _ *go3mf.Object) error {
 	return nil
 }
 
-func (e *Spec) ValidateAsset(m *go3mf.Model, path string, r go3mf.Asset) error {
-	errs := new(errors.ErrorList)
+func (e *Spec) ValidateAsset(m *go3mf.Model, path string, r go3mf.Asset) (errs error) {
 	switch r := r.(type) {
 	case *ColorGroup:
-		e.validateColorGroup(path, r, errs)
+		errs = e.validateColorGroup(path, r)
 	case *Texture2DGroup:
-		e.validateTexture2DGroup(m, path, r, errs)
+		errs = e.validateTexture2DGroup(m, path, r)
 	case *Texture2D:
-		e.validateTexture2D(m, path, r, errs)
+		errs = e.validateTexture2D(m, path, r)
 	case *MultiProperties:
-		e.validateMultiProps(m, path, r, errs)
+		errs = e.validateMultiProps(m, path, r)
 	case *CompositeMaterials:
-		e.validateCompositeMat(m, path, r, errs)
+		errs = e.validateCompositeMat(m, path, r)
 	}
-	return errs.ErrorOrNil()
+	return
 }
 
-func (e *Spec) validateColorGroup(path string, r *ColorGroup, errs *errors.ErrorList) {
+func (e *Spec) validateColorGroup(path string, r *ColorGroup) (errs error) {
 	if r.ID == 0 {
-		errs.Append(errors.ErrMissingID)
+		errs = errors.Append(errs, errors.ErrMissingID)
 	}
 	if len(r.Colors) == 0 {
-		errs.Append(errors.ErrEmptyResourceProps)
+		errs = errors.Append(errs, errors.ErrEmptyResourceProps)
 	}
 	for j, c := range r.Colors {
 		if c == (color.RGBA{}) {
-			errs.Append(errors.NewIndexed(c, j, &errors.MissingFieldError{Name: attrColor}))
+			errs = errors.Append(errs, errors.NewIndexed(c, j, &errors.MissingFieldError{Name: attrColor}))
 		}
 	}
+	return
 }
 
-func (e *Spec) validateTexture2DGroup(m *go3mf.Model, path string, r *Texture2DGroup, errs *errors.ErrorList) {
+func (e *Spec) validateTexture2DGroup(m *go3mf.Model, path string, r *Texture2DGroup) (errs error) {
 	if r.ID == 0 {
-		errs.Append(errors.ErrMissingID)
+		errs = errors.Append(errs, errors.ErrMissingID)
 	}
 	if r.TextureID == 0 {
-		errs.Append(&errors.MissingFieldError{Name: attrTexID})
+		errs = errors.Append(errs, &errors.MissingFieldError{Name: attrTexID})
 	} else if text, ok := m.FindAsset(path, r.TextureID); ok {
 		if _, ok := text.(*Texture2D); !ok {
-			errs.Append(errors.ErrTextureReference)
+			errs = errors.Append(errs, errors.ErrTextureReference)
 		}
 	} else {
-		errs.Append(errors.ErrTextureReference)
+		errs = errors.Append(errs, errors.ErrTextureReference)
 	}
 	if len(r.Coords) == 0 {
-		errs.Append(errors.ErrEmptyResourceProps)
+		errs = errors.Append(errs, errors.ErrEmptyResourceProps)
 	}
+	return
 }
 
-func (e *Spec) validateTexture2D(m *go3mf.Model, path string, r *Texture2D, errs *errors.ErrorList) {
+func (e *Spec) validateTexture2D(m *go3mf.Model, path string, r *Texture2D) (errs error) {
 	if r.ID == 0 {
-		errs.Append(errors.ErrMissingID)
+		errs = errors.Append(errs, errors.ErrMissingID)
 	}
 	if r.Path == "" {
-		errs.Append(&errors.MissingFieldError{Name: attrPath})
+		errs = errors.Append(errs, &errors.MissingFieldError{Name: attrPath})
 	} else {
 		var hasTexture bool
 		for _, a := range m.Attachments {
@@ -80,26 +81,27 @@ func (e *Spec) validateTexture2D(m *go3mf.Model, path string, r *Texture2D, errs
 			}
 		}
 		if !hasTexture {
-			errs.Append(errors.ErrMissingTexturePart)
+			errs = errors.Append(errs, errors.ErrMissingTexturePart)
 		}
 	}
 	if r.ContentType == 0 {
-		errs.Append(&errors.MissingFieldError{Name: attrContentType})
+		errs = errors.Append(errs, &errors.MissingFieldError{Name: attrContentType})
 	}
+	return
 }
 
-func (e *Spec) validateMultiProps(m *go3mf.Model, path string, r *MultiProperties, errs *errors.ErrorList) {
+func (e *Spec) validateMultiProps(m *go3mf.Model, path string, r *MultiProperties) (errs error) {
 	if r.ID == 0 {
-		errs.Append(errors.ErrMissingID)
+		errs = errors.Append(errs, errors.ErrMissingID)
 	}
 	if len(r.PIDs) == 0 {
-		errs.Append(&errors.MissingFieldError{Name: attrPIDs})
+		errs = errors.Append(errs, &errors.MissingFieldError{Name: attrPIDs})
 	}
 	if len(r.BlendMethods) > len(r.PIDs)-1 {
-		errs.Append(errors.ErrMultiBlend)
+		errs = errors.Append(errs, errors.ErrMultiBlend)
 	}
 	if len(r.Multis) == 0 {
-		errs.Append(errors.ErrEmptyResourceProps)
+		errs = errors.Append(errs, errors.ErrEmptyResourceProps)
 	}
 	var (
 		colorCount        int
@@ -111,62 +113,64 @@ func (e *Spec) validateMultiProps(m *go3mf.Model, path string, r *MultiPropertie
 			switch pr := pr.(type) {
 			case *go3mf.BaseMaterials:
 				if j != 0 {
-					errs.Append(errors.ErrMaterialMulti)
+					errs = errors.Append(errs, errors.ErrMaterialMulti)
 				}
 				lengths[j] = len(pr.Materials)
 			case *CompositeMaterials:
 				if j != 0 {
-					errs.Append(errors.ErrMaterialMulti)
+					errs = errors.Append(errs, errors.ErrMaterialMulti)
 				}
 				lengths[j] = len(pr.Composites)
 			case *MultiProperties:
-				errs.Append(errors.ErrMultiRefMulti)
+				errs = errors.Append(errs, errors.ErrMultiRefMulti)
 			case *ColorGroup:
 				if colorCount == 1 {
-					errs.Append(errors.ErrMultiColors)
+					errs = errors.Append(errs, errors.ErrMultiColors)
 				}
 				colorCount++
 				lengths[j] = len(pr.Colors)
 			}
 		} else if !resourceUndefined {
 			resourceUndefined = true
-			errs.Append(errors.ErrMissingResource)
+			errs = errors.Append(errs, errors.ErrMissingResource)
 		}
 	}
 	for j, m := range r.Multis {
 		for k, index := range m.PIndices {
 			if k < len(r.PIDs) && lengths[k] < int(index) {
-				errs.Append(errors.NewIndexed(m, j, errors.ErrIndexOutOfBounds))
+				errs = errors.Append(errs, errors.NewIndexed(m, j, errors.ErrIndexOutOfBounds))
 				break
 			}
 		}
 	}
+	return
 }
 
-func (e *Spec) validateCompositeMat(m *go3mf.Model, path string, r *CompositeMaterials, errs *errors.ErrorList) {
+func (e *Spec) validateCompositeMat(m *go3mf.Model, path string, r *CompositeMaterials) (errs error) {
 	if r.ID == 0 {
-		errs.Append(errors.ErrMissingID)
+		errs = errors.Append(errs, errors.ErrMissingID)
 	}
 	if r.MaterialID == 0 {
-		errs.Append(&errors.MissingFieldError{Name: attrMatID})
+		errs = errors.Append(errs, &errors.MissingFieldError{Name: attrMatID})
 	} else if mat, ok := m.FindAsset(path, r.MaterialID); ok {
 		if bm, ok := mat.(*go3mf.BaseMaterials); ok {
 			for _, index := range r.Indices {
 				if int(index) > len(bm.Materials) {
-					errs.Append(errors.ErrIndexOutOfBounds)
+					errs = errors.Append(errs, errors.ErrIndexOutOfBounds)
 					break
 				}
 			}
 		} else {
-			errs.Append(errors.ErrCompositeBase)
+			errs = errors.Append(errs, errors.ErrCompositeBase)
 		}
 	} else {
-		errs.Append(errors.ErrMissingResource)
+		errs = errors.Append(errs, errors.ErrMissingResource)
 	}
 	if len(r.Indices) == 0 {
-		errs.Append(&errors.MissingFieldError{Name: attrMatIndices})
+		errs = errors.Append(errs, &errors.MissingFieldError{Name: attrMatIndices})
 	}
 	if len(r.Composites) == 0 {
-		errs.Append(errors.ErrEmptyResourceProps)
+		errs = errors.Append(errs, errors.ErrEmptyResourceProps)
 	}
+	return
 }

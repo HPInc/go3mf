@@ -5,7 +5,7 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/qmuntal/go3mf"
-	specerr "github.com/qmuntal/go3mf/errors"
+	"github.com/qmuntal/go3mf/errors"
 )
 
 func TestDecode(t *testing.T) {
@@ -110,10 +110,10 @@ func TestDecode(t *testing.T) {
 }
 
 func TestDecode_warns(t *testing.T) {
-	want := &specerr.ErrorList{Errors: []error{
-		&specerr.ParseFieldError{Required: false, ResourceID: 15, Name: "cap", Context: "model@resources@object@mesh@beamlattice"},
-		&specerr.ParseFieldError{Required: false, ResourceID: 15, Name: "clippingmode", Context: "model@resources@object@mesh@beamlattice"},
-		&specerr.ParseFieldError{Required: true, ResourceID: 15, Name: "index", Context: "model@resources@object@mesh@beamlattice@beamsets@beamset@ref"},
+	want := &errors.List{Errors: []error{
+		&errors.ParseFieldError{Required: false, ResourceID: 15, Name: "cap", Context: "model@resources@object@mesh@beamlattice"},
+		&errors.ParseFieldError{Required: false, ResourceID: 15, Name: "clippingmode", Context: "model@resources@object@mesh@beamlattice"},
+		&errors.ParseFieldError{Required: true, ResourceID: 15, Name: "index", Context: "model@resources@object@mesh@beamlattice@beamsets@beamset@ref"},
 	}}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"

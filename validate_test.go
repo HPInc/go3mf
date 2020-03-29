@@ -130,11 +130,14 @@ func TestValidate(t *testing.T) {
 			if tt.want == nil {
 				if got != nil {
 					t.Errorf("Model.Validate() err = %v", got)
-
 				}
 				return
 			}
-			if diff := deep.Equal(got.(*errors.ErrorList).Errors, tt.want); diff != nil {
+			if got == nil {
+				t.Errorf("Model.Validate() err nil = want %v", tt.want)
+				return
+			}
+			if diff := deep.Equal(got.(*errors.List).Errors, tt.want); diff != nil {
 				t.Errorf("Model.Validate() = %v", diff)
 			}
 		})

@@ -65,7 +65,7 @@ func (f *fakeSpec) ValidateModel(m *Model) error {
 	if m.Build.AnyAttr.Get(&a) {
 		errs = append(errs, errors.New("Build: fake"))
 	}
-	return specerr.NewErrorList(errs)
+	return specerr.Append(nil, errs...)
 }
 
 type fakeAsset struct {
@@ -567,7 +567,7 @@ func TestNewDecoder(t *testing.T) {
 }
 
 func TestDecoder_processRootModel_warns(t *testing.T) {
-	want := &specerr.ErrorList{Errors: []error{
+	want := &specerr.List{Errors: []error{
 		&specerr.ParseFieldError{Required: true, ResourceID: 0, Name: "displaycolor", Context: "model@resources@basematerials@base"},
 		&specerr.ParseFieldError{Required: true, ResourceID: 0, Name: "id", Context: "model@resources@basematerials"},
 		&specerr.ParseFieldError{Required: true, ResourceID: 8, Name: "x", Context: "model@resources@object@mesh@vertices@vertex"},

@@ -5,7 +5,7 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/qmuntal/go3mf"
-	specerr "github.com/qmuntal/go3mf/errors"
+	"github.com/qmuntal/go3mf/errors"
 )
 
 func mustUUID(u string) *UUID {
@@ -71,11 +71,11 @@ func TestDecode(t *testing.T) {
 }
 
 func TestDecode_warns(t *testing.T) {
-	want := &specerr.ErrorList{Errors: []error{
-		&specerr.ParseFieldError{Required: true, ResourceID: 20, Name: "UUID", Context: "model@resources@object"},
-		&specerr.ParseFieldError{Required: true, ResourceID: 20, Name: "UUID", Context: "model@resources@object@components@component"},
-		&specerr.ParseFieldError{Required: true, ResourceID: 0, Name: "UUID", Context: "model@build"},
-		&specerr.ParseFieldError{Required: true, ResourceID: 20, Name: "UUID", Context: "model@build@item"},
+	want := &errors.List{Errors: []error{
+		&errors.ParseFieldError{Required: true, ResourceID: 20, Name: "UUID", Context: "model@resources@object"},
+		&errors.ParseFieldError{Required: true, ResourceID: 20, Name: "UUID", Context: "model@resources@object@components@component"},
+		&errors.ParseFieldError{Required: true, ResourceID: 0, Name: "UUID", Context: "model@build"},
+		&errors.ParseFieldError{Required: true, ResourceID: 20, Name: "UUID", Context: "model@build@item"},
 	}}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"

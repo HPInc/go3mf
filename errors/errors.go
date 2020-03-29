@@ -97,7 +97,7 @@ func New(element interface{}, err error) error {
 		e.Target = append(e.Target, Level{element, -1})
 		return e
 	}
-	if e, ok := err.(*ErrorList); ok {
+	if e, ok := err.(*List); ok {
 		for i, e1 := range e.Errors {
 			e.Errors[i] = New(element, e1)
 		}
@@ -115,7 +115,7 @@ func NewPath(element interface{}, path string, err error) error {
 		e.Target = append(e.Target, Level{element, -1})
 		return e
 	}
-	if e, ok := err.(*ErrorList); ok {
+	if e, ok := err.(*List); ok {
 		for i, e1 := range e.Errors {
 			e.Errors[i] = NewPath(element, path, e1)
 		}
@@ -132,7 +132,7 @@ func NewIndexed(element interface{}, index int, err error) error {
 		e.Target = append(e.Target, Level{element, index})
 		return e
 	}
-	if e, ok := err.(*ErrorList); ok {
+	if e, ok := err.(*List); ok {
 		for i, e1 := range e.Errors {
 			e.Errors[i] = NewIndexed(element, index, e1)
 		}
@@ -182,67 +182,4 @@ func (e *ParseFieldError) Error() string {
 		req = "optional"
 	}
 	return fmt.Sprintf("%s#%d: error parsing %s attribute '%s'", e.Context, e.ResourceID, req, e.Name)
-}
-
-type ErrorList struct {
-	Errors []error
-}
-
-func NewErrorList(errs []error) *ErrorList {
-	return &ErrorList{Errors: errs}
-}
-
-func (e *ErrorList) ErrorOrNil() error {
-	if e == nil {
-		return nil
-	}
-	if len(e.Errors) == 0 {
-		return nil
-	}
-
-	return e
-}
-
-func (e *ErrorList) Append(errs ...error) {
-	for _, err := range errs {
-		if err == nil {
-			continue
-		}
-		if err1, ok := err.(*ErrorList); ok {
-			e.Append(err1.Errors...)
-		} else {
-			e.Errors = append(e.Errors, err)
-		}
-	}
-}
-
-func (e *ErrorList) Len() int {
-	return len(e.Errors)
-}
-
-func (e *ErrorList) Error() string {
-	return listFormatFunc(e.Errors)
-}
-
-// Unwrap returns the first error of the chain if not empty.
-func (e *ErrorList) Unwrap() error {
-	if len(e.Errors) == 0 {
-		return nil
-	}
-	return e.Errors[0]
-}
-
-func listFormatFunc(es []error) string {
-	if len(es) == 1 {
-		return fmt.Sprintf("1 error occurred:\n\t* %s\n\n", es[0])
-	}
-
-	points := make([]string, len(es))
-	for i, err := range es {
-		points[i] = fmt.Sprintf("* %s", err)
-	}
-
-	return fmt.Sprintf(
-		"%d errors occurred:\n\t%s\n\n",
-		len(es), strings.Join(points, "\n\t"))
 }

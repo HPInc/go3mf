@@ -90,7 +90,7 @@ func TestValidate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.model.WithSpec(&Spec{})
 			got := tt.model.Validate()
-			if diff := deep.Equal(got.(*errors.ErrorList).Errors, tt.want); diff != nil {
+			if diff := deep.Equal(got.(*errors.List).Errors, tt.want); diff != nil {
 				t.Errorf("Validate() = %v", diff)
 			}
 		})

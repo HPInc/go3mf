@@ -33,7 +33,11 @@ const cubeModel = `
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" requiredextensions="" unit="millimeter" xml:lang="en-US">
     <resources>
-        <object id="1" name="Cube">
+        <basematerials id="1">
+            <base name="Red" displaycolor="#ff0000"/>
+            <base name="Green" displaycolor="#00ff00"/>
+        </basematerials>
+        <object id="2" name="Cube" pid="1">
             <mesh>
                 <vertices>
                     <vertex x="100.000" y="100.000" z="100.000"/>
@@ -46,7 +50,7 @@ const cubeModel = `
                     <vertex x="0.000" y="100.000" z="100.000"/>
                 </vertices>
                 <triangles>
-                    <triangle v1="0" v2="1" v3="2"/>
+                    <triangle v1="0" v2="1" v3="2" p1="1"/>
                     <triangle v1="3" v2="0" v3="2"/>
                     <triangle v1="4" v2="3" v3="2"/>
                     <triangle v1="5" v2="3" v3="4"/>
@@ -63,7 +67,7 @@ const cubeModel = `
         </object>
     </resources>
     <build>
-        <item objectid="1" transform="1.0000 0.0000 0.0000 0.0000 1.0000 0.0000 0.0000 0.0000 1.0000 30 30 50"/>
+        <item objectid="2" transform="1.0000 0.0000 0.0000 0.0000 1.0000 0.0000 0.0000 0.0000 1.0000 30 30 50"/>
     </build>
 </model>
 `

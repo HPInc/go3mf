@@ -36,7 +36,7 @@ type Scanner struct {
 	ModelPath        string
 	IsRoot           bool
 	ResourceID       uint32
-	Err              specerr.ErrorList
+	Err              specerr.List
 	extensionDecoder map[string]SpecDecoder
 	contex           []xml.Name
 }
@@ -73,7 +73,9 @@ func (s *Scanner) InvalidAttr(attr string, required bool) {
 	if s.IsRoot {
 		ct = ct[1:] // don't add path in case happend in root file
 	}
-	s.Err.Append(&specerr.ParseFieldError{Context: strings.Join(ct, "@"), Name: attr, ResourceID: s.ResourceID, Required: required})
+	specerr.Append(&s.Err, &specerr.ParseFieldError{
+		Context: strings.Join(ct, "@"), Name: attr, ResourceID: s.ResourceID, Required: required,
+	})
 }
 
 // ParseRGBA parses s as a RGBA color.

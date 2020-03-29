@@ -7,7 +7,7 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/qmuntal/go3mf"
-	specerr "github.com/qmuntal/go3mf/errors"
+	"github.com/qmuntal/go3mf/errors"
 )
 
 func TestValidate(t *testing.T) {
@@ -24,10 +24,10 @@ func TestValidate(t *testing.T) {
 				&MultiProperties{ID: 2},
 			}}},
 		}}, []error{
-			fmt.Errorf("/other.model@Resources@ColorGroup#0: %v", specerr.ErrEmptyResourceProps),
-			fmt.Errorf("/that.model@Resources@MultiProperties#0: %v", &specerr.MissingFieldError{Name: attrPIDs}),
-			fmt.Errorf("/that.model@Resources@MultiProperties#0: %v", specerr.ErrMultiBlend),
-			fmt.Errorf("/that.model@Resources@MultiProperties#0: %v", specerr.ErrEmptyResourceProps),
+			fmt.Errorf("/other.model@Resources@ColorGroup#0: %v", errors.ErrEmptyResourceProps),
+			fmt.Errorf("/that.model@Resources@MultiProperties#0: %v", &errors.MissingFieldError{Name: attrPIDs}),
+			fmt.Errorf("/that.model@Resources@MultiProperties#0: %v", errors.ErrMultiBlend),
+			fmt.Errorf("/that.model@Resources@MultiProperties#0: %v", errors.ErrEmptyResourceProps),
 		}},
 		{"multi", &go3mf.Model{
 			Resources: go3mf.Resources{Assets: []go3mf.Asset{
@@ -45,15 +45,15 @@ func TestValidate(t *testing.T) {
 				&MultiProperties{ID: 9, Multis: []Multi{{PIndices: []uint32{}}}, PIDs: []uint32{1, 3}},
 			}},
 		}, []error{
-			fmt.Errorf("Resources@MultiProperties#0: %v", &specerr.MissingFieldError{Name: attrPIDs}),
-			fmt.Errorf("Resources@MultiProperties#0: %v", specerr.ErrMultiBlend),
-			fmt.Errorf("Resources@MultiProperties#0: %v", specerr.ErrEmptyResourceProps),
-			fmt.Errorf("Resources@MultiProperties#1: %v", specerr.ErrMultiRefMulti),
-			fmt.Errorf("Resources@MultiProperties#1: %v", specerr.ErrMissingResource),
-			fmt.Errorf("Resources@MultiProperties#6@Multi#0: %v", specerr.ErrIndexOutOfBounds),
-			fmt.Errorf("Resources@MultiProperties#7: %v", specerr.ErrMaterialMulti),
-			fmt.Errorf("Resources@MultiProperties#7: %v", specerr.ErrMultiColors),
-			fmt.Errorf("Resources@MultiProperties#8: %v", specerr.ErrMaterialMulti),
+			fmt.Errorf("Resources@MultiProperties#0: %v", &errors.MissingFieldError{Name: attrPIDs}),
+			fmt.Errorf("Resources@MultiProperties#0: %v", errors.ErrMultiBlend),
+			fmt.Errorf("Resources@MultiProperties#0: %v", errors.ErrEmptyResourceProps),
+			fmt.Errorf("Resources@MultiProperties#1: %v", errors.ErrMultiRefMulti),
+			fmt.Errorf("Resources@MultiProperties#1: %v", errors.ErrMissingResource),
+			fmt.Errorf("Resources@MultiProperties#6@Multi#0: %v", errors.ErrIndexOutOfBounds),
+			fmt.Errorf("Resources@MultiProperties#7: %v", errors.ErrMaterialMulti),
+			fmt.Errorf("Resources@MultiProperties#7: %v", errors.ErrMultiColors),
+			fmt.Errorf("Resources@MultiProperties#8: %v", errors.ErrMaterialMulti),
 		}},
 		{"missingTextPart", &go3mf.Model{
 			Resources: go3mf.Resources{Assets: []go3mf.Asset{
@@ -61,9 +61,9 @@ func TestValidate(t *testing.T) {
 				&Texture2D{ID: 2, ContentType: TextureTypePNG, Path: "/a.png"},
 			}},
 		}, []error{
-			fmt.Errorf("Resources@Texture2D#0: %v", &specerr.MissingFieldError{Name: attrPath}),
-			fmt.Errorf("Resources@Texture2D#0: %v", &specerr.MissingFieldError{Name: attrContentType}),
-			fmt.Errorf("Resources@Texture2D#1: %v", specerr.ErrMissingTexturePart),
+			fmt.Errorf("Resources@Texture2D#0: %v", &errors.MissingFieldError{Name: attrPath}),
+			fmt.Errorf("Resources@Texture2D#0: %v", &errors.MissingFieldError{Name: attrContentType}),
+			fmt.Errorf("Resources@Texture2D#1: %v", errors.ErrMissingTexturePart),
 		}},
 		{"textureGroup", &go3mf.Model{
 			Attachments: []go3mf.Attachment{{Path: "/a.png"}},
@@ -75,10 +75,10 @@ func TestValidate(t *testing.T) {
 				&Texture2DGroup{ID: 5, TextureID: 100, Coords: []TextureCoord{{}}},
 			}},
 		}, []error{
-			fmt.Errorf("Resources@Texture2DGroup#1: %v", &specerr.MissingFieldError{Name: attrTexID}),
-			fmt.Errorf("Resources@Texture2DGroup#1: %v", specerr.ErrEmptyResourceProps),
-			fmt.Errorf("Resources@Texture2DGroup#3: %v", specerr.ErrTextureReference),
-			fmt.Errorf("Resources@Texture2DGroup#4: %v", specerr.ErrTextureReference),
+			fmt.Errorf("Resources@Texture2DGroup#1: %v", &errors.MissingFieldError{Name: attrTexID}),
+			fmt.Errorf("Resources@Texture2DGroup#1: %v", errors.ErrEmptyResourceProps),
+			fmt.Errorf("Resources@Texture2DGroup#3: %v", errors.ErrTextureReference),
+			fmt.Errorf("Resources@Texture2DGroup#4: %v", errors.ErrTextureReference),
 		}},
 		{"colorGroup", &go3mf.Model{
 			Resources: go3mf.Resources{Assets: []go3mf.Asset{
@@ -87,8 +87,8 @@ func TestValidate(t *testing.T) {
 				&ColorGroup{ID: 3, Colors: []color.RGBA{{R: 1}, {}}},
 			}},
 		}, []error{
-			fmt.Errorf("Resources@ColorGroup#0: %v", specerr.ErrEmptyResourceProps),
-			fmt.Errorf("Resources@ColorGroup#2@RGBA#1: %v", &specerr.MissingFieldError{Name: attrColor}),
+			fmt.Errorf("Resources@ColorGroup#0: %v", errors.ErrEmptyResourceProps),
+			fmt.Errorf("Resources@ColorGroup#2@RGBA#1: %v", &errors.MissingFieldError{Name: attrColor}),
 		}},
 		{"composite", &go3mf.Model{
 			Resources: go3mf.Resources{Assets: []go3mf.Asset{
@@ -102,19 +102,19 @@ func TestValidate(t *testing.T) {
 				&CompositeMaterials{ID: 5, MaterialID: 2, Indices: []uint32{0, 1}, Composites: []Composite{{Values: []float32{1, 2}}}},
 				&CompositeMaterials{ID: 6, MaterialID: 100, Indices: []uint32{0, 1}, Composites: []Composite{{Values: []float32{1, 2}}}},
 			}}}, []error{
-			fmt.Errorf("Resources@CompositeMaterials#1: %v", &specerr.MissingFieldError{Name: attrMatID}),
-			fmt.Errorf("Resources@CompositeMaterials#1: %v", &specerr.MissingFieldError{Name: attrMatIndices}),
-			fmt.Errorf("Resources@CompositeMaterials#1: %v", specerr.ErrEmptyResourceProps),
-			fmt.Errorf("Resources@CompositeMaterials#3: %v", specerr.ErrIndexOutOfBounds),
-			fmt.Errorf("Resources@CompositeMaterials#4: %v", specerr.ErrCompositeBase),
-			fmt.Errorf("Resources@CompositeMaterials#5: %v", specerr.ErrMissingResource),
+			fmt.Errorf("Resources@CompositeMaterials#1: %v", &errors.MissingFieldError{Name: attrMatID}),
+			fmt.Errorf("Resources@CompositeMaterials#1: %v", &errors.MissingFieldError{Name: attrMatIndices}),
+			fmt.Errorf("Resources@CompositeMaterials#1: %v", errors.ErrEmptyResourceProps),
+			fmt.Errorf("Resources@CompositeMaterials#3: %v", errors.ErrIndexOutOfBounds),
+			fmt.Errorf("Resources@CompositeMaterials#4: %v", errors.ErrCompositeBase),
+			fmt.Errorf("Resources@CompositeMaterials#5: %v", errors.ErrMissingResource),
 		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.model.WithSpec(&Spec{})
 			got := tt.model.Validate()
-			if diff := deep.Equal(got.(*specerr.ErrorList).Errors, tt.want); diff != nil {
+			if diff := deep.Equal(got.(*errors.List).Errors, tt.want); diff != nil {
 				t.Errorf("Validate() = %v", diff)
 			}
 		})

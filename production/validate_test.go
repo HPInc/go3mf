@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/qmuntal/go3mf"
-	specerr "github.com/qmuntal/go3mf/errors"
+	"github.com/qmuntal/go3mf/errors"
 )
 
 func TestValidate(t *testing.T) {
@@ -20,11 +20,11 @@ func TestValidate(t *testing.T) {
 	}{
 		{"buildEmptyUUID", &go3mf.Model{Build: go3mf.Build{
 			AnyAttr: go3mf.AttrMarshalers{mustUUID("")}}}, []error{
-			fmt.Errorf("Build: %v", specerr.ErrUUID),
+			fmt.Errorf("Build: %v", errors.ErrUUID),
 		}},
 		{"buildNonValidUUID", &go3mf.Model{Build: go3mf.Build{
 			AnyAttr: go3mf.AttrMarshalers{mustUUID("a-b-c-d")}}}, []error{
-			fmt.Errorf("Build: %v", specerr.ErrUUID),
+			fmt.Errorf("Build: %v", errors.ErrUUID),
 		}},
 		{"extReq", &go3mf.Model{Specs: map[string]go3mf.Spec{Namespace: &Spec{IsRequired: true}},
 			Childs: map[string]*go3mf.ChildModel{"/other.model": {Resources: go3mf.Resources{Objects: []*go3mf.Object{validMesh}}}},
@@ -36,7 +36,7 @@ func TestValidate(t *testing.T) {
 				AnyAttr: go3mf.AttrMarshalers{mustUUID("f47ac10b-58cc-0372-8567-0e02b2c3d479")}, Items: []*go3mf.Item{
 					{ObjectID: 1, AnyAttr: go3mf.AttrMarshalers{&PathUUID{UUID: UUID("f47ac10b-58cc-0372-8567-0e02b2c3d478"), Path: "/other.model"}}},
 				}}}, []error{
-			fmt.Errorf("/other.model@Resources@Object#0: %v", &specerr.MissingFieldError{Name: attrProdUUID}),
+			fmt.Errorf("/other.model@Resources@Object#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
 		}},
 		{"items", &go3mf.Model{Build: go3mf.Build{
 			AnyAttr: go3mf.AttrMarshalers{mustUUID("f47ac10b-58cc-0372-8567-0e02b2c3d479")}, Items: []*go3mf.Item{
@@ -47,12 +47,12 @@ func TestValidate(t *testing.T) {
 			}},
 			Childs:    map[string]*go3mf.ChildModel{"/other.model": {Resources: go3mf.Resources{Objects: []*go3mf.Object{validMesh}}}},
 			Resources: go3mf.Resources{Objects: []*go3mf.Object{{ID: 1, Mesh: validMesh.Mesh}}}}, []error{
-			fmt.Errorf("Build@Item#0: %v", specerr.ErrProdExtRequired),
-			fmt.Errorf("Build@Item#1: %v", &specerr.MissingFieldError{Name: attrProdUUID}),
-			fmt.Errorf("Build@Item#2: %v", &specerr.MissingFieldError{Name: attrProdUUID}),
-			fmt.Errorf("Build@Item#3: %v", specerr.ErrUUID),
-			fmt.Errorf("/other.model@Resources@Object#0: %v", &specerr.MissingFieldError{Name: attrProdUUID}),
-			fmt.Errorf("Resources@Object#0: %v", &specerr.MissingFieldError{Name: attrProdUUID}),
+			fmt.Errorf("Build@Item#0: %v", errors.ErrProdExtRequired),
+			fmt.Errorf("Build@Item#1: %v", &errors.MissingFieldError{Name: attrProdUUID}),
+			fmt.Errorf("Build@Item#2: %v", &errors.MissingFieldError{Name: attrProdUUID}),
+			fmt.Errorf("Build@Item#3: %v", errors.ErrUUID),
+			fmt.Errorf("/other.model@Resources@Object#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
+			fmt.Errorf("Resources@Object#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
 		}},
 		{"components", &go3mf.Model{Resources: go3mf.Resources{
 			Objects: []*go3mf.Object{
@@ -63,9 +63,9 @@ func TestValidate(t *testing.T) {
 				}},
 			},
 		}, Build: go3mf.Build{AnyAttr: go3mf.AttrMarshalers{mustUUID("f47ac10b-58cc-0372-8567-0e02b2c3d479")}}}, []error{
-			fmt.Errorf("Resources@Object#0: %v", specerr.ErrUUID),
-			fmt.Errorf("Resources@Object#1@Component#0: %v", &specerr.MissingFieldError{Name: attrProdUUID}),
-			fmt.Errorf("Resources@Object#1@Component#1: %v", specerr.ErrUUID),
+			fmt.Errorf("Resources@Object#0: %v", errors.ErrUUID),
+			fmt.Errorf("Resources@Object#1@Component#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
+			fmt.Errorf("Resources@Object#1@Component#1: %v", errors.ErrUUID),
 		}},
 		{"child", &go3mf.Model{Build: go3mf.Build{AnyAttr: go3mf.AttrMarshalers{mustUUID("f47ac10b-58cc-0372-8567-0e02b2c3d479")}},
 			Childs: map[string]*go3mf.ChildModel{
@@ -75,10 +75,10 @@ func TestValidate(t *testing.T) {
 						{ObjectID: 1, AnyAttr: go3mf.AttrMarshalers{&PathUUID{Path: "/b.model"}}},
 					}},
 				}}}}}, []error{
-			fmt.Errorf("/b.model@Resources@Object#0: %v", &specerr.MissingFieldError{Name: attrProdUUID}),
-			fmt.Errorf("/other.model@Resources@Object#0: %v", &specerr.MissingFieldError{Name: attrProdUUID}),
-			fmt.Errorf("/other.model@Resources@Object#0@Component#0: %v", &specerr.MissingFieldError{Name: attrProdUUID}),
-			fmt.Errorf("/other.model@Resources@Object#0@Component#0: %v", specerr.ErrProdRefInNonRoot),
+			fmt.Errorf("/b.model@Resources@Object#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
+			fmt.Errorf("/other.model@Resources@Object#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
+			fmt.Errorf("/other.model@Resources@Object#0@Component#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
+			fmt.Errorf("/other.model@Resources@Object#0@Component#0: %v", errors.ErrProdRefInNonRoot),
 		}},
 	}
 	for _, tt := range tests {
@@ -87,7 +87,7 @@ func TestValidate(t *testing.T) {
 				tt.model.WithSpec(&Spec{})
 			}
 			got := tt.model.Validate()
-			if diff := deep.Equal(got.(*specerr.ErrorList).Errors, tt.want); diff != nil {
+			if diff := deep.Equal(got.(*errors.List).Errors, tt.want); diff != nil {
 				t.Errorf("Validate() = %v", diff)
 			}
 		})
