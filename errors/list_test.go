@@ -7,6 +7,14 @@ import (
 
 var _ error = new(List)
 
+func TestList_Error_nil(t *testing.T) {
+	want := ""
+	var multi *List
+	if got := multi.Error(); got != want {
+		t.Errorf("List.Error() got %v, want %v", got, want)
+	}
+}
+
 func TestList_Error_single(t *testing.T) {
 	want := `1 error occurred:
 	* foo
