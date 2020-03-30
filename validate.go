@@ -68,7 +68,7 @@ func (item *Item) validate(m *Model, path string) error {
 	var errs error
 	opath := item.ObjectPath(path)
 	if item.ObjectID == 0 {
-		errs = errors.Append(errs, &errors.MissingFieldError{Name: attrObjectID})
+		errs = errors.Append(errs, errors.NewMissingFieldError(attrObjectID))
 	} else if obj, ok := m.FindObject(opath, item.ObjectID); ok {
 		if obj.ObjectType == ObjectTypeOther {
 			errs = errors.Append(errs, errors.ErrOtherItem)
@@ -97,7 +97,7 @@ var allowedMetadataNames = [...]string{ // sorted
 
 func (m *Metadata) validate(model *Model) error {
 	if m.Name.Local == "" {
-		return &errors.MissingFieldError{Name: attrName}
+		return errors.NewMissingFieldError(attrName)
 	}
 	var errs error
 	if m.Name.Space == "" {
@@ -138,10 +138,10 @@ func (r *BaseMaterials) Validate(m *Model, path string) error {
 	}
 	for j, b := range r.Materials {
 		if b.Name == "" {
-			errs = errors.Append(errs, errors.WrapIndex(&errors.MissingFieldError{Name: attrName}, b, j))
+			errs = errors.Append(errs, errors.WrapIndex(errors.NewMissingFieldError(attrName), b, j))
 		}
 		if b.Color == (color.RGBA{}) {
-			errs = errors.Append(errs, errors.WrapIndex(&errors.MissingFieldError{Name: attrDisplayColor}, b, j))
+			errs = errors.Append(errs, errors.WrapIndex(errors.NewMissingFieldError(attrDisplayColor), b, j))
 		}
 	}
 	return errs
@@ -191,7 +191,7 @@ func (r *Object) Validate(m *Model, path string) error {
 		errs = errors.Append(errs, errors.ErrMissingID)
 	}
 	if r.DefaultPIndex != 0 && r.DefaultPID == 0 {
-		errs = errors.Append(errs, &errors.MissingFieldError{Name: attrPID})
+		errs = errors.Append(errs, errors.NewMissingFieldError(attrPID))
 	}
 	if (r.Mesh != nil && len(r.Components) > 0) || (r.Mesh == nil && len(r.Components) == 0) {
 		errs = errors.Append(errs, errors.ErrInvalidObject)
@@ -273,7 +273,7 @@ func (r *Object) validateComponents(m *Model, path string) error {
 	var errs error
 	for j, c := range r.Components {
 		if c.ObjectID == 0 {
-			errs = errors.Append(errs, errors.WrapIndex(&errors.MissingFieldError{Name: attrObjectID}, c, j))
+			errs = errors.Append(errs, errors.WrapIndex(errors.NewMissingFieldError(attrObjectID), c, j))
 		} else if ref, ok := m.FindObject(c.ObjectPath(path), c.ObjectID); ok {
 			if ref.ID == r.ID && c.ObjectPath(path) == path {
 				errs = errors.Append(errs, errors.WrapIndex(errors.ErrRecursion, c, j))

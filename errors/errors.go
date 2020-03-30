@@ -144,6 +144,10 @@ func (e *Error) Error() string {
 	return fmt.Sprintf("%s: %v", strings.Join(levels, "@"), e.Err)
 }
 
+func NewMissingFieldError(name string) error {
+	return &MissingFieldError{Name: name}
+}
+
 type MissingFieldError struct {
 	Name string
 }

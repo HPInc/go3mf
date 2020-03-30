@@ -29,10 +29,10 @@ func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) er
 		errs = errors.Append(errs, errors.ErrLatticeObjType)
 	}
 	if bl.MinLength == 0 {
-		errs = errors.Append(errs, &errors.MissingFieldError{Name: attrMinLength})
+		errs = errors.Append(errs, errors.NewMissingFieldError(attrMinLength))
 	}
 	if bl.DefaultRadius == 0 {
-		errs = errors.Append(errs, &errors.MissingFieldError{Name: attrRadius})
+		errs = errors.Append(errs, errors.NewMissingFieldError(attrRadius))
 	}
 	if bl.ClipMode == ClipNone && bl.ClippingMeshID == 0 {
 		errs = errors.Append(errs, errors.ErrLatticeClippedNoMesh)

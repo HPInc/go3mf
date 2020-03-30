@@ -23,7 +23,7 @@ func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) er
 	var errs error
 	res, _ := m.FindResources(path)
 	if sti.SliceStackID == 0 {
-		errs = errors.Append(errs, &errors.MissingFieldError{Name: attrSliceRefID})
+		errs = errors.Append(errs, errors.NewMissingFieldError(attrSliceRefID))
 	} else if r, ok := res.FindAsset(sti.SliceStackID); ok {
 		if r, ok := r.(*SliceStack); ok {
 			if !validateBuildTransforms(m, path, obj.ID) {
@@ -71,7 +71,7 @@ func (r *SliceStack) validateSlices() error {
 	lastTopZ := float32(-math.MaxFloat32)
 	for j, slice := range r.Slices {
 		if slice.TopZ == 0 {
-			errs = errors.Append(errs, errors.WrapIndex(&errors.MissingFieldError{Name: attrZTop}, slice, j))
+			errs = errors.Append(errs, errors.WrapIndex(errors.NewMissingFieldError(attrZTop), slice, j))
 		} else if slice.TopZ < r.BottomZ {
 			errs = errors.Append(errs, errors.WrapIndex(errors.ErrSliceSmallTopZ, slice, j))
 		}
@@ -108,14 +108,14 @@ func (r *SliceStack) validateRefs(m *go3mf.Model, path string) error {
 		valid := true
 		if ref.Path == "" {
 			valid = false
-			errs = errors.Append(errs, errors.WrapIndex(&errors.MissingFieldError{Name: attrSlicePath}, ref, i))
+			errs = errors.Append(errs, errors.WrapIndex(errors.NewMissingFieldError(attrSlicePath), ref, i))
 		} else if ref.Path == path {
 			valid = false
 			errs = errors.Append(errs, errors.WrapIndex(errors.ErrSliceRefSamePart, ref, i))
 		}
 		if ref.SliceStackID == 0 {
 			valid = false
-			errs = errors.Append(errs, errors.WrapIndex(&errors.MissingFieldError{Name: attrSliceRefID}, ref, i))
+			errs = errors.Append(errs, errors.WrapIndex(errors.NewMissingFieldError(attrSliceRefID), ref, i))
 		}
 		if !valid {
 			continue

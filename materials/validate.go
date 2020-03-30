@@ -41,7 +41,7 @@ func (e *Spec) validateColorGroup(path string, r *ColorGroup) (errs error) {
 	}
 	for j, c := range r.Colors {
 		if c == (color.RGBA{}) {
-			errs = errors.Append(errs, errors.WrapIndex(&errors.MissingFieldError{Name: attrColor}, c, j))
+			errs = errors.Append(errs, errors.WrapIndex(errors.NewMissingFieldError(attrColor), c, j))
 		}
 	}
 	return
@@ -52,7 +52,7 @@ func (e *Spec) validateTexture2DGroup(m *go3mf.Model, path string, r *Texture2DG
 		errs = errors.Append(errs, errors.ErrMissingID)
 	}
 	if r.TextureID == 0 {
-		errs = errors.Append(errs, &errors.MissingFieldError{Name: attrTexID})
+		errs = errors.Append(errs, errors.NewMissingFieldError(attrTexID))
 	} else if text, ok := m.FindAsset(path, r.TextureID); ok {
 		if _, ok := text.(*Texture2D); !ok {
 			errs = errors.Append(errs, errors.ErrTextureReference)
@@ -71,7 +71,7 @@ func (e *Spec) validateTexture2D(m *go3mf.Model, path string, r *Texture2D) (err
 		errs = errors.Append(errs, errors.ErrMissingID)
 	}
 	if r.Path == "" {
-		errs = errors.Append(errs, &errors.MissingFieldError{Name: attrPath})
+		errs = errors.Append(errs, errors.NewMissingFieldError(attrPath))
 	} else {
 		var hasTexture bool
 		for _, a := range m.Attachments {
@@ -85,7 +85,7 @@ func (e *Spec) validateTexture2D(m *go3mf.Model, path string, r *Texture2D) (err
 		}
 	}
 	if r.ContentType == 0 {
-		errs = errors.Append(errs, &errors.MissingFieldError{Name: attrContentType})
+		errs = errors.Append(errs, errors.NewMissingFieldError(attrContentType))
 	}
 	return
 }
@@ -95,7 +95,7 @@ func (e *Spec) validateMultiProps(m *go3mf.Model, path string, r *MultiPropertie
 		errs = errors.Append(errs, errors.ErrMissingID)
 	}
 	if len(r.PIDs) == 0 {
-		errs = errors.Append(errs, &errors.MissingFieldError{Name: attrPIDs})
+		errs = errors.Append(errs, errors.NewMissingFieldError(attrPIDs))
 	}
 	if len(r.BlendMethods) > len(r.PIDs)-1 {
 		errs = errors.Append(errs, errors.ErrMultiBlend)
@@ -151,7 +151,7 @@ func (e *Spec) validateCompositeMat(m *go3mf.Model, path string, r *CompositeMat
 		errs = errors.Append(errs, errors.ErrMissingID)
 	}
 	if r.MaterialID == 0 {
-		errs = errors.Append(errs, &errors.MissingFieldError{Name: attrMatID})
+		errs = errors.Append(errs, errors.NewMissingFieldError(attrMatID))
 	} else if mat, ok := m.FindAsset(path, r.MaterialID); ok {
 		if bm, ok := mat.(*go3mf.BaseMaterials); ok {
 			for _, index := range r.Indices {
@@ -167,7 +167,7 @@ func (e *Spec) validateCompositeMat(m *go3mf.Model, path string, r *CompositeMat
 		errs = errors.Append(errs, errors.ErrMissingResource)
 	}
 	if len(r.Indices) == 0 {
-		errs = errors.Append(errs, &errors.MissingFieldError{Name: attrMatIndices})
+		errs = errors.Append(errs, errors.NewMissingFieldError(attrMatIndices))
 	}
 	if len(r.Composites) == 0 {
 		errs = errors.Append(errs, errors.ErrEmptyResourceProps)
