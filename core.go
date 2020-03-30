@@ -259,8 +259,8 @@ type Item struct {
 
 // ObjectPath search an extension attribute with an ObjectPath
 // function that return a non empty path.
-// Else returns the default path.
-func (b *Item) ObjectPath(defaultPath string) string {
+// Else returns an empty path.
+func (b *Item) ObjectPath() string {
 	for _, att := range b.AnyAttr {
 		if ext, ok := att.(ObjectPather); ok {
 			path := ext.ObjectPath()
@@ -269,7 +269,7 @@ func (b *Item) ObjectPath(defaultPath string) string {
 			}
 		}
 	}
-	return defaultPath
+	return ""
 }
 
 // HasTransform returns true if the transform is different than the identity.

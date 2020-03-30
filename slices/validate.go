@@ -171,12 +171,16 @@ func checkAllClosed(m *go3mf.Model, r *SliceStack) bool {
 
 func validateBuildTransforms(m *go3mf.Model, path string, id uint32) bool {
 	for _, item := range m.Build.Items {
-		if item.ObjectID == id && item.ObjectPath(path) == path {
+		targetPath := item.ObjectPath()
+		if targetPath == "" {
+			targetPath = path
+		}
+		if item.ObjectID == id && targetPath == path {
 			if item.HasTransform() && !validTransform(item.Transform) {
 				return false
 			}
 		}
-		if o, ok := m.FindObject(item.ObjectPath(path), item.ObjectID); ok {
+		if o, ok := m.FindObject(targetPath, item.ObjectID); ok {
 			if !validateObjectTransforms(m, o, path, id) {
 				return false
 			}

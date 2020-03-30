@@ -57,16 +57,16 @@ func (m *Model) Validate() error {
 	if err != nil {
 		errs = errors.Append(errs, errors.Wrap(err, m.Resources))
 	}
-	err = m.Build.validate(m, rootPath)
+	err = m.Build.validate(m)
 	if err != nil {
 		errs = errors.Append(errs, errors.Wrap(err, m.Build))
 	}
 	return errs
 }
 
-func (item *Item) validate(m *Model, path string) error {
+func (item *Item) validate(m *Model) error {
 	var errs error
-	opath := item.ObjectPath(path)
+	opath := item.ObjectPath()
 	if item.ObjectID == 0 {
 		errs = errors.Append(errs, errors.NewMissingFieldError(attrObjectID))
 	} else if obj, ok := m.FindObject(opath, item.ObjectID); ok {
@@ -79,10 +79,10 @@ func (item *Item) validate(m *Model, path string) error {
 	return errors.Append(errs, checkMetadadata(m, item.Metadata))
 }
 
-func (b *Build) validate(m *Model, path string) error {
+func (b *Build) validate(m *Model) error {
 	var errs error
 	for i, item := range b.Items {
-		err := item.validate(m, path)
+		err := item.validate(m)
 		if err != nil {
 			errs = errors.Append(errs, errors.WrapIndex(err, item, i))
 		}

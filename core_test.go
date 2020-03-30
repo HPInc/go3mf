@@ -340,22 +340,18 @@ func TestComponent_ObjectPath(t *testing.T) {
 }
 
 func TestItem_ObjectPath(t *testing.T) {
-	type args struct {
-		defaultPath string
-	}
 	tests := []struct {
 		name string
 		b    *Item
-		args args
 		want string
 	}{
-		{"emptyattr", &Item{}, args{"/other.model"}, "/other.model"},
-		{"emptypath", &Item{AnyAttr: AttrMarshalers{&fakeAttr{}}}, args{"/other.model"}, "/other.model"},
-		{"emptyattr", &Item{AnyAttr: AttrMarshalers{&fakeAttr{Value: "/3dmodel.model"}}}, args{"/other.model"}, "/3dmodel.model"},
+		{"emptyattr", &Item{}, ""},
+		{"emptypath", &Item{AnyAttr: AttrMarshalers{&fakeAttr{}}}, ""},
+		{"emptyattr", &Item{AnyAttr: AttrMarshalers{&fakeAttr{Value: "/3dmodel.model"}}}, "/3dmodel.model"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.b.ObjectPath(tt.args.defaultPath); got != tt.want {
+			if got := tt.b.ObjectPath(); got != tt.want {
 				t.Errorf("Item.ObjectPath() = %v, want %v", got, tt.want)
 			}
 		})
