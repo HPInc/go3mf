@@ -302,3 +302,51 @@ func TestMatrix_Translate(t *testing.T) {
 		})
 	}
 }
+
+func TestMatrix_Mul3D(t *testing.T) {
+	type args struct {
+		v Point3D
+	}
+	tests := []struct {
+		name string
+		m1   Matrix
+		args args
+		want Point3D
+	}{
+		{"zero", Matrix{}, args{Point3D{}}, Point3D{}},
+		{"identity", Identity(), args{Point3D{}}, Point3D{}},
+		{"identity", Identity(), args{Point3D{1, 2, 3}}, Point3D{1, 2, 3}},
+		{"translate", Identity().Translate(1, 2, 3), args{Point3D{}}, Point3D{1, 2, 3}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m1.Mul3D(tt.args.v); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Matrix.Mul3D() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMatrix_Mul2D(t *testing.T) {
+	type args struct {
+		v Point2D
+	}
+	tests := []struct {
+		name string
+		m1   Matrix
+		args args
+		want Point2D
+	}{
+		{"zero", Matrix{}, args{Point2D{}}, Point2D{}},
+		{"identity", Identity(), args{Point2D{}}, Point2D{}},
+		{"identity", Identity(), args{Point2D{1, 2}}, Point2D{1, 2}},
+		{"translate", Identity().Translate(1, 2, 0), args{Point2D{}}, Point2D{1, 2}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m1.Mul2D(tt.args.v); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Matrix.Mul2D() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -89,11 +89,9 @@ func (v1 Point3D) Sub(v2 Point3D) Point3D {
 // the vector (len(v)), but the mathematical length.
 func (v1 Point3D) Len() float32 {
 	return float32(math.Sqrt(float64(v1[0]*v1[0] + v1[1]*v1[1] + v1[2]*v1[2])))
-
 }
 
-// Normalize normalizes the vector. Normalization is (1/|v|)*v,
-// making this equivalent to v.Scale(1/v.Len()). If the len is 0.0,
+// Normalize normalizes the vector. If the len is 0.0,
 // this function will return an infinite value for all elements due
 // to how floating point division works in Go (n/0.0 = math.Inf(Sign(n))).
 func (v1 Point3D) Normalize() Point3D {
@@ -133,9 +131,9 @@ func ParseMatrix(s string) (Matrix, bool) {
 }
 
 // String returns the string representation of a Matrix.
-func (m Matrix) String() string {
+func (m1 Matrix) String() string {
 	return fmt.Sprintf("%.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f",
-		m[0], m[1], m[2], m[4], m[5], m[6], m[8], m[9], m[10], m[12], m[13], m[14])
+		m1[0], m1[1], m1[2], m1[4], m1[5], m1[6], m1[8], m1[9], m1[10], m1[12], m1[13], m1[14])
 }
 
 // Identity returns the 4x4 identity matrix.
@@ -147,32 +145,51 @@ func Identity() Matrix {
 }
 
 // Translate returns a matrix with a relative translation applied.
-func (m Matrix) Translate(x, y, z float32) Matrix {
-	m[12] += x
-	m[13] += y
-	m[14] += z
-	return m
+func (m1 Matrix) Translate(x, y, z float32) Matrix {
+	m1[12] += x
+	m1[13] += y
+	m1[14] += z
+	return m1
 }
 
 // Mul performs a "matrix product" between this matrix
-// and another of the given dimension.
-func (m Matrix) Mul(m2 Matrix) Matrix {
+// and another matrix.
+func (m1 Matrix) Mul(m2 Matrix) Matrix {
 	return Matrix{
-		m[0]*m2[0] + m[4]*m2[1] + m[8]*m2[2] + m[12]*m2[3],
-		m[1]*m2[0] + m[5]*m2[1] + m[9]*m2[2] + m[13]*m2[3],
-		m[2]*m2[0] + m[6]*m2[1] + m[10]*m2[2] + m[14]*m2[3],
-		m[3]*m2[0] + m[7]*m2[1] + m[11]*m2[2] + m[15]*m2[3],
-		m[0]*m2[4] + m[4]*m2[5] + m[8]*m2[6] + m[12]*m2[7],
-		m[1]*m2[4] + m[5]*m2[5] + m[9]*m2[6] + m[13]*m2[7],
-		m[2]*m2[4] + m[6]*m2[5] + m[10]*m2[6] + m[14]*m2[7],
-		m[3]*m2[4] + m[7]*m2[5] + m[11]*m2[6] + m[15]*m2[7],
-		m[0]*m2[8] + m[4]*m2[9] + m[8]*m2[10] + m[12]*m2[11],
-		m[1]*m2[8] + m[5]*m2[9] + m[9]*m2[10] + m[13]*m2[11],
-		m[2]*m2[8] + m[6]*m2[9] + m[10]*m2[10] + m[14]*m2[11],
-		m[3]*m2[8] + m[7]*m2[9] + m[11]*m2[10] + m[15]*m2[11],
-		m[0]*m2[12] + m[4]*m2[13] + m[8]*m2[14] + m[12]*m2[15],
-		m[1]*m2[12] + m[5]*m2[13] + m[9]*m2[14] + m[13]*m2[15],
-		m[2]*m2[12] + m[6]*m2[13] + m[10]*m2[14] + m[14]*m2[15],
-		m[3]*m2[12] + m[7]*m2[13] + m[11]*m2[14] + m[15]*m2[15],
+		m1[0]*m2[0] + m1[4]*m2[1] + m1[8]*m2[2] + m1[12]*m2[3],
+		m1[1]*m2[0] + m1[5]*m2[1] + m1[9]*m2[2] + m1[13]*m2[3],
+		m1[2]*m2[0] + m1[6]*m2[1] + m1[10]*m2[2] + m1[14]*m2[3],
+		m1[3]*m2[0] + m1[7]*m2[1] + m1[11]*m2[2] + m1[15]*m2[3],
+		m1[0]*m2[4] + m1[4]*m2[5] + m1[8]*m2[6] + m1[12]*m2[7],
+		m1[1]*m2[4] + m1[5]*m2[5] + m1[9]*m2[6] + m1[13]*m2[7],
+		m1[2]*m2[4] + m1[6]*m2[5] + m1[10]*m2[6] + m1[14]*m2[7],
+		m1[3]*m2[4] + m1[7]*m2[5] + m1[11]*m2[6] + m1[15]*m2[7],
+		m1[0]*m2[8] + m1[4]*m2[9] + m1[8]*m2[10] + m1[12]*m2[11],
+		m1[1]*m2[8] + m1[5]*m2[9] + m1[9]*m2[10] + m1[13]*m2[11],
+		m1[2]*m2[8] + m1[6]*m2[9] + m1[10]*m2[10] + m1[14]*m2[11],
+		m1[3]*m2[8] + m1[7]*m2[9] + m1[11]*m2[10] + m1[15]*m2[11],
+		m1[0]*m2[12] + m1[4]*m2[13] + m1[8]*m2[14] + m1[12]*m2[15],
+		m1[1]*m2[12] + m1[5]*m2[13] + m1[9]*m2[14] + m1[13]*m2[15],
+		m1[2]*m2[12] + m1[6]*m2[13] + m1[10]*m2[14] + m1[14]*m2[15],
+		m1[3]*m2[12] + m1[7]*m2[13] + m1[11]*m2[14] + m1[15]*m2[15],
+	}
+}
+
+// Mul3D performs a "matrix product" between this matrix
+// and another 3D point.
+func (m1 Matrix) Mul3D(v Point3D) Point3D {
+	return Point3D{
+		m1[0]*v[0] + m1[4]*v[1] + m1[8]*v[2] + m1[12],
+		m1[1]*v[0] + m1[5]*v[1] + m1[9]*v[2] + m1[13],
+		m1[2]*v[0] + m1[6]*v[1] + m1[10]*v[2] + m1[14],
+	}
+}
+
+// Mul2D performs a "matrix product" between this matrix
+// and another 2D point.
+func (m1 Matrix) Mul2D(v Point2D) Point2D {
+	return Point2D{
+		m1[0]*v[0] + m1[4]*v[1] + m1[12],
+		m1[1]*v[0] + m1[5]*v[1] + m1[13],
 	}
 }
