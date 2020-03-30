@@ -18,6 +18,9 @@ func TestValidate(t *testing.T) {
 		model *go3mf.Model
 		want  []error
 	}{
+		{"buildNoUUID", &go3mf.Model{Build: go3mf.Build{}}, []error{
+			fmt.Errorf("Build: %v", &errors.MissingFieldError{Name: attrProdUUID}),
+		}},
 		{"buildEmptyUUID", &go3mf.Model{Build: go3mf.Build{
 			AnyAttr: go3mf.AttrMarshalers{mustUUID("")}}}, []error{
 			fmt.Errorf("Build: %v", errors.ErrUUID),
@@ -60,12 +63,14 @@ func TestValidate(t *testing.T) {
 				{ID: 3, AnyAttr: go3mf.AttrMarshalers{mustUUID("f47ac10b-58cc-0372-8567-0e02b2c3d483")}, Components: []*go3mf.Component{
 					{ObjectID: 2, AnyAttr: go3mf.AttrMarshalers{&PathUUID{UUID: UUID("")}}},
 					{ObjectID: 2, AnyAttr: go3mf.AttrMarshalers{&PathUUID{UUID: UUID("a-b-c-d")}}},
+					{ObjectID: 2},
 				}},
 			},
 		}, Build: go3mf.Build{AnyAttr: go3mf.AttrMarshalers{mustUUID("f47ac10b-58cc-0372-8567-0e02b2c3d479")}}}, []error{
 			fmt.Errorf("Resources@Object#0: %v", errors.ErrUUID),
 			fmt.Errorf("Resources@Object#1@Component#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
 			fmt.Errorf("Resources@Object#1@Component#1: %v", errors.ErrUUID),
+			fmt.Errorf("Resources@Object#1@Component#2: %v", &errors.MissingFieldError{Name: attrProdUUID}),
 		}},
 		{"child", &go3mf.Model{Build: go3mf.Build{AnyAttr: go3mf.AttrMarshalers{mustUUID("f47ac10b-58cc-0372-8567-0e02b2c3d479")}},
 			Childs: map[string]*go3mf.ChildModel{
@@ -89,6 +94,29 @@ func TestValidate(t *testing.T) {
 			got := tt.model.Validate()
 			if diff := deep.Equal(got.(*errors.List).Errors, tt.want); diff != nil {
 				t.Errorf("Validate() = %v", diff)
+			}
+		})
+	}
+}
+
+func TestSpec_ValidateAsset(t *testing.T) {
+	type args struct {
+		in0 *go3mf.Model
+		in1 string
+		in2 go3mf.Asset
+	}
+	tests := []struct {
+		name    string
+		e       *Spec
+		args    args
+		wantErr bool
+	}{
+		{"base", &Spec{}, args{nil, "", nil}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.e.ValidateAsset(tt.args.in0, tt.args.in1, tt.args.in2); (err != nil) != tt.wantErr {
+				t.Errorf("Spec.ValidateAsset() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

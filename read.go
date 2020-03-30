@@ -198,6 +198,9 @@ func (d *Decoder) processRootModel(ctx context.Context, rootFile packageFile, mo
 		return err
 	}
 	d.addModelFile(scanner, model)
+	for _, ext := range scanner.extensionDecoder {
+		ext.OnDecoded(model)
+	}
 	return nil
 }
 

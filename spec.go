@@ -34,6 +34,7 @@ func (u *UnknownSpec) SetRequired(r bool) { u.IsRequired = r }
 
 type SpecDecoder interface {
 	Spec
+	OnDecoded(m *Model) error
 	NewNodeDecoder(interface{}, string) NodeDecoder
 	DecodeAttribute(*Scanner, interface{}, xml.Attr)
 }

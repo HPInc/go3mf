@@ -24,14 +24,6 @@ func (e Spec) Local() string {
 // which includes Microsoft GUIDs as well as time-based UUIDs.
 type UUID string
 
-// NewUUID creates a UUID from s.
-func NewUUID(s string) (UUID, error) {
-	if err := validateUUID(s); err != nil {
-		return UUID(""), err
-	}
-	return UUID(s), nil
-}
-
 type PathUUID struct {
 	UUID UUID
 	Path string

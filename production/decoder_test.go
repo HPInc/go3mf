@@ -1,6 +1,7 @@
 package production
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/go-test/deep"
@@ -11,6 +12,55 @@ import (
 func mustUUID(u string) *UUID {
 	v := UUID(u)
 	return &v
+}
+
+func TestDecode_NoUUID(t *testing.T) {
+	got := new(go3mf.Model)
+	rootFile := `
+		<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:p="http://schemas.microsoft.com/3dmanufacturing/production/2015/06">
+		<resources>
+			<object id="20">
+				<components>
+					<component objectid="8" p:path="/3D/other.model"/>
+					<component objectid="8"/>
+				</components>
+			</object>
+		</resources>
+		<build>
+			<item objectid="20" transform="1 0 0 0 2 0 0 0 3 -66.4 -87.1 8.8" />
+			<item objectid="8" p:path="/3D/other.model" />
+		</build>
+		</model>
+		`
+	t.Run("base", func(t *testing.T) {
+		got.WithSpec(&Spec{LocalName: "p"})
+		if err := go3mf.UnmarshalModel([]byte(rootFile), got); err != nil {
+			t.Errorf("UnmarshalModel() unexpected error = %v", err)
+			return
+		}
+		var (
+			uuid *UUID
+			pu   *PathUUID
+		)
+		if !got.Build.AnyAttr.Get(&uuid) || *uuid == "" {
+			t.Error("UnmarshalModel() empty build uuid")
+		}
+		for _, item := range got.Build.Items {
+			if !item.AnyAttr.Get(&pu) || pu.UUID == "" {
+				t.Error("UnmarshalModel() empty item uuid")
+			}
+		}
+		for _, o := range got.Resources.Objects {
+			if !o.AnyAttr.Get(&uuid) || *uuid == "" {
+				t.Error("UnmarshalModel() empty object uuid")
+			}
+			for _, c := range o.Components {
+				if !c.AnyAttr.Get(&pu) || pu.UUID == "" {
+					t.Error("UnmarshalModel() empty component uuid")
+				}
+			}
+		}
+	})
 }
 
 func TestDecode(t *testing.T) {
@@ -60,11 +110,11 @@ func TestDecode(t *testing.T) {
 		want.WithSpec(&Spec{LocalName: "p"})
 		got.WithSpec(&Spec{LocalName: "p"})
 		if err := go3mf.UnmarshalModel([]byte(rootFile), got); err != nil {
-			t.Errorf("DecodeRawModel() unexpected error = %v", err)
+			t.Errorf("UnmarshalModel() unexpected error = %v", err)
 			return
 		}
 		if diff := deep.Equal(got, want); diff != nil {
-			t.Errorf("DecodeRawModell() = %v", diff)
+			t.Errorf("UnmarshalModel() = %v", diff)
 			return
 		}
 	})
@@ -105,4 +155,26 @@ func TestDecode_warns(t *testing.T) {
 			return
 		}
 	})
+}
+
+func TestSpec_NewNodeDecoder(t *testing.T) {
+	type args struct {
+		in0 interface{}
+		in1 string
+	}
+	tests := []struct {
+		name string
+		e    Spec
+		args args
+		want go3mf.NodeDecoder
+	}{
+		{"base", Spec{}, args{nil, ""}, nil},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.e.NewNodeDecoder(tt.args.in0, tt.args.in1); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Spec.NewNodeDecoder() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

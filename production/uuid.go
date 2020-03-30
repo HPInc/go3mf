@@ -1,10 +1,59 @@
 package production
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
 	"strings"
 )
+
+var rander = rand.Reader
+
+// SetRand sets the random number generator to r, which implements io.Reader.
+// If r.Read returns an error when the package requests random data then
+// a panic will be issued.
+//
+// Calling SetRand with nil sets the random number generator to the default
+// generator.
+func SetRand(r io.Reader) {
+	if r == nil {
+		rander = rand.Reader
+		return
+	}
+	rander = r
+}
+
+// NewUUID returns a Random (Version 4) UUID.
+//
+// The strength of the UUIDs is based on the strength of the crypto/rand
+// package.
+func NewUUID() *UUID {
+	var uuid [16]byte
+	_, err := io.ReadFull(rander, uuid[:])
+	if err != nil {
+		panic(err)
+	}
+	uuid[6] = (uuid[6] & 0x0f) | 0x40 // Version 4
+	uuid[8] = (uuid[8] & 0x3f) | 0x80 // Variant is 10
+	var buf [36]byte
+	encodeHex(buf[:], uuid)
+	u := UUID(buf[:])
+	return &u
+}
+
+// ParseUUID decodes s into a UUID or returns an error. Both the standard UUID
+// forms of xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx and
+// urn:uuid:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx are decoded as well as the
+// Microsoft encoding {xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx} and the raw hex
+// encoding: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.
+func ParseUUID(s string) (UUID, error) {
+	if err := validateUUID(s); err != nil {
+		return UUID(""), err
+	}
+	return UUID(s), nil
+}
 
 // xvalues returns the value of a byte as a hexadecimal digit or 255.
 var xvalues = [256]byte{
@@ -87,4 +136,16 @@ func validateUUID(s string) error {
 		uuid[i] = v
 	}
 	return nil
+}
+
+func encodeHex(dst []byte, uuid [16]byte) {
+	hex.Encode(dst, uuid[:4])
+	dst[8] = '-'
+	hex.Encode(dst[9:13], uuid[4:6])
+	dst[13] = '-'
+	hex.Encode(dst[14:18], uuid[6:8])
+	dst[18] = '-'
+	hex.Encode(dst[19:23], uuid[8:10])
+	dst[23] = '-'
+	hex.Encode(dst[24:], uuid[10:])
 }
