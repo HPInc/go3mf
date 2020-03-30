@@ -15,9 +15,9 @@ func (e *Spec) ValidateModel(m *go3mf.Model) error {
 		errs error
 	)
 	if !m.Build.AnyAttr.Get(&u) {
-		errs = errors.Append(errs, errors.New(m.Build, &errors.MissingFieldError{Name: attrProdUUID}))
+		errs = errors.Append(errs, errors.Wrap(&errors.MissingFieldError{Name: attrProdUUID}, m.Build))
 	} else if validateUUID(string(*u)) != nil {
-		errs = errors.Append(errs, errors.New(m.Build, errors.ErrUUID))
+		errs = errors.Append(errs, errors.Wrap(errors.ErrUUID, m.Build))
 	}
 	for i, item := range m.Build.Items {
 		var iErrs error
@@ -28,7 +28,7 @@ func (e *Spec) ValidateModel(m *go3mf.Model) error {
 			iErrs = errors.Append(iErrs, e.validatePathUUID(m, "", p))
 		}
 		if iErrs != nil {
-			errs = errors.Append(errs, errors.New(m.Build, errors.NewIndexed(item, i, iErrs)))
+			errs = errors.Append(errs, errors.Wrap(errors.WrapIndex(iErrs, item, i), m.Build))
 		}
 	}
 	return errs
@@ -53,7 +53,7 @@ func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) er
 			cErrs = errors.Append(cErrs, e.validatePathUUID(m, path, p))
 		}
 		if cErrs != nil {
-			errs = errors.Append(errs, errors.NewIndexed(c, i, cErrs))
+			errs = errors.Append(errs, errors.WrapIndex(cErrs, c, i))
 		}
 	}
 	return errs

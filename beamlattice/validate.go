@@ -46,27 +46,27 @@ func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) er
 
 	for i, b := range bl.Beams {
 		if b.Indices[0] == b.Indices[1] {
-			errs = errors.Append(errs, errors.NewIndexed(b, i, errors.ErrLatticeSameVertex))
+			errs = errors.Append(errs, errors.WrapIndex(errors.ErrLatticeSameVertex, b, i))
 		} else {
 			l := len(obj.Mesh.Vertices)
 			if int(b.Indices[0]) >= l || int(b.Indices[1]) >= l {
-				errs = errors.Append(errs, errors.NewIndexed(b, i, errors.ErrIndexOutOfBounds))
+				errs = errors.Append(errs, errors.WrapIndex(errors.ErrIndexOutOfBounds, b, i))
 			}
 		}
 		if b.Radius[0] != 0 && b.Radius[0] != bl.DefaultRadius && b.Radius[0] != b.Radius[1] {
-			errs = errors.Append(errs, errors.NewIndexed(b, i, errors.ErrLatticeBeamR2))
+			errs = errors.Append(errs, errors.WrapIndex(errors.ErrLatticeBeamR2, b, i))
 		}
 	}
 	for i, set := range bl.BeamSets {
 		for _, ref := range set.Refs {
 			if int(ref) >= len(set.Refs) {
-				errs = errors.Append(errs, errors.NewIndexed(set, i, errors.ErrIndexOutOfBounds))
+				errs = errors.Append(errs, errors.WrapIndex(errors.ErrIndexOutOfBounds, set, i))
 				break
 			}
 		}
 	}
 	if errs != nil {
-		errs = errors.New(obj.Mesh, errors.New(bl, errs))
+		errs = errors.Wrap(errors.Wrap(errs, bl), obj.Mesh)
 	}
 	return errs
 }

@@ -89,24 +89,28 @@ type Error struct {
 	Path   string
 }
 
-func New(element interface{}, err error) error {
+func Wrap(err error, element interface{}) error {
+	return WrapIndex(err, element, -1)
+}
+
+func WrapIndex(err error, element interface{}, index int) error {
 	if err == nil {
 		return nil
 	}
 	if e, ok := err.(*Error); ok {
-		e.Target = append(e.Target, Level{element, -1})
+		e.Target = append(e.Target, Level{element, index})
 		return e
 	}
 	if e, ok := err.(*List); ok {
 		for i, e1 := range e.Errors {
-			e.Errors[i] = New(element, e1)
+			e.Errors[i] = WrapIndex(e1, element, index)
 		}
 		return e
 	}
-	return &Error{Target: []Level{{element, -1}}, Err: err}
+	return &Error{Target: []Level{{element, index}}, Err: err}
 }
 
-func NewPath(element interface{}, path string, err error) error {
+func WrapPath(err error, element interface{}, path string) error {
 	if err == nil {
 		return nil
 	}
@@ -117,28 +121,11 @@ func NewPath(element interface{}, path string, err error) error {
 	}
 	if e, ok := err.(*List); ok {
 		for i, e1 := range e.Errors {
-			e.Errors[i] = NewPath(element, path, e1)
+			e.Errors[i] = WrapPath(e1, element, path)
 		}
 		return e
 	}
 	return &Error{Target: []Level{{element, -1}}, Err: err, Path: path}
-}
-
-func NewIndexed(element interface{}, index int, err error) error {
-	if err == nil {
-		return nil
-	}
-	if e, ok := err.(*Error); ok {
-		e.Target = append(e.Target, Level{element, index})
-		return e
-	}
-	if e, ok := err.(*List); ok {
-		for i, e1 := range e.Errors {
-			e.Errors[i] = NewIndexed(element, index, e1)
-		}
-		return e
-	}
-	return &Error{Target: []Level{{element, index}}, Err: err}
 }
 
 func (e *Error) Unwrap() error {
