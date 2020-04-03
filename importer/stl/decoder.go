@@ -50,6 +50,7 @@ func (d *Decoder) DecodeContext(ctx context.Context, m *go3mf.Model) error {
 	if err == nil {
 		newMesh.ID = m.Resources.UnusedID()
 		m.Resources.Objects = append(m.Resources.Objects, newMesh)
+		m.Build.Items = append(m.Build.Items, &go3mf.Item{ObjectID: newMesh.ID})
 	}
 	return err
 }
