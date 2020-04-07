@@ -11,6 +11,27 @@ type List struct {
 	Errors []error
 }
 
+func (e *List) Len() int {
+	if e == nil {
+		return 0
+	}
+	return len(e.Errors)
+}
+
+func (e *List) Less(i, j int) bool {
+	if e == nil {
+		return false
+	}
+	return e.Errors[i].Error() < e.Errors[j].Error()
+}
+
+func (e *List) Swap(i, j int) {
+	if e == nil {
+		return
+	}
+	e.Errors[i], e.Errors[j] = e.Errors[j], e.Errors[i]
+}
+
 func (e *List) Error() string {
 	if e == nil {
 		return ""
@@ -24,13 +45,6 @@ func (e *List) Unwrap() error {
 		return nil
 	}
 	return e.Errors[0]
-}
-
-func (e *List) Len() int {
-	if e == nil {
-		return 0
-	}
-	return len(e.Errors)
 }
 
 // Append is a helper function that will append more errors

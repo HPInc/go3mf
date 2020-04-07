@@ -32,6 +32,7 @@ var (
 	ErrEmptyResourceProps     = errors.New("resource properties MUST NOT be empty")
 	ErrRecursion              = errors.New("MUST NOT contain recursive references")
 	ErrInvalidObject          = errors.New("MUST contain a mesh or components")
+	ErrMeshConsistency        = errors.New("mesh has non-manifold edges without consistent triangle orientation")
 	// materials
 	ErrMultiBlend         = errors.New("there MUST NOT be more blendmethods than layers – 1")
 	ErrMaterialMulti      = errors.New("a material, if included, MUST be positioned as the first layer")

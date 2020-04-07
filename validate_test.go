@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"image/color"
+	"sort"
 	"testing"
 
 	"github.com/go-test/deep"
@@ -139,6 +140,89 @@ func TestValidate(t *testing.T) {
 			}
 			if diff := deep.Equal(got.(*errors.List).Errors, tt.want); diff != nil {
 				t.Errorf("Model.Validate() = %v", diff)
+			}
+		})
+	}
+}
+
+func TestObject_ValidateMesh(t *testing.T) {
+	tests := []struct {
+		name    string
+		r       *Mesh
+		wantErr bool
+	}{
+		{"few vertices", &Mesh{Vertices: make([]Point3D, 1), Triangles: make([]Triangle, 3)}, true},
+		{"few triangles", &Mesh{Vertices: make([]Point3D, 3), Triangles: make([]Triangle, 3)}, true},
+		{"wrong orientation", &Mesh{Vertices: []Point3D{{}, {}, {}, {}},
+			Triangles: []Triangle{
+				{Indices: [3]uint32{0, 1, 2}},
+				{Indices: [3]uint32{0, 3, 1}},
+				{Indices: [3]uint32{0, 2, 3}},
+				{Indices: [3]uint32{1, 2, 3}},
+			}}, true},
+		{"correct", &Mesh{Vertices: []Point3D{{}, {}, {}, {}},
+			Triangles: []Triangle{
+				{Indices: [3]uint32{0, 1, 2}},
+				{Indices: [3]uint32{0, 3, 1}},
+				{Indices: [3]uint32{0, 2, 3}},
+				{Indices: [3]uint32{1, 3, 2}},
+			}}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.r.ValidateCoherency(); (err != nil) != tt.wantErr {
+				t.Errorf("Object.ValidateCoherency() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestModel_ValidateCoherency(t *testing.T) {
+	validMesh := &Mesh{Vertices: []Point3D{{}, {}, {}, {}}, Triangles: []Triangle{
+		{Indices: [3]uint32{0, 1, 2}}, {Indices: [3]uint32{0, 3, 1}},
+		{Indices: [3]uint32{0, 2, 3}}, {Indices: [3]uint32{1, 3, 2}},
+	}}
+	invalidMesh := &Mesh{Vertices: []Point3D{{}, {}, {}, {}}, Triangles: []Triangle{
+		{Indices: [3]uint32{0, 1, 2}}, {Indices: [3]uint32{0, 3, 1}},
+		{Indices: [3]uint32{0, 2, 3}}, {Indices: [3]uint32{1, 2, 3}},
+	}}
+	tests := []struct {
+		name string
+		m    *Model
+		want []error
+	}{
+		{"empty", new(Model), nil},
+		{"valid", &Model{Resources: Resources{Objects: []*Object{
+			{Mesh: validMesh},
+		}}, Childs: map[string]*ChildModel{"/other.model": &ChildModel{Resources: Resources{Objects: []*Object{
+			{Mesh: validMesh},
+		}}}}}, nil},
+		{"invalid", &Model{Resources: Resources{Objects: []*Object{
+			{Mesh: invalidMesh},
+		}}, Childs: map[string]*ChildModel{"/other.model": &ChildModel{Resources: Resources{Objects: []*Object{
+			{Mesh: invalidMesh},
+		}}}}}, []error{
+			fmt.Errorf("/other.model@Resources@Object#0@Mesh: %v", errors.ErrMeshConsistency),
+			fmt.Errorf("Resources@Object#0@Mesh: %v", errors.ErrMeshConsistency),
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.m.ValidateCoherency()
+			if tt.want == nil {
+				if got != nil {
+					t.Errorf("Model.ValidateCoherency() err = %v", got)
+				}
+				return
+			}
+			if got == nil {
+				t.Errorf("Model.ValidateCoherency() err nil = want %v", tt.want)
+				return
+			}
+			errs := got.(*errors.List)
+			sort.Sort(errs)
+			if diff := deep.Equal(errs.Errors, tt.want); diff != nil {
+				t.Errorf("Model.ValidateCoherency() = %v", diff)
 			}
 		})
 	}

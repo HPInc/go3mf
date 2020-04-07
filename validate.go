@@ -5,6 +5,7 @@ import (
 	"image/color"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/qmuntal/go3mf/errors"
 )
@@ -343,4 +344,93 @@ func findAttachment(att []Attachment, path string) (*Attachment, bool) {
 		}
 	}
 	return nil, false
+}
+
+// ValidateCoherency checks that all the mesh are non-empty, manifold and oriented.
+func (m *Model) ValidateCoherency() error {
+	var (
+		errs error
+		wg   sync.WaitGroup
+		mu   sync.Mutex
+	)
+	wg.Add(len(m.Resources.Objects))
+	for i := range m.Resources.Objects {
+		go func(i int) {
+			defer wg.Done()
+			r := m.Resources.Objects[i]
+			if isSolidObject(r) {
+				err := r.Mesh.ValidateCoherency()
+				if err != nil {
+					mu.Lock()
+					errs = errors.Append(errs, errors.Wrap(errors.WrapIndex(errors.Wrap(err, r.Mesh), r, i), m.Resources))
+					mu.Unlock()
+				}
+			}
+		}(i)
+	}
+	for path, c := range m.Childs {
+		wg.Add(len(c.Resources.Objects))
+		for i := range c.Resources.Objects {
+			go func(i int) {
+				defer wg.Done()
+				r := c.Resources.Objects[i]
+				if isSolidObject(r) {
+					err := r.Mesh.ValidateCoherency()
+					if err != nil {
+						mu.Lock()
+						errs = errors.Append(errs, errors.WrapPath(errors.WrapIndex(errors.Wrap(err, r.Mesh), r, i), c.Resources, path))
+						mu.Unlock()
+					}
+				}
+			}(i)
+		}
+	}
+	wg.Wait()
+	return errs
+}
+
+func isSolidObject(r *Object) bool {
+	return r.Mesh != nil && (r.ObjectType == ObjectTypeModel || r.ObjectType == ObjectTypeSolidSupport)
+}
+
+// ValidateCoherency checks that the mesh is non-empty, manifold and oriented.
+func (m *Mesh) ValidateCoherency() error {
+	if len(m.Vertices) < 3 {
+		return errors.ErrInsufficientVertices
+	}
+	if len(m.Triangles) <= 3 {
+		return errors.ErrInsufficientTriangles
+	}
+
+	var edgeCounter uint32
+	pairMatching := make(pairMatch)
+	for _, face := range m.Triangles {
+		for j := uint32(0); j < 3; j++ {
+			n1, n2 := face.Indices[j], face.Indices[(j+1)%3]
+			if _, ok := pairMatching.CheckMatch(n1, n2); !ok {
+				pairMatching.AddMatch(n1, n2, edgeCounter)
+				edgeCounter++
+			}
+		}
+	}
+
+	positive, negative := make([]uint32, edgeCounter), make([]uint32, edgeCounter)
+	for _, face := range m.Triangles {
+		for j := uint32(0); j < 3; j++ {
+			n1, n2 := face.Indices[j], face.Indices[(j+1)%3]
+			edgeIndex, _ := pairMatching.CheckMatch(n1, n2)
+			if n1 <= n2 {
+				positive[edgeIndex]++
+			} else {
+				negative[edgeIndex]++
+			}
+		}
+	}
+
+	for i := uint32(0); i < edgeCounter; i++ {
+		if positive[i] != 1 || negative[i] != 1 {
+			return errors.ErrMeshConsistency
+		}
+	}
+	return nil
 }

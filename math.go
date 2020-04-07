@@ -7,6 +7,33 @@ import (
 	"strings"
 )
 
+type pairEntry struct {
+	a, b uint32
+}
+
+// pairMatch implements a n-log-n tree class which is able to identify
+// duplicate pairs of numbers in a given data set.
+type pairMatch map[pairEntry]uint32
+
+// AddMatch adds a match to the set.
+// If the match exists it is overridden.
+func (t pairMatch) AddMatch(data1, data2, param uint32) {
+	t[newPairEntry(data1, data2)] = param
+}
+
+// CheckMatch check if a match is in the set.
+func (t pairMatch) CheckMatch(data1, data2 uint32) (val uint32, ok bool) {
+	val, ok = t[newPairEntry(data1, data2)]
+	return
+}
+
+func newPairEntry(data1, data2 uint32) pairEntry {
+	if data1 < data2 {
+		return pairEntry{data1, data2}
+	}
+	return pairEntry{data2, data1}
+}
+
 // vec3I represents a 3D vector typed as int32
 type vec3I struct {
 	X int32 // X coordinate
