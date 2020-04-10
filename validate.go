@@ -22,7 +22,7 @@ func (m *Model) sortedChilds() []string {
 	return s
 }
 
-// Validate checks that the model is conformant with the 3MF spec.
+// Validate checks that the model is conformant with the 3MF specs.
 func (m *Model) Validate() error {
 	var errs error
 	errs = errors.Append(errs, validateRelationship(m, m.RootRelationships, ""))
@@ -129,6 +129,7 @@ func checkMetadadata(model *Model, md []Metadata) error {
 	return errs
 }
 
+// Validate validates the base materia is compliant with the 3MF specs.
 func (r *BaseMaterials) Validate(m *Model, path string) error {
 	var errs error
 	if r.ID == 0 {
@@ -185,6 +186,8 @@ func (res *Resources) validate(m *Model, path string) error {
 	return errs
 }
 
+// Validate validates that the object is compliant with 3MF specs,
+// except for the mesh coherency.
 func (r *Object) Validate(m *Model, path string) error {
 	res, _ := m.FindResources(path)
 	var errs error

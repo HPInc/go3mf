@@ -194,12 +194,12 @@ func TestModel_ValidateCoherency(t *testing.T) {
 		{"empty", new(Model), nil},
 		{"valid", &Model{Resources: Resources{Objects: []*Object{
 			{Mesh: validMesh},
-		}}, Childs: map[string]*ChildModel{"/other.model": &ChildModel{Resources: Resources{Objects: []*Object{
+		}}, Childs: map[string]*ChildModel{"/other.model": {Resources: Resources{Objects: []*Object{
 			{Mesh: validMesh},
 		}}}}}, nil},
 		{"invalid", &Model{Resources: Resources{Objects: []*Object{
 			{Mesh: invalidMesh},
-		}}, Childs: map[string]*ChildModel{"/other.model": &ChildModel{Resources: Resources{Objects: []*Object{
+		}}, Childs: map[string]*ChildModel{"/other.model": {Resources: Resources{Objects: []*Object{
 			{Mesh: invalidMesh},
 		}}}}}, []error{
 			fmt.Errorf("/other.model@Resources@Object#0@Mesh: %v", errors.ErrMeshConsistency),

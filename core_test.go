@@ -357,3 +357,73 @@ func TestItem_ObjectPath(t *testing.T) {
 		})
 	}
 }
+
+func TestModel_WalkAssets(t *testing.T) {
+	tests := []struct {
+		name       string
+		m          *Model
+		wantPath   []string
+		wantAssets []Asset
+	}{
+		{"base", &Model{Childs: map[string]*ChildModel{
+			"/other.model": {
+				Resources: Resources{Assets: []Asset{&BaseMaterials{ID: 1}}},
+			},
+			"/a.model": {
+				Resources: Resources{Assets: []Asset{&BaseMaterials{ID: 1}}},
+			}}, Resources: Resources{Assets: []Asset{&BaseMaterials{ID: 2}}},
+		}, []string{"/a.model", "/other.model", ""}, []Asset{&BaseMaterials{ID: 1}, &BaseMaterials{ID: 1}, &BaseMaterials{ID: 2}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var gotP []string
+			var gotA []Asset
+			tt.m.WalkAssets(func(path string, r Asset) bool {
+				gotP = append(gotP, path)
+				gotA = append(gotA, r)
+				return true
+			})
+			if !reflect.DeepEqual(gotP, tt.wantPath) {
+				t.Errorf("Model.WalkAssets() gotPaths = %v, wantPath %v", gotP, tt.wantPath)
+			}
+			if !reflect.DeepEqual(gotA, tt.wantAssets) {
+				t.Errorf("Model.WalkAssets() gotAssets = %v, wantAsset %v", gotA, tt.wantAssets)
+			}
+		})
+	}
+}
+
+func TestModel_WalkObjects(t *testing.T) {
+	tests := []struct {
+		name       string
+		m          *Model
+		wantPath   []string
+		wantObject []*Object
+	}{
+		{"base", &Model{Childs: map[string]*ChildModel{
+			"/other.model": {
+				Resources: Resources{Objects: []*Object{{ID: 1}}},
+			},
+			"/a.model": {
+				Resources: Resources{Objects: []*Object{{ID: 1}}},
+			}}, Resources: Resources{Objects: []*Object{{ID: 2}}},
+		}, []string{"/a.model", "/other.model", ""}, []*Object{{ID: 1}, {ID: 1}, {ID: 2}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var gotP []string
+			var gotA []*Object
+			tt.m.WalkObjects(func(path string, r *Object) bool {
+				gotP = append(gotP, path)
+				gotA = append(gotA, r)
+				return true
+			})
+			if !reflect.DeepEqual(gotP, tt.wantPath) {
+				t.Errorf("Model.WalkObjects() gotPaths = %v, wantPath %v", gotP, tt.wantPath)
+			}
+			if !reflect.DeepEqual(gotA, tt.wantObject) {
+				t.Errorf("Model.WalkObjects() gotObjects = %v, wantObject %v", gotA, tt.wantObject)
+			}
+		})
+	}
+}
