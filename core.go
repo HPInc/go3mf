@@ -225,47 +225,49 @@ func (m *Model) FindObject(path string, id uint32) (*Object, bool) {
 }
 
 // WalkAssets walks the assets of the root and child models, calling fn for asset and stopping
-// if fn returns false.
+// if fn returns an error.
 //
 // The child models are first walked in lexical order and then the root model is walked.
 // The root model path is always empty, regardless of the defined model path.
-func (m *Model) WalkAssets(fn func(string, Asset) bool) {
+func (m *Model) WalkAssets(fn func(string, Asset) error) error {
 	sortedChilds := m.sortedChilds()
 	for _, path := range sortedChilds {
 		c := m.Childs[path]
 		for _, r := range c.Resources.Assets {
-			if !fn(path, r) {
-				return
+			if err := fn(path, r); err != nil {
+				return err
 			}
 		}
 	}
 	for _, r := range m.Resources.Assets {
-		if !fn("", r) {
-			return
+		if err := fn("", r); err != nil {
+			return err
 		}
 	}
+	return nil
 }
 
 // WalkObjects walks the objects of the root and child models, calling fn for object and stopping
-// if fn returns false.
+// if fn returns an error.
 //
 // The child models are first walked in lexical order and then the root model is walked.
 // The root model path is always empty, regardless of the defined model path.
-func (m *Model) WalkObjects(fn func(string, *Object) bool) {
+func (m *Model) WalkObjects(fn func(string, *Object) error) error {
 	sortedChilds := m.sortedChilds()
 	for _, path := range sortedChilds {
 		c := m.Childs[path]
 		for _, r := range c.Resources.Objects {
-			if !fn(path, r) {
-				return
+			if err := fn(path, r); err != nil {
+				return err
 			}
 		}
 	}
 	for _, r := range m.Resources.Objects {
-		if !fn("", r) {
-			return
+		if err := fn("", r); err != nil {
+			return err
 		}
 	}
+	return nil
 }
 
 // Base defines the Model Base Material Resource.

@@ -378,10 +378,10 @@ func TestModel_WalkAssets(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var gotP []string
 			var gotA []Asset
-			tt.m.WalkAssets(func(path string, r Asset) bool {
+			tt.m.WalkAssets(func(path string, r Asset) error {
 				gotP = append(gotP, path)
 				gotA = append(gotA, r)
-				return true
+				return nil
 			})
 			if !reflect.DeepEqual(gotP, tt.wantPath) {
 				t.Errorf("Model.WalkAssets() gotPaths = %v, wantPath %v", gotP, tt.wantPath)
@@ -413,10 +413,10 @@ func TestModel_WalkObjects(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var gotP []string
 			var gotA []*Object
-			tt.m.WalkObjects(func(path string, r *Object) bool {
+			tt.m.WalkObjects(func(path string, r *Object) error {
 				gotP = append(gotP, path)
 				gotA = append(gotA, r)
-				return true
+				return nil
 			})
 			if !reflect.DeepEqual(gotP, tt.wantPath) {
 				t.Errorf("Model.WalkObjects() gotPaths = %v, wantPath %v", gotP, tt.wantPath)
