@@ -3,6 +3,7 @@ package go3mf
 import (
 	"io/ioutil"
 	"reflect"
+	"strings"
 	"syscall/js"
 	"unsafe"
 )
@@ -13,11 +14,75 @@ var (
 	uint8ArrayConstructor   = js.Global().Get("Uint8Array")
 	uint32ArrayConstructor  = js.Global().Get("Uint32Array")
 	float32ArrayConstructor = js.Global().Get("Float32Array")
+	jsCore                  = js.Global().Call("eval", "(class GO3MF{})")
 )
+
+func init() {
+	js.Global().Set("GO3MF", jsCore)
+	RegisterClass("X")
+	RegisterClass("Relationship")
+	RegisterClass("Attachment")
+	RegisterClass("Metadata")
+	RegisterClass("Item")
+	RegisterClass("Build")
+	RegisterClass("Mesh")
+	RegisterClass("Component")
+	RegisterClass("Object")
+	RegisterClass("Base")
+	RegisterClass("BaseMaterials")
+	RegisterClass("Resources")
+	RegisterClass("ChildModel")
+	RegisterClass("Model")
+}
+
+func RegisterClass(className string, scope ...string) js.Value {
+	classScope := []string{"GO3MF"}
+	classScope = append(classScope, scope...)
+	classScope = append(classScope, className)
+	return js.Global().Call("eval", "("+strings.Join(classScope, ".")+"= class "+className+"{})")
+}
+
+func RegisterClassExtends(className, extend string, scope ...string) js.Value {
+	classScope := []string{"GO3MF"}
+	classScope = append(classScope, scope...)
+	classScope = append(classScope, className)
+	return js.Global().Call("eval", "("+strings.Join(classScope, ".")+"= class "+className+" extends "+extend+"{})")
+}
+
+// NewJSObject creates a new object
+func NewJSObject(className string) js.Value {
+	return jsCore.Get(className).New()
+}
+
+// JSValue returns a JavaScript value associated with the object.
+func (e AttrMarshalers) JSValue() js.Value {
+	attr := arrayConstructor.New(len(e))
+	var i int
+	for _, a := range e {
+		if _, ok := a.(js.Wrapper); ok {
+			attr.SetIndex(i, a)
+			i++
+		}
+	}
+	return attr
+}
+
+// JSValue returns a JavaScript value associated with the object.
+func (e Marshalers) JSValue() js.Value {
+	attr := arrayConstructor.New(len(e))
+	var i int
+	for _, a := range e {
+		if _, ok := a.(js.Wrapper); ok {
+			attr.SetIndex(i, a)
+			i++
+		}
+	}
+	return attr
+}
 
 // JSValue returns a JavaScript value associated with the object.
 func (r Relationship) JSValue() js.Value {
-	v := objectConstructor.New()
+	v := NewJSObject("Relationship")
 	v.Set(attrPath, r.Path)
 	v.Set(attrType, r.Type)
 	v.Set(attrID, r.ID)
@@ -26,7 +91,7 @@ func (r Relationship) JSValue() js.Value {
 
 // JSValue returns a JavaScript value associated with the object.
 func (att Attachment) JSValue() js.Value {
-	v := objectConstructor.New()
+	v := NewJSObject("Attachment")
 	b, err := ioutil.ReadAll(att.Stream)
 	if err != nil {
 		panic(err)
@@ -41,7 +106,7 @@ func (att Attachment) JSValue() js.Value {
 
 // JSValue returns a JavaScript value associated with the object.
 func (m Metadata) JSValue() js.Value {
-	v := objectConstructor.New()
+	v := NewJSObject("Metadata")
 	v.Set(attrName, m.Name.Local)
 	setString(v, "space", m.Name.Space)
 	v.Set("value", m.Value)
@@ -67,22 +132,24 @@ func (m Matrix) JSValue() js.Value {
 
 // JSValue returns a JavaScript value associated with the object.
 func (item *Item) JSValue() js.Value {
-	v := objectConstructor.New()
+	v := NewJSObject("Item")
 	v.Set("objectId", item.ObjectID)
 	v.Set(attrTransform, item.Transform)
 	setString(v, "partNumber", item.PartNumber)
 	v.Set(attrMetadata, jsValueMetadatas(item.Metadata))
+	v.Set("anyAttr", item.AnyAttr)
 	return v
 }
 
 // JSValue returns a JavaScript value associated with the object.
 func (b Build) JSValue() js.Value {
+	v := NewJSObject("Build")
 	arr := arrayConstructor.New(len(b.Items))
 	for i, item := range b.Items {
 		arr.SetIndex(i, item)
 	}
-	v := objectConstructor.New()
 	v.Set("items", arr)
+	v.Set("anyAttr", b.AnyAttr)
 	return v
 }
 
@@ -93,7 +160,7 @@ func (b Build) JSValue() js.Value {
 // Triangles are encoded as a sparce Uint32Array where each triangle
 // is defined with seven elements as follows: v1-v2-v3-pid-p1-p2-p3.
 func (m *Mesh) JSValue() js.Value {
-	v := objectConstructor.New()
+	v := NewJSObject("Mesh")
 
 	// vertices
 	hv := (*reflect.SliceHeader)(unsafe.Pointer(&m.Vertices))
@@ -110,30 +177,33 @@ func (m *Mesh) JSValue() js.Value {
 	triangles := uint8ArrayConstructor.New(ht.Len)
 	js.CopyBytesToJS(triangles, *(*[]byte)(unsafe.Pointer(ht)))
 	v.Set(attrTriangles, uint32ArrayConstructor.New(triangles.Get("buffer"), triangles.Get("byteOffset"), triangles.Get("byteLength").Int()/4))
+	v.Set("any", m.Any)
+	v.Set("anyAttr", m.AnyAttr)
 	return v
 }
 
 // JSValue returns a JavaScript value associated with the object.
 func (c *Component) JSValue() js.Value {
-	v := objectConstructor.New()
+	v := NewJSObject("Component")
 	v.Set("objectId", c.ObjectID)
 	v.Set(attrTransform, c.Transform)
+	v.Set("anyAttr", c.AnyAttr)
 	return v
 }
 
 // JSValue returns a JavaScript value associated with the object.
 func (r *Object) JSValue() js.Value {
-	v := objectConstructor.New()
+	v := NewJSObject("Object")
 	v.Set(attrID, r.ID)
 	setString(v, attrName, r.Name)
 	setString(v, "partNumber", r.PartNumber)
 	setString(v, attrThumbnail, r.Thumbnail)
-	if r.PID == 0 {
-		v.Set(attrPID, js.Undefined())
-		v.Set(attrPIndex, js.Undefined())
-	} else {
+	if r.PID != 0 {
 		v.Set(attrPID, r.PID)
 		v.Set(attrPIndex, r.PIndex)
+	} else {
+		v.Set(attrPID, js.Undefined())
+		v.Set(attrPIndex, js.Undefined())
 	}
 	v.Set(attrType, r.Type.String())
 	if r.Mesh != nil {
@@ -145,12 +215,13 @@ func (r *Object) JSValue() js.Value {
 		}
 		v.Set(attrComponents, comps)
 	}
+	v.Set("anyAttr", r.AnyAttr)
 	return v
 }
 
 // JSValue returns a JavaScript value associated with the object.
 func (r Base) JSValue() js.Value {
-	v := objectConstructor.New()
+	v := NewJSObject("Base")
 	v.Set(attrName, r.Name)
 	v.Set(attrDisplayColor, FormatRGBA(r.Color))
 	return v
@@ -158,7 +229,7 @@ func (r Base) JSValue() js.Value {
 
 // JSValue returns a JavaScript value associated with the object.
 func (r *BaseMaterials) JSValue() js.Value {
-	v := objectConstructor.New()
+	v := NewJSObject("BaseMaterials")
 	v.Set(attrID, r.ID)
 	bases := arrayConstructor.New(len(r.Materials))
 	for i, b := range r.Materials {
@@ -170,7 +241,7 @@ func (r *BaseMaterials) JSValue() js.Value {
 
 // JSValue returns a JavaScript value associated with the object.
 func (rs Resources) JSValue() js.Value {
-	v := objectConstructor.New()
+	v := NewJSObject("Resources")
 	assets := arrayConstructor.New(len(rs.Assets))
 	var i int
 	for _, r := range rs.Assets {
@@ -185,20 +256,22 @@ func (rs Resources) JSValue() js.Value {
 		objs.SetIndex(i, r)
 	}
 	v.Set("objects", objs)
+	v.Set("anyAttr", rs.AnyAttr)
 	return v
 }
 
 // JSValue returns a JavaScript value associated with the object.
 func (c *ChildModel) JSValue() js.Value {
-	v := objectConstructor.New()
+	v := NewJSObject("ChildModel")
 	v.Set(attrResources, c.Resources)
 	v.Set("relationships", jsValueRelationships(c.Relationships))
+	v.Set("any", c.Any)
 	return v
 }
 
 // JSValue returns a JavaScript value associated with the object.
 func (m *Model) JSValue() js.Value {
-	v := objectConstructor.New()
+	v := NewJSObject("Model")
 	setString(v, attrPath, m.Path)
 	setString(v, attrLang, m.Language)
 	v.Set(attrUnit, m.Units.String())
@@ -235,6 +308,8 @@ func (m *Model) JSValue() js.Value {
 	} else {
 		v.Set("specs", js.Undefined())
 	}
+	v.Set("any", m.Any)
+	v.Set("anyAttr", m.AnyAttr)
 	return v
 }
 
