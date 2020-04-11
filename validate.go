@@ -10,6 +10,18 @@ import (
 	"github.com/qmuntal/go3mf/errors"
 )
 
+func (m *Model) sortedSpecs() []string {
+	if len(m.Specs) == 0 {
+		return nil
+	}
+	s := make([]string, 0, len(m.Specs))
+	for path := range m.Specs {
+		s = append(s, path)
+	}
+	sort.Strings(s)
+	return s
+}
+
 func (m *Model) sortedChilds() []string {
 	if len(m.Childs) == 0 {
 		return nil
@@ -41,7 +53,9 @@ func (m *Model) Validate() error {
 	errs = errors.Append(errs, validateRelationship(m, m.Relationships, rootPath))
 	errs = errors.Append(errs, checkMetadadata(m, m.Metadata))
 
-	for _, ext := range m.Specs {
+	sortedSpecs := m.sortedSpecs()
+	for _, ns := range sortedSpecs {
+		ext := m.Specs[ns]
 		if ext, ok := ext.(SpecValidator); ok {
 			errs = errors.Append(errs, ext.ValidateModel(m))
 		}
@@ -166,7 +180,9 @@ func (res *Resources) validate(m *Model, path string) error {
 			aErrs = errors.Append(aErrs, r.Validate(m, path))
 		}
 
-		for _, ext := range m.Specs {
+		sortedSpecs := m.sortedSpecs()
+		for _, ns := range sortedSpecs {
+			ext := m.Specs[ns]
 			if ext, ok := ext.(SpecValidator); ok {
 				aErrs = errors.Append(aErrs, ext.ValidateAsset(m, path, r))
 			}
@@ -223,7 +239,10 @@ func (r *Object) Validate(m *Model, path string) error {
 		}
 		errs = errors.Append(errs, r.validateComponents(m, path))
 	}
-	for _, ext := range m.Specs {
+
+	sortedSpecs := m.sortedSpecs()
+	for _, ns := range sortedSpecs {
+		ext := m.Specs[ns]
 		if ext, ok := ext.(SpecValidator); ok {
 			errs = errors.Append(errs, ext.ValidateObject(m, path, r))
 		}
@@ -290,7 +309,9 @@ func (r *Object) validateComponents(m *Model, path string) error {
 }
 
 func (m *Model) validateNamespaces() error {
-	for _, ext := range m.Specs {
+	sortedSpecs := m.sortedSpecs()
+	for _, ns := range sortedSpecs {
+		ext := m.Specs[ns]
 		if ext.Required() {
 			if _, ok := ext.(*UnknownSpec); ok {
 				return errors.ErrRequiredExt

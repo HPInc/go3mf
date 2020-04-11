@@ -199,11 +199,14 @@ func (e *Encoder) modelToken(x *XMLEncoder, m *Model, isRoot bool) (xml.StartEle
 		x.AddRelationship(Relationship{Path: m.Thumbnail, Type: RelTypeThumbnail})
 		attrs = append(attrs, xml.Attr{Name: xml.Name{Local: attrThumbnail}, Value: m.Thumbnail})
 	}
-	for _, a := range m.Specs {
+	sortedSpecs := m.sortedSpecs()
+	for _, ns := range sortedSpecs {
+		a := m.Specs[ns]
 		attrs = append(attrs, xml.Attr{Name: xml.Name{Space: attrXmlns, Local: a.Local()}, Value: a.Namespace()})
 	}
 	var exts []string
-	for _, a := range m.Specs {
+	for _, ns := range sortedSpecs {
+		a := m.Specs[ns]
 		if a.Required() {
 			exts = append(exts, a.Local())
 		}
