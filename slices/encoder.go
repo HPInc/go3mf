@@ -11,7 +11,7 @@ import (
 func (s *SliceStackInfo) Marshal3MFAttr(_ *go3mf.XMLEncoder) ([]xml.Attr, error) {
 	return []xml.Attr{
 		{Name: xml.Name{Space: Namespace, Local: attrSliceRefID}, Value: strconv.FormatUint(uint64(s.SliceStackID), 10)},
-		{Name: xml.Name{Space: Namespace, Local: attrMeshRes}, Value: s.SliceResolution.String()},
+		{Name: xml.Name{Space: Namespace, Local: attrMeshRes}, Value: s.MeshResolution.String()},
 	}, nil
 }
 

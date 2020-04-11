@@ -38,13 +38,13 @@ func TestValidate(t *testing.T) {
 		}},
 		{"object incorret type", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
 			{ID: 1, Type: go3mf.ObjectTypeOther, Mesh: &go3mf.Mesh{Any: go3mf.Marshalers{&BeamLattice{
-				MinLength: 1, DefaultRadius: 1, ClipMode: ClipInside,
+				MinLength: 1, Radius: 1, ClipMode: ClipInside,
 			}}}},
 			{ID: 2, Type: go3mf.ObjectTypeSurface, Mesh: &go3mf.Mesh{Any: go3mf.Marshalers{&BeamLattice{
-				MinLength: 1, DefaultRadius: 1, ClipMode: ClipInside,
+				MinLength: 1, Radius: 1, ClipMode: ClipInside,
 			}}}},
 			{ID: 3, Type: go3mf.ObjectTypeSupport, Mesh: &go3mf.Mesh{Any: go3mf.Marshalers{&BeamLattice{
-				MinLength: 1, DefaultRadius: 1, ClipMode: ClipInside,
+				MinLength: 1, Radius: 1, ClipMode: ClipInside,
 			}}}},
 		}}}, []error{
 			fmt.Errorf("Resources@Object#0@Mesh@BeamLattice: %v", errors.ErrLatticeObjType),
@@ -54,10 +54,10 @@ func TestValidate(t *testing.T) {
 		{"incorrect mesh references", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
 			{ID: 1, Mesh: &go3mf.Mesh{Vertices: []go3mf.Point3D{{}, {}, {}}, Any: go3mf.Marshalers{nil}}},
 			{ID: 2, Mesh: &go3mf.Mesh{Vertices: []go3mf.Point3D{{}, {}, {}}, Any: go3mf.Marshalers{&BeamLattice{
-				MinLength: 1, DefaultRadius: 1, ClippingMeshID: 100, RepresentationMeshID: 2,
+				MinLength: 1, Radius: 1, ClippingMeshID: 100, RepresentationMeshID: 2,
 			}}}},
 			{ID: 3, Mesh: &go3mf.Mesh{Vertices: []go3mf.Point3D{{}, {}, {}}, Any: go3mf.Marshalers{&BeamLattice{
-				MinLength: 1, DefaultRadius: 1, ClippingMeshID: 1, RepresentationMeshID: 2,
+				MinLength: 1, Radius: 1, ClippingMeshID: 1, RepresentationMeshID: 2,
 			}}}},
 		}}}, []error{
 			fmt.Errorf("Resources@Object#1@Mesh@BeamLattice: %v", errors.ErrMissingResource),
@@ -66,7 +66,7 @@ func TestValidate(t *testing.T) {
 		}},
 		{"incorrect beams", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
 			{ID: 2, Mesh: &go3mf.Mesh{Vertices: []go3mf.Point3D{{}, {}, {}}, Any: go3mf.Marshalers{&BeamLattice{
-				MinLength: 1, DefaultRadius: 1, ClipMode: ClipInside, Beams: []Beam{
+				MinLength: 1, Radius: 1, ClipMode: ClipInside, Beams: []Beam{
 					{}, {Indices: [2]uint32{1, 1}, Radius: [2]float32{0.5, 0}}, {Indices: [2]uint32{1, 3}},
 				},
 			}}}},
@@ -78,7 +78,7 @@ func TestValidate(t *testing.T) {
 		}},
 		{"incorrect beamseat", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
 			{ID: 2, Mesh: &go3mf.Mesh{Vertices: []go3mf.Point3D{{}, {}, {}}, Any: go3mf.Marshalers{&BeamLattice{
-				MinLength: 1, DefaultRadius: 1, ClipMode: ClipInside, Beams: []Beam{
+				MinLength: 1, Radius: 1, ClipMode: ClipInside, Beams: []Beam{
 					{Indices: [2]uint32{1, 2}},
 				}, BeamSets: []BeamSet{{Refs: []uint32{0, 2, 3}}},
 			}}}},

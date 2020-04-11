@@ -31,10 +31,10 @@ func TestSliceStack_Identify(t *testing.T) {
 	}
 }
 
-func TestSliceResolution_String(t *testing.T) {
+func TestMeshResolution_String(t *testing.T) {
 	tests := []struct {
 		name string
-		c    SliceResolution
+		c    MeshResolution
 	}{
 		{"fullres", ResolutionFull},
 		{"lowres", ResolutionLow},
@@ -42,16 +42,16 @@ func TestSliceResolution_String(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.c.String(); got != tt.name {
-				t.Errorf("SliceResolution.String() = %v, want %v", got, tt.name)
+				t.Errorf("MeshResolution.String() = %v, want %v", got, tt.name)
 			}
 		})
 	}
 }
 
-func Test_newSliceResolution(t *testing.T) {
+func Test_newMeshResolution(t *testing.T) {
 	tests := []struct {
 		name   string
-		wantR  SliceResolution
+		wantR  MeshResolution
 		wantOk bool
 	}{
 		{"fullres", ResolutionFull, true},
@@ -59,12 +59,12 @@ func Test_newSliceResolution(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotR, gotOk := newSliceResolution(tt.name)
+			gotR, gotOk := newMeshResolution(tt.name)
 			if !reflect.DeepEqual(gotR, tt.wantR) {
-				t.Errorf("newSliceResolution() gotR = %v, want %v", gotR, tt.wantR)
+				t.Errorf("newMeshResolution() gotR = %v, want %v", gotR, tt.wantR)
 			}
 			if gotOk != tt.wantOk {
-				t.Errorf("newSliceResolution() gotOk = %v, want %v", gotOk, tt.wantOk)
+				t.Errorf("newMeshResolution() gotOk = %v, want %v", gotOk, tt.wantOk)
 			}
 		})
 	}

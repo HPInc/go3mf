@@ -38,7 +38,7 @@ func (d *beamLatticeDecoder) Start(attrs []xml.Attr) {
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, true)
 			}
-			beamLattice.DefaultRadius = float32(val)
+			beamLattice.Radius = float32(val)
 		case attrMinLength, attrPrecision: // lib3mf legacy
 			val, err := strconv.ParseFloat(a.Value, 32)
 			if err != nil {
@@ -157,7 +157,7 @@ func (d *beamDecoder) Start(attrs []xml.Attr) {
 		}
 	}
 	if beam.Radius[0] == 0 {
-		beam.Radius[0] = beamLattice.DefaultRadius
+		beam.Radius[0] = beamLattice.Radius
 	}
 	if beam.Radius[1] == 0 {
 		beam.Radius[1] = beam.Radius[0]

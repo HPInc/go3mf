@@ -31,7 +31,7 @@ func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) er
 	if bl.MinLength == 0 {
 		errs = errors.Append(errs, errors.NewMissingFieldError(attrMinLength))
 	}
-	if bl.DefaultRadius == 0 {
+	if bl.Radius == 0 {
 		errs = errors.Append(errs, errors.NewMissingFieldError(attrRadius))
 	}
 	if bl.ClipMode == ClipNone && bl.ClippingMeshID == 0 {
@@ -53,7 +53,7 @@ func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) er
 				errs = errors.Append(errs, errors.WrapIndex(errors.ErrIndexOutOfBounds, b, i))
 			}
 		}
-		if b.Radius[0] != 0 && b.Radius[0] != bl.DefaultRadius && b.Radius[0] != b.Radius[1] {
+		if b.Radius[0] != 0 && b.Radius[0] != bl.Radius && b.Radius[0] != b.Radius[1] {
 			errs = errors.Append(errs, errors.WrapIndex(errors.ErrLatticeBeamR2, b, i))
 		}
 	}

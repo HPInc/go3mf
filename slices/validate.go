@@ -40,7 +40,7 @@ func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) er
 	} else {
 		errs = errors.Append(errs, errors.ErrMissingResource)
 	}
-	if sti.SliceResolution == ResolutionLow {
+	if sti.MeshResolution == ResolutionLow {
 		if !e.Required() {
 			errs = errors.Append(errs, errors.ErrSliceExtRequired)
 		}

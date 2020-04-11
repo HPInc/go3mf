@@ -11,7 +11,7 @@ import (
 func (m *BeamLattice) Marshal3MF(x *go3mf.XMLEncoder) error {
 	xs := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrBeamLattice}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrMinLength}, Value: strconv.FormatFloat(float64(m.MinLength), 'f', x.FloatPresicion(), 32)},
-		{Name: xml.Name{Local: attrRadius}, Value: strconv.FormatFloat(float64(m.DefaultRadius), 'f', x.FloatPresicion(), 32)},
+		{Name: xml.Name{Local: attrRadius}, Value: strconv.FormatFloat(float64(m.Radius), 'f', x.FloatPresicion(), 32)},
 	}}
 	if m.ClipMode != ClipNone {
 		xs.Attr = append(xs.Attr, xml.Attr{Name: xml.Name{Local: attrClippingMode}, Value: m.ClipMode.String()})
@@ -73,13 +73,13 @@ func marshalBeams(x *go3mf.XMLEncoder, m *BeamLattice) {
 			{Name: xml.Name{Local: attrV1}, Value: strconv.FormatUint(uint64(b.Indices[0]), 10)},
 			{Name: xml.Name{Local: attrV2}, Value: strconv.FormatUint(uint64(b.Indices[1]), 10)},
 		}}
-		if b.Radius[0] > 0 && b.Radius[0] != m.DefaultRadius {
+		if b.Radius[0] > 0 && b.Radius[0] != m.Radius {
 			xbeam.Attr = append(xbeam.Attr, xml.Attr{
 				Name:  xml.Name{Local: attrR1},
 				Value: strconv.FormatFloat(float64(b.Radius[0]), 'f', x.FloatPresicion(), 32),
 			})
 		}
-		if b.Radius[1] > 0 && b.Radius[1] != m.DefaultRadius {
+		if b.Radius[1] > 0 && b.Radius[1] != m.Radius {
 			xbeam.Attr = append(xbeam.Attr, xml.Attr{
 				Name:  xml.Name{Local: attrR2},
 				Value: strconv.FormatFloat(float64(b.Radius[1]), 'f', x.FloatPresicion(), 32),

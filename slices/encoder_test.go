@@ -27,7 +27,7 @@ func TestMarshalModel(t *testing.T) {
 	meshRes := &go3mf.Object{
 		Mesh: new(go3mf.Mesh),
 		ID:   8, Name: "Box 1",
-		AnyAttr: go3mf.AttrMarshalers{&SliceStackInfo{SliceStackID: 3, SliceResolution: ResolutionLow}},
+		AnyAttr: go3mf.AttrMarshalers{&SliceStackInfo{SliceStackID: 3, MeshResolution: ResolutionLow}},
 	}
 	baseMaterial := &go3mf.BaseMaterials{ID: 10, Materials: []go3mf.Base{{Name: "a", Color: color.RGBA{R: 1}}, {Name: "b", Color: color.RGBA{R: 1}}}}
 

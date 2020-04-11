@@ -49,25 +49,25 @@ type Slice struct {
 	Polygons []Polygon
 }
 
-// SliceResolution defines the resolutions for a slice.
-type SliceResolution uint8
+// MeshResolution defines the resolutions for a slice.
+type MeshResolution uint8
 
 // Supported slice resolution.
 const (
-	ResolutionFull SliceResolution = iota
+	ResolutionFull MeshResolution = iota
 	ResolutionLow
 )
 
-func newSliceResolution(s string) (r SliceResolution, ok bool) {
-	r, ok = map[string]SliceResolution{
+func newMeshResolution(s string) (r MeshResolution, ok bool) {
+	r, ok = map[string]MeshResolution{
 		"fullres": ResolutionFull,
 		"lowres":  ResolutionLow,
 	}[s]
 	return
 }
 
-func (c SliceResolution) String() string {
-	return map[SliceResolution]string{
+func (c MeshResolution) String() string {
+	return map[MeshResolution]string{
 		ResolutionFull: "fullres",
 		ResolutionLow:  "lowres",
 	}[c]
@@ -95,8 +95,8 @@ func (s *SliceStack) Identify() uint32 {
 
 // SliceStackInfo defines the attributes added to Object.
 type SliceStackInfo struct {
-	SliceStackID    uint32
-	SliceResolution SliceResolution
+	SliceStackID   uint32
+	MeshResolution MeshResolution
 }
 
 const (

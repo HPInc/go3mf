@@ -25,7 +25,7 @@ func TestValidate(t *testing.T) {
 				},
 				Objects: []*go3mf.Object{
 					{ID: 2, AnyAttr: go3mf.AttrMarshalers{&SliceStackInfo{
-						SliceStackID: 1, SliceResolution: ResolutionLow,
+						SliceStackID: 1, MeshResolution: ResolutionLow,
 					}}},
 				}},
 		}, []error{
@@ -126,7 +126,7 @@ func TestValidate(t *testing.T) {
 						SliceStackID: 1,
 					}}},
 					{ID: 2, Type: go3mf.ObjectTypeSupport, Components: []*go3mf.Component{{ObjectID: 1}}, AnyAttr: go3mf.AttrMarshalers{&SliceStackInfo{
-						SliceStackID: 3, SliceResolution: ResolutionLow,
+						SliceStackID: 3, MeshResolution: ResolutionLow,
 					}}},
 					{ID: 4, Components: []*go3mf.Component{{ObjectID: 10, Transform: go3mf.Matrix{2, 3, 0, 0, 1, 3, 0, 0, 0, 0, 2, 0, 2, 3, 4, 1}}},
 						AnyAttr: go3mf.AttrMarshalers{&SliceStackInfo{

@@ -41,15 +41,15 @@ func objectAttrDecoder(scanner *go3mf.Scanner, o *go3mf.Object, a xml.Attr) {
 			o.AnyAttr = append(o.AnyAttr, &SliceStackInfo{SliceStackID: uint32(val)})
 		}
 	case attrMeshRes:
-		res, ok := newSliceResolution(a.Value)
+		res, ok := newMeshResolution(a.Value)
 		if !ok {
 			scanner.InvalidAttr(attrMeshRes, false)
 		}
 		var ext *SliceStackInfo
 		if o.AnyAttr.Get(&ext) {
-			ext.SliceResolution = res
+			ext.MeshResolution = res
 		} else {
-			o.AnyAttr = append(o.AnyAttr, &SliceStackInfo{SliceResolution: res})
+			o.AnyAttr = append(o.AnyAttr, &SliceStackInfo{MeshResolution: res})
 		}
 	}
 }
