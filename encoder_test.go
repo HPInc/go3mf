@@ -57,7 +57,7 @@ func TestMarshalModel(t *testing.T) {
 				{
 					ID: 8, Name: "Box 1", PartNumber: "11111111-1111-1111-1111-111111111111", Thumbnail: "/a.png",
 					AnyAttr:    AttrMarshalers{&fakeAttr{Value: "object_fake"}},
-					DefaultPID: 1, DefaultPIndex: 1, ObjectType: ObjectTypeModel, Mesh: &Mesh{
+					PID: 1, PIndex: 1, Type: ObjectTypeModel, Mesh: &Mesh{
 						Vertices: []Point3D{
 							{0, 0, 0}, {100, 0, 0}, {100, 100, 0},
 							{0, 100, 0}, {0, 0, 100}, {100, 0, 100},
@@ -78,7 +78,7 @@ func TestMarshalModel(t *testing.T) {
 						},
 					}},
 				{
-					ID: 20, ObjectType: ObjectTypeSupport,
+					ID: 20, Type: ObjectTypeSupport,
 					Metadata: []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}, {Name: xml.Name{Space: "qm", Local: "CustomMetadata4"}, Type: "xs:boolean", Value: "2"}},
 					Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1},
 						AnyAttr: AttrMarshalers{&fakeAttr{Value: "component_fake"}}}},

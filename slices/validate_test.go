@@ -125,7 +125,7 @@ func TestValidate(t *testing.T) {
 					{ID: 1, Mesh: &go3mf.Mesh{}, AnyAttr: go3mf.AttrMarshalers{&SliceStackInfo{
 						SliceStackID: 1,
 					}}},
-					{ID: 2, ObjectType: go3mf.ObjectTypeSupport, Components: []*go3mf.Component{{ObjectID: 1}}, AnyAttr: go3mf.AttrMarshalers{&SliceStackInfo{
+					{ID: 2, Type: go3mf.ObjectTypeSupport, Components: []*go3mf.Component{{ObjectID: 1}}, AnyAttr: go3mf.AttrMarshalers{&SliceStackInfo{
 						SliceStackID: 3, SliceResolution: ResolutionLow,
 					}}},
 					{ID: 4, Components: []*go3mf.Component{{ObjectID: 10, Transform: go3mf.Matrix{2, 3, 0, 0, 1, 3, 0, 0, 0, 0, 2, 0, 2, 3, 4, 1}}},
@@ -138,7 +138,7 @@ func TestValidate(t *testing.T) {
 					{ID: 7, Components: []*go3mf.Component{{ObjectID: 1}, {ObjectID: 4}}, AnyAttr: go3mf.AttrMarshalers{&SliceStackInfo{
 						SliceStackID: 9,
 					}}},
-					{ID: 10, ObjectType: go3mf.ObjectTypeSolidSupport, Components: []*go3mf.Component{{ObjectID: 1}}, AnyAttr: go3mf.AttrMarshalers{&SliceStackInfo{
+					{ID: 10, Type: go3mf.ObjectTypeSolidSupport, Components: []*go3mf.Component{{ObjectID: 1}}, AnyAttr: go3mf.AttrMarshalers{&SliceStackInfo{
 						SliceStackID: 3,
 					}}},
 					{ID: 12, Components: []*go3mf.Component{

@@ -37,13 +37,13 @@ func TestValidate(t *testing.T) {
 			fmt.Errorf("Resources@Object#0@Component#0: %v", errors.ErrMissingResource),
 		}},
 		{"object incorret type", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
-			{ID: 1, ObjectType: go3mf.ObjectTypeOther, Mesh: &go3mf.Mesh{Any: go3mf.Marshalers{&BeamLattice{
+			{ID: 1, Type: go3mf.ObjectTypeOther, Mesh: &go3mf.Mesh{Any: go3mf.Marshalers{&BeamLattice{
 				MinLength: 1, DefaultRadius: 1, ClipMode: ClipInside,
 			}}}},
-			{ID: 2, ObjectType: go3mf.ObjectTypeSurface, Mesh: &go3mf.Mesh{Any: go3mf.Marshalers{&BeamLattice{
+			{ID: 2, Type: go3mf.ObjectTypeSurface, Mesh: &go3mf.Mesh{Any: go3mf.Marshalers{&BeamLattice{
 				MinLength: 1, DefaultRadius: 1, ClipMode: ClipInside,
 			}}}},
-			{ID: 3, ObjectType: go3mf.ObjectTypeSupport, Mesh: &go3mf.Mesh{Any: go3mf.Marshalers{&BeamLattice{
+			{ID: 3, Type: go3mf.ObjectTypeSupport, Mesh: &go3mf.Mesh{Any: go3mf.Marshalers{&BeamLattice{
 				MinLength: 1, DefaultRadius: 1, ClipMode: ClipInside,
 			}}}},
 		}}}, []error{

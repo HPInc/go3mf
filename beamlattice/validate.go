@@ -25,7 +25,7 @@ func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) er
 
 	var errs error
 
-	if obj.ObjectType != go3mf.ObjectTypeModel && obj.ObjectType != go3mf.ObjectTypeSolidSupport {
+	if obj.Type != go3mf.ObjectTypeModel && obj.Type != go3mf.ObjectTypeSolidSupport {
 		errs = errors.Append(errs, errors.ErrLatticeObjType)
 	}
 	if bl.MinLength == 0 {
@@ -82,7 +82,7 @@ func (e *Spec) validateRefMesh(m *go3mf.Model, path string, meshID, selfID uint3
 			}
 			var lattice *BeamLattice
 			if r.ID == meshID {
-				if r.Mesh == nil || r.ObjectType != go3mf.ObjectTypeModel || r.Mesh.Any.Get(&lattice) {
+				if r.Mesh == nil || r.Type != go3mf.ObjectTypeModel || r.Mesh.Any.Get(&lattice) {
 					return errors.ErrLatticeInvalidMesh
 				}
 				break

@@ -29,7 +29,7 @@ func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) er
 			if !validateBuildTransforms(m, path, obj.ID) {
 				errs = errors.Append(errs, errors.ErrSliceInvalidTranform)
 			}
-			if obj.ObjectType == go3mf.ObjectTypeModel || obj.ObjectType == go3mf.ObjectTypeSolidSupport {
+			if obj.Type == go3mf.ObjectTypeModel || obj.Type == go3mf.ObjectTypeSolidSupport {
 				if !checkAllClosed(m, r) {
 					errs = errors.Append(errs, errors.ErrSlicePolygonNotClosed)
 				}

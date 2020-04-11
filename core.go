@@ -325,17 +325,17 @@ func (b *Item) HasTransform() bool {
 
 // An Object is an in memory representation of the 3MF model object.
 type Object struct {
-	ID            uint32
-	Name          string
-	PartNumber    string
-	Thumbnail     string
-	DefaultPID    uint32
-	DefaultPIndex uint32
-	ObjectType    ObjectType
-	Metadata      []Metadata
-	Mesh          *Mesh
-	Components    []*Component
-	AnyAttr       AttrMarshalers
+	ID         uint32
+	Name       string
+	PartNumber string
+	Thumbnail  string
+	PID        uint32
+	PIndex     uint32
+	Type       ObjectType
+	Metadata   []Metadata
+	Mesh       *Mesh
+	Components []*Component
+	AnyAttr    AttrMarshalers
 }
 
 // A Component is an in memory representation of the 3MF component.
@@ -519,4 +519,5 @@ const (
 	attrPreserve      = "preserve"
 	attrMetadata      = "metadata"
 	attrMetadataGroup = "metadatagroup"
+	attrPath          = "path"
 )

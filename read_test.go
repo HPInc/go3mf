@@ -321,7 +321,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 	}}
 	meshRes := &Object{
 		Mesh: new(Mesh),
-		ID:   8, Name: "Box 1", Thumbnail: "/a.png", DefaultPID: 5, PartNumber: "11111111-1111-1111-1111-111111111111",
+		ID:   8, Name: "Box 1", Thumbnail: "/a.png", PID: 5, PartNumber: "11111111-1111-1111-1111-111111111111",
 	}
 	meshRes.Mesh.Vertices = append(meshRes.Mesh.Vertices, []Point3D{
 		{0, 0, 0},
@@ -349,7 +349,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 	}...)
 
 	components := &Object{
-		ID: 20, ObjectType: ObjectTypeSupport,
+		ID: 20, Type: ObjectTypeSupport,
 		Metadata:   []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}, {Name: xml.Name{Space: "qm", Local: "CustomMetadata4"}, Type: "xs:boolean", Value: "2"}},
 		Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
 	}

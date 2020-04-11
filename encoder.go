@@ -348,8 +348,8 @@ func (e *Encoder) writeObject(x *XMLEncoder, r *Object) {
 	xo := xml.StartElement{Name: xml.Name{Local: attrObject}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(r.ID), 10)},
 	}}
-	if r.ObjectType != ObjectTypeModel {
-		xo.Attr = append(xo.Attr, xml.Attr{Name: xml.Name{Local: attrType}, Value: r.ObjectType.String()})
+	if r.Type != ObjectTypeModel {
+		xo.Attr = append(xo.Attr, xml.Attr{Name: xml.Name{Local: attrType}, Value: r.Type.String()})
 	}
 	if r.Thumbnail != "" {
 		x.AddRelationship(Relationship{Path: r.Thumbnail, Type: RelTypeThumbnail})
@@ -362,14 +362,14 @@ func (e *Encoder) writeObject(x *XMLEncoder, r *Object) {
 		xo.Attr = append(xo.Attr, xml.Attr{Name: xml.Name{Local: attrName}, Value: r.Name})
 	}
 	if r.Mesh != nil {
-		if r.DefaultPID != 0 {
+		if r.PID != 0 {
 			xo.Attr = append(xo.Attr, xml.Attr{
-				Name: xml.Name{Local: attrPID}, Value: strconv.FormatUint(uint64(r.DefaultPID), 10),
+				Name: xml.Name{Local: attrPID}, Value: strconv.FormatUint(uint64(r.PID), 10),
 			})
 		}
-		if r.DefaultPIndex != 0 {
+		if r.PIndex != 0 {
 			xo.Attr = append(xo.Attr, xml.Attr{
-				Name: xml.Name{Local: attrPIndex}, Value: strconv.FormatUint(uint64(r.DefaultPIndex), 10),
+				Name: xml.Name{Local: attrPIndex}, Value: strconv.FormatUint(uint64(r.PIndex), 10),
 			})
 		}
 	}
@@ -449,7 +449,7 @@ func (e *Encoder) writeMesh(x *XMLEncoder, r *Object, m *Mesh) {
 					xml.Attr{Name: xml.Name{Local: attrP2}, Value: strconv.FormatUint(uint64(p2), 10)},
 					xml.Attr{Name: xml.Name{Local: attrP3}, Value: strconv.FormatUint(uint64(p3), 10)},
 				)
-			} else if (v.PID != r.DefaultPID) || (p1 != r.DefaultPIndex) {
+			} else if (v.PID != r.PID) || (p1 != r.PIndex) {
 				t.Attr = append(t.Attr,
 					xml.Attr{Name: xml.Name{Local: attrPID}, Value: strconv.FormatUint(uint64(v.PID), 10)},
 					xml.Attr{Name: xml.Name{Local: attrP1}, Value: strconv.FormatUint(uint64(p1), 10)},

@@ -347,8 +347,8 @@ type trianglesDecoder struct {
 
 func (d *trianglesDecoder) Start(_ []xml.Attr) {
 	d.triangleDecoder.mesh = d.resource.Mesh
-	d.triangleDecoder.defaultPropertyID = d.resource.DefaultPID
-	d.triangleDecoder.defaultPropertyIndex = d.resource.DefaultPIndex
+	d.triangleDecoder.defaultPropertyID = d.resource.PID
+	d.triangleDecoder.defaultPropertyIndex = d.resource.PIndex
 
 	if len(d.resource.Mesh.Triangles) == 0 && len(d.resource.Mesh.Vertices) > 0 {
 		d.resource.Mesh.Triangles = make([]Triangle, 0, len(d.resource.Mesh.Vertices)-1)
@@ -464,7 +464,7 @@ func (d *objectDecoder) parseCoreAttr(a xml.Attr) {
 		d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
 	case attrType:
 		var ok bool
-		d.resource.ObjectType, ok = newObjectType(a.Value)
+		d.resource.Type, ok = newObjectType(a.Value)
 		if !ok {
 			d.Scanner.InvalidAttr(a.Name.Local, false)
 		}
@@ -479,13 +479,13 @@ func (d *objectDecoder) parseCoreAttr(a xml.Attr) {
 		if err != nil {
 			d.Scanner.InvalidAttr(a.Name.Local, false)
 		}
-		d.resource.DefaultPID = uint32(val)
+		d.resource.PID = uint32(val)
 	case attrPIndex:
 		val, err := strconv.ParseUint(a.Value, 10, 32)
 		if err != nil {
 			d.Scanner.InvalidAttr(a.Name.Local, false)
 		}
-		d.resource.DefaultPIndex = uint32(val)
+		d.resource.PIndex = uint32(val)
 	}
 }
 

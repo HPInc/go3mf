@@ -71,7 +71,7 @@ func (item *Item) validate(m *Model) error {
 	if item.ObjectID == 0 {
 		errs = errors.Append(errs, errors.NewMissingFieldError(attrObjectID))
 	} else if obj, ok := m.FindObject(opath, item.ObjectID); ok {
-		if obj.ObjectType == ObjectTypeOther {
+		if obj.Type == ObjectTypeOther {
 			errs = errors.Append(errs, errors.ErrOtherItem)
 		}
 	} else {
@@ -194,17 +194,17 @@ func (r *Object) Validate(m *Model, path string) error {
 	if r.ID == 0 {
 		errs = errors.Append(errs, errors.ErrMissingID)
 	}
-	if r.DefaultPIndex != 0 && r.DefaultPID == 0 {
+	if r.PIndex != 0 && r.PID == 0 {
 		errs = errors.Append(errs, errors.NewMissingFieldError(attrPID))
 	}
 	if (r.Mesh != nil && len(r.Components) > 0) || (r.Mesh == nil && len(r.Components) == 0) {
 		errs = errors.Append(errs, errors.ErrInvalidObject)
 	}
 	if r.Mesh != nil {
-		if r.DefaultPID != 0 {
-			if a, ok := res.FindAsset(r.DefaultPID); ok {
+		if r.PID != 0 {
+			if a, ok := res.FindAsset(r.PID); ok {
 				if a, ok := a.(PropertyGroup); ok {
-					if int(r.DefaultPIndex) >= a.Len() {
+					if int(r.PIndex) >= a.Len() {
 						errs = errors.Append(errs, errors.ErrIndexOutOfBounds)
 					}
 				}
@@ -218,7 +218,7 @@ func (r *Object) Validate(m *Model, path string) error {
 		}
 	}
 	if len(r.Components) > 0 {
-		if r.DefaultPID != 0 {
+		if r.PID != 0 {
 			errs = errors.Append(errs, errors.ErrComponentsPID)
 		}
 		errs = errors.Append(errs, r.validateComponents(m, path))
@@ -234,7 +234,7 @@ func (r *Object) Validate(m *Model, path string) error {
 func (r *Object) validateMesh(m *Model, path string) error {
 	res, _ := m.FindResources(path)
 	var errs error
-	switch r.ObjectType {
+	switch r.Type {
 	case ObjectTypeModel, ObjectTypeSolidSupport:
 		if len(r.Mesh.Vertices) < 3 {
 			errs = errors.Append(errs, errors.ErrInsufficientVertices)
@@ -254,8 +254,8 @@ func (r *Object) validateMesh(m *Model, path string) error {
 			errs = errors.Append(errs, errors.WrapIndex(errors.ErrIndexOutOfBounds, face, i))
 		}
 		if face.PID != 0 {
-			if face.PID == r.DefaultPID && face.PIndices[0] == r.DefaultPIndex &&
-				face.PIndices[1] == r.DefaultPIndex && face.PIndices[2] == r.DefaultPIndex {
+			if face.PID == r.PID && face.PIndices[0] == r.PIndex &&
+				face.PIndices[1] == r.PIndex && face.PIndices[2] == r.PIndex {
 				continue
 			}
 			if a, ok := res.FindAsset(face.PID); ok {
@@ -393,7 +393,7 @@ func (m *Model) ValidateCoherency() error {
 }
 
 func isSolidObject(r *Object) bool {
-	return r.Mesh != nil && (r.ObjectType == ObjectTypeModel || r.ObjectType == ObjectTypeSolidSupport)
+	return r.Mesh != nil && (r.Type == ObjectTypeModel || r.Type == ObjectTypeSolidSupport)
 }
 
 // ValidateCoherency checks that the mesh is non-empty, manifold and oriented.
