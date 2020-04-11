@@ -9,6 +9,7 @@ import (
 )
 
 var (
+	jsNS                    = "GO3MF"
 	objectConstructor       = js.Global().Get("Object")
 	arrayConstructor        = js.Global().Get("Array")
 	uint8ArrayConstructor   = js.Global().Get("Uint8Array")
@@ -33,19 +34,19 @@ var (
 
 func registerCore() js.Value {
 	v := js.Global().Call("eval", "(class GO3MF{})")
-	js.Global().Set("GO3MF", v)
+	js.Global().Set(jsNS, v)
 	return v
 }
 
 func RegisterClass(className string, scope ...string) js.Value {
-	classScope := []string{"GO3MF"}
+	classScope := []string{jsNS}
 	classScope = append(classScope, scope...)
 	classScope = append(classScope, className)
 	return js.Global().Call("eval", "("+strings.Join(classScope, ".")+"= class "+className+"{})")
 }
 
 func RegisterClassExtends(className, extend string, scope ...string) js.Value {
-	classScope := []string{"GO3MF"}
+	classScope := []string{jsNS}
 	classScope = append(classScope, scope...)
 	classScope = append(classScope, className)
 	return js.Global().Call("eval", "("+strings.Join(classScope, ".")+"= class "+className+" extends "+extend+"{})")
