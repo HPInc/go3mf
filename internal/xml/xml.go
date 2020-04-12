@@ -71,6 +71,9 @@ func (b *bufioReader) fill() {
 // A Decoder represents an XML parser reading a particular input stream.
 // The parser assumes that its input is encoded in UTF-8.
 type Decoder struct {
+	OnStart func(xml.StartElement)
+	OnEnd   func(xml.EndElement)
+	OnChar  func(xml.CharData)
 	// Entity can be used to map non-standard entity names to string replacements.
 	// The parser behaves as if these standard mappings are present in the map,
 	// regardless of the actual map content:
@@ -93,7 +96,6 @@ type Decoder struct {
 	free         *stack
 	needClose    bool
 	toClose      goxml.Name
-	nextToken    goxml.Token
 	nextByte     int
 	ns           map[string]string
 	err          error
@@ -109,7 +111,7 @@ func NewDecoder(r io.Reader) *Decoder {
 		ns:       make(map[string]string),
 		names:    make(map[[8]byte]string),
 		nextByte: -1,
-		attrPool: make([]xml.Attr, 50),
+		attrPool: make([]xml.Attr, 10),
 		r: &bufioReader{
 			buf: make([]byte, defaultBufSize),
 			rd:  r,
@@ -118,48 +120,7 @@ func NewDecoder(r io.Reader) *Decoder {
 	return d
 }
 
-// Token returns the next XML token in the input stream.
-// At the end of the input stream, Token returns nil, io.EOF.
-//
-// Slices of bytes in the returned token data refer to the
-// parser's internal buffer and remain valid only until the next
-// call to Token. To acquire a copy of the bytes, call CopyToken
-// or the token's Copy method.
-//
-// Token expands self-closing elements such as <br/>
-// into separate start and end elements returned by successive calls.
-//
-// Token guarantees that the StartElement and EndElement
-// tokens it returns are properly nested and matched:
-// if Token encounters an unexpected end element
-// or EOF before all expected end elements,
-// it will return an error.
-//
-// Token implements XML name spaces as described by
-// https://www.w3.org/TR/REC-xml-names/.  Each of the
-// Name structures contained in the Token has the Space
-// set to the URL identifying its name space when known.
-// If Token encounters an unrecognized name space prefix,
-// it uses the prefix as the Space rather than report an error.
-func (d *Decoder) Token() (goxml.Token, error) {
-	var t goxml.Token
-	var err error
-	if d.stk != nil && d.stk.kind == stkEOF {
-		return nil, io.EOF
-	}
-	if d.nextToken != nil {
-		t = d.nextToken
-		d.nextToken = nil
-	} else if t, err = d.rawToken(); err != nil {
-		if err == io.EOF && d.stk != nil && d.stk.kind != stkEOF {
-			err = d.syntaxError("unexpected EOF")
-		}
-		return t, err
-	}
-	return t, err
-}
-
-func (d *Decoder) handleStartElement(t *goxml.StartElement) {
+func (d *Decoder) handleStartElement(t goxml.StartElement) {
 	for _, a := range t.Attr {
 		if a.Name.Space == xmlnsPrefix {
 			v, ok := d.ns[a.Name.Local]
@@ -179,11 +140,20 @@ func (d *Decoder) handleStartElement(t *goxml.StartElement) {
 		d.translate(&t.Attr[i].Name, false)
 	}
 	d.pushElement(t.Name)
+	if d.OnStart != nil {
+		d.OnStart(t)
+	}
 }
 
-func (d *Decoder) handleEndElement(t *goxml.EndElement) bool {
+func (d *Decoder) handleEndElement(t goxml.EndElement) bool {
 	d.translate(&t.Name, true)
-	return d.popElement(t)
+	if d.popElement(&t) {
+		if d.OnEnd != nil {
+			d.OnEnd(t)
+		}
+		return true
+	}
+	return false
 }
 
 const (
@@ -346,25 +316,33 @@ func (d *Decoder) popElement(t *goxml.EndElement) bool {
 	return true
 }
 
-func (d *Decoder) rawToken() (goxml.Token, error) {
+func (d *Decoder) RawToken() error {
+	if d.stk != nil && d.stk.kind == stkEOF {
+		return io.EOF
+	}
 	if d.err != nil {
-		return nil, d.err
+		if d.err == io.EOF && d.stk != nil && d.stk.kind != stkEOF {
+			d.err = d.syntaxError("unexpected EOF")
+		}
+		return d.err
 	}
 	if d.needClose {
 		// The last element we read was self-closing and
 		// we returned just the StartElement half.
 		// Return the EndElement half now.
 		d.needClose = false
-		t := goxml.EndElement{Name: d.toClose}
-		if !d.handleEndElement(&t) {
-			return nil, d.err
+		if !d.handleEndElement(goxml.EndElement{Name: d.toClose}) {
+			return d.err
 		}
-		return t, nil
+		return nil
 	}
 
 	b, ok := d.getc()
 	if !ok {
-		return nil, d.err
+		if d.err == io.EOF && d.stk != nil && d.stk.kind != stkEOF {
+			d.err = d.syntaxError("unexpected EOF")
+		}
+		return d.err
 	}
 
 	if b != '<' {
@@ -372,13 +350,16 @@ func (d *Decoder) rawToken() (goxml.Token, error) {
 		d.ungetc(b)
 		data := d.text(-1)
 		if data == nil {
-			return nil, d.err
+			return d.err
 		}
-		return goxml.CharData(data), nil
+		if d.OnChar != nil {
+			d.OnChar(goxml.CharData(data))
+		}
+		return nil
 	}
 
 	if b, ok = d.mustgetc(); !ok {
-		return nil, d.err
+		return d.err
 	}
 	switch b {
 	case '/':
@@ -388,21 +369,20 @@ func (d *Decoder) rawToken() (goxml.Token, error) {
 			if d.err == nil {
 				d.err = d.syntaxError("expected element name after </")
 			}
-			return nil, d.err
+			return d.err
 		}
 		d.space()
 		if b, ok = d.mustgetc(); !ok {
-			return nil, d.err
+			return d.err
 		}
 		if b != '>' {
 			d.err = d.syntaxError("invalid characters between </" + name.Local + " and >")
-			return nil, d.err
+			return d.err
 		}
-		t := goxml.EndElement{Name: name}
-		if !d.handleEndElement(&t) {
-			return nil, d.err
+		if !d.handleEndElement(goxml.EndElement{Name: name}) {
+			return d.err
 		}
-		return t, nil
+		return nil
 
 	case '?':
 		// <?: Processing instruction.
@@ -411,14 +391,14 @@ func (d *Decoder) rawToken() (goxml.Token, error) {
 			if d.err == nil {
 				d.err = d.syntaxError("expected target name after <?")
 			}
-			return nil, d.err
+			return d.err
 		}
 		d.space()
 		d.buf.Reset()
 		var b0 byte
 		for {
 			if b, ok = d.mustgetc(); !ok {
-				return nil, d.err
+				return d.err
 			}
 			d.buf.WriteByte(b)
 			if b0 == '?' && b == '>' {
@@ -434,44 +414,44 @@ func (d *Decoder) rawToken() (goxml.Token, error) {
 			ver := procInst("version", content)
 			if ver != "" && ver != "1.0" {
 				d.err = fmt.Errorf("xml: unsupported version %q; only version 1.0 is supported", ver)
-				return nil, d.err
+				return d.err
 			}
 			enc := procInst("encoding", content)
 			if enc != "" && enc != "utf-8" && enc != "UTF-8" && !strings.EqualFold(enc, "utf-8") {
 				d.err = fmt.Errorf("xml: encoding %q declared but Decoder.CharsetReader is nil", enc)
-				return nil, d.err
+				return d.err
 			}
 		}
-		return goxml.ProcInst{Target: target, Inst: data}, nil
+		return nil // goxml.ProcInst{Target: target, Inst: data}, nil
 
 	case '!':
 		// <!: Maybe comment, maybe CDATA.
 		if b, ok = d.mustgetc(); !ok {
-			return nil, d.err
+			return d.err
 		}
 		switch b {
 		case '-': // <!-
 			// Probably <!-- for a comment.
 			if b, ok = d.mustgetc(); !ok {
-				return nil, d.err
+				return d.err
 			}
 			if b != '-' {
 				d.err = d.syntaxError("invalid sequence <!- not part of <!--")
-				return nil, d.err
+				return d.err
 			}
 			// Look for terminator.
 			d.buf.Reset()
 			var b0, b1 byte
 			for {
 				if b, ok = d.mustgetc(); !ok {
-					return nil, d.err
+					return d.err
 				}
 				d.buf.WriteByte(b)
 				if b0 == '-' && b1 == '-' {
 					if b != '>' {
 						d.err = d.syntaxError(
 							`invalid sequence "--" not allowed in comments`)
-						return nil, d.err
+						return d.err
 					}
 					break
 				}
@@ -479,21 +459,21 @@ func (d *Decoder) rawToken() (goxml.Token, error) {
 			}
 			data := d.buf.Bytes()
 			data = data[0 : len(data)-3] // chop -->
-			return goxml.Comment(data), nil
+			return nil
 
 		case '[': // <![
 			// Probably <![CDATA[.
 			for i := 0; i < 6; i++ {
 				if b, ok = d.mustgetc(); !ok {
-					return nil, d.err
+					return d.err
 				}
 				if b != "CDATA["[i] {
 					d.err = d.syntaxError("invalid <![ sequence")
-					return nil, d.err
+					return d.err
 				}
 			}
 			// CDATA not supported
-			return nil, d.err
+			return d.err
 		}
 
 		// Probably a directive: <!DOCTYPE ...>, <!ENTITY ...>, etc.
@@ -505,7 +485,7 @@ func (d *Decoder) rawToken() (goxml.Token, error) {
 		depth := 0
 		for {
 			if b, ok = d.mustgetc(); !ok {
-				return nil, d.err
+				return d.err
 			}
 			if inquote == 0 && b == '>' && depth == 0 {
 				break
@@ -530,7 +510,7 @@ func (d *Decoder) rawToken() (goxml.Token, error) {
 				s := "!--"
 				for i := 0; i < len(s); i++ {
 					if b, ok = d.mustgetc(); !ok {
-						return nil, d.err
+						return d.err
 					}
 					if b != s[i] {
 						for j := 0; j < i; j++ {
@@ -548,7 +528,7 @@ func (d *Decoder) rawToken() (goxml.Token, error) {
 				var b0, b1 byte
 				for {
 					if b, ok = d.mustgetc(); !ok {
-						return nil, d.err
+						return d.err
 					}
 					if b0 == '-' && b1 == '-' && b == '>' {
 						break
@@ -557,7 +537,7 @@ func (d *Decoder) rawToken() (goxml.Token, error) {
 				}
 			}
 		}
-		return goxml.Directive(d.buf.Bytes()), nil
+		return nil // goxml.Directive(d.buf.Bytes()), nil
 	}
 
 	// Must be an open element like <a href="foo">
@@ -571,23 +551,23 @@ func (d *Decoder) rawToken() (goxml.Token, error) {
 		if d.err == nil {
 			d.err = d.syntaxError("expected element name after <")
 		}
-		return nil, d.err
+		return d.err
 	}
 
 	i := 0
 	for {
 		d.space()
 		if b, ok = d.mustgetc(); !ok {
-			return nil, d.err
+			return d.err
 		}
 		if b == '/' {
 			empty = true
 			if b, ok = d.mustgetc(); !ok {
-				return nil, d.err
+				return d.err
 			}
 			if b != '>' {
 				d.err = d.syntaxError("expected /> in element")
-				return nil, d.err
+				return d.err
 			}
 			break
 		}
@@ -601,20 +581,20 @@ func (d *Decoder) rawToken() (goxml.Token, error) {
 			if d.err == nil {
 				d.err = d.syntaxError("expected attribute name in element")
 			}
-			return nil, d.err
+			return d.err
 		}
 		d.space()
 		if b, ok = d.mustgetc(); !ok {
-			return nil, d.err
+			return d.err
 		}
 		if b != '=' {
 			d.err = d.syntaxError("attribute name without = in element")
-			return nil, d.err
+			return d.err
 		}
 		d.space()
 		data := d.attrval()
 		if data == nil {
-			return nil, d.err
+			return d.err
 		}
 		a.Value = string(data)
 		i++
@@ -627,9 +607,8 @@ func (d *Decoder) rawToken() (goxml.Token, error) {
 		d.needClose = true
 		d.toClose = name
 	}
-	t := goxml.StartElement{Name: name, Attr: d.attrPool[:i]}
-	d.handleStartElement(&t)
-	return t, nil
+	d.handleStartElement(goxml.StartElement{Name: name, Attr: d.attrPool[:i]})
+	return nil
 }
 
 func (d *Decoder) attrval() []byte {
@@ -1284,27 +1263,4 @@ func procInst(param, s string) string {
 		return ""
 	}
 	return v[1 : idx+1]
-}
-
-// Skip reads tokens until it has consumed the end element
-// matching the most recent start element already consumed.
-// It recurs if it encounters a start element, so it can be used to
-// skip nested structures.
-// It returns nil if it finds an end element matching the start
-// element; otherwise it returns an error describing the problem.
-func (d *Decoder) Skip() error {
-	for {
-		tok, err := d.Token()
-		if err != nil {
-			return err
-		}
-		switch tok.(type) {
-		case goxml.StartElement:
-			if err := d.Skip(); err != nil {
-				return err
-			}
-		case goxml.EndElement:
-			return nil
-		}
-	}
 }

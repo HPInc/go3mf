@@ -87,50 +87,48 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 	var (
 		currentDecoder, tmpDecoder NodeDecoder
 		currentName                xml.Name
-		t                          xml.Token
 	)
 	nextBytesCheck := checkEveryBytes
 	currentDecoder = &topLevelDecoder{isRoot: isRoot, model: model}
 	currentDecoder.SetScanner(&scanner)
 	var err error
+	x.OnStart = func(tp xml.StartElement) {
+		tmpDecoder = currentDecoder.Child(tp.Name)
+		if tmpDecoder != nil {
+			tmpDecoder.SetScanner(&scanner)
+			state = append(state, currentDecoder)
+			names = append(names, currentName)
+			scanner.contex = append(names, tp.Name)
+			currentName = tp.Name
+			currentDecoder = tmpDecoder
+			currentDecoder.Start(tp.Attr)
+		}
+	}
+	x.OnEnd = func(tp xml.EndElement) {
+		if currentName == tp.Name {
+			currentDecoder.End()
+			currentDecoder, state = state[len(state)-1], state[:len(state)-1]
+			currentName, names = names[len(names)-1], names[:len(names)-1]
+		}
+	}
+	x.OnChar = func(tp xml.CharData) {
+		currentDecoder.Text(tp)
+	}
 	for {
-		t, err = x.Token()
-		if err != nil {
-			break
-		}
-		switch tp := t.(type) {
-		case xml.StartElement:
-			tmpDecoder = currentDecoder.Child(tp.Name)
-			if tmpDecoder != nil {
-				tmpDecoder.SetScanner(&scanner)
-				state = append(state, currentDecoder)
-				names = append(names, currentName)
-				scanner.contex = append(names, tp.Name)
-				currentName = tp.Name
-				currentDecoder = tmpDecoder
-				currentDecoder.Start(tp.Attr)
-			} else {
-				x.Skip()
-			}
-		case xml.CharData:
-			currentDecoder.Text(tp)
-		case xml.EndElement:
-			if currentName == tp.Name {
-				currentDecoder.End()
-				currentDecoder, state = state[len(state)-1], state[:len(state)-1]
-				currentName, names = names[len(names)-1], names[:len(names)-1]
-			}
-			if x.InputOffset() > nextBytesCheck {
-				select {
-				case <-ctx.Done():
-					err = ctx.Err()
-				default: // Default is must to avoid blocking
-				}
-				nextBytesCheck += checkEveryBytes
-			}
-		}
+		err = x.RawToken()
 		if err != nil || (strict && scanner.Err.Len() != 0) {
 			break
+		}
+		if x.InputOffset() > nextBytesCheck {
+			select {
+			case <-ctx.Done():
+				err = ctx.Err()
+			default: // Default is must to avoid blocking
+			}
+			if err != nil {
+				break
+			}
+			nextBytesCheck += checkEveryBytes
 		}
 	}
 	if err == io.EOF {
