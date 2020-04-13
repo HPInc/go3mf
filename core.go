@@ -366,10 +366,48 @@ func (c *Component) HasTransform() bool {
 }
 
 // Triangle defines a triangle of a mesh.
-type Triangle struct {
-	Indices  [3]uint32 // Coordinates of the three nodes that defines the face.
-	PID      uint32
-	PIndices [3]uint32 // Resource subindex of the three nodes that defines the face.
+//
+// The 7 elements are: v1,v2,v3,pid,p1,p2,p3.
+type Triangle [7]Uint24
+
+func NewTriangle(v1, v2, v3 uint32) (t Triangle) {
+	t.SetIndex(0, v1)
+	t.SetIndex(1, v2)
+	t.SetIndex(2, v3)
+	return
+}
+
+func NewTrianglePID(v1, v2, v3, pid, p1, p2, p3 uint32) Triangle {
+	t := NewTriangle(v1, v2, v3)
+	t.SetPID(pid)
+	t.SetPIndex(0, p1)
+	t.SetPIndex(1, p2)
+	t.SetPIndex(2, p3)
+	return t
+}
+
+func (t *Triangle) SetIndex(i int, v uint32) {
+	t[i] = ToUint24(v)
+}
+
+func (t Triangle) Index(i int) uint32 {
+	return t[i].ToUint32()
+}
+
+func (t *Triangle) SetPID(pid uint32) {
+	t[3] = ToUint24(pid)
+}
+
+func (t Triangle) PID() uint32 {
+	return t[3].ToUint32()
+}
+
+func (t *Triangle) SetPIndex(i int, p uint32) {
+	t[i+4] = ToUint24(p)
+}
+
+func (t Triangle) PIndex(i int) uint32 {
+	return t[i+4].ToUint32()
 }
 
 // A Mesh is an in memory representation of the 3MF mesh object.

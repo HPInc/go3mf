@@ -265,22 +265,23 @@ func (r *Object) validateMesh(m *Model, path string) error {
 
 	nodeCount := uint32(len(r.Mesh.Vertices))
 	for i, face := range r.Mesh.Triangles {
-		i0, i1, i2 := face.Indices[0], face.Indices[1], face.Indices[2]
+		i0, i1, i2 := face.Index(0), face.Index(1), face.Index(2)
 		if i0 == i1 || i0 == i2 || i1 == i2 {
 			errs = errors.Append(errs, errors.WrapIndex(errors.ErrDuplicatedIndices, face, i))
 		}
 		if i0 >= nodeCount || i1 >= nodeCount || i2 >= nodeCount {
 			errs = errors.Append(errs, errors.WrapIndex(errors.ErrIndexOutOfBounds, face, i))
 		}
-		if face.PID != 0 {
-			if face.PID == r.PID && face.PIndices[0] == r.PIndex &&
-				face.PIndices[1] == r.PIndex && face.PIndices[2] == r.PIndex {
+		pid := face.PID()
+		if pid != 0 {
+			if pid == r.PID && face.PIndex(0) == r.PIndex &&
+				face.PIndex(1) == r.PIndex && face.PIndex(2) == r.PIndex {
 				continue
 			}
-			if a, ok := res.FindAsset(face.PID); ok {
+			if a, ok := res.FindAsset(pid); ok {
 				if a, ok := a.(PropertyGroup); ok {
 					l := a.Len()
-					if int(face.PIndices[0]) >= l || int(face.PIndices[1]) >= l || int(face.PIndices[2]) >= l {
+					if int(face.PIndex(0)) >= l || int(face.PIndex(1)) >= l || int(face.PIndex(2)) >= l {
 						errs = errors.Append(errs, errors.WrapIndex(errors.ErrIndexOutOfBounds, face, i))
 					}
 				}
@@ -429,8 +430,8 @@ func (m *Mesh) ValidateCoherency() error {
 	var edgeCounter uint32
 	pairMatching := make(pairMatch)
 	for _, face := range m.Triangles {
-		for j := uint32(0); j < 3; j++ {
-			n1, n2 := face.Indices[j], face.Indices[(j+1)%3]
+		for j := 0; j < 3; j++ {
+			n1, n2 := face.Index(j), face.Index((j+1)%3)
 			if _, ok := pairMatching.CheckMatch(n1, n2); !ok {
 				pairMatching.AddMatch(n1, n2, edgeCounter)
 				edgeCounter++
@@ -440,8 +441,8 @@ func (m *Mesh) ValidateCoherency() error {
 
 	positive, negative := make([]uint32, edgeCounter), make([]uint32, edgeCounter)
 	for _, face := range m.Triangles {
-		for j := uint32(0); j < 3; j++ {
-			n1, n2 := face.Indices[j], face.Indices[(j+1)%3]
+		for j := 0; j < 3; j++ {
+			n1, n2 := face.Index(j), face.Index((j+1)%3)
 			edgeIndex, _ := pairMatching.CheckMatch(n1, n2)
 			if n1 <= n2 {
 				positive[edgeIndex]++

@@ -45,7 +45,7 @@ func TestValidate(t *testing.T) {
 		}},
 		{"build", &Model{Resources: Resources{Assets: []Asset{&BaseMaterials{ID: 1, Materials: []Base{{Name: "a", Color: color.RGBA{A: 1}}}}}, Objects: []*Object{
 			{ID: 2, Type: ObjectTypeOther, Mesh: &Mesh{Vertices: []Point3D{{}, {}, {}, {}}, Triangles: []Triangle{
-				{Indices: [3]uint32{0, 1, 2}}, {Indices: [3]uint32{0, 3, 1}}, {Indices: [3]uint32{0, 2, 3}}, {Indices: [3]uint32{1, 3, 2}},
+				NewTriangle(0, 1, 2), NewTriangle(0, 3, 1), NewTriangle(0, 2, 3), NewTriangle(1, 3, 2),
 			}}}}}, Build: Build{AnyAttr: AttrMarshalers{&fakeAttr{}}, Items: []*Item{
 			{},
 			{ObjectID: 2},
@@ -85,7 +85,7 @@ func TestValidate(t *testing.T) {
 			{},
 			{ID: 1, PIndex: 1, Mesh: &Mesh{}, Components: []*Component{{ObjectID: 1}}},
 			{ID: 2, Mesh: &Mesh{Vertices: []Point3D{{}, {}, {}, {}}, Triangles: []Triangle{
-				{Indices: [3]uint32{0, 1, 2}}, {Indices: [3]uint32{0, 3, 1}}, {Indices: [3]uint32{0, 2, 3}}, {Indices: [3]uint32{1, 3, 2}},
+				NewTriangle(0, 1, 2), NewTriangle(0, 3, 1), NewTriangle(0, 2, 3), NewTriangle(1, 3, 2),
 			}}},
 			{ID: 3, PID: 5, Components: []*Component{
 				{ObjectID: 3}, {ObjectID: 2}, {}, {ObjectID: 5}, {ObjectID: 100},
@@ -93,10 +93,10 @@ func TestValidate(t *testing.T) {
 			{ID: 4, PID: 100, Mesh: &Mesh{Vertices: make([]Point3D, 2), Triangles: make([]Triangle, 3)}},
 			{ID: 6, PID: 5, PIndex: 2, Mesh: &Mesh{Vertices: []Point3D{{}, {}, {}, {}},
 				Triangles: []Triangle{
-					{Indices: [3]uint32{0, 1, 2}, PID: 5, PIndices: [3]uint32{2, 0, 0}},
-					{Indices: [3]uint32{0, 1, 4}, PID: 5, PIndices: [3]uint32{2, 2, 2}},
-					{Indices: [3]uint32{0, 2, 3}, PID: 5, PIndices: [3]uint32{1, 1, 0}},
-					{Indices: [3]uint32{1, 2, 3}, PID: 100},
+					NewTrianglePID(0, 1, 2, 5, 2, 0, 0),
+					NewTrianglePID(0, 1, 4, 5, 2, 2, 2),
+					NewTrianglePID(0, 2, 3, 5, 1, 1, 0),
+					NewTrianglePID(1, 2, 3, 100, 0, 0, 0),
 				}}},
 		}}}, []error{
 			fmt.Errorf("Resources@Object#0: %v", errors.ErrMissingID),
@@ -155,17 +155,17 @@ func TestObject_ValidateMesh(t *testing.T) {
 		{"few triangles", &Mesh{Vertices: make([]Point3D, 3), Triangles: make([]Triangle, 3)}, true},
 		{"wrong orientation", &Mesh{Vertices: []Point3D{{}, {}, {}, {}},
 			Triangles: []Triangle{
-				{Indices: [3]uint32{0, 1, 2}},
-				{Indices: [3]uint32{0, 3, 1}},
-				{Indices: [3]uint32{0, 2, 3}},
-				{Indices: [3]uint32{1, 2, 3}},
+				NewTriangle(0, 1, 2),
+				NewTriangle(0, 3, 1),
+				NewTriangle(0, 2, 3),
+				NewTriangle(1, 2, 3),
 			}}, true},
 		{"correct", &Mesh{Vertices: []Point3D{{}, {}, {}, {}},
 			Triangles: []Triangle{
-				{Indices: [3]uint32{0, 1, 2}},
-				{Indices: [3]uint32{0, 3, 1}},
-				{Indices: [3]uint32{0, 2, 3}},
-				{Indices: [3]uint32{1, 3, 2}},
+				NewTriangle(0, 1, 2),
+				NewTriangle(0, 3, 1),
+				NewTriangle(0, 2, 3),
+				NewTriangle(1, 3, 2),
 			}}, false},
 	}
 	for _, tt := range tests {
@@ -179,12 +179,12 @@ func TestObject_ValidateMesh(t *testing.T) {
 
 func TestModel_ValidateCoherency(t *testing.T) {
 	validMesh := &Mesh{Vertices: []Point3D{{}, {}, {}, {}}, Triangles: []Triangle{
-		{Indices: [3]uint32{0, 1, 2}}, {Indices: [3]uint32{0, 3, 1}},
-		{Indices: [3]uint32{0, 2, 3}}, {Indices: [3]uint32{1, 3, 2}},
+		NewTriangle(0, 1, 2), NewTriangle(0, 3, 1),
+		NewTriangle(0, 2, 3), NewTriangle(1, 3, 2),
 	}}
 	invalidMesh := &Mesh{Vertices: []Point3D{{}, {}, {}, {}}, Triangles: []Triangle{
-		{Indices: [3]uint32{0, 1, 2}}, {Indices: [3]uint32{0, 3, 1}},
-		{Indices: [3]uint32{0, 2, 3}}, {Indices: [3]uint32{1, 2, 3}},
+		NewTriangle(0, 1, 2), NewTriangle(0, 3, 1),
+		NewTriangle(0, 2, 3), NewTriangle(1, 2, 3),
 	}}
 	tests := []struct {
 		name string

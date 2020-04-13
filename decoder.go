@@ -407,12 +407,7 @@ func (d *triangleDecoder) Start(attrs []xml.Attr) {
 	p2 = applyDefault(p2, p1, hasP2)
 	p3 = applyDefault(p3, p1, hasP3)
 	pid = applyDefault(pid, d.defaultPropertyID, hasPID)
-
-	d.mesh.Triangles = append(d.mesh.Triangles, Triangle{
-		Indices:  [3]uint32{v1, v2, v3},
-		PID:      pid,
-		PIndices: [3]uint32{p1, p2, p3},
-	})
+	d.mesh.Triangles = append(d.mesh.Triangles, NewTrianglePID(v1, v2, v3, pid, p1, p2, p3))
 }
 
 func applyDefault(val, defVal uint32, noDef bool) uint32 {

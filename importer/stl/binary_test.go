@@ -55,12 +55,12 @@ func createMeshTriangle(id uint32) *go3mf.Object {
 	n5 := mb.AddVertex(go3mf.Point3D{0.0, 0.0019989014, 39.998})
 	n6 := mb.AddVertex(go3mf.Point3D{20.0, 20.0, 0.0})
 	m.Mesh.Triangles = append(m.Mesh.Triangles,
-		go3mf.Triangle{Indices: [3]uint32{n1, n2, n3}},
-		go3mf.Triangle{Indices: [3]uint32{n4, n2, n1}},
-		go3mf.Triangle{Indices: [3]uint32{n1, n5, n4}},
-		go3mf.Triangle{Indices: [3]uint32{n2, n6, n3}},
-		go3mf.Triangle{Indices: [3]uint32{n6, n4, n3}},
-		go3mf.Triangle{Indices: [3]uint32{n6, n2, n4}},
+		go3mf.NewTriangle(n1, n2, n3),
+		go3mf.NewTriangle(n4, n2, n1),
+		go3mf.NewTriangle(n1, n5, n4),
+		go3mf.NewTriangle(n2, n6, n3),
+		go3mf.NewTriangle(n6, n4, n3),
+		go3mf.NewTriangle(n6, n2, n4),
 	)
 	return m
 }

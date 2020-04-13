@@ -174,7 +174,7 @@ func (m *Mesh) JSValue() js.Value {
 	ht.Cap *= 7 * 4
 	triangles := uint8ArrayConstructor.New(ht.Len)
 	js.CopyBytesToJS(triangles, *(*[]byte)(unsafe.Pointer(ht)))
-	v.Set(attrTriangles, uint32ArrayConstructor.New(triangles.Get("buffer"), triangles.Get("byteOffset"), triangles.Get("byteLength").Int()/4))
+	v.Set(attrTriangles, triangles)
 	v.Set("any", m.Any)
 	v.Set("anyAttr", m.AnyAttr)
 	return v

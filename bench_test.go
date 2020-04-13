@@ -1,9 +1,13 @@
 package go3mf
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func BenchmarkUnmarshalModel(b *testing.B) {
-	bt := []byte(cubeModel)
+	bt := []byte(benchModel(1000))
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		m := new(Model)
 		err := UnmarshalModel(bt, m)
@@ -14,7 +18,7 @@ func BenchmarkUnmarshalModel(b *testing.B) {
 }
 
 func BenchmarkModel_Validate(b *testing.B) {
-	bt := []byte(cubeModel)
+	bt := []byte(benchModel(10))
 	m := new(Model)
 	err := UnmarshalModel(bt, m)
 	if err != nil {
@@ -29,6 +33,19 @@ func BenchmarkModel_Validate(b *testing.B) {
 	}
 }
 
+func benchModel(n int) string {
+	vertex := `<vertex x="100.000" y="100.000" z="100.000"/>`
+	triangle := `<triangle v1="0" v2="1" v3="2" pid="1" p1="1" p2="1" p3="1"/>`
+	v, t := vertex, triangle
+	for i := 0; i < n; i++ {
+		v += vertex
+	}
+	for i := 0; i < n*3; i++ {
+		t += triangle
+	}
+	return fmt.Sprintf(cubeModel, v, t)
+}
+
 const cubeModel = `
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" requiredextensions="" unit="millimeter" xml:lang="en-US">
@@ -40,28 +57,10 @@ const cubeModel = `
         <object id="2" name="Cube" pid="1">
             <mesh>
                 <vertices>
-                    <vertex x="100.000" y="100.000" z="100.000"/>
-                    <vertex x="100.000" y="0.000" z="100.000"/>
-                    <vertex x="100.000" y="100.000" z="0.000"/>
-                    <vertex x="0.000" y="100.000" z="0.000"/>
-                    <vertex x="100.000" y="0.000" z="0.000"/>
-                    <vertex x="0.000" y="0.000" z="0.000"/>
-                    <vertex x="0.000" y="0.000" z="100.000"/>
-                    <vertex x="0.000" y="100.000" z="100.000"/>
+                    %s
                 </vertices>
                 <triangles>
-                    <triangle v1="0" v2="1" v3="2" p1="1"/>
-                    <triangle v1="3" v2="0" v3="2"/>
-                    <triangle v1="4" v2="3" v3="2"/>
-                    <triangle v1="5" v2="3" v3="4"/>
-                    <triangle v1="4" v2="6" v3="5"/>
-                    <triangle v1="6" v2="7" v3="5"/>
-                    <triangle v1="7" v2="6" v3="0"/>
-                    <triangle v1="1" v2="6" v3="4"/>
-                    <triangle v1="5" v2="7" v3="3"/>
-                    <triangle v1="7" v2="0" v3="3"/>
-                    <triangle v1="2" v2="1" v3="4"/>
-                    <triangle v1="0" v2="6" v3="1"/>
+                    %s
                 </triangles>
             </mesh>
         </object>

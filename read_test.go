@@ -334,18 +334,18 @@ func TestDecoder_processRootModel(t *testing.T) {
 		{0, 100, 100},
 	}...)
 	meshRes.Mesh.Triangles = append(meshRes.Mesh.Triangles, []Triangle{
-		{Indices: [3]uint32{3, 2, 1}, PID: 5},
-		{Indices: [3]uint32{1, 0, 3}, PID: 5},
-		{Indices: [3]uint32{4, 5, 6}, PID: 5, PIndices: [3]uint32{1, 1, 1}},
-		{Indices: [3]uint32{6, 7, 4}, PID: 5, PIndices: [3]uint32{1, 1, 1}},
-		{Indices: [3]uint32{0, 1, 5}, PID: 5, PIndices: [3]uint32{0, 1, 2}},
-		{Indices: [3]uint32{5, 4, 0}, PID: 5, PIndices: [3]uint32{3, 0, 2}},
-		{Indices: [3]uint32{1, 2, 6}, PID: 5, PIndices: [3]uint32{0, 1, 2}},
-		{Indices: [3]uint32{6, 5, 1}, PID: 5, PIndices: [3]uint32{2, 1, 3}},
-		{Indices: [3]uint32{2, 3, 7}, PID: 5},
-		{Indices: [3]uint32{7, 6, 2}, PID: 5},
-		{Indices: [3]uint32{3, 0, 4}, PID: 5},
-		{Indices: [3]uint32{4, 7, 3}, PID: 5},
+		NewTrianglePID(3, 2, 1, 5, 0, 0, 0),
+		NewTrianglePID(1, 0, 3, 5, 0, 0, 0),
+		NewTrianglePID(4, 5, 6, 5, 1, 1, 1),
+		NewTrianglePID(6, 7, 4, 5, 1, 1, 1),
+		NewTrianglePID(0, 1, 5, 5, 0, 1, 2),
+		NewTrianglePID(5, 4, 0, 5, 3, 0, 2),
+		NewTrianglePID(1, 2, 6, 5, 0, 1, 2),
+		NewTrianglePID(6, 5, 1, 5, 2, 1, 3),
+		NewTrianglePID(2, 3, 7, 5, 0, 0, 0),
+		NewTrianglePID(7, 6, 2, 5, 0, 0, 0),
+		NewTrianglePID(3, 0, 4, 5, 0, 0, 0),
+		NewTrianglePID(4, 7, 3, 5, 0, 0, 0),
 	}...)
 
 	components := &Object{
@@ -683,10 +683,10 @@ func TestOpenReader(t *testing.T) {
 				Vertices: []Point3D{
 					{100, 100, 100}, {100, 0, 100}, {100, 100, 0}, {0, 100, 0}, {100, 0, 0}, {}, {0, 0, 100}, {0, 100, 100},
 				}, Triangles: []Triangle{
-					{Indices: [3]uint32{0, 1, 2}}, {Indices: [3]uint32{3, 0, 2}}, {Indices: [3]uint32{4, 3, 2}},
-					{Indices: [3]uint32{5, 3, 4}}, {Indices: [3]uint32{4, 6, 5}}, {Indices: [3]uint32{6, 7, 5}},
-					{Indices: [3]uint32{7, 6, 0}}, {Indices: [3]uint32{1, 6, 4}}, {Indices: [3]uint32{5, 7, 3}},
-					{Indices: [3]uint32{7, 0, 3}}, {Indices: [3]uint32{2, 1, 4}}, {Indices: [3]uint32{0, 6, 1}},
+					NewTriangle(0, 1, 2), NewTriangle(3, 0, 2), NewTriangle(4, 3, 2),
+					NewTriangle(5, 3, 4), NewTriangle(4, 6, 5), NewTriangle(6, 7, 5),
+					NewTriangle(7, 6, 0), NewTriangle(1, 6, 4), NewTriangle(5, 7, 3),
+					NewTriangle(7, 0, 3), NewTriangle(2, 1, 4), NewTriangle(0, 6, 1),
 				}},
 			},
 		}},

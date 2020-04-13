@@ -35,9 +35,7 @@ func (d *asciiDecoder) decode(ctx context.Context, m *go3mf.Mesh) (err error) {
 
 			if position == 3 {
 				position = 0
-				m.Triangles = append(m.Triangles, go3mf.Triangle{
-					Indices: [3]uint32{nodes[0], nodes[1], nodes[2]},
-				})
+				m.Triangles = append(m.Triangles, go3mf.NewTriangle(nodes[0], nodes[1], nodes[2]))
 				if len(m.Triangles) > nextFaceCheck {
 					select {
 					case <-ctx.Done():

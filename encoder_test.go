@@ -56,25 +56,25 @@ func TestMarshalModel(t *testing.T) {
 			Objects: []*Object{
 				{
 					ID: 8, Name: "Box 1", PartNumber: "11111111-1111-1111-1111-111111111111", Thumbnail: "/a.png",
-					AnyAttr:    AttrMarshalers{&fakeAttr{Value: "object_fake"}},
-					PID: 1, PIndex: 1, Type: ObjectTypeModel, Mesh: &Mesh{
+					AnyAttr: AttrMarshalers{&fakeAttr{Value: "object_fake"}},
+					PID:     1, PIndex: 1, Type: ObjectTypeModel, Mesh: &Mesh{
 						Vertices: []Point3D{
 							{0, 0, 0}, {100, 0, 0}, {100, 100, 0},
 							{0, 100, 0}, {0, 0, 100}, {100, 0, 100},
 							{100, 100, 100}, {0, 100, 100}},
 						Triangles: []Triangle{
-							{Indices: [3]uint32{3, 2, 1}, PID: 5},
-							{Indices: [3]uint32{1, 0, 3}, PID: 5},
-							{Indices: [3]uint32{4, 5, 6}, PID: 5, PIndices: [3]uint32{1, 1, 1}},
-							{Indices: [3]uint32{6, 7, 4}, PID: 5, PIndices: [3]uint32{1, 1, 1}},
-							{Indices: [3]uint32{0, 1, 5}, PID: 5, PIndices: [3]uint32{0, 1, 2}},
-							{Indices: [3]uint32{5, 4, 0}, PID: 5, PIndices: [3]uint32{3, 0, 2}},
-							{Indices: [3]uint32{1, 2, 6}, PID: 5, PIndices: [3]uint32{0, 1, 2}},
-							{Indices: [3]uint32{6, 5, 1}, PID: 5, PIndices: [3]uint32{2, 1, 3}},
-							{Indices: [3]uint32{2, 3, 7}, PID: 5},
-							{Indices: [3]uint32{7, 6, 2}, PID: 5},
-							{Indices: [3]uint32{3, 0, 4}, PID: 5},
-							{Indices: [3]uint32{4, 7, 3}, PID: 5},
+							NewTrianglePID(3, 2, 1, 5, 0, 0, 0),
+							NewTrianglePID(1, 0, 3, 5, 0, 0, 0),
+							NewTrianglePID(4, 5, 6, 5, 1, 1, 1),
+							NewTrianglePID(6, 7, 4, 5, 1, 1, 1),
+							NewTrianglePID(0, 1, 5, 5, 0, 1, 2),
+							NewTrianglePID(5, 4, 0, 5, 3, 0, 2),
+							NewTrianglePID(1, 2, 6, 5, 0, 1, 2),
+							NewTrianglePID(6, 5, 1, 5, 2, 1, 3),
+							NewTrianglePID(2, 3, 7, 5, 0, 0, 0),
+							NewTrianglePID(7, 6, 2, 5, 0, 0, 0),
+							NewTrianglePID(3, 0, 4, 5, 0, 0, 0),
+							NewTrianglePID(4, 7, 3, 5, 0, 0, 0),
 						},
 					}},
 				{

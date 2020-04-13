@@ -11,7 +11,7 @@ import (
 
 func TestValidate(t *testing.T) {
 	validMesh := &go3mf.Object{ID: 1, Mesh: &go3mf.Mesh{Vertices: []go3mf.Point3D{{}, {}, {}, {}}, Triangles: []go3mf.Triangle{
-		{Indices: [3]uint32{0, 1, 2}}, {Indices: [3]uint32{0, 3, 1}}, {Indices: [3]uint32{0, 2, 3}}, {Indices: [3]uint32{1, 3, 2}},
+		go3mf.NewTriangle(0, 1, 2), go3mf.NewTriangle(0, 3, 1), go3mf.NewTriangle(0, 2, 3), go3mf.NewTriangle(1, 3, 2),
 	}}}
 	tests := []struct {
 		name  string
