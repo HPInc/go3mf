@@ -40,7 +40,7 @@ func benchModel(n int) string {
 	for i := 0; i < n; i++ {
 		v += vertex
 	}
-	for i := 0; i < n*3; i++ {
+	for i := 0; i < n*2; i++ {
 		t += triangle
 	}
 	return fmt.Sprintf(cubeModel, v, t)

@@ -371,19 +371,27 @@ func (c *Component) HasTransform() bool {
 type Triangle [7]Uint24
 
 func NewTriangle(v1, v2, v3 uint32) (t Triangle) {
-	t.SetIndex(0, v1)
-	t.SetIndex(1, v2)
-	t.SetIndex(2, v3)
+	t.SetIndices(v1, v2, v3)
 	return
 }
 
 func NewTrianglePID(v1, v2, v3, pid, p1, p2, p3 uint32) Triangle {
 	t := NewTriangle(v1, v2, v3)
-	t.SetPID(pid)
-	t.SetPIndex(0, p1)
-	t.SetPIndex(1, p2)
-	t.SetPIndex(2, p3)
+	t.SetPIndices(pid, p1, p2, p3)
 	return t
+}
+
+func (t *Triangle) SetIndices(v1, v2, v3 uint32) {
+	t[0] = ToUint24(v1)
+	t[1] = ToUint24(v2)
+	t[2] = ToUint24(v3)
+}
+
+func (t *Triangle) SetPIndices(pid, p1, p2, p3 uint32) {
+	t.SetPID(pid)
+	t[4] = ToUint24(p1)
+	t[5] = ToUint24(p2)
+	t[6] = ToUint24(p3)
 }
 
 func (t *Triangle) SetIndex(i int, v uint32) {
