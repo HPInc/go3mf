@@ -351,7 +351,7 @@ func (d *trianglesDecoder) Start(_ []xml.Attr) {
 	d.triangleDecoder.defaultPropertyIndex = d.resource.PIndex
 
 	if len(d.resource.Mesh.Triangles) == 0 && len(d.resource.Mesh.Vertices) > 0 {
-		d.resource.Mesh.Triangles = make([]Triangle, 0, len(d.resource.Mesh.Vertices)-1)
+		d.resource.Mesh.Triangles = make([]Triangle, 0, len(d.resource.Mesh.Vertices)*2)
 	}
 }
 
