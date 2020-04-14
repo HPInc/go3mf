@@ -435,17 +435,18 @@ func (e *Encoder) writeMesh(x *XMLEncoder, r *Object, m *Mesh) {
 	x.EncodeToken(xvt)
 	x.SetAutoClose(true)
 	for _, v := range m.Triangles {
+		v1, v2, v3 := v.Indices()
 		t := xml.StartElement{
 			Name: xml.Name{Local: attrTriangle},
 			Attr: []xml.Attr{
-				{Name: xml.Name{Local: attrV1}, Value: strconv.FormatUint(uint64(v.Index(0)), 10)},
-				{Name: xml.Name{Local: attrV2}, Value: strconv.FormatUint(uint64(v.Index(1)), 10)},
-				{Name: xml.Name{Local: attrV3}, Value: strconv.FormatUint(uint64(v.Index(2)), 10)},
+				{Name: xml.Name{Local: attrV1}, Value: strconv.FormatUint(uint64(v1), 10)},
+				{Name: xml.Name{Local: attrV2}, Value: strconv.FormatUint(uint64(v2), 10)},
+				{Name: xml.Name{Local: attrV3}, Value: strconv.FormatUint(uint64(v3), 10)},
 			},
 		}
 		pid := v.PID()
 		if pid != 0 {
-			p1, p2, p3 := v.PIndex(0), v.PIndex(1), v.PIndex(2)
+			p1, p2, p3 := v.PIndices()
 			if (p1 != p2) || (p1 != p3) {
 				t.Attr = append(t.Attr,
 					xml.Attr{Name: xml.Name{Local: attrPID}, Value: strconv.FormatUint(uint64(pid), 10)},

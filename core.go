@@ -377,7 +377,8 @@ func NewTriangle(v1, v2, v3 uint32) (t Triangle) {
 
 func NewTrianglePID(v1, v2, v3, pid, p1, p2, p3 uint32) Triangle {
 	t := NewTriangle(v1, v2, v3)
-	t.SetPIndices(pid, p1, p2, p3)
+	t.SetPID(pid)
+	t.SetPIndices(p1, p2, p3)
 	return t
 }
 
@@ -387,35 +388,26 @@ func (t *Triangle) SetIndices(v1, v2, v3 uint32) {
 	t[2] = ToUint24(v3)
 }
 
-func (t *Triangle) SetPIndices(pid, p1, p2, p3 uint32) {
-	t.SetPID(pid)
+func (t *Triangle) SetPID(pid uint32) {
+	t[3] = ToUint24(pid)
+}
+
+func (t *Triangle) SetPIndices(p1, p2, p3 uint32) {
 	t[4] = ToUint24(p1)
 	t[5] = ToUint24(p2)
 	t[6] = ToUint24(p3)
 }
 
-func (t *Triangle) SetIndex(i int, v uint32) {
-	t[i] = ToUint24(v)
-}
-
-func (t Triangle) Index(i int) uint32 {
-	return t[i].ToUint32()
-}
-
-func (t *Triangle) SetPID(pid uint32) {
-	t[3] = ToUint24(pid)
+func (t Triangle) Indices() (uint32, uint32, uint32) {
+	return t[0].ToUint32(), t[1].ToUint32(), t[2].ToUint32()
 }
 
 func (t Triangle) PID() uint32 {
 	return t[3].ToUint32()
 }
 
-func (t *Triangle) SetPIndex(i int, p uint32) {
-	t[i+4] = ToUint24(p)
-}
-
-func (t Triangle) PIndex(i int) uint32 {
-	return t[i+4].ToUint32()
+func (t Triangle) PIndices() (uint32, uint32, uint32) {
+	return t[4].ToUint32(), t[5].ToUint32(), t[6].ToUint32()
 }
 
 // A Mesh is an in memory representation of the 3MF mesh object.

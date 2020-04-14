@@ -265,7 +265,7 @@ func (r *Object) validateMesh(m *Model, path string) error {
 
 	nodeCount := uint32(len(r.Mesh.Vertices))
 	for i, face := range r.Mesh.Triangles {
-		i0, i1, i2 := face.Index(0), face.Index(1), face.Index(2)
+		i0, i1, i2 := face.Indices()
 		if i0 == i1 || i0 == i2 || i1 == i2 {
 			errs = errors.Append(errs, errors.WrapIndex(errors.ErrDuplicatedIndices, face, i))
 		}
@@ -274,14 +274,15 @@ func (r *Object) validateMesh(m *Model, path string) error {
 		}
 		pid := face.PID()
 		if pid != 0 {
-			if pid == r.PID && face.PIndex(0) == r.PIndex &&
-				face.PIndex(1) == r.PIndex && face.PIndex(2) == r.PIndex {
+			p1, p2, p3 := face.PIndices()
+			if pid == r.PID && p1 == r.PIndex &&
+				p2 == r.PIndex && p3 == r.PIndex {
 				continue
 			}
 			if a, ok := res.FindAsset(pid); ok {
 				if a, ok := a.(PropertyGroup); ok {
 					l := a.Len()
-					if int(face.PIndex(0)) >= l || int(face.PIndex(1)) >= l || int(face.PIndex(2)) >= l {
+					if int(p1) >= l || int(p2) >= l || int(p3) >= l {
 						errs = errors.Append(errs, errors.WrapIndex(errors.ErrIndexOutOfBounds, face, i))
 					}
 				}
@@ -431,7 +432,7 @@ func (m *Mesh) ValidateCoherency() error {
 	pairMatching := make(pairMatch)
 	for _, face := range m.Triangles {
 		for j := 0; j < 3; j++ {
-			n1, n2 := face.Index(j), face.Index((j+1)%3)
+			n1, n2 := face[j].ToUint32(), face[(j+1)%3].ToUint32()
 			if _, ok := pairMatching.CheckMatch(n1, n2); !ok {
 				pairMatching.AddMatch(n1, n2, edgeCounter)
 				edgeCounter++
@@ -442,7 +443,7 @@ func (m *Mesh) ValidateCoherency() error {
 	positive, negative := make([]uint32, edgeCounter), make([]uint32, edgeCounter)
 	for _, face := range m.Triangles {
 		for j := 0; j < 3; j++ {
-			n1, n2 := face.Index(j), face.Index((j+1)%3)
+			n1, n2 := face[j].ToUint32(), face[(j+1)%3].ToUint32()
 			edgeIndex, _ := pairMatching.CheckMatch(n1, n2)
 			if n1 <= n2 {
 				positive[edgeIndex]++
