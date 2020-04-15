@@ -301,7 +301,6 @@ func TestDecoder_processRootModel_Fail(t *testing.T) {
 		wantErr bool
 	}{
 		{"errOpen", newMockFile("/a.model", nil, nil, true), true},
-		{"errEncode", new(modelBuilder).withEncoding("utf16").build(""), true},
 		{"invalidUnits", new(modelBuilder).withModel("other", "en-US", "").build(""), true},
 	}
 	for _, tt := range tests {

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/xml"
 	goxml "encoding/xml"
-	"fmt"
 	"io"
 	"strconv"
 	"strings"
@@ -12,13 +11,13 @@ import (
 )
 
 type bufioReader struct {
-	buf  []byte
-	rd   io.Reader // reader provided by the client
-	r, w int       // buf read and write positions
-	err  error
+	buf      []byte
+	rd       io.Reader // reader provided by the client
+	r, w     int       // buf read and write positions
+	err      error
+	nextByte int
 }
 
-const minReadBufferSize = 16
 const maxConsecutiveEmptyReads = 100
 const defaultBufSize = 4096
 
@@ -29,6 +28,11 @@ func (b *bufioReader) readErr() error {
 }
 
 func (b *bufioReader) ReadByte() (byte, error) {
+	if b.nextByte >= 0 {
+		bt := byte(b.nextByte)
+		b.nextByte = -1
+		return bt, nil
+	}
 	for b.r == b.w {
 		if b.err != nil {
 			return 0, b.readErr()
@@ -67,28 +71,20 @@ func (b *bufioReader) fill() {
 	b.err = io.ErrNoProgress
 }
 
+const nameCacheSize = 8
+
 // A Decoder represents an XML parser reading a particular input stream.
 // The parser assumes that its input is encoded in UTF-8.
 type Decoder struct {
 	OnStart func(xml.StartElement)
 	OnEnd   func(xml.EndElement)
 	OnChar  func(xml.CharData)
-	// Entity can be used to map non-standard entity names to string replacements.
-	// The parser behaves as if these standard mappings are present in the map,
-	// regardless of the actual map content:
-	//
-	//	"lt": "<",
-	//	"gt": ">",
-	//	"amp": "&",
-	//	"apos": "'",
-	//	"quot": `"`,
-	Entity map[string]string
 
 	// DefaultSpace sets the default name space used for unadorned tags,
 	// as if the entire XML stream were wrapped in an element containing
 	// the attribute xmlns="DefaultSpace".
 	DefaultSpace string
-	names        map[[8]byte]string
+	names        map[[nameCacheSize]byte]string
 	r            *bufioReader
 	buf          bytes.Buffer
 	stk          *stack
@@ -108,12 +104,12 @@ type Decoder struct {
 func NewDecoder(r io.Reader) *Decoder {
 	d := &Decoder{
 		ns:       make(map[string]string),
-		names:    make(map[[8]byte]string),
-		nextByte: -1,
+		names:    make(map[[nameCacheSize]byte]string),
 		attrPool: make([]xml.Attr, 10),
 		r: &bufioReader{
-			buf: make([]byte, defaultBufSize),
-			rd:  r,
+			buf:      make([]byte, defaultBufSize),
+			rd:       r,
+			nextByte: -1,
 		},
 	}
 	return d
@@ -357,7 +353,8 @@ func (d *Decoder) RawToken() error {
 		return nil
 	}
 
-	if b, ok = d.mustgetc(); !ok {
+	if b, ok = d.getc(); !ok {
+		d.mustNotEOF()
 		return d.err
 	}
 	switch b {
@@ -371,7 +368,8 @@ func (d *Decoder) RawToken() error {
 			return d.err
 		}
 		d.space()
-		if b, ok = d.mustgetc(); !ok {
+		if b, ok = d.getc(); !ok {
+			d.mustNotEOF()
 			return d.err
 		}
 		if b != '>' {
@@ -385,18 +383,17 @@ func (d *Decoder) RawToken() error {
 
 	case '?':
 		// <?: Processing instruction.
-		var target string
-		if target, ok = d.name(); !ok {
+		if _, ok = d.name(); !ok {
 			if d.err == nil {
 				d.err = d.syntaxError("expected target name after <?")
 			}
 			return d.err
 		}
 		d.space()
-		d.buf.Reset()
 		var b0 byte
 		for {
-			if b, ok = d.mustgetc(); !ok {
+			if b, ok = d.getc(); !ok {
+				d.mustNotEOF()
 				return d.err
 			}
 			d.buf.WriteByte(b)
@@ -405,138 +402,7 @@ func (d *Decoder) RawToken() error {
 			}
 			b0 = b
 		}
-		data := d.buf.Bytes()
-		data = data[0 : len(data)-2] // chop ?>
-
-		if target == "xml" {
-			content := string(data)
-			ver := procInst("version", content)
-			if ver != "" && ver != "1.0" {
-				d.err = fmt.Errorf("xml: unsupported version %q; only version 1.0 is supported", ver)
-				return d.err
-			}
-			enc := procInst("encoding", content)
-			if enc != "" && enc != "utf-8" && enc != "UTF-8" && !strings.EqualFold(enc, "utf-8") {
-				d.err = fmt.Errorf("xml: encoding %q declared but Decoder.CharsetReader is nil", enc)
-				return d.err
-			}
-		}
-		return nil // goxml.ProcInst{Target: target, Inst: data}, nil
-
-	case '!':
-		// <!: Maybe comment, maybe CDATA.
-		if b, ok = d.mustgetc(); !ok {
-			return d.err
-		}
-		switch b {
-		case '-': // <!-
-			// Probably <!-- for a comment.
-			if b, ok = d.mustgetc(); !ok {
-				return d.err
-			}
-			if b != '-' {
-				d.err = d.syntaxError("invalid sequence <!- not part of <!--")
-				return d.err
-			}
-			// Look for terminator.
-			d.buf.Reset()
-			var b0, b1 byte
-			for {
-				if b, ok = d.mustgetc(); !ok {
-					return d.err
-				}
-				d.buf.WriteByte(b)
-				if b0 == '-' && b1 == '-' {
-					if b != '>' {
-						d.err = d.syntaxError(
-							`invalid sequence "--" not allowed in comments`)
-						return d.err
-					}
-					break
-				}
-				b0, b1 = b1, b
-			}
-			data := d.buf.Bytes()
-			data = data[0 : len(data)-3] // chop -->
-			return nil
-
-		case '[': // <![
-			// Probably <![CDATA[.
-			for i := 0; i < 6; i++ {
-				if b, ok = d.mustgetc(); !ok {
-					return d.err
-				}
-				if b != "CDATA["[i] {
-					d.err = d.syntaxError("invalid <![ sequence")
-					return d.err
-				}
-			}
-			// CDATA not supported
-			return d.err
-		}
-
-		// Probably a directive: <!DOCTYPE ...>, <!ENTITY ...>, etc.
-		// We don't care, but accumulate for caller. Quoted angle
-		// brackets do not count for nesting.
-		d.buf.Reset()
-		d.buf.WriteByte(b)
-		inquote := uint8(0)
-		depth := 0
-		for {
-			if b, ok = d.mustgetc(); !ok {
-				return d.err
-			}
-			if inquote == 0 && b == '>' && depth == 0 {
-				break
-			}
-		HandleB:
-			d.buf.WriteByte(b)
-			switch {
-			case b == inquote:
-				inquote = 0
-
-			case inquote != 0:
-				// in quotes, no special action
-
-			case b == '\'' || b == '"':
-				inquote = b
-
-			case b == '>' && inquote == 0:
-				depth--
-
-			case b == '<' && inquote == 0:
-				// Look for <!-- to begin comment.
-				s := "!--"
-				for i := 0; i < len(s); i++ {
-					if b, ok = d.mustgetc(); !ok {
-						return d.err
-					}
-					if b != s[i] {
-						for j := 0; j < i; j++ {
-							d.buf.WriteByte(s[j])
-						}
-						depth++
-						goto HandleB
-					}
-				}
-
-				// Remove < that was written above.
-				d.buf.Truncate(d.buf.Len() - 1)
-
-				// Look for terminator.
-				var b0, b1 byte
-				for {
-					if b, ok = d.mustgetc(); !ok {
-						return d.err
-					}
-					if b0 == '-' && b1 == '-' && b == '>' {
-						break
-					}
-					b0, b1 = b1, b
-				}
-			}
-		}
-		return nil // goxml.Directive(d.buf.Bytes()), nil
+		return nil
 	}
 
 	// Must be an open element like <a href="foo">
@@ -556,12 +422,14 @@ func (d *Decoder) RawToken() error {
 	i := 0
 	for {
 		d.space()
-		if b, ok = d.mustgetc(); !ok {
+		if b, ok = d.getc(); !ok {
+			d.mustNotEOF()
 			return d.err
 		}
 		if b == '/' {
 			empty = true
-			if b, ok = d.mustgetc(); !ok {
+			if b, ok = d.getc(); !ok {
+				d.mustNotEOF()
 				return d.err
 			}
 			if b != '>' {
@@ -583,7 +451,8 @@ func (d *Decoder) RawToken() error {
 			return d.err
 		}
 		d.space()
-		if b, ok = d.mustgetc(); !ok {
+		if b, ok = d.getc(); !ok {
+			d.mustNotEOF()
 			return d.err
 		}
 		if b != '=' {
@@ -611,8 +480,9 @@ func (d *Decoder) RawToken() error {
 }
 
 func (d *Decoder) attrval() []byte {
-	b, ok := d.mustgetc()
+	b, ok := d.getc()
 	if !ok {
+		d.mustNotEOF()
 		return nil
 	}
 	// Handle quoted attribute values
@@ -644,20 +514,11 @@ func (d *Decoder) space() {
 // If there is no byte to read, return ok==false
 // and leave the error in d.err.
 func (d *Decoder) getc() (b byte, ok bool) {
-	if d.err != nil {
-		return 0, false
-	}
-	if d.nextByte >= 0 {
-		b = byte(d.nextByte)
-		d.nextByte = -1
-	} else {
+	if d.err == nil {
+		d.offset++
 		b, d.err = d.r.ReadByte()
-		if d.err != nil {
-			return 0, false
-		}
 	}
-	d.offset++
-	return b, true
+	return b, d.err == nil
 }
 
 // InputOffset returns the input stream byte offset of the current decoder position.
@@ -671,8 +532,8 @@ func (d *Decoder) InputOffset() int64 {
 // If there is no byte to read,
 // set d.err to SyntaxError("unexpected EOF")
 // and return ok==false
-func (d *Decoder) mustgetc() (b byte, ok bool) {
-	if b, ok = d.getc(); !ok && d.err == io.EOF {
+func (d *Decoder) mustNotEOF() {
+	if d.err == io.EOF {
 		d.err = d.syntaxError("unexpected EOF")
 	}
 	return
@@ -680,7 +541,7 @@ func (d *Decoder) mustgetc() (b byte, ok bool) {
 
 // Unread a single byte.
 func (d *Decoder) ungetc(b byte) {
-	d.nextByte = int(b)
+	d.r.nextByte = int(b)
 	d.offset--
 }
 
@@ -729,19 +590,22 @@ Input:
 			var ok bool
 			var text string
 			var haveText bool
-			if b, ok = d.mustgetc(); !ok {
+			if b, ok = d.getc(); !ok {
+				d.mustNotEOF()
 				return nil
 			}
 			if b == '#' {
 				d.buf.WriteByte(b)
-				if b, ok = d.mustgetc(); !ok {
+				if b, ok = d.getc(); !ok {
+					d.mustNotEOF()
 					return nil
 				}
 				base := 10
 				if b == 'x' {
 					base = 16
 					d.buf.WriteByte(b)
-					if b, ok = d.mustgetc(); !ok {
+					if b, ok = d.getc(); !ok {
+						d.mustNotEOF()
 						return nil
 					}
 				}
@@ -750,7 +614,8 @@ Input:
 					base == 16 && 'a' <= b && b <= 'f' ||
 					base == 16 && 'A' <= b && b <= 'F' {
 					d.buf.WriteByte(b)
-					if b, ok = d.mustgetc(); !ok {
+					if b, ok = d.getc(); !ok {
+						d.mustNotEOF()
 						return nil
 					}
 				}
@@ -772,7 +637,8 @@ Input:
 						return nil
 					}
 				}
-				if b, ok = d.mustgetc(); !ok {
+				if b, ok = d.getc(); !ok {
+					d.mustNotEOF()
 					return nil
 				}
 				if b != ';' {
@@ -785,8 +651,6 @@ Input:
 						if r, ok := entity[s]; ok {
 							text = string(r)
 							haveText = true
-						} else if d.Entity != nil {
-							text, haveText = d.Entity[s]
 						}
 					}
 				}
@@ -834,7 +698,7 @@ func (d *Decoder) nsname() (name goxml.Name, ok bool) {
 		name.Space = s[0:i]
 		name.Local = s[i+1:]
 	}
-	return name, true
+	return
 }
 
 // Get name: /first(first|second)*/
@@ -847,9 +711,9 @@ func (d *Decoder) name() (s string, ok bool) {
 	}
 
 	// Now we check the characters.
-	var arr [8]byte
+	var arr [nameCacheSize]byte
 	b := d.buf.Bytes()
-	if len(b) <= 8 {
+	if len(b) <= nameCacheSize {
 		copy(arr[:], b)
 		if s, ok = d.names[arr]; ok {
 			return s, ok
@@ -860,7 +724,7 @@ func (d *Decoder) name() (s string, ok bool) {
 		return "", false
 	}
 	s = string(b)
-	if len(b) <= 8 {
+	if len(b) <= nameCacheSize {
 		d.names[arr] = s
 	}
 	return s, true
@@ -869,11 +733,13 @@ func (d *Decoder) name() (s string, ok bool) {
 // Read a name and append its bytes to d.buf.
 // The name is delimited by any single-byte character not valid in names.
 // All multi-byte characters are accepted; the caller must check their validity.
-func (d *Decoder) readName() (ok bool) {
+func (d *Decoder) readName() bool {
 	const runSelf = 0x80 // characters below RuneSelf are represented as themselves in a single byte.
 	var b byte
-	if b, ok = d.mustgetc(); !ok {
-		return
+	var ok bool
+	if b, ok = d.getc(); !ok {
+		d.mustNotEOF()
+		return false
 	}
 	if b < runSelf && !isNameByte(b) {
 		d.ungetc(b)
@@ -882,8 +748,9 @@ func (d *Decoder) readName() (ok bool) {
 	d.buf.WriteByte(b)
 
 	for {
-		if b, ok = d.mustgetc(); !ok {
-			return
+		if b, ok = d.getc(); !ok {
+			d.mustNotEOF()
+			return false
 		}
 		if b < runSelf && !isNameByte(b) {
 			d.ungetc(b)
@@ -902,28 +769,4 @@ func isNameByte(c byte) bool {
 }
 func isName(s []byte) bool {
 	return len(s) != 0
-}
-
-// procInst parses the `param="..."` or `param='...'`
-// value out of the provided string, returning "" if not found.
-func procInst(param, s string) string {
-	// TODO: this parsing is somewhat lame and not exact.
-	// It works for all actual cases, though.
-	param = param + "="
-	idx := strings.Index(s, param)
-	if idx == -1 {
-		return ""
-	}
-	v := s[idx+len(param):]
-	if v == "" {
-		return ""
-	}
-	if v[0] != '\'' && v[0] != '"' {
-		return ""
-	}
-	idx = strings.IndexRune(v[1:], rune(v[0]))
-	if idx == -1 {
-		return ""
-	}
-	return v[1 : idx+1]
 }

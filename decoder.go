@@ -370,7 +370,7 @@ type triangleDecoder struct {
 
 func (d *triangleDecoder) Start(attrs []xml.Attr) {
 	var v1, v2, v3, pid, p1, p2, p3 uint32
-	var hasP1, hasP2, hasP3 bool
+	var hasPID, hasP1, hasP2, hasP3 bool
 	for _, a := range attrs {
 		required := true
 		val, err := strconv.ParseUint(a.Value, 10, 24)
@@ -383,6 +383,7 @@ func (d *triangleDecoder) Start(attrs []xml.Attr) {
 			v3 = uint32(val)
 		case attrPID:
 			pid = uint32(val)
+			hasPID = true
 			required = false
 		case attrP1:
 			p1 = uint32(val)
@@ -405,7 +406,7 @@ func (d *triangleDecoder) Start(attrs []xml.Attr) {
 	p1 = applyDefault(p1, d.defaultPropertyIndex, hasP1)
 	p2 = applyDefault(p2, p1, hasP2)
 	p3 = applyDefault(p3, p1, hasP3)
-	pid = applyDefault(pid, d.defaultPropertyID, pid != 0)
+	pid = applyDefault(pid, d.defaultPropertyID, hasPID)
 	d.mesh.Triangles = append(d.mesh.Triangles, NewTrianglePID(v1, v2, v3, pid, p1, p2, p3))
 }
 
