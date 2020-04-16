@@ -10,9 +10,14 @@ import (
 	specerr "github.com/qmuntal/go3mf/errors"
 )
 
+type XMLAttr struct {
+	Name  xml.Name
+	Value []byte
+}
+
 // NodeDecoder defines the minimum contract to decode a 3MF node.
 type NodeDecoder interface {
-	Start([]xml.Attr)
+	Start([]XMLAttr)
 	Text([]byte)
 	Child(xml.Name) NodeDecoder
 	End()
@@ -23,7 +28,7 @@ type baseDecoder struct {
 	Scanner *Scanner
 }
 
-func (d *baseDecoder) Start([]xml.Attr)           {}
+func (d *baseDecoder) Start([]XMLAttr)            {}
 func (d *baseDecoder) Text([]byte)                {}
 func (d *baseDecoder) Child(xml.Name) NodeDecoder { return nil }
 func (d *baseDecoder) End()                       {}

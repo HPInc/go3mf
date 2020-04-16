@@ -90,8 +90,8 @@ type fakeAssetDecoder struct {
 	baseDecoder
 }
 
-func (f *fakeAssetDecoder) Start(att []xml.Attr) {
-	id, _ := strconv.ParseUint(att[0].Value, 10, 32)
+func (f *fakeAssetDecoder) Start(att []XMLAttr) {
+	id, _ := strconv.ParseUint(string(att[0].Value), 10, 32)
 	f.Scanner.ResourceID = uint32(id)
 	f.Scanner.AddAsset(&fakeAsset{ID: uint32(id)})
 }

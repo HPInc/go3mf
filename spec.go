@@ -36,7 +36,7 @@ type SpecDecoder interface {
 	Spec
 	OnDecoded(m *Model) error
 	NewNodeDecoder(interface{}, string) NodeDecoder
-	DecodeAttribute(*Scanner, interface{}, xml.Attr)
+	DecodeAttribute(*Scanner, interface{}, XMLAttr)
 }
 
 type PropertyGroup interface {

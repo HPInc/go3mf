@@ -10,6 +10,16 @@ import (
 	"unicode"
 )
 
+type StartElement struct {
+	Name xml.Name
+	Attr []XMLAttr
+}
+
+type XMLAttr struct {
+	Name  xml.Name
+	Value []byte
+}
+
 type bufioReader struct {
 	buf      []byte
 	rd       io.Reader // reader provided by the client
@@ -76,7 +86,7 @@ const nameCacheSize = 8
 // A Decoder represents an XML parser reading a particular input stream.
 // The parser assumes that its input is encoded in UTF-8.
 type Decoder struct {
-	OnStart func(xml.StartElement)
+	OnStart func(StartElement)
 	OnEnd   func(xml.EndElement)
 	OnChar  func(xml.CharData)
 
@@ -95,7 +105,8 @@ type Decoder struct {
 	ns           map[string]string
 	err          error
 	offset       int64
-	attrPool     []xml.Attr
+	attrPool     []XMLAttr
+	strPool      []bytes.Buffer
 }
 
 // NewDecoder creates a new XML parser reading from r.
@@ -105,7 +116,8 @@ func NewDecoder(r io.Reader) *Decoder {
 	d := &Decoder{
 		ns:       make(map[string]string),
 		names:    make(map[[nameCacheSize]byte]string),
-		attrPool: make([]xml.Attr, 10),
+		attrPool: make([]XMLAttr, 10),
+		strPool:  make([]bytes.Buffer, 10),
 		r: &bufioReader{
 			buf:      make([]byte, defaultBufSize),
 			rd:       r,
@@ -115,18 +127,18 @@ func NewDecoder(r io.Reader) *Decoder {
 	return d
 }
 
-func (d *Decoder) handleStartElement(t goxml.StartElement) {
+func (d *Decoder) handleStartElement(t StartElement) {
 	for _, a := range t.Attr {
 		if a.Name.Space == xmlnsPrefix {
 			v, ok := d.ns[a.Name.Local]
 			d.pushNs(a.Name.Local, v, ok)
-			d.ns[a.Name.Local] = a.Value
+			d.ns[a.Name.Local] = string(a.Value)
 		}
 		if a.Name.Space == "" && a.Name.Local == xmlnsPrefix {
 			// Default space for untagged names
 			v, ok := d.ns[""]
 			d.pushNs("", v, ok)
-			d.ns[""] = a.Value
+			d.ns[""] = string(a.Value)
 		}
 	}
 
@@ -443,7 +455,7 @@ func (d *Decoder) RawToken() error {
 		}
 		d.ungetc(b)
 
-		a := goxml.Attr{}
+		a := XMLAttr{}
 		if a.Name, ok = d.nsname(); !ok {
 			if d.err == nil {
 				d.err = d.syntaxError("expected attribute name in element")
@@ -464,18 +476,22 @@ func (d *Decoder) RawToken() error {
 		if data == nil {
 			return d.err
 		}
-		a.Value = string(data)
 		i++
 		if len(d.attrPool) < i {
-			d.attrPool = append(d.attrPool, make([]xml.Attr, len(d.attrPool))...)
+			d.attrPool = append(d.attrPool, make([]XMLAttr, len(d.attrPool))...)
+			d.strPool = append(d.strPool, make([]bytes.Buffer, len(d.strPool))...)
 		}
+		bldr := &d.strPool[i-1]
+		bldr.Reset()
+		bldr.Write(data)
+		a.Value = bldr.Bytes()
 		d.attrPool[i-1] = a
 	}
 	if empty {
 		d.needClose = true
 		d.toClose = name
 	}
-	d.handleStartElement(goxml.StartElement{Name: name, Attr: d.attrPool[:i]})
+	d.handleStartElement(StartElement{Name: name, Attr: d.attrPool[:i]})
 	return nil
 }
 

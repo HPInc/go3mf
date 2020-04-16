@@ -11,6 +11,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"unsafe"
 
 	xml3mf "github.com/qmuntal/go3mf/internal/xml"
 )
@@ -92,7 +93,7 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 	currentDecoder = &topLevelDecoder{isRoot: isRoot, model: model}
 	currentDecoder.SetScanner(&scanner)
 	var err error
-	x.OnStart = func(tp xml.StartElement) {
+	x.OnStart = func(tp xml3mf.StartElement) {
 		tmpDecoder = currentDecoder.Child(tp.Name)
 		if tmpDecoder != nil {
 			tmpDecoder.SetScanner(&scanner)
@@ -101,7 +102,7 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 			scanner.contex = append(names, tp.Name)
 			currentName = tp.Name
 			currentDecoder = tmpDecoder
-			currentDecoder.Start(tp.Attr)
+			currentDecoder.Start(*(*[]XMLAttr)(unsafe.Pointer(&tp.Attr)))
 		}
 	}
 	x.OnEnd = func(tp xml.EndElement) {

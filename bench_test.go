@@ -7,7 +7,7 @@ import (
 )
 
 func BenchmarkUnmarshalModel(b *testing.B) {
-	bt := []byte(benchModel(10000))
+	bt := []byte(benchModel(1000))
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		m := new(Model)
