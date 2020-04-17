@@ -90,23 +90,18 @@ type Decoder struct {
 	OnEnd   func(xml.EndElement)
 	OnChar  func(xml.CharData)
 
-	// DefaultSpace sets the default name space used for unadorned tags,
-	// as if the entire XML stream were wrapped in an element containing
-	// the attribute xmlns="DefaultSpace".
-	DefaultSpace string
-	names        map[[nameCacheSize]byte]string
-	r            *bufioReader
-	buf          bytes.Buffer
-	stk          *stack
-	free         *stack
-	needClose    bool
-	toClose      goxml.Name
-	nextByte     int
-	ns           map[string]string
-	err          error
-	offset       int64
-	attrPool     []XMLAttr
-	strPool      []bytes.Buffer
+	names     map[[nameCacheSize]byte]string
+	r         *bufioReader
+	buf       bytes.Buffer
+	stk       *stack
+	free      *stack
+	needClose bool
+	toClose   goxml.Name
+	ns        map[string]string
+	err       error
+	offset    int64
+	attrPool  []XMLAttr
+	strPool   []bytes.Buffer
 }
 
 // NewDecoder creates a new XML parser reading from r.
@@ -185,8 +180,6 @@ func (d *Decoder) translate(n *goxml.Name, isElementName bool) {
 	}
 	if v, ok := d.ns[n.Space]; ok {
 		n.Space = v
-	} else if n.Space == "" {
-		n.Space = d.DefaultSpace
 	}
 }
 
