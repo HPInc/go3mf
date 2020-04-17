@@ -22,6 +22,7 @@ import (
 const fakeExtension = "http://dummy.com/fake_ext"
 
 var _ SpecValidator = new(fakeSpec)
+var _ SpecDecoder = new(fakeSpec)
 
 type fakeSpec struct {
 }
@@ -40,18 +41,18 @@ func (f *fakeSpec) NewNodeDecoder(_ interface{}, nodeName string) NodeDecoder {
 	return &fakeAssetDecoder{}
 }
 
-func (f *fakeSpec) DecodeAttribute(s *Scanner, parentNode interface{}, attr xml.Attr) {
+func (f *fakeSpec) DecodeAttribute(s *Scanner, parentNode interface{}, attr XMLAttr) {
 	switch t := parentNode.(type) {
 	case *Object:
-		t.AnyAttr = append(t.AnyAttr, &fakeAttr{attr.Value})
+		t.AnyAttr = append(t.AnyAttr, &fakeAttr{string(attr.Value)})
 	case *Build:
-		t.AnyAttr = append(t.AnyAttr, &fakeAttr{attr.Value})
+		t.AnyAttr = append(t.AnyAttr, &fakeAttr{string(attr.Value)})
 	case *Model:
-		t.AnyAttr = append(t.AnyAttr, &fakeAttr{attr.Value})
+		t.AnyAttr = append(t.AnyAttr, &fakeAttr{string(attr.Value)})
 	case *Item:
-		t.AnyAttr = append(t.AnyAttr, &fakeAttr{attr.Value})
+		t.AnyAttr = append(t.AnyAttr, &fakeAttr{string(attr.Value)})
 	case *Component:
-		t.AnyAttr = append(t.AnyAttr, &fakeAttr{attr.Value})
+		t.AnyAttr = append(t.AnyAttr, &fakeAttr{string(attr.Value)})
 	}
 }
 

@@ -28,7 +28,7 @@ func (e Spec) NewNodeDecoder(_ interface{}, nodeName string) (child go3mf.NodeDe
 	return
 }
 
-func (e Spec) DecodeAttribute(_ *go3mf.Scanner, _ interface{}, _ xml.Attr) {}
+func (e Spec) DecodeAttribute(_ *go3mf.Scanner, _ interface{}, _ go3mf.XMLAttr) {}
 
 type colorGroupDecoder struct {
 	baseDecoder
@@ -47,11 +47,11 @@ func (d *colorGroupDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	return
 }
 
-func (d *colorGroupDecoder) Start(attrs []xml.Attr) {
+func (d *colorGroupDecoder) Start(attrs []go3mf.XMLAttr) {
 	d.colorDecoder.resource = &d.resource
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrID {
-			id, err := strconv.ParseUint(a.Value, 10, 32)
+			id, err := strconv.ParseUint(string(a.Value), 10, 32)
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, true)
 			}
@@ -66,10 +66,10 @@ type colorDecoder struct {
 	resource *ColorGroup
 }
 
-func (d *colorDecoder) Start(attrs []xml.Attr) {
+func (d *colorDecoder) Start(attrs []go3mf.XMLAttr) {
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrColor {
-			c, err := go3mf.ParseRGBA(a.Value)
+			c, err := go3mf.ParseRGBA(string(a.Value))
 			if err != nil {
 				d.Scanner.InvalidAttr(attrColor, true)
 			}
@@ -83,13 +83,13 @@ type tex2DCoordDecoder struct {
 	resource *Texture2DGroup
 }
 
-func (d *tex2DCoordDecoder) Start(attrs []xml.Attr) {
+func (d *tex2DCoordDecoder) Start(attrs []go3mf.XMLAttr) {
 	var u, v float32
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
 		}
-		val, err := strconv.ParseFloat(a.Value, 32)
+		val, err := strconv.ParseFloat(string(a.Value), 32)
 		if err != nil {
 			d.Scanner.InvalidAttr(a.Name.Local, true)
 		}
@@ -120,7 +120,7 @@ func (d *tex2DGroupDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	return
 }
 
-func (d *tex2DGroupDecoder) Start(attrs []xml.Attr) {
+func (d *tex2DGroupDecoder) Start(attrs []go3mf.XMLAttr) {
 	d.tex2DCoordDecoder.resource = &d.resource
 	for _, a := range attrs {
 		if a.Name.Space != "" {
@@ -128,13 +128,13 @@ func (d *tex2DGroupDecoder) Start(attrs []xml.Attr) {
 		}
 		switch a.Name.Local {
 		case attrID:
-			id, err := strconv.ParseUint(a.Value, 10, 32)
+			id, err := strconv.ParseUint(string(a.Value), 10, 32)
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, true)
 			}
 			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
 		case attrTexID:
-			val, err := strconv.ParseUint(a.Value, 10, 32)
+			val, err := strconv.ParseUint(string(a.Value), 10, 32)
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, true)
 			}
@@ -152,28 +152,28 @@ func (d *texture2DDecoder) End() {
 	d.Scanner.AddAsset(&d.resource)
 }
 
-func (d *texture2DDecoder) Start(attrs []xml.Attr) {
+func (d *texture2DDecoder) Start(attrs []go3mf.XMLAttr) {
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
 		}
 		switch a.Name.Local {
 		case attrID:
-			id, err := strconv.ParseUint(a.Value, 10, 32)
+			id, err := strconv.ParseUint(string(a.Value), 10, 32)
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, true)
 			}
 			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
 		case attrPath:
-			d.resource.Path = a.Value
+			d.resource.Path = string(a.Value)
 		case attrContentType:
-			d.resource.ContentType, _ = newTexture2DType(a.Value)
+			d.resource.ContentType, _ = newTexture2DType(string(a.Value))
 		case attrTileStyleU:
-			d.resource.TileStyleU, _ = newTileStyle(a.Value)
+			d.resource.TileStyleU, _ = newTileStyle(string(a.Value))
 		case attrTileStyleV:
-			d.resource.TileStyleV, _ = newTileStyle(a.Value)
+			d.resource.TileStyleV, _ = newTileStyle(string(a.Value))
 		case attrFilter:
-			d.resource.Filter, _ = newTextureFilter(a.Value)
+			d.resource.Filter, _ = newTextureFilter(string(a.Value))
 		}
 	}
 }
@@ -195,7 +195,7 @@ func (d *compositeMaterialsDecoder) Child(name xml.Name) (child go3mf.NodeDecode
 	return
 }
 
-func (d *compositeMaterialsDecoder) Start(attrs []xml.Attr) {
+func (d *compositeMaterialsDecoder) Start(attrs []go3mf.XMLAttr) {
 	d.compositeDecoder.resource = &d.resource
 	for _, a := range attrs {
 		if a.Name.Space != "" {
@@ -203,19 +203,19 @@ func (d *compositeMaterialsDecoder) Start(attrs []xml.Attr) {
 		}
 		switch a.Name.Local {
 		case attrID:
-			id, err := strconv.ParseUint(a.Value, 10, 32)
+			id, err := strconv.ParseUint(string(a.Value), 10, 32)
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, true)
 			}
 			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
 		case attrMatID:
-			val, err := strconv.ParseUint(a.Value, 10, 32)
+			val, err := strconv.ParseUint(string(a.Value), 10, 32)
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, true)
 			}
 			d.resource.MaterialID = uint32(val)
 		case attrMatIndices:
-			for _, f := range strings.Fields(a.Value) {
+			for _, f := range strings.Fields(string(a.Value)) {
 				val, err := strconv.ParseUint(f, 10, 32)
 				if err != nil {
 					d.Scanner.InvalidAttr(a.Name.Local, true)
@@ -231,11 +231,11 @@ type compositeDecoder struct {
 	resource *CompositeMaterials
 }
 
-func (d *compositeDecoder) Start(attrs []xml.Attr) {
+func (d *compositeDecoder) Start(attrs []go3mf.XMLAttr) {
 	var composite Composite
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrValues {
-			for _, f := range strings.Fields(a.Value) {
+			for _, f := range strings.Fields(string(a.Value)) {
 				val, err := strconv.ParseFloat(f, 32)
 				if err != nil {
 					d.Scanner.InvalidAttr(a.Name.Local, true)
@@ -264,7 +264,7 @@ func (d *multiPropertiesDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) 
 	return
 }
 
-func (d *multiPropertiesDecoder) Start(attrs []xml.Attr) {
+func (d *multiPropertiesDecoder) Start(attrs []go3mf.XMLAttr) {
 	d.multiDecoder.resource = &d.resource
 	for _, a := range attrs {
 		if a.Name.Space != "" {
@@ -272,18 +272,18 @@ func (d *multiPropertiesDecoder) Start(attrs []xml.Attr) {
 		}
 		switch a.Name.Local {
 		case attrID:
-			id, err := strconv.ParseUint(a.Value, 10, 32)
+			id, err := strconv.ParseUint(string(a.Value), 10, 32)
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, true)
 			}
 			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
 		case attrBlendMethods:
-			for _, f := range strings.Fields(a.Value) {
+			for _, f := range strings.Fields(string(a.Value)) {
 				val, _ := newBlendMethod(f)
 				d.resource.BlendMethods = append(d.resource.BlendMethods, val)
 			}
 		case attrPIDs:
-			for _, f := range strings.Fields(a.Value) {
+			for _, f := range strings.Fields(string(a.Value)) {
 				val, err := strconv.ParseUint(f, 10, 32)
 				if err != nil {
 					d.Scanner.InvalidAttr(a.Name.Local, true)
@@ -299,11 +299,11 @@ type multiDecoder struct {
 	resource *MultiProperties
 }
 
-func (d *multiDecoder) Start(attrs []xml.Attr) {
+func (d *multiDecoder) Start(attrs []go3mf.XMLAttr) {
 	var multi Multi
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrPIndices {
-			for _, f := range strings.Fields(a.Value) {
+			for _, f := range strings.Fields(string(a.Value)) {
 				val, err := strconv.ParseUint(f, 10, 32)
 				if err != nil {
 					d.Scanner.InvalidAttr(a.Name.Local, true)

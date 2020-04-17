@@ -1,8 +1,6 @@
 package production
 
 import (
-	"encoding/xml"
-
 	"github.com/qmuntal/go3mf"
 )
 
@@ -55,7 +53,7 @@ func (e Spec) fillResourceUUID(res *go3mf.Resources) {
 	}
 }
 
-func (e Spec) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml.Attr) {
+func (e Spec) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr go3mf.XMLAttr) {
 	var (
 		uuid UUID
 		err  error
@@ -63,7 +61,7 @@ func (e Spec) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml
 	switch t := parentNode.(type) {
 	case *go3mf.Build:
 		if attr.Name.Local == attrProdUUID {
-			if uuid, err = ParseUUID(attr.Value); err != nil {
+			if uuid, err = ParseUUID(string(attr.Value)); err != nil {
 				s.InvalidAttr(attr.Name.Local, true)
 			}
 			t.AnyAttr = append(t.AnyAttr, &uuid)
@@ -71,7 +69,7 @@ func (e Spec) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml
 	case *go3mf.Item:
 		switch attr.Name.Local {
 		case attrProdUUID:
-			if uuid, err = ParseUUID(attr.Value); err != nil {
+			if uuid, err = ParseUUID(string(attr.Value)); err != nil {
 				s.InvalidAttr(attr.Name.Local, true)
 			}
 			var ext *PathUUID
@@ -83,14 +81,14 @@ func (e Spec) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml
 		case attrPath:
 			var ext *PathUUID
 			if t.AnyAttr.Get(&ext) {
-				ext.Path = attr.Value
+				ext.Path = string(attr.Value)
 			} else {
-				t.AnyAttr = append(t.AnyAttr, &PathUUID{Path: attr.Value})
+				t.AnyAttr = append(t.AnyAttr, &PathUUID{Path: string(attr.Value)})
 			}
 		}
 	case *go3mf.Object:
 		if attr.Name.Local == attrProdUUID {
-			if uuid, err = ParseUUID(attr.Value); err != nil {
+			if uuid, err = ParseUUID(string(attr.Value)); err != nil {
 				s.InvalidAttr(attr.Name.Local, true)
 			}
 			t.AnyAttr = append(t.AnyAttr, &uuid)
@@ -98,7 +96,7 @@ func (e Spec) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml
 	case *go3mf.Component:
 		switch attr.Name.Local {
 		case attrProdUUID:
-			if uuid, err = ParseUUID(attr.Value); err != nil {
+			if uuid, err = ParseUUID(string(attr.Value)); err != nil {
 				s.InvalidAttr(attr.Name.Local, true)
 			}
 			var ext *PathUUID
@@ -110,9 +108,9 @@ func (e Spec) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr xml
 		case attrPath:
 			var ext *PathUUID
 			if t.AnyAttr.Get(&ext) {
-				ext.Path = attr.Value
+				ext.Path = string(attr.Value)
 			} else {
-				t.AnyAttr = append(t.AnyAttr, &PathUUID{Path: attr.Value})
+				t.AnyAttr = append(t.AnyAttr, &PathUUID{Path: string(attr.Value)})
 			}
 		}
 	}
