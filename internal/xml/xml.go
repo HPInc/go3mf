@@ -522,10 +522,9 @@ func (d *Decoder) space() {
 // If there is no byte to read, return ok==false
 // and leave the error in d.err.
 func (d *Decoder) getc() (b byte, ok bool) {
-	if d.err == nil {
-		b, d.err = d.r.ReadByte()
-	}
-	return b, d.err == nil
+	b, d.err = d.r.ReadByte()
+	ok = d.err == nil
+	return
 }
 
 // Must read a single byte.
