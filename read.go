@@ -16,7 +16,7 @@ import (
 	xml3mf "github.com/qmuntal/go3mf/internal/xml"
 )
 
-var checkEveryBytes = int64(4 * 1024 * 1024)
+var checkEveryTokens = 1000
 
 type packageFile interface {
 	Name() string
@@ -89,7 +89,6 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 		currentDecoder, tmpDecoder NodeDecoder
 		currentName                xml.Name
 	)
-	nextBytesCheck := checkEveryBytes
 	currentDecoder = &topLevelDecoder{isRoot: isRoot, model: model}
 	currentDecoder.SetScanner(&scanner)
 	var err error
@@ -115,12 +114,13 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 	x.OnChar = func(tp xml.CharData) {
 		currentDecoder.Text(tp)
 	}
+	var i int
 	for {
 		err = x.RawToken()
 		if err != nil || (strict && scanner.Err.Len() != 0) {
 			break
 		}
-		if x.InputOffset() > nextBytesCheck {
+		if i%checkEveryTokens == 0 {
 			select {
 			case <-ctx.Done():
 				err = ctx.Err()
@@ -129,8 +129,8 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 			if err != nil {
 				break
 			}
-			nextBytesCheck += checkEveryBytes
 		}
+		i++
 	}
 	if err == io.EOF {
 		err = nil

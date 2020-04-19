@@ -99,7 +99,6 @@ type Decoder struct {
 	toClose   goxml.Name
 	ns        map[string]string
 	err       error
-	offset    int64
 	attrPool  []XMLAttr
 	strPool   []bytes.Buffer
 }
@@ -524,17 +523,9 @@ func (d *Decoder) space() {
 // and leave the error in d.err.
 func (d *Decoder) getc() (b byte, ok bool) {
 	if d.err == nil {
-		d.offset++
 		b, d.err = d.r.ReadByte()
 	}
 	return b, d.err == nil
-}
-
-// InputOffset returns the input stream byte offset of the current decoder position.
-// The offset gives the location of the end of the most recently returned token
-// and the beginning of the next token.
-func (d *Decoder) InputOffset() int64 {
-	return d.offset
 }
 
 // Must read a single byte.
@@ -551,7 +542,6 @@ func (d *Decoder) mustNotEOF() {
 // Unread a single byte.
 func (d *Decoder) ungetc(b byte) {
 	d.r.nextByte = int(b)
-	d.offset--
 }
 
 var entity = map[string]int{
@@ -720,8 +710,50 @@ func (d *Decoder) name() (s string, ok bool) {
 	}
 
 	// Now we check the characters.
-	var arr [nameCacheSize]byte
 	b := d.buf.Bytes()
+	if len(b) == 1 {
+		switch b[0] {
+		case 'x':
+			return "x", true
+		case 'y':
+			return "y", true
+		case 'z':
+			return "z", true
+		case 'u':
+			return "u", true
+		case 'v':
+			return "v", true
+		}
+	} else if len(b) == 2 {
+		if b[0] == 'v' {
+			switch b[1] {
+			case '1':
+				return "v1", true
+			case '2':
+				return "v2", true
+			case '3':
+				return "v3", true
+			}
+		} else if b[0] == 'p' {
+			switch b[1] {
+			case '1':
+				return "p1", true
+			case '2':
+				return "p2", true
+			case '3':
+				return "p3", true
+			}
+		}
+	} else if string(b) == "vertex" {
+		return "vertex", true
+	} else if string(b) == "triangle" {
+		return "triangle", true
+	} else if len(b) == 3 && string(b) == "pid" {
+		return "pid", true
+	} else if len(b) == 5 && string(b) == "color" {
+		return "color", true
+	}
+	var arr [nameCacheSize]byte
 	if len(b) <= nameCacheSize {
 		copy(arr[:], b)
 		if s, ok = d.names[arr]; ok {
@@ -734,6 +766,7 @@ func (d *Decoder) name() (s string, ok bool) {
 	}
 	s = string(b)
 	if len(b) <= nameCacheSize {
+		copy(arr[:], b)
 		d.names[arr] = s
 	}
 	return s, true

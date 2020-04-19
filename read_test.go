@@ -513,7 +513,7 @@ func TestDecoder_Decode(t *testing.T) {
 func Test_modelFile_Decode(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	checkEveryBytes = 108
+	checkEveryTokens = 1
 	type args struct {
 		ctx context.Context
 		r   io.Reader
