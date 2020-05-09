@@ -78,18 +78,6 @@ type packageWriter interface {
 	Close() error
 }
 
-// Marshaler is the interface implemented by objects
-// that can marshal themselves into valid XML elements.
-type Marshaler interface {
-	Marshal3MF(x *XMLEncoder) error
-}
-
-// AttrMarshaler is the interface implemented by objects that can marshal
-// themselves into valid XML attributes.
-type AttrMarshaler interface {
-	Marshal3MFAttr(*XMLEncoder) ([]xml.Attr, error)
-}
-
 // MarshalModel returns the XML encoding of m.
 func MarshalModel(m *Model) ([]byte, error) {
 	var b bytes.Buffer
