@@ -43,6 +43,18 @@ type PropertyGroup interface {
 	Len() int
 }
 
+// Marshaler is the interface implemented by objects
+// that can marshal themselves into valid XML elements.
+type Marshaler interface {
+	Marshal3MF(x *XMLEncoder) error
+}
+
+// AttrMarshaler is the interface implemented by objects that can marshal
+// themselves into valid XML attributes.
+type AttrMarshaler interface {
+	Marshal3MFAttr(*XMLEncoder) ([]xml.Attr, error)
+}
+
 // AttrMarshalers is an extension point containing <anyAttribute> information.
 // The key should be the extension namespace.
 type AttrMarshalers []AttrMarshaler
