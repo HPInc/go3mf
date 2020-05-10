@@ -227,11 +227,6 @@ func (d *Decoder) processNonRootModels(ctx context.Context, model *Model) (err e
 		go func(i int) {
 			defer wg.Done()
 			f, err1 := d.readChildModel(ctx, i, model)
-			select {
-			case <-ctx.Done():
-				return // Error somewhere, terminate
-			default: // Default is must to avoid blocking
-			}
 			if err1 != nil {
 				err = err1
 				cancel()
@@ -332,6 +327,11 @@ func (d *Decoder) readChildModel(ctx context.Context, i int, model *Model) (*Sca
 	}
 	defer file.Close()
 	scanner, err := decodeModelFile(ctx, file, model, attachment.Name(), false, d.Strict)
+	select {
+	case <-ctx.Done():
+		err = ctx.Err()
+	default: // Default is must to avoid blocking
+	}
 	return scanner, err
 }
 

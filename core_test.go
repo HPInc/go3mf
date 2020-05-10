@@ -5,6 +5,8 @@ import (
 	"testing"
 )
 
+var _ Marshaler = new(BaseMaterials)
+
 func TestResources_FindAsset(t *testing.T) {
 	id1 := &BaseMaterials{ID: 0}
 	id2 := &BaseMaterials{ID: 1}

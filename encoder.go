@@ -287,10 +287,7 @@ func (e *Encoder) writeResources(x *XMLEncoder, rs *Resources) error {
 	xt := xml.StartElement{Name: xml.Name{Local: attrResources}}
 	x.EncodeToken(xt)
 	for _, r := range rs.Assets {
-		switch r := r.(type) {
-		case *BaseMaterials:
-			e.writeBaseMaterial(x, r)
-		case Marshaler:
+		if r, ok := r.(Marshaler); ok {
 			if err := r.Marshal3MF(x); err != nil {
 				return err
 			}
@@ -457,7 +454,7 @@ func (e *Encoder) writeMesh(x *XMLEncoder, r *Object, m *Mesh) {
 	x.EncodeToken(xm.End())
 }
 
-func (e *Encoder) writeBaseMaterial(x *XMLEncoder, r *BaseMaterials) {
+func (r *BaseMaterials) Marshal3MF(x *XMLEncoder) error {
 	xt := xml.StartElement{Name: xml.Name{Local: attrBaseMaterials}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(r.ID), 10)},
 	}}
@@ -474,4 +471,5 @@ func (e *Encoder) writeBaseMaterial(x *XMLEncoder, r *BaseMaterials) {
 	}
 	x.SetAutoClose(false)
 	x.EncodeToken(xt.End())
+	return nil
 }
