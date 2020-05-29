@@ -5,6 +5,7 @@ import (
 	"image/color"
 	"io"
 	"sort"
+	"sync"
 )
 
 // Units define the allowed model units.
@@ -197,6 +198,33 @@ func (m *Model) PathOrDefault() string {
 	return m.Path
 }
 
+// BoundingBox returns the bounding box of the model.
+func (m *Model) BoundingBox() Box {
+	if len(m.Build.Items) == 0 {
+		return Box{}
+	}
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	box := newLimitBox()
+	wg.Add(len(m.Build.Items))
+	for i := range m.Build.Items {
+		go func(i int) {
+			defer wg.Done()
+			item := m.Build.Items[i]
+			if o, ok := m.FindObject(item.ObjectPath(), item.ObjectID); ok {
+				ibox := o.boundingBox(m, "")
+				if ibox != emptyBox {
+					mu.Lock()
+					box = box.Extend(item.Transform.MulBox(ibox))
+					mu.Unlock()
+				}
+			}
+		}(i)
+	}
+	wg.Wait()
+	return box
+}
+
 // FindResources returns the resource associated with path.
 func (m *Model) FindResources(path string) (*Resources, bool) {
 	if path == "" || path == m.Path || (m.Path == "" && path == DefaultModelPath) {
@@ -338,6 +366,25 @@ type Object struct {
 	AnyAttr    AttrMarshalers
 }
 
+func (o *Object) boundingBox(m *Model, path string) Box {
+	if o.Mesh != nil {
+		return o.Mesh.BoundingBox()
+	}
+	if len(o.Components) == 0 {
+		return Box{}
+	}
+	box := newLimitBox()
+	for _, c := range o.Components {
+		if obj, ok := m.FindObject(c.ObjectPath(path), c.ObjectID); ok {
+			cbox := obj.boundingBox(m, path)
+			if cbox != emptyBox {
+				box = box.Extend(c.Transform.MulBox(cbox))
+			}
+		}
+	}
+	return box
+}
+
 // A Component is an in memory representation of the 3MF component.
 type Component struct {
 	ObjectID  uint32
@@ -419,6 +466,18 @@ type Mesh struct {
 	Triangles []Triangle
 	AnyAttr   AttrMarshalers
 	Any       Marshalers
+}
+
+// BoundingBox returns the bounding box of the mesh.
+func (m *Mesh) BoundingBox() Box {
+	if len(m.Vertices) == 0 {
+		return Box{}
+	}
+	box := newLimitBox()
+	for _, v := range m.Vertices {
+		box = box.ExtendPoint(v)
+	}
+	return box
 }
 
 // MeshBuilder is a helper that creates mesh following a configurable criteria.

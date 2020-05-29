@@ -405,3 +405,91 @@ func Test_newPairEntry(t *testing.T) {
 		})
 	}
 }
+
+func TestBox_ExtendPoint(t *testing.T) {
+	type args struct {
+		v Point3D
+	}
+	tests := []struct {
+		name string
+		b    *Box
+		args args
+		want Box
+	}{
+		{"empty", new(Box), args{Point3D{}}, Box{}},
+		{"equal", &Box{Min: Point3D{1, 1, 1}, Max: Point3D{2, 2, 2}}, args{Point3D{1, 1, 2}}, Box{Min: Point3D{1, 1, 1}, Max: Point3D{2, 2, 2}}},
+		{"base", &Box{Min: Point3D{1, 1, 1}, Max: Point3D{2, 2, 2}}, args{Point3D{-1, 0, 4}}, Box{Min: Point3D{-1, 0, 1}, Max: Point3D{2, 2, 4}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.b.ExtendPoint(tt.args.v)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Box.ExtendPoint() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestBox_Extend(t *testing.T) {
+	type args struct {
+		v Box
+	}
+	tests := []struct {
+		name string
+		b    *Box
+		args args
+		want Box
+	}{
+		{"empty", new(Box), args{Box{}}, Box{}},
+		{"equal", &Box{
+			Min: Point3D{1, 1, 1},
+			Max: Point3D{2, 2, 2},
+		}, args{Box{
+			Min: Point3D{1, 1, 1},
+			Max: Point3D{2, 2, 2},
+		}}, Box{Min: Point3D{1, 1, 1}, Max: Point3D{2, 2, 2}}},
+		{"smaller", &Box{
+			Min: Point3D{1, 1, 1},
+			Max: Point3D{2, 2, 2},
+		}, args{Box{
+			Min: Point3D{1.1, 1.1, 1.1},
+			Max: Point3D{1.9, 1.9, 1.9},
+		}}, Box{Min: Point3D{1, 1, 1}, Max: Point3D{2, 2, 2}}},
+		{"bigger", &Box{
+			Min: Point3D{1, 1, 1},
+			Max: Point3D{2, 2, 2},
+		}, args{Box{
+			Min: Point3D{-1, -1, -1},
+			Max: Point3D{3, 3, 3},
+		}}, Box{Min: Point3D{-1, -1, -1}, Max: Point3D{3, 3, 3}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.b.Extend(tt.args.v)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Box.Extend() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMatrix_MulBox(t *testing.T) {
+	type args struct {
+		b Box
+	}
+	tests := []struct {
+		name string
+		m1   Matrix
+		args args
+		want Box
+	}{
+		{"identity", Identity(), args{Box{}}, Box{}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m1.MulBox(tt.args.b); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Matrix.MulBox() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -220,3 +220,76 @@ func (m1 Matrix) Mul2D(v Point2D) Point2D {
 		m1[1]*v[0] + m1[5]*v[1] + m1[13],
 	}
 }
+
+// MulBox performs a "matrix product" between this matrix
+// and a box
+func (m1 Matrix) MulBox(b Box) Box {
+	if m1[15] == 0 {
+		return b
+	}
+	return Box{
+		Min: m1.Mul3D(b.Min),
+		Max: m1.Mul3D(b.Max),
+	}
+}
+
+// Box defines a box in the 3D space.
+type Box struct {
+	Min Point3D
+	Max Point3D
+}
+
+var emptyBox = Box{}
+
+func newLimitBox() Box {
+	return Box{
+		Min: Point3D{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32},
+		Max: Point3D{-math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32},
+	}
+}
+
+// Extends adds v to the box.
+func (b Box) Extend(v Box) Box {
+	return Box{
+		Min: Point3D{
+			min(b.Min.X(), v.Min.X()),
+			min(b.Min.Y(), v.Min.Y()),
+			min(b.Min.Z(), v.Min.Z()),
+		},
+		Max: Point3D{
+			max(b.Max.X(), v.Max.X()),
+			max(b.Max.Y(), v.Max.Y()),
+			max(b.Max.Z(), v.Max.Z()),
+		},
+	}
+}
+
+// ExtendPoint adds v to the box.
+func (b Box) ExtendPoint(v Point3D) Box {
+	return Box{
+		Min: Point3D{
+			min(b.Min.X(), v.X()),
+			min(b.Min.Y(), v.Y()),
+			min(b.Min.Z(), v.Z()),
+		},
+		Max: Point3D{
+			max(b.Max.X(), v.X()),
+			max(b.Max.Y(), v.Y()),
+			max(b.Max.Z(), v.Z()),
+		},
+	}
+}
+
+func min(x, y float32) float32 {
+	if x < y {
+		return x
+	}
+	return y
+}
+
+func max(x, y float32) float32 {
+	if x > y {
+		return x
+	}
+	return y
+}

@@ -429,3 +429,54 @@ func TestModel_WalkObjects(t *testing.T) {
 		})
 	}
 }
+
+func TestMesh_BoundingBox(t *testing.T) {
+	tests := []struct {
+		name string
+		m    *Mesh
+		want Box
+	}{
+		{"empty", new(Mesh), Box{}},
+		{"base", &Mesh{Vertices: []Point3D{{1, 1, 1}, {2, 2, 2}, {-1, 0, 3}}}, Box{Min: Point3D{-1, 0, 1}, Max: Point3D{2, 2, 3}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.BoundingBox(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Mesh.BoundingBox() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestModel_BoundingBox(t *testing.T) {
+	tests := []struct {
+		name string
+		m    *Model
+		want Box
+	}{
+		{"empty", new(Model), Box{}},
+		{"base", &Model{
+			Build: Build{Items: []*Item{
+				{ObjectID: 1, Transform: Identity()},
+				{ObjectID: 2},
+				{ObjectID: 3},
+			}},
+			Resources: Resources{Objects: []*Object{
+				{ID: 1, Mesh: &Mesh{Vertices: []Point3D{
+					{10, 20, 30},
+				}}},
+				{ID: 2, Components: []*Component{
+					{ObjectID: 1, Transform: Identity().Translate(100, 100, 100)},
+					{ObjectID: 10},
+				}},
+			}},
+		}, Box{Min: Point3D{10, 20, 30}, Max: Point3D{110, 120, 130}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.BoundingBox(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Model.BoundingBox() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
