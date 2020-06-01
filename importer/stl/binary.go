@@ -14,7 +14,7 @@ type binaryHeader struct {
 }
 
 type binaryFace struct {
-	Normal   [3]float32
+	_        [3]float32
 	Vertices [3][3]float32
 	_        uint16
 }
@@ -32,7 +32,7 @@ func (d *binaryDecoder) decode(ctx context.Context, m *go3mf.Mesh) error {
 	if err != nil {
 		return err
 	}
-
+	mb.Mesh.Triangles = make([]go3mf.Triangle, 0, header.FaceCount)
 	nextFaceCheck := checkEveryFaces
 	var facet binaryFace
 	for nFace := 0; nFace < int(header.FaceCount); nFace++ {
