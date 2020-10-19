@@ -226,11 +226,21 @@ func (m1 Matrix) Mul2D(v Point2D) Point2D {
 func (m1 Matrix) MulBox(b Box) Box {
 	if m1[15] == 0 {
 		return b
-	}
-	return Box{
+	}	
+	box := Box{
 		Min: m1.Mul3D(b.Min),
 		Max: m1.Mul3D(b.Max),
 	}
+	if box.Min.X() > box.Max.X() {
+		box.Min[0], box.Max[0] = box.Max[0], box.Min[0]
+	}
+	if box.Min.Y() > box.Max.Y() {
+		box.Min[1], box.Max[1] = box.Max[1], box.Min[1]
+	}
+	if box.Min.Z() > box.Max.Z() {
+		box.Min[2], box.Max[2] = box.Max[2], box.Min[2]
+	}
+	return box
 }
 
 // Box defines a box in the 3D space.

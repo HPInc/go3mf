@@ -484,6 +484,13 @@ func TestMatrix_MulBox(t *testing.T) {
 		want Box
 	}{
 		{"identity", Identity(), args{Box{}}, Box{}},
+		{"identity", Matrix{-2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1}, args{Box{
+			Min: Point3D{1,1,1},
+			Max: Point3D{2,2,2},
+		}}, Box{
+			Min: Point3D{-4,2,2},
+			Max: Point3D{-2,4,4},
+		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
