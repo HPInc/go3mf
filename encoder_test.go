@@ -194,7 +194,7 @@ func TestEncoder_Encode_Normalize(t *testing.T) {
 			}}},
 			&Model{Path: DefaultModelPath,
 				RootRelationships: []Relationship{
-					{Path: "/Metadata/thumbnail.png", Type: RelTypeThumbnail, ID: "2"},
+					{Path: "Metadata/thumbnail.png", Type: RelTypeThumbnail, ID: "2"},
 				},
 				Attachments: []Attachment{
 					{ContentType: "image/png", Path: "/Metadata/thumbnail.png", Stream: bytes.NewBufferString("fake")},
@@ -207,7 +207,7 @@ func TestEncoder_Encode_Normalize(t *testing.T) {
 				},
 			}}}, &Model{Path: DefaultModelPath,
 			Childs: map[string]*ChildModel{
-				"/empty.model": {},
+				"/3D/empty.model": {},
 				"/other.model": {},
 			},
 		}},

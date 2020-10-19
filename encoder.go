@@ -146,6 +146,7 @@ func (e *Encoder) writeChildModels(m *Model) error {
 			w   packagePart
 			err error
 		)
+		path = resolveRelationship(m.PathOrDefault(), path)
 		if w, err = e.w.Create(path, ContentType3DModel); err != nil {
 			return err
 		}
@@ -154,7 +155,7 @@ func (e *Encoder) writeChildModels(m *Model) error {
 		}
 		enc := newXMLEncoder(w, e.FloatPrecision)
 		enc.relationships = child.Relationships
-		if err = e.writeChildModel(enc, m, path); err != nil {
+		if err = e.writeChildModel(enc, m, child); err != nil {
 			return err
 		}
 		for _, r := range enc.relationships {
@@ -208,11 +209,10 @@ func (e *Encoder) modelToken(x *XMLEncoder, m *Model, isRoot bool) (xml.StartEle
 	return tm, nil
 }
 
-func (e *Encoder) writeChildModel(x *XMLEncoder, m *Model, path string) error {
+func (e *Encoder) writeChildModel(x *XMLEncoder, m *Model, child *ChildModel) error {
 	tm, _ := e.modelToken(x, m, false) // error already checked before
 	x.EncodeToken(tm)
 
-	child := m.Childs[path]
 	if err := e.writeResources(x, &child.Resources); err != nil {
 		return err
 	}

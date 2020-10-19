@@ -111,7 +111,12 @@ func (o *opcReader) Relationships() []Relationship {
 }
 
 func (o *opcReader) FindFileFromName(name string) (packageFile, bool) {
+	name = opc.ResolveRelationship("/", name)
 	return findOPCFileFromName(name, o.r)
+}
+
+func resolveRelationship(source, rel string) string {
+	return opc.ResolveRelationship(source, rel)
 }
 
 func findOPCFileFromName(name string, r *opc.Reader) (packageFile, bool) {

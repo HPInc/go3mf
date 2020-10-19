@@ -624,7 +624,7 @@ Input:
 					d.buf.WriteByte(';')
 					n, err := strconv.ParseUint(s, base, 64)
 					if err == nil && n <= unicode.MaxRune {
-						text = string(n)
+						text = string(rune(n))
 						haveText = true
 					}
 				}
@@ -647,7 +647,7 @@ Input:
 					if isName(name) {
 						s := string(name)
 						if r, ok := entity[s]; ok {
-							text = string(r)
+							text = string(rune(r))
 							haveText = true
 						}
 					}
