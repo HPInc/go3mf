@@ -185,7 +185,7 @@ func (e *Encoder) modelToken(x *XMLEncoder, m *Model, isRoot bool) (xml.StartEle
 		{Name: xml.Name{Space: nsXML, Local: attrLang}, Value: m.Language},
 	}
 	if isRoot && m.Thumbnail != "" {
-		x.AddRelationship(Relationship{Path: m.Thumbnail, Type: RelTypeThumbnail})
+		e.w.AddRelationship(Relationship{Path: m.Thumbnail, Type: RelTypeThumbnail})
 		attrs = append(attrs, xml.Attr{Name: xml.Name{Local: attrThumbnail}, Value: m.Thumbnail})
 	}
 	sortedSpecs := m.sortedSpecs()
