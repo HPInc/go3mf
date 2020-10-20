@@ -181,7 +181,7 @@ func TestEncoder_Encode_Normalize(t *testing.T) {
 		}}}, &Model{Path: "/a/other.ml", Units: UnitMillimeter, Thumbnail: "/Metadata/thumbnail.png", Attachments: []Attachment{
 			{ContentType: "image/png", Path: "/Metadata/thumbnail.png", Stream: bytes.NewBufferString("fake")},
 		}, RootRelationships: []Relationship{
-			{Path: "/Metadata/thumbnail.png", Type: RelTypeThumbnail, ID: "5kLZaS9s"},
+			{Path: "/Metadata/thumbnail.png", Type: RelTypeThumbnail, ID: "rId1"},
 		}}},
 		{"withRootRel", args{&Model{
 			RootRelationships: []Relationship{
