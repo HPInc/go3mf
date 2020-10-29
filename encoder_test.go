@@ -208,7 +208,7 @@ func TestEncoder_Encode_Normalize(t *testing.T) {
 			}}}, &Model{Path: DefaultModelPath,
 			Childs: map[string]*ChildModel{
 				"/3D/empty.model": {},
-				"/other.model": {},
+				"/other.model":    {},
 			},
 		}},
 	}

@@ -226,7 +226,7 @@ func (m1 Matrix) Mul2D(v Point2D) Point2D {
 func (m1 Matrix) MulBox(b Box) Box {
 	if m1[15] == 0 {
 		return b
-	}	
+	}
 	box := Box{
 		Min: m1.Mul3D(b.Min),
 		Max: m1.Mul3D(b.Max),
