@@ -3,6 +3,7 @@ package production
 import (
 	"github.com/qmuntal/go3mf"
 	"github.com/qmuntal/go3mf/errors"
+	"github.com/qmuntal/go3mf/uuid"
 )
 
 func (e *Spec) ValidateAsset(_ *go3mf.Model, _ string, _ go3mf.Asset) error {
@@ -16,7 +17,7 @@ func (e *Spec) ValidateModel(m *go3mf.Model) error {
 	)
 	if !m.Build.AnyAttr.Get(&u) {
 		errs = errors.Append(errs, errors.Wrap(errors.NewMissingFieldError(attrProdUUID), m.Build))
-	} else if validateUUID(string(*u)) != nil {
+	} else if uuid.Validate(string(*u)) != nil {
 		errs = errors.Append(errs, errors.Wrap(errors.ErrUUID, m.Build))
 	}
 	for i, item := range m.Build.Items {
@@ -41,7 +42,7 @@ func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) er
 	)
 	if !obj.AnyAttr.Get(&u) {
 		errs = errors.Append(errs, errors.NewMissingFieldError(attrProdUUID))
-	} else if validateUUID(string(*u)) != nil {
+	} else if uuid.Validate(string(*u)) != nil {
 		errs = errors.Append(errs, errors.ErrUUID)
 	}
 	var p *PathUUID
@@ -63,7 +64,7 @@ func (e *Spec) validatePathUUID(m *go3mf.Model, path string, p *PathUUID) error 
 	var errs error
 	if p.UUID == "" {
 		errs = errors.Append(errs, errors.NewMissingFieldError(attrProdUUID))
-	} else if validateUUID(string(p.UUID)) != nil {
+	} else if uuid.Validate(string(p.UUID)) != nil {
 		errs = errors.Append(errs, errors.ErrUUID)
 	}
 	if p.Path != "" {
