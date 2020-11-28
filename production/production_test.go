@@ -8,8 +8,8 @@ import (
 
 var _ go3mf.SpecDecoder = new(Spec)
 var _ go3mf.SpecValidator = new(Spec)
-var _ go3mf.AttrMarshaler = new(UUID)
-var _ go3mf.AttrMarshaler = new(PathUUID)
+var _ go3mf.MarshalerAttr = new(UUID)
+var _ go3mf.MarshalerAttr = new(PathUUID)
 
 func TestPathUUID_ObjectPath(t *testing.T) {
 	tests := []struct {

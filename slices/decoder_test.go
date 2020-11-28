@@ -29,7 +29,7 @@ func TestDecode(t *testing.T) {
 	meshRes := &go3mf.Object{
 		Mesh: new(go3mf.Mesh),
 		ID:   8, Name: "Box 1",
-		AnyAttr: go3mf.AttrMarshalers{&SliceStackInfo{SliceStackID: 3, MeshResolution: ResolutionLow}},
+		AnyAttr: go3mf.ExtensionsAttr{&SliceStackInfo{SliceStackID: 3, MeshResolution: ResolutionLow}},
 	}
 
 	want := &go3mf.Model{Path: "/3D/3dmodel.model", Specs: map[string]go3mf.Spec{Namespace: &Spec{LocalName: "s"}},

@@ -88,7 +88,7 @@ type Relationship struct {
 // Build contains one or more items to manufacture as part of processing the job.
 type Build struct {
 	Items   []*Item
-	AnyAttr AttrMarshalers
+	AnyAttr ExtensionsAttr
 }
 
 // The Resources element acts as the root element of a library of constituent
@@ -96,7 +96,7 @@ type Build struct {
 type Resources struct {
 	Assets  []Asset
 	Objects []*Object
-	AnyAttr AttrMarshalers
+	AnyAttr ExtensionsAttr
 }
 
 // UnusedID returns the lowest unused ID.
@@ -179,7 +179,7 @@ type Model struct {
 	RootRelationships []Relationship
 	Relationships     []Relationship
 	Any               Extensions
-	AnyAttr           AttrMarshalers
+	AnyAttr           ExtensionsAttr
 }
 
 // WithSpec adds a new extension
@@ -328,7 +328,7 @@ type Item struct {
 	Transform  Matrix
 	PartNumber string
 	Metadata   []Metadata
-	AnyAttr    AttrMarshalers
+	AnyAttr    ExtensionsAttr
 }
 
 // ObjectPath search an extension attribute with an ObjectPath
@@ -363,7 +363,7 @@ type Object struct {
 	Metadata   []Metadata
 	Mesh       *Mesh
 	Components []*Component
-	AnyAttr    AttrMarshalers
+	AnyAttr    ExtensionsAttr
 }
 
 func (o *Object) boundingBox(m *Model, path string) Box {
@@ -389,7 +389,7 @@ func (o *Object) boundingBox(m *Model, path string) Box {
 type Component struct {
 	ObjectID  uint32
 	Transform Matrix
-	AnyAttr   AttrMarshalers
+	AnyAttr   ExtensionsAttr
 }
 
 // ObjectPath search an extension attribute with an ObjectPath
@@ -464,7 +464,7 @@ func (t Triangle) PIndices() (uint32, uint32, uint32) {
 type Mesh struct {
 	Vertices  []Point3D
 	Triangles []Triangle
-	AnyAttr   AttrMarshalers
+	AnyAttr   ExtensionsAttr
 	Any       Extensions
 }
 
