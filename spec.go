@@ -5,7 +5,7 @@ import (
 	"reflect"
 )
 
-var marshalerAttrType = reflect.TypeOf((*AttrMarshaler)(nil)).Elem()
+var marshalerAttrType = reflect.TypeOf((*MarshalerAttr)(nil)).Elem()
 var marshalerType = reflect.TypeOf((*Marshaler)(nil)).Elem()
 
 type ObjectPather interface {
@@ -49,19 +49,19 @@ type Marshaler interface {
 	Marshal3MF(x *XMLEncoder) error
 }
 
-// AttrMarshaler is the interface implemented by objects that can marshal
+// MarshalerAttr is the interface implemented by objects that can marshal
 // themselves into valid XML attributes.
-type AttrMarshaler interface {
+type MarshalerAttr interface {
 	Marshal3MFAttr(*XMLEncoder) ([]xml.Attr, error)
 }
 
-// AttrMarshalers is an extension point containing <anyAttribute> information.
+// ExtensionsAttr is an extension point containing <anyAttribute> information.
 // The key should be the extension namespace.
-type AttrMarshalers []AttrMarshaler
+type ExtensionsAttr []MarshalerAttr
 
 // Get will panic if target is not a non-nil pointer to either a type that implements
 // MarshallerAttr, or to any interface type.
-func (e AttrMarshalers) Get(target interface{}) bool {
+func (e ExtensionsAttr) Get(target interface{}) bool {
 	if e == nil || len(e) == 0 {
 		return false
 	}
@@ -87,7 +87,7 @@ func (e AttrMarshalers) Get(target interface{}) bool {
 	return false
 }
 
-func (e AttrMarshalers) encode(x *XMLEncoder, start *xml.StartElement) {
+func (e ExtensionsAttr) encode(x *XMLEncoder, start *xml.StartElement) {
 	for _, ext := range e {
 		if att, err := ext.Marshal3MFAttr(x); err == nil {
 			start.Attr = append(start.Attr, att...)
@@ -95,9 +95,9 @@ func (e AttrMarshalers) encode(x *XMLEncoder, start *xml.StartElement) {
 	}
 }
 
-// Marshalers is an extension point containing <any> information.
+// Extensions is an extension point containing <any> information.
 // The key should be the extension namespace.
-type Marshalers []Marshaler
+type Extensions []Marshaler
 
 // Get finds the first Marshaller that matches target, and if so, sets
 // target to that extension value and returns true.
@@ -107,7 +107,7 @@ type Marshalers []Marshaler
 
 // Get will panic if target is not a non-nil pointer to either a type that implements
 // Marshaller, or to any interface type.
-func (e Marshalers) Get(target interface{}) bool {
+func (e Extensions) Get(target interface{}) bool {
 	if e == nil || len(e) == 0 {
 		return false
 	}
@@ -133,7 +133,7 @@ func (e Marshalers) Get(target interface{}) bool {
 	return false
 }
 
-func (e Marshalers) encode(x *XMLEncoder) error {
+func (e Extensions) encode(x *XMLEncoder) error {
 	for _, ext := range e {
 		if err := ext.Marshal3MF(x); err == nil {
 			return err

@@ -53,7 +53,7 @@ func RegisterClassExtends(className, extend string, scope ...string) js.Value {
 }
 
 // JSValue returns a JavaScript value associated with the object.
-func (e AttrMarshalers) JSValue() js.Value {
+func (e ExtensionsAttr) JSValue() js.Value {
 	attr := arrayConstructor.New(len(e))
 	var i int
 	for _, a := range e {
@@ -66,7 +66,7 @@ func (e AttrMarshalers) JSValue() js.Value {
 }
 
 // JSValue returns a JavaScript value associated with the object.
-func (e Marshalers) JSValue() js.Value {
+func (e Extensions) JSValue() js.Value {
 	attr := arrayConstructor.New(len(e))
 	var i int
 	for _, a := range e {

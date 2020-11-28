@@ -329,8 +329,8 @@ func TestComponent_ObjectPath(t *testing.T) {
 		want string
 	}{
 		{"emptyattr", &Component{}, args{"/other.model"}, "/other.model"},
-		{"emptypath", &Component{AnyAttr: AttrMarshalers{&fakeAttr{}}}, args{"/other.model"}, "/other.model"},
-		{"emptyattr", &Component{AnyAttr: AttrMarshalers{&fakeAttr{Value: "/3dmodel.model"}}}, args{"/other.model"}, "/3dmodel.model"},
+		{"emptypath", &Component{AnyAttr: ExtensionsAttr{&fakeAttr{}}}, args{"/other.model"}, "/other.model"},
+		{"emptyattr", &Component{AnyAttr: ExtensionsAttr{&fakeAttr{Value: "/3dmodel.model"}}}, args{"/other.model"}, "/3dmodel.model"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -348,8 +348,8 @@ func TestItem_ObjectPath(t *testing.T) {
 		want string
 	}{
 		{"emptyattr", &Item{}, ""},
-		{"emptypath", &Item{AnyAttr: AttrMarshalers{&fakeAttr{}}}, ""},
-		{"emptyattr", &Item{AnyAttr: AttrMarshalers{&fakeAttr{Value: "/3dmodel.model"}}}, "/3dmodel.model"},
+		{"emptypath", &Item{AnyAttr: ExtensionsAttr{&fakeAttr{}}}, ""},
+		{"emptyattr", &Item{AnyAttr: ExtensionsAttr{&fakeAttr{Value: "/3dmodel.model"}}}, "/3dmodel.model"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
