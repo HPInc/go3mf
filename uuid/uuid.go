@@ -42,7 +42,7 @@ func New() string {
 	return string(buf[:])
 }
 
-// ParseUUID decodes s into a UUID or returns an error. Both the standard UUID
+// Validate decodes s into a UUID or returns an error. Both the standard UUID
 // forms of xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx and
 // urn:uuid:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx are decoded as well as the
 // Microsoft encoding {xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx} and the raw hex
