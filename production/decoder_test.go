@@ -9,11 +9,6 @@ import (
 	"github.com/qmuntal/go3mf/errors"
 )
 
-func mustUUID(u string) *UUID {
-	v := UUID(u)
-	return &v
-}
-
 func TestDecode_NoUUID(t *testing.T) {
 	got := new(go3mf.Model)
 	rootFile := `
@@ -38,24 +33,24 @@ func TestDecode_NoUUID(t *testing.T) {
 			t.Errorf("UnmarshalModel() unexpected error = %v", err)
 			return
 		}
-		var (
-			uuid *UUID
-			pu   *PathUUID
-		)
-		if !got.Build.AnyAttr.Get(&uuid) || *uuid == "" {
+		var buildAttr *BuildAttr
+		if !got.Build.AnyAttr.Get(&buildAttr) || buildAttr.UUID == "" {
 			t.Error("UnmarshalModel() empty build uuid")
 		}
 		for _, item := range got.Build.Items {
-			if !item.AnyAttr.Get(&pu) || pu.UUID == "" {
+			var itemAttr *ItemAttr
+			if !item.AnyAttr.Get(&itemAttr) || itemAttr.UUID == "" {
 				t.Error("UnmarshalModel() empty item uuid")
 			}
 		}
 		for _, o := range got.Resources.Objects {
-			if !o.AnyAttr.Get(&uuid) || *uuid == "" {
+			var objectAttr *ObjectAttr
+			if !o.AnyAttr.Get(&objectAttr) || objectAttr.UUID == "" {
 				t.Error("UnmarshalModel() empty object uuid")
 			}
 			for _, c := range o.Components {
-				if !c.AnyAttr.Get(&pu) || pu.UUID == "" {
+				var compAttr *ComponentAttr
+				if !c.AnyAttr.Get(&compAttr) || compAttr.UUID == "" {
 					t.Error("UnmarshalModel() empty component uuid")
 				}
 			}
@@ -65,12 +60,12 @@ func TestDecode_NoUUID(t *testing.T) {
 
 func TestDecode(t *testing.T) {
 	components := &go3mf.Object{
-		AnyAttr: go3mf.ExtensionsAttr{mustUUID("cb828680-8895-4e08-a1fc-be63e033df15")},
+		AnyAttr: go3mf.ExtensionsAttr{&ObjectAttr{UUID: "cb828680-8895-4e08-a1fc-be63e033df15"}},
 		ID:      20,
 		Components: []*go3mf.Component{{
-			AnyAttr: go3mf.ExtensionsAttr{&PathUUID{
+			AnyAttr: go3mf.ExtensionsAttr{&ComponentAttr{
 				Path: "/3D/other.model",
-				UUID: UUID("cb828680-8895-4e08-a1fc-be63e033df16"),
+				UUID: "cb828680-8895-4e08-a1fc-be63e033df16",
 			}},
 			ObjectID: 8, Transform: go3mf.Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}},
 		},
@@ -78,15 +73,16 @@ func TestDecode(t *testing.T) {
 
 	want := &go3mf.Model{Path: "/3D/3dmodel.model", Resources: go3mf.Resources{
 		Objects: []*go3mf.Object{components},
-	}, Build: go3mf.Build{AnyAttr: go3mf.ExtensionsAttr{mustUUID("e9e25302-6428-402e-8633-cc95528d0ed3")}},
+	}, Build: go3mf.Build{
+		AnyAttr: go3mf.ExtensionsAttr{&BuildAttr{UUID: "e9e25302-6428-402e-8633-cc95528d0ed3"}}},
 	}
 	want.Build.Items = append(want.Build.Items, &go3mf.Item{ObjectID: 20,
-		AnyAttr:   go3mf.ExtensionsAttr{&PathUUID{UUID: UUID("e9e25302-6428-402e-8633-cc95528d0ed2")}},
+		AnyAttr:   go3mf.ExtensionsAttr{&ItemAttr{UUID: "e9e25302-6428-402e-8633-cc95528d0ed2"}},
 		Transform: go3mf.Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
 	}, &go3mf.Item{ObjectID: 8,
-		AnyAttr: go3mf.ExtensionsAttr{&PathUUID{
+		AnyAttr: go3mf.ExtensionsAttr{&ItemAttr{
 			Path: "/3D/other.model",
-			UUID: UUID("e9e25302-6428-402e-8633-cc95528d0ed4"),
+			UUID: "e9e25302-6428-402e-8633-cc95528d0ed4",
 		}},
 	})
 	got := new(go3mf.Model)

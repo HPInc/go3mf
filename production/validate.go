@@ -6,23 +6,28 @@ import (
 	"github.com/qmuntal/go3mf/uuid"
 )
 
+type uuidPath interface {
+	getUUID() string
+	ObjectPath() string
+}
+
 func (e *Spec) ValidateAsset(_ *go3mf.Model, _ string, _ go3mf.Asset) error {
 	return nil
 }
 
 func (e *Spec) ValidateModel(m *go3mf.Model) error {
 	var (
-		u    *UUID
+		u    *BuildAttr
 		errs error
 	)
 	if !m.Build.AnyAttr.Get(&u) {
 		errs = errors.Append(errs, errors.Wrap(errors.NewMissingFieldError(attrProdUUID), m.Build))
-	} else if uuid.Validate(string(*u)) != nil {
+	} else if uuid.Validate(u.UUID) != nil {
 		errs = errors.Append(errs, errors.Wrap(errors.ErrUUID, m.Build))
 	}
 	for i, item := range m.Build.Items {
 		var iErrs error
-		var p *PathUUID
+		var p *ItemAttr
 		if !item.AnyAttr.Get(&p) {
 			iErrs = errors.Append(iErrs, errors.NewMissingFieldError(attrProdUUID))
 		} else {
@@ -37,15 +42,15 @@ func (e *Spec) ValidateModel(m *go3mf.Model) error {
 
 func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) error {
 	var (
-		u    *UUID
+		u    *ObjectAttr
 		errs error
 	)
 	if !obj.AnyAttr.Get(&u) {
 		errs = errors.Append(errs, errors.NewMissingFieldError(attrProdUUID))
-	} else if uuid.Validate(string(*u)) != nil {
+	} else if uuid.Validate(u.UUID) != nil {
 		errs = errors.Append(errs, errors.ErrUUID)
 	}
-	var p *PathUUID
+	var p *ComponentAttr
 	for i, c := range obj.Components {
 		var cErrs error
 		if !c.AnyAttr.Get(&p) {
@@ -60,14 +65,14 @@ func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) er
 	return errs
 }
 
-func (e *Spec) validatePathUUID(m *go3mf.Model, path string, p *PathUUID) error {
+func (e *Spec) validatePathUUID(m *go3mf.Model, path string, p uuidPath) error {
 	var errs error
-	if p.UUID == "" {
+	if p.getUUID() == "" {
 		errs = errors.Append(errs, errors.NewMissingFieldError(attrProdUUID))
-	} else if uuid.Validate(string(p.UUID)) != nil {
+	} else if uuid.Validate(string(p.getUUID())) != nil {
 		errs = errors.Append(errs, errors.ErrUUID)
 	}
-	if p.Path != "" {
+	if p.ObjectPath() != "" {
 		if path == "" || path == m.PathOrDefault() { // root
 			// Path is validated as part if the core validations
 			if !e.Required() {
