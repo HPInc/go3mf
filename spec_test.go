@@ -34,14 +34,14 @@ func TestAttrMarshalers_Get(t *testing.T) {
 func TestMarshalers_Get(t *testing.T) {
 	tests := []struct {
 		name   string
-		e      Marshalers
+		e      Extensions
 		want   interface{}
 		wantOK bool
 	}{
 		{"nil", nil, new(fakeAsset), false},
-		{"empty", Marshalers{}, new(fakeAsset), false},
-		{"non-exist", Marshalers{nil}, new(fakeAsset), false},
-		{"exist", Marshalers{&fakeAsset{ID: 1}}, &fakeAsset{ID: 1}, true},
+		{"empty", Extensions{}, new(fakeAsset), false},
+		{"non-exist", Extensions{nil}, new(fakeAsset), false},
+		{"exist", Extensions{&fakeAsset{ID: 1}}, &fakeAsset{ID: 1}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -63,12 +63,12 @@ func TestMarshalers_Get_Panic(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		e    Marshalers
+		e    Extensions
 		args args
 	}{
-		{"nil", Marshalers{&fakeAsset{ID: 1}}, args{nil}},
-		{"int", Marshalers{&fakeAsset{ID: 1}}, args{1}},
-		{"nonPtrToPtr", Marshalers{&fakeAsset{ID: 1}}, args{new(fakeAsset)}},
+		{"nil", Extensions{&fakeAsset{ID: 1}}, args{nil}},
+		{"int", Extensions{&fakeAsset{ID: 1}}, args{1}},
+		{"nonPtrToPtr", Extensions{&fakeAsset{ID: 1}}, args{new(fakeAsset)}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

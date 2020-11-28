@@ -13,7 +13,7 @@ func TestMarshalModel(t *testing.T) {
 		ID: 15, Name: "Box",
 		Mesh: &go3mf.Mesh{
 			Triangles: []go3mf.Triangle{},
-			Any:       go3mf.Marshalers{beamLattice}},
+			Any:       go3mf.Extensions{beamLattice}},
 	}
 	beamLattice.MinLength = 0.0001
 	beamLattice.CapMode = CapModeHemisphere

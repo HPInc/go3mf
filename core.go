@@ -155,7 +155,7 @@ func (rs *Resources) FindAsset(id uint32) (Asset, bool) {
 type ChildModel struct {
 	Resources     Resources
 	Relationships []Relationship
-	Any           Marshalers
+	Any           Extensions
 }
 
 // A Model is an in memory representation of the 3MF file.
@@ -178,7 +178,7 @@ type Model struct {
 	Childs            map[string]*ChildModel // path -> child
 	RootRelationships []Relationship
 	Relationships     []Relationship
-	Any               Marshalers
+	Any               Extensions
 	AnyAttr           AttrMarshalers
 }
 
@@ -465,7 +465,7 @@ type Mesh struct {
 	Vertices  []Point3D
 	Triangles []Triangle
 	AnyAttr   AttrMarshalers
-	Any       Marshalers
+	Any       Extensions
 }
 
 // BoundingBox returns the bounding box of the mesh.

@@ -95,9 +95,9 @@ func (e AttrMarshalers) encode(x *XMLEncoder, start *xml.StartElement) {
 	}
 }
 
-// Marshalers is an extension point containing <any> information.
+// Extensions is an extension point containing <any> information.
 // The key should be the extension namespace.
-type Marshalers []Marshaler
+type Extensions []Marshaler
 
 // Get finds the first Marshaller that matches target, and if so, sets
 // target to that extension value and returns true.
@@ -107,7 +107,7 @@ type Marshalers []Marshaler
 
 // Get will panic if target is not a non-nil pointer to either a type that implements
 // Marshaller, or to any interface type.
-func (e Marshalers) Get(target interface{}) bool {
+func (e Extensions) Get(target interface{}) bool {
 	if e == nil || len(e) == 0 {
 		return false
 	}
@@ -133,7 +133,7 @@ func (e Marshalers) Get(target interface{}) bool {
 	return false
 }
 
-func (e Marshalers) encode(x *XMLEncoder) error {
+func (e Extensions) encode(x *XMLEncoder) error {
 	for _, ext := range e {
 		if err := ext.Marshal3MF(x); err == nil {
 			return err
