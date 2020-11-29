@@ -80,6 +80,11 @@ type packageWriter interface {
 
 // MarshalModel returns the XML encoding of m.
 func MarshalModel(m *Model) ([]byte, error) {
+	for _, s := range m.Specs {
+		if s, ok := s.(SpecEncoder); ok {
+			s.BeforeEncode(m)
+		}
+	}
 	var b bytes.Buffer
 	if err := new(Encoder).writeModel(newXMLEncoder(&b, defaultFloatPrecision), m); err != nil {
 		return nil, err
@@ -105,6 +110,11 @@ func NewEncoder(w io.Writer) *Encoder {
 
 // Encode writes the XML encoding of m to the stream.
 func (e *Encoder) Encode(m *Model) error {
+	for _, s := range m.Specs {
+		if s, ok := s.(SpecEncoder); ok {
+			s.BeforeEncode(m)
+		}
+	}
 	if err := e.writeAttachements(m.Attachments); err != nil {
 		return err
 	}

@@ -29,7 +29,7 @@ func TestValidate(t *testing.T) {
 			AnyAttr: go3mf.ExtensionsAttr{&BuildAttr{"a-b-c-d"}}}}, []error{
 			fmt.Errorf("Build: %v", errors.ErrUUID),
 		}},
-		{"extReq", &go3mf.Model{Specs: map[string]go3mf.Spec{Namespace: &Spec{IsRequired: true}},
+		{"extReq", &go3mf.Model{Specs: map[string]go3mf.Spec{Namespace: &Spec{}},
 			Childs: map[string]*go3mf.ChildModel{"/other.model": {Resources: go3mf.Resources{Objects: []*go3mf.Object{validMesh}}}},
 			Resources: go3mf.Resources{Objects: []*go3mf.Object{
 				{ID: 5, AnyAttr: go3mf.ExtensionsAttr{&ObjectAttr{UUID: "f47ac10b-58cc-0372-8567-0e02b2c3d481"}}, Components: []*go3mf.Component{
@@ -50,7 +50,6 @@ func TestValidate(t *testing.T) {
 			}},
 			Childs:    map[string]*go3mf.ChildModel{"/other.model": {Resources: go3mf.Resources{Objects: []*go3mf.Object{validMesh}}}},
 			Resources: go3mf.Resources{Objects: []*go3mf.Object{{ID: 1, Mesh: validMesh.Mesh}}}}, []error{
-			fmt.Errorf("Build@Item#0: %v", errors.ErrProdExtRequired),
 			fmt.Errorf("Build@Item#1: %v", &errors.MissingFieldError{Name: attrProdUUID}),
 			fmt.Errorf("Build@Item#2: %v", &errors.MissingFieldError{Name: attrProdUUID}),
 			fmt.Errorf("Build@Item#3: %v", errors.ErrUUID),
