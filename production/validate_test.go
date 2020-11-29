@@ -97,26 +97,3 @@ func TestValidate(t *testing.T) {
 		})
 	}
 }
-
-func TestSpec_ValidateAsset(t *testing.T) {
-	type args struct {
-		in0 *go3mf.Model
-		in1 string
-		in2 go3mf.Asset
-	}
-	tests := []struct {
-		name    string
-		e       *Spec
-		args    args
-		wantErr bool
-	}{
-		{"base", &Spec{}, args{nil, "", nil}, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.e.ValidateAsset(tt.args.in0, tt.args.in1, tt.args.in2); (err != nil) != tt.wantErr {
-				t.Errorf("Spec.ValidateAsset() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}

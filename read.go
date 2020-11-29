@@ -74,12 +74,12 @@ func (d *topLevelDecoder) Child(name xml.Name) (child NodeDecoder) {
 func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string, isRoot, strict bool) (*Scanner, error) {
 	x := xml3mf.NewDecoder(r)
 	scanner := Scanner{
-		extensionDecoder: make(map[string]SpecDecoder),
+		extensionDecoder: make(map[string]specDecoder),
 		IsRoot:           isRoot,
 		ModelPath:        path,
 	}
 	for _, ext := range model.Specs {
-		if ext, ok := ext.(SpecDecoder); ok {
+		if ext, ok := ext.(specDecoder); ok {
 			scanner.extensionDecoder[ext.Namespace()] = ext
 		}
 	}
@@ -198,7 +198,9 @@ func (d *Decoder) processRootModel(ctx context.Context, rootFile packageFile, mo
 	}
 	d.addModelFile(scanner, model)
 	for _, ext := range scanner.extensionDecoder {
-		ext.OnDecoded(model)
+		if ext, ok := ext.(postProcessorSpecDecoder); ok {
+			ext.PostProcessDecode(model)
+		}
 	}
 	return nil
 }

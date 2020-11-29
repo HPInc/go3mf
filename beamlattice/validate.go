@@ -5,14 +5,6 @@ import (
 	"github.com/qmuntal/go3mf/errors"
 )
 
-func (e *Spec) ValidateModel(_ *go3mf.Model) error {
-	return nil
-}
-
-func (e *Spec) ValidateAsset(_ *go3mf.Model, _ string, _ go3mf.Asset) error {
-	return nil
-}
-
 func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) error {
 	if obj.Mesh == nil {
 		return nil

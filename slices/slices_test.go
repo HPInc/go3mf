@@ -5,13 +5,15 @@ import (
 	"testing"
 
 	"github.com/qmuntal/go3mf"
+	"github.com/qmuntal/go3mf/spec"
 )
 
-var _ go3mf.SpecDecoder = new(Spec)
-var _ go3mf.SpecValidator = new(Spec)
+var _ spec.Decoder = new(Spec)
+var _ spec.ObjectValidator = new(Spec)
+var _ spec.AssetValidator = new(Spec)
 var _ go3mf.Asset = new(SliceStack)
-var _ go3mf.Marshaler = new(SliceStack)
-var _ go3mf.MarshalerAttr = new(SliceStackInfo)
+var _ spec.Marshaler = new(SliceStack)
+var _ spec.MarshalerAttr = new(SliceStackInfo)
 
 func TestSliceStack_Identify(t *testing.T) {
 	tests := []struct {

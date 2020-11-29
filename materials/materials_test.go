@@ -6,24 +6,25 @@ import (
 	"testing"
 
 	"github.com/qmuntal/go3mf"
+	"github.com/qmuntal/go3mf/spec"
 )
 
-var _ go3mf.SpecDecoder = new(Spec)
-var _ go3mf.SpecValidator = new(Spec)
+var _ spec.Decoder = new(Spec)
+var _ spec.AssetValidator = new(Spec)
 var _ go3mf.Asset = new(Texture2D)
 var _ go3mf.Asset = new(Texture2DGroup)
 var _ go3mf.Asset = new(CompositeMaterials)
 var _ go3mf.Asset = new(MultiProperties)
 var _ go3mf.Asset = new(ColorGroup)
-var _ go3mf.Marshaler = new(Texture2D)
-var _ go3mf.Marshaler = new(Texture2DGroup)
-var _ go3mf.Marshaler = new(CompositeMaterials)
-var _ go3mf.Marshaler = new(ColorGroup)
-var _ go3mf.Marshaler = new(MultiProperties)
-var _ go3mf.PropertyGroup = new(ColorGroup)
-var _ go3mf.PropertyGroup = new(Texture2DGroup)
-var _ go3mf.PropertyGroup = new(CompositeMaterials)
-var _ go3mf.PropertyGroup = new(MultiProperties)
+var _ spec.Marshaler = new(Texture2D)
+var _ spec.Marshaler = new(Texture2DGroup)
+var _ spec.Marshaler = new(CompositeMaterials)
+var _ spec.Marshaler = new(ColorGroup)
+var _ spec.Marshaler = new(MultiProperties)
+var _ spec.PropertyGroup = new(ColorGroup)
+var _ spec.PropertyGroup = new(Texture2DGroup)
+var _ spec.PropertyGroup = new(CompositeMaterials)
+var _ spec.PropertyGroup = new(MultiProperties)
 
 func TestTexture2D_Identify(t *testing.T) {
 	tests := []struct {

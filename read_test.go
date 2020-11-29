@@ -21,8 +21,11 @@ import (
 
 const fakeExtension = "http://dummy.com/fake_ext"
 
-var _ SpecValidator = new(fakeSpec)
-var _ SpecDecoder = new(fakeSpec)
+var _ modelValidator = new(fakeSpec)
+var _ assetValidator = new(fakeSpec)
+var _ objectValidator = new(fakeSpec)
+var _ specDecoder = new(fakeSpec)
+var _ postProcessorSpecDecoder = new(fakeSpec)
 
 type fakeSpec struct {
 }
@@ -33,7 +36,7 @@ func (f *fakeSpec) Local() string      { return "qm" }
 func (f *fakeSpec) SetLocal(_ string)  {}
 func (f *fakeSpec) SetRequired(_ bool) {}
 
-func (e *fakeSpec) OnDecoded(_ *Model) {}
+func (e *fakeSpec) PostProcessDecode(_ *Model) {}
 
 func (f *fakeSpec) NewNodeDecoder(_ interface{}, nodeName string) NodeDecoder {
 	return &fakeAssetDecoder{}

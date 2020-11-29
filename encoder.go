@@ -81,8 +81,8 @@ type packageWriter interface {
 // MarshalModel returns the XML encoding of m.
 func MarshalModel(m *Model) ([]byte, error) {
 	for _, s := range m.Specs {
-		if s, ok := s.(SpecEncoder); ok {
-			s.BeforeEncode(m)
+		if s, ok := s.(preProcessEncoder); ok {
+			s.PreProcessEncode(m)
 		}
 	}
 	var b bytes.Buffer
@@ -111,8 +111,8 @@ func NewEncoder(w io.Writer) *Encoder {
 // Encode writes the XML encoding of m to the stream.
 func (e *Encoder) Encode(m *Model) error {
 	for _, s := range m.Specs {
-		if s, ok := s.(SpecEncoder); ok {
-			s.BeforeEncode(m)
+		if s, ok := s.(preProcessEncoder); ok {
+			s.PreProcessEncode(m)
 		}
 	}
 	if err := e.writeAttachements(m.Attachments); err != nil {
@@ -299,7 +299,7 @@ func (e *Encoder) writeResources(x *XMLEncoder, rs *Resources) error {
 	xt := xml.StartElement{Name: xml.Name{Local: attrResources}}
 	x.EncodeToken(xt)
 	for _, r := range rs.Assets {
-		if r, ok := r.(Marshaler); ok {
+		if r, ok := r.(marshaler); ok {
 			if err := r.Marshal3MF(x); err != nil {
 				return err
 			}
@@ -483,5 +483,26 @@ func (r *BaseMaterials) Marshal3MF(x *XMLEncoder) error {
 	}
 	x.SetAutoClose(false)
 	x.EncodeToken(xt.End())
+	return nil
+}
+
+func (e ExtensionsAttr) encode(x *XMLEncoder, start *xml.StartElement) {
+	for _, ext := range e {
+		if ext, ok := ext.(marshalerAttr); ok {
+			if att, err := ext.Marshal3MFAttr(x); err == nil {
+				start.Attr = append(start.Attr, att...)
+			}
+		}
+	}
+}
+
+func (e Extensions) encode(x *XMLEncoder) error {
+	for _, ext := range e {
+		if ext, ok := ext.(marshaler); ok {
+			if err := ext.Marshal3MF(x); err == nil {
+				return err
+			}
+		}
+	}
 	return nil
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/qmuntal/go3mf/uuid"
 )
 
-func (s *Spec) BeforeEncode(m *go3mf.Model) {
+func (s *Spec) PreProcessEncode(m *go3mf.Model) {
 	if s.DisableAutoUUID {
 		return
 	}

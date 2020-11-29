@@ -4,8 +4,39 @@ import (
 	"encoding/xml"
 	"image/color"
 	"io"
+	"reflect"
 	"sort"
 	"sync"
+)
+
+const (
+	// Namespace is the canonical name of this extension.
+	Namespace = "http://schemas.microsoft.com/3dmanufacturing/core/2015/02"
+
+	// RelType3DModel is the canonical 3D model relationship type.
+	RelType3DModel = "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"
+	// RelTypeThumbnail is the canonical thumbnail relationship type.
+	RelTypeThumbnail = "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail"
+	// RelTypePrintTicket is the canonical print ticket relationship type.
+	RelTypePrintTicket = "http://schemas.microsoft.com/3dmanufacturing/2013/01/printticket"
+	// RelTypeMustPreserve is the canonical must preserve relationship type.
+	RelTypeMustPreserve = "http://schemas.openxmlformats.org/package/2006/relationships/mustpreserve"
+
+	// DefaultModelPath is the recommended root model part name.
+	DefaultModelPath = "/3D/3dmodel.model"
+	// DefaultPrintTicketName is the recommended print ticket part name.
+	DefaultPrintTicketName = "/3D/Metadata/Model_PT.xml"
+	// Default3DTexturesDir is the recommended directory for 3D textures.
+	Default3DTexturesDir = "/3D/Textures/"
+	// Default3DOtherDir is the recommended directory for non-standard parts.
+	Default3DOtherDir = "/3D/Other/"
+	// DefaultMetadataDir is the recommended directory for standard metadata.
+	DefaultMetadataDir = "/Metadata/"
+
+	// ContentType3DModel is the 3D model content type.
+	ContentType3DModel = "application/vnd.ms-package.3dmanufacturing-3dmodel+xml"
+	// ContentTypePrintTicket is the print ticket content type.
+	ContentTypePrintTicket = "application/vnd.ms-printing.printticket+xml"
 )
 
 // Units define the allowed model units.
@@ -336,7 +367,7 @@ type Item struct {
 // Else returns an empty path.
 func (b *Item) ObjectPath() string {
 	for _, att := range b.AnyAttr {
-		if ext, ok := att.(ObjectPather); ok {
+		if ext, ok := att.(objectPather); ok {
 			path := ext.ObjectPath()
 			if path != "" {
 				return path
@@ -397,7 +428,7 @@ type Component struct {
 // Else returns the default path.
 func (c *Component) ObjectPath(defaultPath string) string {
 	for _, att := range c.AnyAttr {
-		if ext, ok := att.(ObjectPather); ok {
+		if ext, ok := att.(objectPather); ok {
 			path := ext.ObjectPath()
 			if path != "" {
 				return path
@@ -539,39 +570,73 @@ func newUnits(s string) (u Units, ok bool) {
 	return
 }
 
+// ExtensionsAttr is an extension point containing <anyAttribute> information.
+// The key should be the extension namespace.
+type ExtensionsAttr []interface{}
+
+// Get will panic if target is not a non-nil pointer to either a type that implements
+// MarshallerAttr, or to any interface type.
+func (e ExtensionsAttr) Get(target interface{}) bool {
+	if e == nil || len(e) == 0 {
+		return false
+	}
+	if target == nil {
+		panic("go3mf: target cannot be nil")
+	}
+
+	val := reflect.ValueOf(target)
+	typ := val.Type()
+	if typ.Kind() != reflect.Ptr || val.IsNil() {
+		panic("go3mf: target must be a non-nil pointer")
+	}
+	targetType := typ.Elem()
+	for _, v := range e {
+		if v != nil && reflect.TypeOf(v).AssignableTo(targetType) {
+			val.Elem().Set(reflect.ValueOf(v))
+			return true
+		}
+	}
+	return false
+}
+
+// Extensions is an extension point containing <any> information.
+// The key should be the extension namespace.
+type Extensions []interface{}
+
+// Get finds the first Marshaller that matches target, and if so, sets
+// target to that extension value and returns true.
+
+// A Marshaller matches target if the marshaller's concrete value is assignable to the value
+// pointed to by target.
+
+// Get will panic if target is not a non-nil pointer to either a type that implements
+// Marshaller, or to any interface type.
+func (e Extensions) Get(target interface{}) bool {
+	if e == nil || len(e) == 0 {
+		return false
+	}
+	if target == nil {
+		panic("go3mf: target cannot be nil")
+	}
+
+	val := reflect.ValueOf(target)
+	typ := val.Type()
+	if typ.Kind() != reflect.Ptr || val.IsNil() {
+		panic("go3mf: target must be a non-nil pointer")
+	}
+	targetType := typ.Elem()
+	for _, v := range e {
+		if v != nil && reflect.TypeOf(v).AssignableTo(targetType) {
+			val.Elem().Set(reflect.ValueOf(v))
+			return true
+		}
+	}
+	return false
+}
+
 const (
 	nsXML   = "http://www.w3.org/XML/1998/namespace"
 	nsXMLNs = "http://www.w3.org/2000/xmlns/"
-)
-
-const (
-	// Namespace is the canonical name of this extension.
-	Namespace = "http://schemas.microsoft.com/3dmanufacturing/core/2015/02"
-
-	// RelType3DModel is the canonical 3D model relationship type.
-	RelType3DModel = "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"
-	// RelTypeThumbnail is the canonical thumbnail relationship type.
-	RelTypeThumbnail = "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail"
-	// RelTypePrintTicket is the canonical print ticket relationship type.
-	RelTypePrintTicket = "http://schemas.microsoft.com/3dmanufacturing/2013/01/printticket"
-	// RelTypeMustPreserve is the canonical must preserve relationship type.
-	RelTypeMustPreserve = "http://schemas.openxmlformats.org/package/2006/relationships/mustpreserve"
-
-	// DefaultModelPath is the recommended root model part name.
-	DefaultModelPath = "/3D/3dmodel.model"
-	// DefaultPrintTicketName is the recommended print ticket part name.
-	DefaultPrintTicketName = "/3D/Metadata/Model_PT.xml"
-	// Default3DTexturesDir is the recommended directory for 3D textures.
-	Default3DTexturesDir = "/3D/Textures/"
-	// Default3DOtherDir is the recommended directory for non-standard parts.
-	Default3DOtherDir = "/3D/Other/"
-	// DefaultMetadataDir is the recommended directory for standard metadata.
-	DefaultMetadataDir = "/Metadata/"
-
-	// ContentType3DModel is the 3D model content type.
-	ContentType3DModel = "application/vnd.ms-package.3dmanufacturing-3dmodel+xml"
-	// ContentTypePrintTicket is the print ticket content type.
-	ContentTypePrintTicket = "application/vnd.ms-printing.printticket+xml"
 )
 
 const (

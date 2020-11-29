@@ -8,8 +8,6 @@ import (
 	"github.com/qmuntal/go3mf"
 )
 
-func (e Spec) OnDecoded(_ *go3mf.Model) {}
-
 func (e Spec) NewNodeDecoder(_ interface{}, nodeName string) (child go3mf.NodeDecoder) {
 	switch nodeName {
 	case attrColorGroup:

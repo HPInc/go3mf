@@ -7,16 +7,16 @@ import (
 	"github.com/qmuntal/go3mf"
 )
 
-func TestSpec_BeforeEncode_AutoUUIDDisabled(t *testing.T) {
+func TestSpec_PreProcessEncode_AutoUUIDDisabled(t *testing.T) {
 	m := &go3mf.Model{Path: "/3D/3dmodel.model", Build: go3mf.Build{}}
 	s := &Spec{LocalName: "p", DisableAutoUUID: true}
-	s.BeforeEncode(m)
+	s.PreProcessEncode(m)
 	if len(m.Build.AnyAttr) != 0 {
-		t.Errorf("Spec.BeforeEncode() shouldn't have filled build attrs")
+		t.Errorf("Spec.PreProcessEncode() shouldn't have filled build attrs")
 	}
 }
 
-func TestSpec_BeforeEncode(t *testing.T) {
+func TestSpec_PreProcessEncode(t *testing.T) {
 	components := &go3mf.Object{
 		ID:         20,
 		Components: []*go3mf.Component{{ObjectID: 8}},
@@ -25,21 +25,21 @@ func TestSpec_BeforeEncode(t *testing.T) {
 	m.Resources = go3mf.Resources{Objects: []*go3mf.Object{components}}
 	m.Build.Items = append(m.Build.Items, &go3mf.Item{ObjectID: 20}, &go3mf.Item{ObjectID: 8})
 	s := &Spec{LocalName: "p"}
-	s.BeforeEncode(m)
+	s.PreProcessEncode(m)
 	if len(m.Build.AnyAttr) == 0 {
-		t.Errorf("Spec.BeforeEncode() should have filled build attrs")
+		t.Errorf("Spec.PreProcessEncode() should have filled build attrs")
 	}
 	if len(m.Build.Items[0].AnyAttr) == 0 {
-		t.Errorf("Spec.BeforeEncode() should have filled item attrs")
+		t.Errorf("Spec.PreProcessEncode() should have filled item attrs")
 	}
 	if len(m.Build.Items[1].AnyAttr) == 0 {
-		t.Errorf("Spec.BeforeEncode() should have filled item attrs")
+		t.Errorf("Spec.PreProcessEncode() should have filled item attrs")
 	}
 	if len(m.Resources.Objects[0].AnyAttr) == 0 {
-		t.Errorf("Spec.BeforeEncode() should have filled object attrs")
+		t.Errorf("Spec.PreProcessEncode() should have filled object attrs")
 	}
 	if len(m.Resources.Objects[0].Components[0].AnyAttr) == 0 {
-		t.Errorf("Spec.BeforeEncode() should have filled object attrs")
+		t.Errorf("Spec.PreProcessEncode() should have filled object attrs")
 	}
 }
 

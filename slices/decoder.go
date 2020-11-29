@@ -7,8 +7,6 @@ import (
 	"github.com/qmuntal/go3mf"
 )
 
-func (e Spec) OnDecoded(_ *go3mf.Model) {}
-
 func (e Spec) NewNodeDecoder(_ interface{}, nodeName string) go3mf.NodeDecoder {
 	if nodeName == attrSliceStack {
 		return &sliceStackDecoder{}

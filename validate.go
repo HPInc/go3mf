@@ -56,7 +56,7 @@ func (m *Model) Validate() error {
 	sortedSpecs := m.sortedSpecs()
 	for _, ns := range sortedSpecs {
 		ext := m.Specs[ns]
-		if ext, ok := ext.(SpecValidator); ok {
+		if ext, ok := ext.(modelValidator); ok {
 			errs = errors.Append(errs, ext.ValidateModel(m))
 		}
 	}
@@ -183,7 +183,7 @@ func (res *Resources) validate(m *Model, path string) error {
 		sortedSpecs := m.sortedSpecs()
 		for _, ns := range sortedSpecs {
 			ext := m.Specs[ns]
-			if ext, ok := ext.(SpecValidator); ok {
+			if ext, ok := ext.(assetValidator); ok {
 				aErrs = errors.Append(aErrs, ext.ValidateAsset(m, path, r))
 			}
 		}
@@ -219,7 +219,7 @@ func (r *Object) Validate(m *Model, path string) error {
 	if r.Mesh != nil {
 		if r.PID != 0 {
 			if a, ok := res.FindAsset(r.PID); ok {
-				if a, ok := a.(PropertyGroup); ok {
+				if a, ok := a.(propertyGroup); ok {
 					if int(r.PIndex) >= a.Len() {
 						errs = errors.Append(errs, errors.ErrIndexOutOfBounds)
 					}
@@ -243,7 +243,7 @@ func (r *Object) Validate(m *Model, path string) error {
 	sortedSpecs := m.sortedSpecs()
 	for _, ns := range sortedSpecs {
 		ext := m.Specs[ns]
-		if ext, ok := ext.(SpecValidator); ok {
+		if ext, ok := ext.(objectValidator); ok {
 			errs = errors.Append(errs, ext.ValidateObject(m, path, r))
 		}
 	}
@@ -280,7 +280,7 @@ func (r *Object) validateMesh(m *Model, path string) error {
 				continue
 			}
 			if a, ok := res.FindAsset(pid); ok {
-				if a, ok := a.(PropertyGroup); ok {
+				if a, ok := a.(propertyGroup); ok {
 					l := a.Len()
 					if int(p1) >= l || int(p2) >= l || int(p3) >= l {
 						errs = errors.Append(errs, errors.WrapIndex(errors.ErrIndexOutOfBounds, face, i))

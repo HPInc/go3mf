@@ -42,7 +42,7 @@ type Scanner struct {
 	IsRoot           bool
 	ResourceID       uint32
 	Err              specerr.List
-	extensionDecoder map[string]SpecDecoder
+	extensionDecoder map[string]specDecoder
 	contex           []xml.Name
 }
 
