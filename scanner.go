@@ -17,7 +17,7 @@ type XMLAttr struct {
 
 // NodeDecoder defines the minimum contract to decode a 3MF node.
 type NodeDecoder interface {
-	Start([]XMLAttr)
+	Start([]XMLAttr) error
 	Text([]byte)
 	Child(xml.Name) NodeDecoder
 	End()
@@ -28,7 +28,7 @@ type baseDecoder struct {
 	Scanner *Scanner
 }
 
-func (d *baseDecoder) Start([]XMLAttr)            {}
+func (d *baseDecoder) Start([]XMLAttr) error      { return nil }
 func (d *baseDecoder) Text([]byte)                {}
 func (d *baseDecoder) Child(xml.Name) NodeDecoder { return nil }
 func (d *baseDecoder) End()                       {}
@@ -53,9 +53,7 @@ func (s *Scanner) namespace(local string) (string, bool) {
 	return "", false
 }
 
-// InvalidAttr adds the error to the errors.
-// Returns false if scanning cannot continue.
-func (s *Scanner) InvalidAttr(attr string, required bool) {
+func (s *Scanner) addErrContext(err error) {
 	ct := make([]string, len(s.contex))
 	ct[0] = s.modelPath
 	for i, s := range s.contex[1:] {
@@ -64,14 +62,23 @@ func (s *Scanner) InvalidAttr(attr string, required bool) {
 	if s.isRoot {
 		ct = ct[1:] // don't add path in case happend in root file
 	}
-	specerr.Append(&s.Err, &specerr.ParseFieldError{
-		Context: strings.Join(ct, "@"), Name: attr, ResourceID: s.resourceID, Required: required,
-	})
+	ctx := strings.Join(ct, "@")
+	if err, ok := err.(*specerr.List); ok {
+		for _, err := range err.Errors {
+			specerr.Append(&s.Err, &specerr.ResourceError{
+				Context: ctx, ResourceID: s.resourceID, Err: err,
+			})
+		}
+	} else {
+		specerr.Append(&s.Err, &specerr.ResourceError{
+			Context: ctx, ResourceID: s.resourceID, Err: err,
+		})
+	}
 }
 
 // ParseRGBA parses s as a RGBA color.
 func ParseRGBA(s string) (c color.RGBA, err error) {
-	var errInvalidFormat = errors.New("gltf: invalid color format")
+	var errInvalidFormat = errors.New("go3mf: invalid color format")
 
 	if len(s) == 0 || s[0] != '#' {
 		return c, errInvalidFormat

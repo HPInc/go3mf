@@ -9,6 +9,7 @@ import (
 	"github.com/go-test/deep"
 	"github.com/qmuntal/go3mf"
 	"github.com/qmuntal/go3mf/errors"
+	specerr "github.com/qmuntal/go3mf/errors"
 )
 
 func TestDecode(t *testing.T) {
@@ -60,14 +61,14 @@ func TestDecode(t *testing.T) {
 
 func TestDecode_warns(t *testing.T) {
 	want := &errors.List{Errors: []error{
-		&errors.ParseFieldError{Required: true, ResourceID: 0, Name: "id", Context: "model@resources@texture2d"},
-		&errors.ParseFieldError{Required: true, ResourceID: 1, Name: "color", Context: "model@resources@colorgroup@color"},
-		&errors.ParseFieldError{Required: true, ResourceID: 2, Name: "texid", Context: "model@resources@texture2dgroup"},
-		&errors.ParseFieldError{Required: true, ResourceID: 2, Name: "u", Context: "model@resources@texture2dgroup@tex2coord"},
-		&errors.ParseFieldError{Required: true, ResourceID: 2, Name: "v", Context: "model@resources@texture2dgroup@tex2coord"},
-		&errors.ParseFieldError{Required: true, ResourceID: 4, Name: "matid", Context: "model@resources@compositematerials"},
-		&errors.ParseFieldError{Required: true, ResourceID: 4, Name: "values", Context: "model@resources@compositematerials@composite"},
-		&errors.ParseFieldError{Required: true, ResourceID: 9, Name: "pids", Context: "model@resources@multiproperties"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "id"}, ResourceID: 0, Context: "model@resources@texture2d"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "color"}, ResourceID: 1, Context: "model@resources@colorgroup@color"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "texid"}, ResourceID: 2, Context: "model@resources@texture2dgroup"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "u"}, ResourceID: 2, Context: "model@resources@texture2dgroup@tex2coord"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "v"}, ResourceID: 2, Context: "model@resources@texture2dgroup@tex2coord"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "matid"}, ResourceID: 4, Context: "model@resources@compositematerials"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "values"}, ResourceID: 4, Context: "model@resources@compositematerials@composite"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "pids"}, ResourceID: 9, Context: "model@resources@multiproperties"},
 	}}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"

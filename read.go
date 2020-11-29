@@ -100,7 +100,9 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 			scanner.contex = append(names, tp.Name)
 			currentName = tp.Name
 			currentDecoder = tmpDecoder
-			currentDecoder.Start(*(*[]XMLAttr)(unsafe.Pointer(&tp.Attr)))
+			if err := currentDecoder.Start(*(*[]XMLAttr)(unsafe.Pointer(&tp.Attr))); err != nil {
+				scanner.addErrContext(err)
+			}
 		}
 	}
 	x.OnEnd = func(tp xml.EndElement) {

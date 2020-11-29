@@ -40,7 +40,7 @@ type specDecoder interface {
 	Namespace() string
 	Local() string
 	Required() bool
-	DecodeAttribute(*Scanner, interface{}, XMLAttr)
+	DecodeAttribute(interface{}, XMLAttr) error
 }
 
 type meshElementDecoder interface {

@@ -117,10 +117,10 @@ func TestDecode(t *testing.T) {
 
 func TestDecode_warns(t *testing.T) {
 	want := &errors.List{Errors: []error{
-		&errors.ParseFieldError{Required: true, ResourceID: 20, Name: "UUID", Context: "model@resources@object"},
-		&errors.ParseFieldError{Required: true, ResourceID: 20, Name: "UUID", Context: "model@resources@object@components@component"},
-		&errors.ParseFieldError{Required: true, ResourceID: 0, Name: "UUID", Context: "model@build"},
-		&errors.ParseFieldError{Required: true, ResourceID: 20, Name: "UUID", Context: "model@build@item"},
+		&errors.ResourceError{Err: &errors.ParseAttrError{Required: true, Name: "UUID"}, ResourceID: 20, Context: "model@resources@object"},
+		&errors.ResourceError{Err: &errors.ParseAttrError{Required: true, Name: "UUID"}, ResourceID: 20, Context: "model@resources@object@components@component"},
+		&errors.ResourceError{Err: &errors.ParseAttrError{Required: true, Name: "UUID"}, ResourceID: 0, Context: "model@build"},
+		&errors.ResourceError{Err: &errors.ParseAttrError{Required: true, Name: "UUID"}, ResourceID: 20, Context: "model@build@item"},
 	}}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"

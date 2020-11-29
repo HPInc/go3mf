@@ -8,6 +8,7 @@ import (
 	"github.com/go-test/deep"
 	"github.com/qmuntal/go3mf"
 	"github.com/qmuntal/go3mf/errors"
+	specerr "github.com/qmuntal/go3mf/errors"
 )
 
 func TestDecode(t *testing.T) {
@@ -91,15 +92,15 @@ func TestDecode(t *testing.T) {
 
 func TestDecode_warns(t *testing.T) {
 	want := &errors.List{Errors: []error{
-		&errors.ParseFieldError{Required: false, ResourceID: 3, Name: "zbottom", Context: "model@resources@slicestack"},
-		&errors.ParseFieldError{Required: true, ResourceID: 3, Name: "x", Context: "model@resources@slicestack@slice@vertices@vertex"},
-		&errors.ParseFieldError{Required: true, ResourceID: 3, Name: "y", Context: "model@resources@slicestack@slice@vertices@vertex"},
-		&errors.ParseFieldError{Required: true, ResourceID: 3, Name: "ztop", Context: "model@resources@slicestack@slice"},
-		&errors.ParseFieldError{Required: true, ResourceID: 3, Name: "startv", Context: "model@resources@slicestack@slice@polygon"},
-		&errors.ParseFieldError{Required: true, ResourceID: 3, Name: "v2", Context: "model@resources@slicestack@slice@polygon@segment"},
-		&errors.ParseFieldError{Required: true, ResourceID: 3, Name: "slicestackid", Context: "model@resources@slicestack@sliceref"},
-		&errors.ParseFieldError{Required: false, ResourceID: 8, Name: "meshresolution", Context: "model@resources@object"},
-		&errors.ParseFieldError{Required: true, ResourceID: 8, Name: "slicestackid", Context: "model@resources@object"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: false, Name: "zbottom"}, ResourceID: 3, Context: "model@resources@slicestack"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "x"}, ResourceID: 3, Context: "model@resources@slicestack@slice@vertices@vertex"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "y"}, ResourceID: 3, Context: "model@resources@slicestack@slice@vertices@vertex"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "ztop"}, ResourceID: 3, Context: "model@resources@slicestack@slice"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "startv"}, ResourceID: 3, Context: "model@resources@slicestack@slice@polygon"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "v2"}, ResourceID: 3, Context: "model@resources@slicestack@slice@polygon@segment"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "slicestackid"}, ResourceID: 3, Context: "model@resources@slicestack@sliceref"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: false, Name: "meshresolution"}, ResourceID: 8, Context: "model@resources@object"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "slicestackid"}, ResourceID: 8, Context: "model@resources@object"},
 	}}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"

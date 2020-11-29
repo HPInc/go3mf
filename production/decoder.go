@@ -2,6 +2,7 @@ package production
 
 import (
 	"github.com/qmuntal/go3mf"
+	specerr "github.com/qmuntal/go3mf/errors"
 	"github.com/qmuntal/go3mf/uuid"
 )
 
@@ -50,20 +51,20 @@ func (e Spec) fillResourceUUID(res *go3mf.Resources) {
 	}
 }
 
-func (e Spec) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr go3mf.XMLAttr) {
+func (e Spec) DecodeAttribute(parentNode interface{}, attr go3mf.XMLAttr) (err error) {
 	switch t := parentNode.(type) {
 	case *go3mf.Build:
 		if attr.Name.Local == attrProdUUID {
-			if err := uuid.Validate(string(attr.Value)); err != nil {
-				s.InvalidAttr(attr.Name.Local, true)
+			if err1 := uuid.Validate(string(attr.Value)); err1 != nil {
+				err = specerr.Append(err, specerr.NewParseAttrError(attr.Name.Local, true))
 			}
 			t.AnyAttr = append(t.AnyAttr, &BuildAttr{UUID: string(attr.Value)})
 		}
 	case *go3mf.Item:
 		switch attr.Name.Local {
 		case attrProdUUID:
-			if err := uuid.Validate(string(attr.Value)); err != nil {
-				s.InvalidAttr(attr.Name.Local, true)
+			if err1 := uuid.Validate(string(attr.Value)); err1 != nil {
+				err = specerr.Append(err, specerr.NewParseAttrError(attr.Name.Local, true))
 			}
 			var ext *ItemAttr
 			if t.AnyAttr.Get(&ext) {
@@ -81,16 +82,16 @@ func (e Spec) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr go3
 		}
 	case *go3mf.Object:
 		if attr.Name.Local == attrProdUUID {
-			if err := uuid.Validate(string(attr.Value)); err != nil {
-				s.InvalidAttr(attr.Name.Local, true)
+			if err1 := uuid.Validate(string(attr.Value)); err1 != nil {
+				err = specerr.Append(err, specerr.NewParseAttrError(attr.Name.Local, true))
 			}
 			t.AnyAttr = append(t.AnyAttr, &ObjectAttr{UUID: string(attr.Value)})
 		}
 	case *go3mf.Component:
 		switch attr.Name.Local {
 		case attrProdUUID:
-			if err := uuid.Validate(string(attr.Value)); err != nil {
-				s.InvalidAttr(attr.Name.Local, true)
+			if err1 := uuid.Validate(string(attr.Value)); err1 != nil {
+				err = specerr.Append(err, specerr.NewParseAttrError(attr.Name.Local, true))
 			}
 			var ext *ComponentAttr
 			if t.AnyAttr.Get(&ext) {
@@ -107,4 +108,5 @@ func (e Spec) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr go3
 			}
 		}
 	}
+	return
 }

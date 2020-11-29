@@ -43,7 +43,7 @@ func (f *fakeSpec) NewResourcesElementDecoder(resources *Resources, nodeName str
 	return &fakeAssetDecoder{resources: resources}
 }
 
-func (f *fakeSpec) DecodeAttribute(s *Scanner, parentNode interface{}, attr XMLAttr) {
+func (f *fakeSpec) DecodeAttribute(parentNode interface{}, attr XMLAttr) error {
 	switch t := parentNode.(type) {
 	case *Object:
 		t.AnyAttr = append(t.AnyAttr, &fakeAttr{string(attr.Value)})
@@ -56,6 +56,7 @@ func (f *fakeSpec) DecodeAttribute(s *Scanner, parentNode interface{}, attr XMLA
 	case *Component:
 		t.AnyAttr = append(t.AnyAttr, &fakeAttr{string(attr.Value)})
 	}
+	return nil
 }
 
 func (f *fakeSpec) ValidateObject(_ *Model, _ string, _ *Object) error {
@@ -94,9 +95,10 @@ type fakeAssetDecoder struct {
 	resources *Resources
 }
 
-func (f *fakeAssetDecoder) Start(att []XMLAttr) {
+func (f *fakeAssetDecoder) Start(att []XMLAttr) error {
 	id, _ := strconv.ParseUint(string(att[0].Value), 10, 32)
 	f.resources.Assets = append(f.resources.Assets, &fakeAsset{ID: uint32(id)})
+	return nil
 }
 
 type modelBuilder struct {
@@ -574,17 +576,17 @@ func TestNewDecoder(t *testing.T) {
 
 func TestDecoder_processRootModel_warns(t *testing.T) {
 	want := &specerr.List{Errors: []error{
-		&specerr.ParseFieldError{Required: true, ResourceID: 0, Name: "displaycolor", Context: "model@resources@basematerials@base"},
-		&specerr.ParseFieldError{Required: true, ResourceID: 0, Name: "id", Context: "model@resources@basematerials"},
-		&specerr.ParseFieldError{Required: true, ResourceID: 8, Name: "x", Context: "model@resources@object@mesh@vertices@vertex"},
-		&specerr.ParseFieldError{Required: true, ResourceID: 8, Name: "v1", Context: "model@resources@object@mesh@triangles@triangle"},
-		&specerr.ParseFieldError{Required: false, ResourceID: 22, Name: "pid", Context: "model@resources@object"},
-		&specerr.ParseFieldError{Required: false, ResourceID: 22, Name: "pindex", Context: "model@resources@object"},
-		&specerr.ParseFieldError{Required: false, ResourceID: 22, Name: "type", Context: "model@resources@object"},
-		&specerr.ParseFieldError{Required: false, ResourceID: 20, Name: "transform", Context: "model@resources@object@components@component"},
-		&specerr.ParseFieldError{Required: true, ResourceID: 20, Name: "objectid", Context: "model@resources@object@components@component"},
-		&specerr.ParseFieldError{Required: false, ResourceID: 20, Name: "transform", Context: "model@build@item"},
-		&specerr.ParseFieldError{Required: true, ResourceID: 0, Name: "objectid", Context: "model@build@item"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "displaycolor", Required: true}, ResourceID: 0, Context: "model@resources@basematerials@base"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "id", Required: true}, ResourceID: 0, Context: "model@resources@basematerials"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "x", Required: true}, ResourceID: 8, Context: "model@resources@object@mesh@vertices@vertex"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "v1", Required: true}, ResourceID: 8, Context: "model@resources@object@mesh@triangles@triangle"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "pid", Required: false}, ResourceID: 22, Context: "model@resources@object"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "pindex", Required: false}, ResourceID: 22, Context: "model@resources@object"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "type", Required: false}, ResourceID: 22, Context: "model@resources@object"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "transform", Required: false}, ResourceID: 20, Context: "model@resources@object@components@component"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "objectid", Required: true}, ResourceID: 20, Context: "model@resources@object@components@component"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "transform", Required: false}, ResourceID: 20, Context: "model@build@item"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "objectid", Required: true}, ResourceID: 0, Context: "model@build@item"},
 	}}
 	got := new(Model)
 	got.Path = "/3D/3dmodel.model"

@@ -30,7 +30,7 @@ type Decoder interface {
 	Namespace() string
 	Local() string
 	Required() bool
-	DecodeAttribute(*go3mf.Scanner, interface{}, go3mf.XMLAttr)
+	DecodeAttribute(interface{}, go3mf.XMLAttr) error
 }
 
 type MeshElementDecoder interface {

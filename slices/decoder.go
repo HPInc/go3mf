@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/qmuntal/go3mf"
+	specerr "github.com/qmuntal/go3mf/errors"
 )
 
 func (e Spec) NewResourcesElementDecoder(resources *go3mf.Resources, nodeName string) go3mf.NodeDecoder {
@@ -14,20 +15,21 @@ func (e Spec) NewResourcesElementDecoder(resources *go3mf.Resources, nodeName st
 	return nil
 }
 
-func (e Spec) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr go3mf.XMLAttr) {
+func (e Spec) DecodeAttribute(parentNode interface{}, attr go3mf.XMLAttr) error {
 	switch t := parentNode.(type) {
 	case *go3mf.Object:
-		objectAttrDecoder(s, t, attr)
+		return objectAttrDecoder(t, attr)
 	}
+	return nil
 }
 
 // objectAttrDecoder decodes the slice attributes of an ObjectReosurce.
-func objectAttrDecoder(scanner *go3mf.Scanner, o *go3mf.Object, a go3mf.XMLAttr) {
+func objectAttrDecoder(o *go3mf.Object, a go3mf.XMLAttr) (err error) {
 	switch a.Name.Local {
 	case attrSliceRefID:
-		val, err := strconv.ParseUint(string(a.Value), 10, 32)
-		if err != nil {
-			scanner.InvalidAttr(a.Name.Local, true)
+		val, err1 := strconv.ParseUint(string(a.Value), 10, 32)
+		if err1 != nil {
+			err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
 		}
 
 		var ext *SliceStackInfo
@@ -39,7 +41,7 @@ func objectAttrDecoder(scanner *go3mf.Scanner, o *go3mf.Object, a go3mf.XMLAttr)
 	case attrMeshRes:
 		res, ok := newMeshResolution(string(a.Value))
 		if !ok {
-			scanner.InvalidAttr(attrMeshRes, false)
+			err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, false))
 		}
 		var ext *SliceStackInfo
 		if o.AnyAttr.Get(&ext) {
@@ -48,6 +50,7 @@ func objectAttrDecoder(scanner *go3mf.Scanner, o *go3mf.Object, a go3mf.XMLAttr)
 			o.AnyAttr = append(o.AnyAttr, &SliceStackInfo{MeshResolution: res})
 		}
 	}
+	return
 }
 
 type sliceStackDecoder struct {
@@ -71,23 +74,24 @@ func (d *sliceStackDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	return
 }
 
-func (d *sliceStackDecoder) Start(attrs []go3mf.XMLAttr) {
+func (d *sliceStackDecoder) Start(attrs []go3mf.XMLAttr) (err error) {
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrID:
-			id, err := strconv.ParseUint(string(a.Value), 10, 32)
-			if err != nil {
-				d.Scanner.InvalidAttr(a.Name.Local, true)
+			id, err1 := strconv.ParseUint(string(a.Value), 10, 32)
+			if err1 != nil {
+				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
 			}
 			d.resource.ID = uint32(id)
 		case attrZBottom:
-			val, err := strconv.ParseFloat(string(a.Value), 32)
-			if err != nil {
-				d.Scanner.InvalidAttr(a.Name.Local, false)
+			val, err1 := strconv.ParseFloat(string(a.Value), 32)
+			if err1 != nil {
+				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, false))
 			}
 			d.resource.BottomZ = float32(val)
 		}
 	}
+	return
 }
 
 type sliceRefDecoder struct {
@@ -95,7 +99,7 @@ type sliceRefDecoder struct {
 	resource *SliceStack
 }
 
-func (d *sliceRefDecoder) Start(attrs []go3mf.XMLAttr) {
+func (d *sliceRefDecoder) Start(attrs []go3mf.XMLAttr) (err error) {
 	var (
 		sliceStackID uint32
 		path         string
@@ -103,9 +107,9 @@ func (d *sliceRefDecoder) Start(attrs []go3mf.XMLAttr) {
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrSliceRefID:
-			val, err := strconv.ParseUint(string(a.Value), 10, 32)
-			if err != nil {
-				d.Scanner.InvalidAttr(a.Name.Local, true)
+			val, err1 := strconv.ParseUint(string(a.Value), 10, 32)
+			if err1 != nil {
+				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
 			}
 			sliceStackID = uint32(val)
 		case attrSlicePath:
@@ -113,6 +117,7 @@ func (d *sliceRefDecoder) Start(attrs []go3mf.XMLAttr) {
 		}
 	}
 	d.resource.Refs = append(d.resource.Refs, SliceRef{SliceStackID: sliceStackID, Path: path})
+	return
 }
 
 type sliceDecoder struct {
@@ -137,19 +142,20 @@ func (d *sliceDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	return
 }
 
-func (d *sliceDecoder) Start(attrs []go3mf.XMLAttr) {
+func (d *sliceDecoder) Start(attrs []go3mf.XMLAttr) (err error) {
 	d.polygonDecoder.slice = &d.slice
 	d.polygonVerticesDecoder.slice = &d.slice
 	for _, a := range attrs {
 		if a.Name.Local == attrZTop {
-			val, err := strconv.ParseFloat(string(a.Value), 32)
-			if err != nil {
-				d.Scanner.InvalidAttr(a.Name.Local, true)
+			val, err1 := strconv.ParseFloat(string(a.Value), 32)
+			if err1 != nil {
+				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
 			}
 			d.slice.TopZ = float32(val)
 			break
 		}
 	}
+	return
 }
 
 type polygonVerticesDecoder struct {
@@ -158,8 +164,9 @@ type polygonVerticesDecoder struct {
 	polygonVertexDecoder polygonVertexDecoder
 }
 
-func (d *polygonVerticesDecoder) Start(_ []go3mf.XMLAttr) {
+func (d *polygonVerticesDecoder) Start(_ []go3mf.XMLAttr) error {
 	d.polygonVertexDecoder.slice = d.slice
+	return nil
 }
 
 func (d *polygonVerticesDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
@@ -174,12 +181,12 @@ type polygonVertexDecoder struct {
 	slice *Slice
 }
 
-func (d *polygonVertexDecoder) Start(attrs []go3mf.XMLAttr) {
+func (d *polygonVertexDecoder) Start(attrs []go3mf.XMLAttr) (err error) {
 	var p go3mf.Point2D
 	for _, a := range attrs {
-		val, err := strconv.ParseFloat(string(a.Value), 32)
-		if err != nil {
-			d.Scanner.InvalidAttr(a.Name.Local, true)
+		val, err1 := strconv.ParseFloat(string(a.Value), 32)
+		if err1 != nil {
+			err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
 		}
 		switch a.Name.Local {
 		case attrX:
@@ -188,8 +195,8 @@ func (d *polygonVertexDecoder) Start(attrs []go3mf.XMLAttr) {
 			p[1] = float32(val)
 		}
 	}
-
 	d.slice.Vertices = append(d.slice.Vertices, p)
+	return
 }
 
 type polygonDecoder struct {
@@ -205,20 +212,21 @@ func (d *polygonDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	return
 }
 
-func (d *polygonDecoder) Start(attrs []go3mf.XMLAttr) {
+func (d *polygonDecoder) Start(attrs []go3mf.XMLAttr) (err error) {
 	polygonIndex := len(d.slice.Polygons)
 	d.slice.Polygons = append(d.slice.Polygons, Polygon{})
 	d.polygonSegmentDecoder.polygon = &d.slice.Polygons[polygonIndex]
 	for _, a := range attrs {
 		if a.Name.Local == attrStartV {
-			val, err := strconv.ParseUint(string(a.Value), 10, 32)
-			if err != nil {
-				d.Scanner.InvalidAttr(a.Name.Local, true)
+			val, err1 := strconv.ParseUint(string(a.Value), 10, 32)
+			if err1 != nil {
+				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
 			}
 			d.slice.Polygons[polygonIndex].StartV = uint32(val)
 			break
 		}
 	}
+	return
 }
 
 type polygonSegmentDecoder struct {
@@ -226,14 +234,14 @@ type polygonSegmentDecoder struct {
 	polygon *Polygon
 }
 
-func (d *polygonSegmentDecoder) Start(attrs []go3mf.XMLAttr) {
+func (d *polygonSegmentDecoder) Start(attrs []go3mf.XMLAttr) (err error) {
 	var (
 		segment      Segment
 		hasP1, hasP2 bool
 	)
 	for _, a := range attrs {
 		var required bool
-		val, err := strconv.ParseUint(string(a.Value), 10, 32)
+		val, err1 := strconv.ParseUint(string(a.Value), 10, 32)
 		switch a.Name.Local {
 		case attrV2:
 			segment.V2 = uint32(val)
@@ -250,11 +258,12 @@ func (d *polygonSegmentDecoder) Start(attrs []go3mf.XMLAttr) {
 		if hasP1 && !hasP2 {
 			segment.P2 = segment.P1
 		}
-		if err != nil {
-			d.Scanner.InvalidAttr(a.Name.Local, required)
+		if err1 != nil {
+			err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, required))
 		}
 	}
 	d.polygon.Segments = append(d.polygon.Segments, segment)
+	return
 }
 
 type baseDecoder struct {
