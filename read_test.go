@@ -33,9 +33,7 @@ func (f *fakeSpec) Local() string      { return "qm" }
 func (f *fakeSpec) SetLocal(_ string)  {}
 func (f *fakeSpec) SetRequired(_ bool) {}
 
-func (e *fakeSpec) OnDecoded(_ *Model) error {
-	return nil
-}
+func (e *fakeSpec) OnDecoded(_ *Model) {}
 
 func (f *fakeSpec) NewNodeDecoder(_ interface{}, nodeName string) NodeDecoder {
 	return &fakeAssetDecoder{}

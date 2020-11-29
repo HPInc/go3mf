@@ -32,9 +32,14 @@ func (u *UnknownSpec) Required() bool     { return u.IsRequired }
 func (u *UnknownSpec) SetLocal(l string)  { u.LocalName = l }
 func (u *UnknownSpec) SetRequired(r bool) { u.IsRequired = r }
 
+type SpecEncoder interface {
+	Spec
+	BeforeEncode(m *Model)
+}
+
 type SpecDecoder interface {
 	Spec
-	OnDecoded(m *Model) error
+	OnDecoded(m *Model)
 	NewNodeDecoder(interface{}, string) NodeDecoder
 	DecodeAttribute(*Scanner, interface{}, XMLAttr)
 }

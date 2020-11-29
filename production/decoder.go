@@ -9,7 +9,7 @@ func (e Spec) NewNodeDecoder(_ interface{}, _ string) go3mf.NodeDecoder {
 	return nil
 }
 
-func (e Spec) OnDecoded(m *go3mf.Model) error {
+func (e Spec) OnDecoded(m *go3mf.Model) {
 	var (
 		buildAttr *BuildAttr
 		pu        *ItemAttr
@@ -30,7 +30,7 @@ func (e Spec) OnDecoded(m *go3mf.Model) error {
 	for _, c := range m.Childs {
 		e.fillResourceUUID(&c.Resources)
 	}
-	return nil
+	return
 }
 
 func (e Spec) fillResourceUUID(res *go3mf.Resources) {

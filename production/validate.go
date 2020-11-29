@@ -75,9 +75,6 @@ func (e *Spec) validatePathUUID(m *go3mf.Model, path string, p uuidPath) error {
 	if p.ObjectPath() != "" {
 		if path == "" || path == m.PathOrDefault() { // root
 			// Path is validated as part if the core validations
-			if !e.Required() {
-				errs = errors.Append(errs, errors.ErrProdExtRequired)
-			}
 		} else {
 			errs = errors.Append(errs, errors.ErrProdRefInNonRoot)
 		}
