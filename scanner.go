@@ -36,14 +36,12 @@ func (d *baseDecoder) SetScanner(s *Scanner)      { d.Scanner = s }
 
 // A Scanner is a 3mf model file scanning state machine.
 type Scanner struct {
-	Resources        Resources
-	BuildItems       []*Item
-	ModelPath        string
-	IsRoot           bool
-	ResourceID       uint32
 	Err              specerr.List
 	extensionDecoder map[string]specDecoder
+	modelPath        string
+	isRoot           bool
 	contex           []xml.Name
+	resourceID       uint32
 }
 
 func (s *Scanner) namespace(local string) (string, bool) {
@@ -55,31 +53,19 @@ func (s *Scanner) namespace(local string) (string, bool) {
 	return "", false
 }
 
-// AddAsset adds a new resource to the resource cache.
-func (s *Scanner) AddAsset(r Asset) {
-	s.Resources.Assets = append(s.Resources.Assets, r)
-	s.ResourceID = 0
-}
-
-// AddObject adds a new resource to the resource cache.
-func (s *Scanner) AddObject(r *Object) {
-	s.Resources.Objects = append(s.Resources.Objects, r)
-	s.ResourceID = 0
-}
-
 // InvalidAttr adds the error to the errors.
 // Returns false if scanning cannot continue.
 func (s *Scanner) InvalidAttr(attr string, required bool) {
 	ct := make([]string, len(s.contex))
-	ct[0] = s.ModelPath
+	ct[0] = s.modelPath
 	for i, s := range s.contex[1:] {
 		ct[i+1] = s.Local
 	}
-	if s.IsRoot {
+	if s.isRoot {
 		ct = ct[1:] // don't add path in case happend in root file
 	}
 	specerr.Append(&s.Err, &specerr.ParseFieldError{
-		Context: strings.Join(ct, "@"), Name: attr, ResourceID: s.ResourceID, Required: required,
+		Context: strings.Join(ct, "@"), Name: attr, ResourceID: s.resourceID, Required: required,
 	})
 }
 

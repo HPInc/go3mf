@@ -30,8 +30,19 @@ type Decoder interface {
 	Namespace() string
 	Local() string
 	Required() bool
-	NewNodeDecoder(interface{}, string) go3mf.NodeDecoder
 	DecodeAttribute(*go3mf.Scanner, interface{}, go3mf.XMLAttr)
+}
+
+type MeshElementDecoder interface {
+	NewMeshElementDecoder(*go3mf.Mesh, string) go3mf.NodeDecoder
+}
+
+type ResourcesElementDecoder interface {
+	NewResourcesElementDecoder(*go3mf.Resources, string) go3mf.NodeDecoder
+}
+
+type ModelElementDecoder interface {
+	NewModelElementDecoder(*go3mf.Model, string) go3mf.NodeDecoder
 }
 
 type PostProcessorDecoder interface {

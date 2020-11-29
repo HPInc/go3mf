@@ -7,9 +7,9 @@ import (
 	"github.com/qmuntal/go3mf"
 )
 
-func (e Spec) NewNodeDecoder(_ interface{}, nodeName string) go3mf.NodeDecoder {
+func (e Spec) NewResourcesElementDecoder(resources *go3mf.Resources, nodeName string) go3mf.NodeDecoder {
 	if nodeName == attrSliceStack {
-		return &sliceStackDecoder{}
+		return &sliceStackDecoder{resources: resources}
 	}
 	return nil
 }
@@ -52,11 +52,12 @@ func objectAttrDecoder(scanner *go3mf.Scanner, o *go3mf.Object, a go3mf.XMLAttr)
 
 type sliceStackDecoder struct {
 	baseDecoder
-	resource SliceStack
+	resources *go3mf.Resources
+	resource  SliceStack
 }
 
 func (d *sliceStackDecoder) End() {
-	d.Scanner.AddAsset(&d.resource)
+	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
 func (d *sliceStackDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
@@ -78,7 +79,7 @@ func (d *sliceStackDecoder) Start(attrs []go3mf.XMLAttr) {
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, true)
 			}
-			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
+			d.resource.ID = uint32(id)
 		case attrZBottom:
 			val, err := strconv.ParseFloat(string(a.Value), 32)
 			if err != nil {

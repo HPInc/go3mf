@@ -8,18 +8,18 @@ import (
 	"github.com/qmuntal/go3mf"
 )
 
-func (e Spec) NewNodeDecoder(_ interface{}, nodeName string) (child go3mf.NodeDecoder) {
+func (e Spec) NewResourcesElementDecoder(resources *go3mf.Resources, nodeName string) (child go3mf.NodeDecoder) {
 	switch nodeName {
 	case attrColorGroup:
-		child = new(colorGroupDecoder)
+		child = &colorGroupDecoder{resources: resources}
 	case attrTexture2DGroup:
-		child = new(tex2DGroupDecoder)
+		child = &tex2DGroupDecoder{resources: resources}
 	case attrTexture2D:
-		child = new(texture2DDecoder)
+		child = &texture2DDecoder{resources: resources}
 	case attrCompositematerials:
-		child = new(compositeMaterialsDecoder)
+		child = &compositeMaterialsDecoder{resources: resources}
 	case attrMultiProps:
-		child = new(multiPropertiesDecoder)
+		child = &multiPropertiesDecoder{resources: resources}
 	}
 	return
 }
@@ -28,12 +28,13 @@ func (e Spec) DecodeAttribute(_ *go3mf.Scanner, _ interface{}, _ go3mf.XMLAttr) 
 
 type colorGroupDecoder struct {
 	baseDecoder
+	resources    *go3mf.Resources
 	resource     ColorGroup
 	colorDecoder colorDecoder
 }
 
 func (d *colorGroupDecoder) End() {
-	d.Scanner.AddAsset(&d.resource)
+	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
 func (d *colorGroupDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
@@ -51,7 +52,7 @@ func (d *colorGroupDecoder) Start(attrs []go3mf.XMLAttr) {
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, true)
 			}
-			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
+			d.resource.ID = uint32(id)
 			break
 		}
 	}
@@ -101,12 +102,13 @@ func (d *tex2DCoordDecoder) Start(attrs []go3mf.XMLAttr) {
 
 type tex2DGroupDecoder struct {
 	baseDecoder
+	resources         *go3mf.Resources
 	resource          Texture2DGroup
 	tex2DCoordDecoder tex2DCoordDecoder
 }
 
 func (d *tex2DGroupDecoder) End() {
-	d.Scanner.AddAsset(&d.resource)
+	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
 func (d *tex2DGroupDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
@@ -128,7 +130,7 @@ func (d *tex2DGroupDecoder) Start(attrs []go3mf.XMLAttr) {
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, true)
 			}
-			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
+			d.resource.ID = uint32(id)
 		case attrTexID:
 			val, err := strconv.ParseUint(string(a.Value), 10, 32)
 			if err != nil {
@@ -141,11 +143,12 @@ func (d *tex2DGroupDecoder) Start(attrs []go3mf.XMLAttr) {
 
 type texture2DDecoder struct {
 	baseDecoder
-	resource Texture2D
+	resources *go3mf.Resources
+	resource  Texture2D
 }
 
 func (d *texture2DDecoder) End() {
-	d.Scanner.AddAsset(&d.resource)
+	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
 func (d *texture2DDecoder) Start(attrs []go3mf.XMLAttr) {
@@ -159,7 +162,7 @@ func (d *texture2DDecoder) Start(attrs []go3mf.XMLAttr) {
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, true)
 			}
-			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
+			d.resource.ID = uint32(id)
 		case attrPath:
 			d.resource.Path = string(a.Value)
 		case attrContentType:
@@ -176,12 +179,13 @@ func (d *texture2DDecoder) Start(attrs []go3mf.XMLAttr) {
 
 type compositeMaterialsDecoder struct {
 	baseDecoder
+	resources        *go3mf.Resources
 	resource         CompositeMaterials
 	compositeDecoder compositeDecoder
 }
 
 func (d *compositeMaterialsDecoder) End() {
-	d.Scanner.AddAsset(&d.resource)
+	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
 func (d *compositeMaterialsDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
@@ -203,7 +207,7 @@ func (d *compositeMaterialsDecoder) Start(attrs []go3mf.XMLAttr) {
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, true)
 			}
-			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
+			d.resource.ID = uint32(id)
 		case attrMatID:
 			val, err := strconv.ParseUint(string(a.Value), 10, 32)
 			if err != nil {
@@ -245,12 +249,13 @@ func (d *compositeDecoder) Start(attrs []go3mf.XMLAttr) {
 
 type multiPropertiesDecoder struct {
 	baseDecoder
+	resources    *go3mf.Resources
 	resource     MultiProperties
 	multiDecoder multiDecoder
 }
 
 func (d *multiPropertiesDecoder) End() {
-	d.Scanner.AddAsset(&d.resource)
+	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
 func (d *multiPropertiesDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
@@ -272,7 +277,7 @@ func (d *multiPropertiesDecoder) Start(attrs []go3mf.XMLAttr) {
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, true)
 			}
-			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
+			d.resource.ID = uint32(id)
 		case attrBlendMethods:
 			for _, f := range strings.Fields(string(a.Value)) {
 				val, _ := newBlendMethod(f)

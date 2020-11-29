@@ -8,7 +8,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"sort"
 	"strings"
 	"sync"
 	"unsafe"
@@ -66,7 +65,7 @@ type topLevelDecoder struct {
 func (d *topLevelDecoder) Child(name xml.Name) (child NodeDecoder) {
 	modelName := xml.Name{Space: Namespace, Local: attrModel}
 	if name == modelName {
-		child = &modelDecoder{model: d.model}
+		child = &modelDecoder{model: d.model, isRoot: d.isRoot}
 	}
 	return
 }
@@ -75,8 +74,8 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 	x := xml3mf.NewDecoder(r)
 	scanner := Scanner{
 		extensionDecoder: make(map[string]specDecoder),
-		IsRoot:           isRoot,
-		ModelPath:        path,
+		isRoot:           isRoot,
+		modelPath:        path,
 	}
 	for _, ext := range model.Specs {
 		if ext, ok := ext.(specDecoder); ok {
@@ -196,24 +195,12 @@ func (d *Decoder) processRootModel(ctx context.Context, rootFile packageFile, mo
 	if err != nil {
 		return err
 	}
-	d.addModelFile(scanner, model)
 	for _, ext := range scanner.extensionDecoder {
 		if ext, ok := ext.(postProcessorSpecDecoder); ok {
 			ext.PostProcessDecode(model)
 		}
 	}
 	return nil
-}
-
-func (d *Decoder) addChildModelFile(p *Scanner, model *Model) {
-	model.Childs[p.ModelPath].Resources = p.Resources
-}
-
-func (d *Decoder) addModelFile(p *Scanner, model *Model) {
-	for _, bi := range p.BuildItems {
-		model.Build.Items = append(model.Build.Items, bi)
-	}
-	model.Resources = p.Resources
 }
 
 func (d *Decoder) processNonRootModels(ctx context.Context, model *Model) (err error) {
@@ -239,16 +226,6 @@ func (d *Decoder) processNonRootModels(ctx context.Context, model *Model) (err e
 	wg.Wait()
 	if err != nil {
 		return err
-	}
-	indices := make([]int, 0, nonRootModelsCount)
-	files.Range(func(key, value interface{}) bool {
-		indices = append(indices, key.(int))
-		return true
-	})
-	sort.Ints(indices)
-	for _, index := range indices {
-		f, _ := files.Load(index)
-		d.addChildModelFile(f.(*Scanner), model)
 	}
 	return nil
 }

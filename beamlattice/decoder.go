@@ -7,9 +7,9 @@ import (
 	"github.com/qmuntal/go3mf"
 )
 
-func (e Spec) NewNodeDecoder(parentNode interface{}, nodeName string) go3mf.NodeDecoder {
+func (e Spec) NewMeshElementDecoder(mesh *go3mf.Mesh, nodeName string) go3mf.NodeDecoder {
 	if nodeName == attrBeamLattice {
-		return &beamLatticeDecoder{mesh: parentNode.(*go3mf.Mesh)}
+		return &beamLatticeDecoder{mesh: mesh}
 	}
 	return nil
 }

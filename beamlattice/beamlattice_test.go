@@ -8,6 +8,7 @@ import (
 )
 
 var _ spec.Decoder = new(Spec)
+var _ spec.MeshElementDecoder = new(Spec)
 var _ spec.ObjectValidator = new(Spec)
 var _ spec.Marshaler = new(BeamLattice)
 

@@ -5,10 +5,6 @@ import (
 	"github.com/qmuntal/go3mf/uuid"
 )
 
-func (e Spec) NewNodeDecoder(_ interface{}, _ string) go3mf.NodeDecoder {
-	return nil
-}
-
 func (e Spec) PostProcessDecode(m *go3mf.Model) {
 	var (
 		buildAttr *BuildAttr

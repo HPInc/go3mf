@@ -26,6 +26,7 @@ var _ assetValidator = new(fakeSpec)
 var _ objectValidator = new(fakeSpec)
 var _ specDecoder = new(fakeSpec)
 var _ postProcessorSpecDecoder = new(fakeSpec)
+var _ resourcesElementDecoder = new(fakeSpec)
 
 type fakeSpec struct {
 }
@@ -38,8 +39,8 @@ func (f *fakeSpec) SetRequired(_ bool) {}
 
 func (e *fakeSpec) PostProcessDecode(_ *Model) {}
 
-func (f *fakeSpec) NewNodeDecoder(_ interface{}, nodeName string) NodeDecoder {
-	return &fakeAssetDecoder{}
+func (f *fakeSpec) NewResourcesElementDecoder(resources *Resources, nodeName string) NodeDecoder {
+	return &fakeAssetDecoder{resources: resources}
 }
 
 func (f *fakeSpec) DecodeAttribute(s *Scanner, parentNode interface{}, attr XMLAttr) {
@@ -90,12 +91,12 @@ func (f *fakeAttr) ObjectPath() string { return f.Value }
 
 type fakeAssetDecoder struct {
 	baseDecoder
+	resources *Resources
 }
 
 func (f *fakeAssetDecoder) Start(att []XMLAttr) {
 	id, _ := strconv.ParseUint(string(att[0].Value), 10, 32)
-	f.Scanner.ResourceID = uint32(id)
-	f.Scanner.AddAsset(&fakeAsset{ID: uint32(id)})
+	f.resources.Assets = append(f.resources.Assets, &fakeAsset{ID: uint32(id)})
 }
 
 type modelBuilder struct {

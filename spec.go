@@ -40,8 +40,19 @@ type specDecoder interface {
 	Namespace() string
 	Local() string
 	Required() bool
-	NewNodeDecoder(interface{}, string) NodeDecoder
 	DecodeAttribute(*Scanner, interface{}, XMLAttr)
+}
+
+type meshElementDecoder interface {
+	NewMeshElementDecoder(*Mesh, string) NodeDecoder
+}
+
+type resourcesElementDecoder interface {
+	NewResourcesElementDecoder(*Resources, string) NodeDecoder
+}
+
+type modelElementDecoder interface {
+	NewModelElementDecoder(*Model, string) NodeDecoder
 }
 
 type propertyGroup interface {

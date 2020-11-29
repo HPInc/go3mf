@@ -11,31 +11,37 @@ import (
 
 type modelDecoder struct {
 	baseDecoder
-	model *Model
+	model  *Model
+	isRoot bool
 }
 
 func (d *modelDecoder) Child(name xml.Name) (child NodeDecoder) {
 	if name.Space == Namespace {
 		switch name.Local {
 		case attrResources:
-			child = &resourceDecoder{}
+			resources, _ := d.model.FindResources(d.Scanner.modelPath)
+			child = &resourceDecoder{
+				resources: resources,
+			}
 		case attrBuild:
-			if d.Scanner.IsRoot {
+			if d.isRoot {
 				child = &buildDecoder{build: &d.model.Build}
 			}
 		case attrMetadata:
-			if d.Scanner.IsRoot {
+			if d.isRoot {
 				child = &metadataDecoder{metadatas: &d.model.Metadata}
 			}
 		}
 	} else if ext, ok := d.Scanner.extensionDecoder[name.Space]; ok {
-		child = ext.NewNodeDecoder(d.model, name.Local)
+		if ext, ok := ext.(modelElementDecoder); ok {
+			child = ext.NewModelElementDecoder(d.model, name.Local)
+		}
 	}
 	return
 }
 
 func (d *modelDecoder) Start(attrs []XMLAttr) {
-	if !d.Scanner.IsRoot {
+	if !d.isRoot {
 		return
 	}
 	var requiredExts []string
@@ -144,7 +150,7 @@ type buildDecoder struct {
 
 func (d *buildDecoder) Child(name xml.Name) (child NodeDecoder) {
 	if name.Space == Namespace && name.Local == attrItem {
-		child = &buildItemDecoder{}
+		child = &buildItemDecoder{build: d.build}
 	}
 	return
 }
@@ -159,12 +165,13 @@ func (d *buildDecoder) Start(attrs []XMLAttr) {
 
 type buildItemDecoder struct {
 	baseDecoder
-	item Item
+	build *Build
+	item  Item
 }
 
 func (d *buildItemDecoder) End() {
-	d.Scanner.BuildItems = append(d.Scanner.BuildItems, &d.item)
-	d.Scanner.ResourceID = 0
+	d.build.Items = append(d.build.Items, &d.item)
+	d.Scanner.resourceID = 0
 }
 
 func (d *buildItemDecoder) Child(name xml.Name) (child NodeDecoder) {
@@ -193,7 +200,7 @@ func (d *buildItemDecoder) parseCoreAttr(a XMLAttr) {
 			d.Scanner.InvalidAttr(a.Name.Local, true)
 		}
 		d.item.ObjectID = uint32(val)
-		d.Scanner.ResourceID = d.item.ObjectID
+		d.Scanner.resourceID = d.item.ObjectID
 	case attrPartNumber:
 		d.item.PartNumber = string(a.Value)
 	case attrTransform:
@@ -207,30 +214,63 @@ func (d *buildItemDecoder) parseCoreAttr(a XMLAttr) {
 
 type resourceDecoder struct {
 	baseDecoder
+	resources *Resources
 }
 
 func (d *resourceDecoder) Child(name xml.Name) (child NodeDecoder) {
 	if name.Space == Namespace {
 		switch name.Local {
 		case attrObject:
-			child = &objectDecoder{}
+			child = &objectDecoder{resources: d.resources}
 		case attrBaseMaterials:
-			child = new(baseMaterialsDecoder)
+			child = &baseMaterialsDecoder{resources: d.resources}
 		}
 	} else if ext, ok := d.Scanner.extensionDecoder[name.Space]; ok {
-		child = ext.NewNodeDecoder(nil, name.Local)
+		if ext, ok := ext.(resourcesElementDecoder); ok {
+			child = ext.NewResourcesElementDecoder(d.resources, name.Local)
+		}
+	}
+	if child != nil {
+		child = &resourceDecoderWrapper{NodeDecoder: child}
 	}
 	return
 }
 
+type resourceDecoderWrapper struct {
+	NodeDecoder
+	Scanner *Scanner
+}
+
+func (d *resourceDecoderWrapper) SetScanner(s *Scanner) {
+	d.Scanner = s
+	d.NodeDecoder.SetScanner(s)
+}
+
+func (d *resourceDecoderWrapper) Start(attrs []XMLAttr) {
+	for _, a := range attrs {
+		if a.Name.Space == "" && a.Name.Local == attrID {
+			id, _ := strconv.ParseUint(string(a.Value), 10, 32)
+			d.Scanner.resourceID = uint32(id)
+			break
+		}
+	}
+	d.NodeDecoder.Start(attrs)
+}
+
+func (d *resourceDecoderWrapper) End() {
+	d.NodeDecoder.End()
+	d.Scanner.resourceID = 0
+}
+
 type baseMaterialsDecoder struct {
 	baseDecoder
+	resources           *Resources
 	resource            BaseMaterials
 	baseMaterialDecoder baseMaterialDecoder
 }
 
 func (d *baseMaterialsDecoder) End() {
-	d.Scanner.AddAsset(&d.resource)
+	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
 func (d *baseMaterialsDecoder) Child(name xml.Name) (child NodeDecoder) {
@@ -248,7 +288,7 @@ func (d *baseMaterialsDecoder) Start(attrs []XMLAttr) {
 			if err != nil {
 				d.Scanner.InvalidAttr(a.Name.Local, true)
 			}
-			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
+			d.resource.ID = uint32(id)
 			break
 		}
 	}
@@ -295,7 +335,9 @@ func (d *meshDecoder) Child(name xml.Name) (child NodeDecoder) {
 			child = &trianglesDecoder{resource: d.resource}
 		}
 	} else if ext, ok := d.Scanner.extensionDecoder[name.Space]; ok {
-		child = ext.NewNodeDecoder(d.resource.Mesh, name.Local)
+		if ext, ok := ext.(meshElementDecoder); ok {
+			child = ext.NewMeshElementDecoder(d.resource.Mesh, name.Local)
+		}
 	}
 	return
 }
@@ -424,11 +466,12 @@ func applyDefault(val, defVal uint32, noDef bool) uint32 {
 
 type objectDecoder struct {
 	baseDecoder
-	resource Object
+	resources *Resources
+	resource  Object
 }
 
 func (d *objectDecoder) End() {
-	d.Scanner.AddObject(&d.resource)
+	d.resources.Objects = append(d.resources.Objects, &d.resource)
 }
 
 func (d *objectDecoder) Start(attrs []XMLAttr) {
@@ -461,7 +504,7 @@ func (d *objectDecoder) parseCoreAttr(a XMLAttr) {
 		if err != nil {
 			d.Scanner.InvalidAttr(a.Name.Local, true)
 		}
-		d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
+		d.resource.ID = uint32(id)
 	case attrType:
 		var ok bool
 		d.resource.Type, ok = newObjectType(string(a.Value))
