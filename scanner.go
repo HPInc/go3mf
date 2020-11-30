@@ -21,21 +21,18 @@ type NodeDecoder interface {
 	Text([]byte)
 	Child(xml.Name) NodeDecoder
 	End()
-	SetScanner(*Scanner)
 }
 
 type baseDecoder struct {
-	Scanner *Scanner
 }
 
 func (d *baseDecoder) Start([]XMLAttr) error      { return nil }
 func (d *baseDecoder) Text([]byte)                {}
 func (d *baseDecoder) Child(xml.Name) NodeDecoder { return nil }
 func (d *baseDecoder) End()                       {}
-func (d *baseDecoder) SetScanner(s *Scanner)      { d.Scanner = s }
 
-// A Scanner is a 3mf model file scanning state machine.
-type Scanner struct {
+// A decoderContext is a 3mf model file scanning state machine.
+type decoderContext struct {
 	Err              specerr.List
 	extensionDecoder map[string]specDecoder
 	modelPath        string
@@ -44,7 +41,7 @@ type Scanner struct {
 	resourceID       uint32
 }
 
-func (s *Scanner) namespace(local string) (string, bool) {
+func (s *decoderContext) namespace(local string) (string, bool) {
 	for _, ext := range s.extensionDecoder {
 		if ext.Local() == local {
 			return ext.Namespace(), true
@@ -53,7 +50,7 @@ func (s *Scanner) namespace(local string) (string, bool) {
 	return "", false
 }
 
-func (s *Scanner) addErrContext(err error) {
+func (s *decoderContext) addErrContext(err error) {
 	ct := make([]string, len(s.contex))
 	ct[0] = s.modelPath
 	for i, s := range s.contex[1:] {

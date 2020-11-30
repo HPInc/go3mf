@@ -327,10 +327,8 @@ func (d *multiDecoder) Start(attrs []go3mf.XMLAttr) (err error) {
 }
 
 type baseDecoder struct {
-	Scanner *go3mf.Scanner
 }
 
 func (d *baseDecoder) Text([]byte)                      {}
 func (d *baseDecoder) Child(xml.Name) go3mf.NodeDecoder { return nil }
 func (d *baseDecoder) End()                             {}
-func (d *baseDecoder) SetScanner(s *go3mf.Scanner)      { d.Scanner = s }

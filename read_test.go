@@ -543,7 +543,7 @@ func Test_modelFile_Decode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if _, err := decodeModelFile(tt.args.ctx, tt.args.r, new(Model), "", true, false); (err != nil) != tt.wantErr {
+			if err := decodeModelFile(tt.args.ctx, tt.args.r, new(Model), "", true, false); (err != nil) != tt.wantErr {
 				t.Errorf("modelFile.Decode() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

@@ -58,6 +58,7 @@ func (r *ReadCloser) Close() error {
 
 type topLevelDecoder struct {
 	baseDecoder
+	ctx    *decoderContext
 	model  *Model
 	isRoot bool
 }
@@ -65,14 +66,14 @@ type topLevelDecoder struct {
 func (d *topLevelDecoder) Child(name xml.Name) (child NodeDecoder) {
 	modelName := xml.Name{Space: Namespace, Local: attrModel}
 	if name == modelName {
-		child = &modelDecoder{model: d.model, isRoot: d.isRoot}
+		child = &modelDecoder{model: d.model, isRoot: d.isRoot, ctx: d.ctx}
 	}
 	return
 }
 
-func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string, isRoot, strict bool) (*Scanner, error) {
+func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string, isRoot, strict bool) error {
 	x := xml3mf.NewDecoder(r)
-	scanner := Scanner{
+	scanner := decoderContext{
 		extensionDecoder: make(map[string]specDecoder),
 		isRoot:           isRoot,
 		modelPath:        path,
@@ -88,13 +89,11 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 		currentDecoder, tmpDecoder NodeDecoder
 		currentName                xml.Name
 	)
-	currentDecoder = &topLevelDecoder{isRoot: isRoot, model: model}
-	currentDecoder.SetScanner(&scanner)
+	currentDecoder = &topLevelDecoder{isRoot: isRoot, model: model, ctx: &scanner}
 	var err error
 	x.OnStart = func(tp xml3mf.StartElement) {
 		tmpDecoder = currentDecoder.Child(tp.Name)
 		if tmpDecoder != nil {
-			tmpDecoder.SetScanner(&scanner)
 			state = append(state, currentDecoder)
 			names = append(names, currentName)
 			scanner.contex = append(names, tp.Name)
@@ -143,7 +142,14 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 			err = &scanner.Err
 		}
 	}
-	return &scanner, err
+	if err == nil && isRoot {
+		for _, ext := range scanner.extensionDecoder {
+			if ext, ok := ext.(postProcessorSpecDecoder); ok {
+				ext.PostProcessDecode(model)
+			}
+		}
+	}
+	return err
 }
 
 // Decoder implements a 3mf file decoder.
@@ -193,21 +199,15 @@ func (d *Decoder) processRootModel(ctx context.Context, rootFile packageFile, mo
 		return err
 	}
 	defer f.Close()
-	scanner, err := decodeModelFile(ctx, f, model, rootFile.Name(), true, d.Strict)
+	err = decodeModelFile(ctx, f, model, rootFile.Name(), true, d.Strict)
 	if err != nil {
 		return err
-	}
-	for _, ext := range scanner.extensionDecoder {
-		if ext, ok := ext.(postProcessorSpecDecoder); ok {
-			ext.PostProcessDecode(model)
-		}
 	}
 	return nil
 }
 
 func (d *Decoder) processNonRootModels(ctx context.Context, model *Model) (err error) {
 	var (
-		files              sync.Map
 		wg                 sync.WaitGroup
 		nonRootModelsCount = len(d.nonRootModels)
 	)
@@ -217,12 +217,11 @@ func (d *Decoder) processNonRootModels(ctx context.Context, model *Model) (err e
 	for i := 0; i < nonRootModelsCount; i++ {
 		go func(i int) {
 			defer wg.Done()
-			f, err1 := d.readChildModel(ctx, i, model)
+			err1 := d.readChildModel(ctx, i, model)
 			if err1 != nil {
 				err = err1
 				cancel()
 			}
-			files.Store(i, f)
 		}(i)
 	}
 	wg.Wait()
@@ -300,20 +299,20 @@ func (d *Decoder) addAttachment(attachments []Attachment, file packageFile) []At
 	return attachments
 }
 
-func (d *Decoder) readChildModel(ctx context.Context, i int, model *Model) (*Scanner, error) {
+func (d *Decoder) readChildModel(ctx context.Context, i int, model *Model) error {
 	attachment := d.nonRootModels[i]
 	file, err := attachment.Open()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer file.Close()
-	scanner, err := decodeModelFile(ctx, file, model, attachment.Name(), false, d.Strict)
+	err = decodeModelFile(ctx, file, model, attachment.Name(), false, d.Strict)
 	select {
 	case <-ctx.Done():
 		err = ctx.Err()
 	default: // Default is must to avoid blocking
 	}
-	return scanner, err
+	return err
 }
 
 func copyFile(file packageFile) (io.Reader, error) {
