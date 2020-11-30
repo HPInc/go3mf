@@ -6,10 +6,11 @@ import (
 	"strings"
 
 	"github.com/qmuntal/go3mf"
+	specxml "github.com/qmuntal/go3mf/spec/xml"
 )
 
 // Marshal3MF encodes the resource.
-func (r *ColorGroup) Marshal3MF(x *go3mf.XMLEncoder) error {
+func (r *ColorGroup) Marshal3MF(x specxml.Encoder) error {
 	xs := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrColorGroup}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(r.ID), 10)},
 	}}
@@ -26,7 +27,7 @@ func (r *ColorGroup) Marshal3MF(x *go3mf.XMLEncoder) error {
 }
 
 // Marshal3MF encodes the resource.
-func (r *Texture2DGroup) Marshal3MF(x *go3mf.XMLEncoder) error {
+func (r *Texture2DGroup) Marshal3MF(x specxml.Encoder) error {
 	xs := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrTexture2DGroup}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(r.ID), 10)},
 		{Name: xml.Name{Local: attrTexID}, Value: strconv.FormatUint(uint64(r.TextureID), 10)},
@@ -45,7 +46,7 @@ func (r *Texture2DGroup) Marshal3MF(x *go3mf.XMLEncoder) error {
 }
 
 // Marshal3MF encodes the resource.
-func (r *CompositeMaterials) Marshal3MF(x *go3mf.XMLEncoder) error {
+func (r *CompositeMaterials) Marshal3MF(x specxml.Encoder) error {
 	indices := make([]string, len(r.Indices))
 	for i, idx := range r.Indices {
 		indices[i] = strconv.FormatUint(uint64(idx), 10)
@@ -72,7 +73,7 @@ func (r *CompositeMaterials) Marshal3MF(x *go3mf.XMLEncoder) error {
 }
 
 // Marshal3MF encodes the resource.
-func (r *MultiProperties) Marshal3MF(x *go3mf.XMLEncoder) error {
+func (r *MultiProperties) Marshal3MF(x specxml.Encoder) error {
 	pids := make([]string, len(r.PIDs))
 	for i, idx := range r.PIDs {
 		pids[i] = strconv.FormatUint(uint64(idx), 10)
@@ -103,8 +104,8 @@ func (r *MultiProperties) Marshal3MF(x *go3mf.XMLEncoder) error {
 }
 
 // Marshal3MF encodes the resource.
-func (r *Texture2D) Marshal3MF(x *go3mf.XMLEncoder) error {
-	x.AddRelationship(go3mf.Relationship{Path: r.Path, Type: RelTypeTexture3D})
+func (r *Texture2D) Marshal3MF(x specxml.Encoder) error {
+	x.AddRelationship(specxml.Relationship{Path: r.Path, Type: RelTypeTexture3D})
 	xs := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrTexture2D}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(r.ID), 10)},
 		{Name: xml.Name{Local: attrPath}, Value: r.Path},

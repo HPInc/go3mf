@@ -3,7 +3,6 @@ package go3mf
 import (
 	"bytes"
 	"context"
-	"encoding/xml"
 	"errors"
 	"io"
 	"io/ioutil"
@@ -13,6 +12,7 @@ import (
 	"unsafe"
 
 	xml3mf "github.com/qmuntal/go3mf/internal/xml"
+	"github.com/qmuntal/go3mf/spec/xml"
 )
 
 var checkEveryTokens = 1000
@@ -63,7 +63,7 @@ type topLevelDecoder struct {
 	isRoot bool
 }
 
-func (d *topLevelDecoder) Child(name xml.Name) (child NodeDecoder) {
+func (d *topLevelDecoder) Child(name xml.Name) (child xml.NodeDecoder) {
 	modelName := xml.Name{Space: Namespace, Local: attrModel}
 	if name == modelName {
 		child = &modelDecoder{model: d.model, isRoot: d.isRoot, ctx: d.ctx}
@@ -83,16 +83,16 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 			scanner.extensionDecoder[ext.Namespace()] = ext
 		}
 	}
-	state, names := make([]NodeDecoder, 0, 10), make([]xml.Name, 0, 10)
+	state, names := make([]xml.NodeDecoder, 0, 10), make([]xml.Name, 0, 10)
 
 	var (
-		currentDecoder, tmpDecoder NodeDecoder
+		currentDecoder, tmpDecoder xml.NodeDecoder
 		currentName                xml.Name
 	)
 	currentDecoder = &topLevelDecoder{isRoot: isRoot, model: model, ctx: &scanner}
 	var err error
 	x.OnStart = func(tp xml3mf.StartElement) {
-		if childDecoder, ok := currentDecoder.(ChildNodeDecoder); ok {
+		if childDecoder, ok := currentDecoder.(xml.ChildNodeDecoder); ok {
 			tmpDecoder = childDecoder.Child(tp.Name)
 			if tmpDecoder != nil {
 				state = append(state, currentDecoder)
@@ -100,7 +100,7 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 				scanner.contex = append(names, tp.Name)
 				currentName = tp.Name
 				currentDecoder = tmpDecoder
-				if err := currentDecoder.Start(*(*[]XMLAttr)(unsafe.Pointer(&tp.Attr))); err != nil {
+				if err := currentDecoder.Start(*(*[]xml.Attr)(unsafe.Pointer(&tp.Attr))); err != nil {
 					scanner.addErrContext(err)
 				}
 			}
@@ -114,7 +114,7 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 		}
 	}
 	x.OnChar = func(tp xml.CharData) {
-		if currentDecoder, ok := currentDecoder.(textNodeDecoder); ok {
+		if currentDecoder, ok := currentDecoder.(xml.TextNodeDecoder); ok {
 			currentDecoder.Text(tp)
 		}
 	}

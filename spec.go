@@ -1,8 +1,6 @@
 package go3mf
 
-import (
-	"encoding/xml"
-)
+import "github.com/qmuntal/go3mf/spec/xml"
 
 type Spec interface {
 	Namespace() string
@@ -40,31 +38,23 @@ type specDecoder interface {
 	Namespace() string
 	Local() string
 	Required() bool
-	DecodeAttribute(interface{}, XMLAttr) error
+	DecodeAttribute(interface{}, xml.Attr) error
 }
 
 type meshElementDecoder interface {
-	NewMeshElementDecoder(*Mesh, string) NodeDecoder
+	NewMeshElementDecoder(*Mesh, string) xml.NodeDecoder
 }
 
 type resourcesElementDecoder interface {
-	NewResourcesElementDecoder(*Resources, string) NodeDecoder
+	NewResourcesElementDecoder(*Resources, string) xml.NodeDecoder
 }
 
 type modelElementDecoder interface {
-	NewModelElementDecoder(*Model, string) NodeDecoder
+	NewModelElementDecoder(*Model, string) xml.NodeDecoder
 }
 
 type propertyGroup interface {
 	Len() int
-}
-
-type marshaler interface {
-	Marshal3MF(*XMLEncoder) error
-}
-
-type marshalerAttr interface {
-	Marshal3MFAttr(*XMLEncoder) ([]xml.Attr, error)
 }
 
 type modelValidator interface {

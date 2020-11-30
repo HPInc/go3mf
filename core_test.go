@@ -3,9 +3,11 @@ package go3mf
 import (
 	"reflect"
 	"testing"
+
+	"github.com/qmuntal/go3mf/spec/xml"
 )
 
-var _ marshaler = new(BaseMaterials)
+var _ xml.Marshaler = new(BaseMaterials)
 
 func TestResources_FindAsset(t *testing.T) {
 	id1 := &BaseMaterials{ID: 0}

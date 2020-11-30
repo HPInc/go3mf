@@ -3,7 +3,6 @@ package go3mf
 import (
 	"bytes"
 	"context"
-	"encoding/xml"
 	"errors"
 	"fmt"
 	"image/color"
@@ -16,6 +15,7 @@ import (
 
 	"github.com/go-test/deep"
 	specerr "github.com/qmuntal/go3mf/errors"
+	"github.com/qmuntal/go3mf/spec/xml"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -27,8 +27,8 @@ var _ objectValidator = new(fakeSpec)
 var _ specDecoder = new(fakeSpec)
 var _ postProcessorSpecDecoder = new(fakeSpec)
 var _ resourcesElementDecoder = new(fakeSpec)
-var _ textNodeDecoder = new(metadataDecoder)
-var _ ChildNodeDecoder = new(baseMaterialsDecoder)
+var _ xml.TextNodeDecoder = new(metadataDecoder)
+var _ xml.ChildNodeDecoder = new(baseMaterialsDecoder)
 
 type fakeSpec struct {
 }
@@ -41,11 +41,11 @@ func (f *fakeSpec) SetRequired(_ bool) {}
 
 func (e *fakeSpec) PostProcessDecode(_ *Model) {}
 
-func (f *fakeSpec) NewResourcesElementDecoder(resources *Resources, nodeName string) NodeDecoder {
+func (f *fakeSpec) NewResourcesElementDecoder(resources *Resources, nodeName string) xml.NodeDecoder {
 	return &fakeAssetDecoder{resources: resources}
 }
 
-func (f *fakeSpec) DecodeAttribute(parentNode interface{}, attr XMLAttr) error {
+func (f *fakeSpec) DecodeAttribute(parentNode interface{}, attr xml.Attr) error {
 	switch t := parentNode.(type) {
 	case *Object:
 		t.AnyAttr = append(t.AnyAttr, &fakeAttr{string(attr.Value)})
@@ -97,7 +97,7 @@ type fakeAssetDecoder struct {
 	resources *Resources
 }
 
-func (f *fakeAssetDecoder) Start(att []XMLAttr) error {
+func (f *fakeAssetDecoder) Start(att []xml.Attr) error {
 	id, _ := strconv.ParseUint(string(att[0].Value), 10, 32)
 	f.resources.Assets = append(f.resources.Assets, &fakeAsset{ID: uint32(id)})
 	return nil

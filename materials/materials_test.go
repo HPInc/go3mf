@@ -7,9 +7,10 @@ import (
 
 	"github.com/qmuntal/go3mf"
 	"github.com/qmuntal/go3mf/spec"
+	"github.com/qmuntal/go3mf/spec/xml"
 )
 
-var _ spec.Decoder = new(Spec)
+var _ xml.Decoder = new(Spec)
 var _ spec.ResourcesElementDecoder = new(Spec)
 var _ spec.AssetValidator = new(Spec)
 var _ go3mf.Asset = new(Texture2D)
@@ -17,11 +18,11 @@ var _ go3mf.Asset = new(Texture2DGroup)
 var _ go3mf.Asset = new(CompositeMaterials)
 var _ go3mf.Asset = new(MultiProperties)
 var _ go3mf.Asset = new(ColorGroup)
-var _ spec.Marshaler = new(Texture2D)
-var _ spec.Marshaler = new(Texture2DGroup)
-var _ spec.Marshaler = new(CompositeMaterials)
-var _ spec.Marshaler = new(ColorGroup)
-var _ spec.Marshaler = new(MultiProperties)
+var _ xml.Marshaler = new(Texture2D)
+var _ xml.Marshaler = new(Texture2DGroup)
+var _ xml.Marshaler = new(CompositeMaterials)
+var _ xml.Marshaler = new(ColorGroup)
+var _ xml.Marshaler = new(MultiProperties)
 var _ spec.PropertyGroup = new(ColorGroup)
 var _ spec.PropertyGroup = new(Texture2DGroup)
 var _ spec.PropertyGroup = new(CompositeMaterials)

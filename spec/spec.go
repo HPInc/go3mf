@@ -1,9 +1,8 @@
 package spec
 
 import (
-	"encoding/xml"
-
 	"github.com/qmuntal/go3mf"
+	"github.com/qmuntal/go3mf/spec/xml"
 )
 
 type ObjectPather interface {
@@ -14,39 +13,16 @@ type PreProcessEncoder interface {
 	PreProcessEncode(m *go3mf.Model)
 }
 
-// Marshaler is the interface implemented by objects
-// that can marshal themselves into valid XML elements.
-type Marshaler interface {
-	Marshal3MF(*go3mf.XMLEncoder) error
-}
-
-// MarshalerAttr is the interface implemented by objects that can marshal
-// themselves into valid XML attributes.
-type MarshalerAttr interface {
-	Marshal3MFAttr(*go3mf.XMLEncoder) ([]xml.Attr, error)
-}
-
-type Decoder interface {
-	Namespace() string
-	Local() string
-	Required() bool
-	DecodeAttribute(interface{}, go3mf.XMLAttr) error
-}
-
-type TextNodeDecoder interface {
-	Text([]byte)
-}
-
 type MeshElementDecoder interface {
-	NewMeshElementDecoder(*go3mf.Mesh, string) go3mf.NodeDecoder
+	NewMeshElementDecoder(*go3mf.Mesh, string) xml.NodeDecoder
 }
 
 type ResourcesElementDecoder interface {
-	NewResourcesElementDecoder(*go3mf.Resources, string) go3mf.NodeDecoder
+	NewResourcesElementDecoder(*go3mf.Resources, string) xml.NodeDecoder
 }
 
 type ModelElementDecoder interface {
-	NewModelElementDecoder(*go3mf.Model, string) go3mf.NodeDecoder
+	NewModelElementDecoder(*go3mf.Model, string) xml.NodeDecoder
 }
 
 type PostProcessorDecoder interface {

@@ -1,21 +1,21 @@
 package slices
 
 import (
-	"encoding/xml"
 	"strconv"
 
 	"github.com/qmuntal/go3mf"
 	specerr "github.com/qmuntal/go3mf/errors"
+	"github.com/qmuntal/go3mf/spec/xml"
 )
 
-func (e Spec) NewResourcesElementDecoder(resources *go3mf.Resources, nodeName string) go3mf.NodeDecoder {
+func (e Spec) NewResourcesElementDecoder(resources *go3mf.Resources, nodeName string) xml.NodeDecoder {
 	if nodeName == attrSliceStack {
 		return &sliceStackDecoder{resources: resources}
 	}
 	return nil
 }
 
-func (e Spec) DecodeAttribute(parentNode interface{}, attr go3mf.XMLAttr) error {
+func (e Spec) DecodeAttribute(parentNode interface{}, attr xml.Attr) error {
 	switch t := parentNode.(type) {
 	case *go3mf.Object:
 		return objectAttrDecoder(t, attr)
@@ -24,7 +24,7 @@ func (e Spec) DecodeAttribute(parentNode interface{}, attr go3mf.XMLAttr) error 
 }
 
 // objectAttrDecoder decodes the slice attributes of an ObjectReosurce.
-func objectAttrDecoder(o *go3mf.Object, a go3mf.XMLAttr) (err error) {
+func objectAttrDecoder(o *go3mf.Object, a xml.Attr) (err error) {
 	switch a.Name.Local {
 	case attrSliceRefID:
 		val, err1 := strconv.ParseUint(string(a.Value), 10, 32)
@@ -63,7 +63,7 @@ func (d *sliceStackDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *sliceStackDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
+func (d *sliceStackDecoder) Child(name xml.Name) (child xml.NodeDecoder) {
 	if name.Space == Namespace {
 		if name.Local == attrSlice {
 			child = &sliceDecoder{resource: &d.resource}
@@ -74,7 +74,7 @@ func (d *sliceStackDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	return
 }
 
-func (d *sliceStackDecoder) Start(attrs []go3mf.XMLAttr) (err error) {
+func (d *sliceStackDecoder) Start(attrs []xml.Attr) (err error) {
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrID:
@@ -99,7 +99,7 @@ type sliceRefDecoder struct {
 	resource *SliceStack
 }
 
-func (d *sliceRefDecoder) Start(attrs []go3mf.XMLAttr) (err error) {
+func (d *sliceRefDecoder) Start(attrs []xml.Attr) (err error) {
 	var (
 		sliceStackID uint32
 		path         string
@@ -131,7 +131,7 @@ type sliceDecoder struct {
 func (d *sliceDecoder) End() {
 	d.resource.Slices = append(d.resource.Slices, &d.slice)
 }
-func (d *sliceDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
+func (d *sliceDecoder) Child(name xml.Name) (child xml.NodeDecoder) {
 	if name.Space == Namespace {
 		if name.Local == attrVertices {
 			child = &d.polygonVerticesDecoder
@@ -142,7 +142,7 @@ func (d *sliceDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
 	return
 }
 
-func (d *sliceDecoder) Start(attrs []go3mf.XMLAttr) (err error) {
+func (d *sliceDecoder) Start(attrs []xml.Attr) (err error) {
 	d.polygonDecoder.slice = &d.slice
 	d.polygonVerticesDecoder.slice = &d.slice
 	for _, a := range attrs {
@@ -164,12 +164,12 @@ type polygonVerticesDecoder struct {
 	polygonVertexDecoder polygonVertexDecoder
 }
 
-func (d *polygonVerticesDecoder) Start(_ []go3mf.XMLAttr) error {
+func (d *polygonVerticesDecoder) Start(_ []xml.Attr) error {
 	d.polygonVertexDecoder.slice = d.slice
 	return nil
 }
 
-func (d *polygonVerticesDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
+func (d *polygonVerticesDecoder) Child(name xml.Name) (child xml.NodeDecoder) {
 	if name.Space == Namespace && name.Local == attrVertex {
 		child = &d.polygonVertexDecoder
 	}
@@ -181,7 +181,7 @@ type polygonVertexDecoder struct {
 	slice *Slice
 }
 
-func (d *polygonVertexDecoder) Start(attrs []go3mf.XMLAttr) (err error) {
+func (d *polygonVertexDecoder) Start(attrs []xml.Attr) (err error) {
 	var p go3mf.Point2D
 	for _, a := range attrs {
 		val, err1 := strconv.ParseFloat(string(a.Value), 32)
@@ -205,14 +205,14 @@ type polygonDecoder struct {
 	polygonSegmentDecoder polygonSegmentDecoder
 }
 
-func (d *polygonDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
+func (d *polygonDecoder) Child(name xml.Name) (child xml.NodeDecoder) {
 	if name.Space == Namespace && name.Local == attrSegment {
 		child = &d.polygonSegmentDecoder
 	}
 	return
 }
 
-func (d *polygonDecoder) Start(attrs []go3mf.XMLAttr) (err error) {
+func (d *polygonDecoder) Start(attrs []xml.Attr) (err error) {
 	polygonIndex := len(d.slice.Polygons)
 	d.slice.Polygons = append(d.slice.Polygons, Polygon{})
 	d.polygonSegmentDecoder.polygon = &d.slice.Polygons[polygonIndex]
@@ -234,7 +234,7 @@ type polygonSegmentDecoder struct {
 	polygon *Polygon
 }
 
-func (d *polygonSegmentDecoder) Start(attrs []go3mf.XMLAttr) (err error) {
+func (d *polygonSegmentDecoder) Start(attrs []xml.Attr) (err error) {
 	var (
 		segment      Segment
 		hasP1, hasP2 bool

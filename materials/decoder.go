@@ -1,15 +1,15 @@
 package materials
 
 import (
-	"encoding/xml"
 	"strconv"
 	"strings"
 
 	"github.com/qmuntal/go3mf"
 	specerr "github.com/qmuntal/go3mf/errors"
+	"github.com/qmuntal/go3mf/spec/xml"
 )
 
-func (e Spec) NewResourcesElementDecoder(resources *go3mf.Resources, nodeName string) (child go3mf.NodeDecoder) {
+func (e Spec) NewResourcesElementDecoder(resources *go3mf.Resources, nodeName string) (child xml.NodeDecoder) {
 	switch nodeName {
 	case attrColorGroup:
 		child = &colorGroupDecoder{resources: resources}
@@ -25,7 +25,7 @@ func (e Spec) NewResourcesElementDecoder(resources *go3mf.Resources, nodeName st
 	return
 }
 
-func (e Spec) DecodeAttribute(_ interface{}, _ go3mf.XMLAttr) error { return nil }
+func (e Spec) DecodeAttribute(_ interface{}, _ xml.Attr) error { return nil }
 
 type colorGroupDecoder struct {
 	baseDecoder
@@ -38,14 +38,14 @@ func (d *colorGroupDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *colorGroupDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
+func (d *colorGroupDecoder) Child(name xml.Name) (child xml.NodeDecoder) {
 	if name.Space == Namespace && name.Local == attrColor {
 		child = &d.colorDecoder
 	}
 	return
 }
 
-func (d *colorGroupDecoder) Start(attrs []go3mf.XMLAttr) (err error) {
+func (d *colorGroupDecoder) Start(attrs []xml.Attr) (err error) {
 	d.colorDecoder.resource = &d.resource
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrID {
@@ -65,7 +65,7 @@ type colorDecoder struct {
 	resource *ColorGroup
 }
 
-func (d *colorDecoder) Start(attrs []go3mf.XMLAttr) (err error) {
+func (d *colorDecoder) Start(attrs []xml.Attr) (err error) {
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrColor {
 			c, err1 := go3mf.ParseRGBA(string(a.Value))
@@ -83,7 +83,7 @@ type tex2DCoordDecoder struct {
 	resource *Texture2DGroup
 }
 
-func (d *tex2DCoordDecoder) Start(attrs []go3mf.XMLAttr) (err error) {
+func (d *tex2DCoordDecoder) Start(attrs []xml.Attr) (err error) {
 	var u, v float32
 	for _, a := range attrs {
 		if a.Name.Space != "" {
@@ -115,14 +115,14 @@ func (d *tex2DGroupDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *tex2DGroupDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
+func (d *tex2DGroupDecoder) Child(name xml.Name) (child xml.NodeDecoder) {
 	if name.Space == Namespace && name.Local == attrTex2DCoord {
 		child = &d.tex2DCoordDecoder
 	}
 	return
 }
 
-func (d *tex2DGroupDecoder) Start(attrs []go3mf.XMLAttr) (err error) {
+func (d *tex2DGroupDecoder) Start(attrs []xml.Attr) (err error) {
 	d.tex2DCoordDecoder.resource = &d.resource
 	for _, a := range attrs {
 		if a.Name.Space != "" {
@@ -156,7 +156,7 @@ func (d *texture2DDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *texture2DDecoder) Start(attrs []go3mf.XMLAttr) (err error) {
+func (d *texture2DDecoder) Start(attrs []xml.Attr) (err error) {
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
@@ -194,14 +194,14 @@ func (d *compositeMaterialsDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *compositeMaterialsDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
+func (d *compositeMaterialsDecoder) Child(name xml.Name) (child xml.NodeDecoder) {
 	if name.Space == Namespace && name.Local == attrComposite {
 		child = &d.compositeDecoder
 	}
 	return
 }
 
-func (d *compositeMaterialsDecoder) Start(attrs []go3mf.XMLAttr) (err error) {
+func (d *compositeMaterialsDecoder) Start(attrs []xml.Attr) (err error) {
 	d.compositeDecoder.resource = &d.resource
 	for _, a := range attrs {
 		if a.Name.Space != "" {
@@ -238,7 +238,7 @@ type compositeDecoder struct {
 	resource *CompositeMaterials
 }
 
-func (d *compositeDecoder) Start(attrs []go3mf.XMLAttr) (err error) {
+func (d *compositeDecoder) Start(attrs []xml.Attr) (err error) {
 	var composite Composite
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrValues {
@@ -266,14 +266,14 @@ func (d *multiPropertiesDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *multiPropertiesDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
+func (d *multiPropertiesDecoder) Child(name xml.Name) (child xml.NodeDecoder) {
 	if name.Space == Namespace && name.Local == attrMulti {
 		child = &d.multiDecoder
 	}
 	return
 }
 
-func (d *multiPropertiesDecoder) Start(attrs []go3mf.XMLAttr) (err error) {
+func (d *multiPropertiesDecoder) Start(attrs []xml.Attr) (err error) {
 	d.multiDecoder.resource = &d.resource
 	for _, a := range attrs {
 		if a.Name.Space != "" {
@@ -309,7 +309,7 @@ type multiDecoder struct {
 	resource *MultiProperties
 }
 
-func (d *multiDecoder) Start(attrs []go3mf.XMLAttr) (err error) {
+func (d *multiDecoder) Start(attrs []xml.Attr) (err error) {
 	var multi Multi
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrPIndices {

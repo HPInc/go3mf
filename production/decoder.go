@@ -3,6 +3,7 @@ package production
 import (
 	"github.com/qmuntal/go3mf"
 	specerr "github.com/qmuntal/go3mf/errors"
+	"github.com/qmuntal/go3mf/spec/xml"
 	"github.com/qmuntal/go3mf/uuid"
 )
 
@@ -51,7 +52,7 @@ func (e Spec) fillResourceUUID(res *go3mf.Resources) {
 	}
 }
 
-func (e Spec) DecodeAttribute(parentNode interface{}, attr go3mf.XMLAttr) (err error) {
+func (e Spec) DecodeAttribute(parentNode interface{}, attr xml.Attr) (err error) {
 	switch t := parentNode.(type) {
 	case *go3mf.Build:
 		if attr.Name.Local == attrProdUUID {

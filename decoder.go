@@ -2,13 +2,13 @@ package go3mf
 
 import (
 	"bytes"
-	"encoding/xml"
 	"image/color"
 	"strconv"
 	"strings"
 	"unsafe"
 
 	specerr "github.com/qmuntal/go3mf/errors"
+	"github.com/qmuntal/go3mf/spec/xml"
 )
 
 type modelDecoder struct {
@@ -18,7 +18,7 @@ type modelDecoder struct {
 	isRoot bool
 }
 
-func (d *modelDecoder) Child(name xml.Name) (child NodeDecoder) {
+func (d *modelDecoder) Child(name xml.Name) (child xml.NodeDecoder) {
 	if name.Space == Namespace {
 		switch name.Local {
 		case attrResources:
@@ -41,7 +41,7 @@ func (d *modelDecoder) Child(name xml.Name) (child NodeDecoder) {
 	return
 }
 
-func (d *modelDecoder) Start(attrs []XMLAttr) (err error) {
+func (d *modelDecoder) Start(attrs []xml.Attr) (err error) {
 	if !d.isRoot {
 		return
 	}
@@ -75,7 +75,7 @@ func (d *modelDecoder) Start(attrs []XMLAttr) (err error) {
 	return
 }
 
-func (d *modelDecoder) noCoreAttribute(a XMLAttr) (err error) {
+func (d *modelDecoder) noCoreAttribute(a xml.Attr) (err error) {
 	switch a.Name.Space {
 	case nsXML:
 		if a.Name.Local == attrLang {
@@ -101,7 +101,7 @@ type metadataGroupDecoder struct {
 	metadatas *[]Metadata
 }
 
-func (d *metadataGroupDecoder) Child(name xml.Name) (child NodeDecoder) {
+func (d *metadataGroupDecoder) Child(name xml.Name) (child xml.NodeDecoder) {
 	if name.Space == Namespace && name.Local == attrMetadata {
 		child = &metadataDecoder{metadatas: d.metadatas, ctx: d.ctx}
 	}
@@ -115,7 +115,7 @@ type metadataDecoder struct {
 	metadata  Metadata
 }
 
-func (d *metadataDecoder) Start(attrs []XMLAttr) error {
+func (d *metadataDecoder) Start(attrs []xml.Attr) error {
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
@@ -155,14 +155,14 @@ type buildDecoder struct {
 	build *Build
 }
 
-func (d *buildDecoder) Child(name xml.Name) (child NodeDecoder) {
+func (d *buildDecoder) Child(name xml.Name) (child xml.NodeDecoder) {
 	if name.Space == Namespace && name.Local == attrItem {
 		child = &buildItemDecoder{build: d.build, ctx: d.ctx}
 	}
 	return
 }
 
-func (d *buildDecoder) Start(attrs []XMLAttr) (err error) {
+func (d *buildDecoder) Start(attrs []xml.Attr) (err error) {
 	for _, a := range attrs {
 		if ext, ok := d.ctx.extensionDecoder[a.Name.Space]; ok {
 			err = specerr.Append(err, ext.DecodeAttribute(d.build, a))
@@ -183,14 +183,14 @@ func (d *buildItemDecoder) End() {
 	d.ctx.resourceID = 0
 }
 
-func (d *buildItemDecoder) Child(name xml.Name) (child NodeDecoder) {
+func (d *buildItemDecoder) Child(name xml.Name) (child xml.NodeDecoder) {
 	if name.Space == Namespace && name.Local == attrMetadataGroup {
 		child = &metadataGroupDecoder{metadatas: &d.item.Metadata, ctx: d.ctx}
 	}
 	return
 }
 
-func (d *buildItemDecoder) Start(attrs []XMLAttr) (err error) {
+func (d *buildItemDecoder) Start(attrs []xml.Attr) (err error) {
 	for _, a := range attrs {
 		if a.Name.Space == "" {
 			err = specerr.Append(err, d.parseCoreAttr(a))
@@ -201,7 +201,7 @@ func (d *buildItemDecoder) Start(attrs []XMLAttr) (err error) {
 	return
 }
 
-func (d *buildItemDecoder) parseCoreAttr(a XMLAttr) (err error) {
+func (d *buildItemDecoder) parseCoreAttr(a xml.Attr) (err error) {
 	switch a.Name.Local {
 	case attrObjectID:
 		val, err1 := strconv.ParseUint(string(a.Value), 10, 32)
@@ -228,7 +228,7 @@ type resourceDecoder struct {
 	resources *Resources
 }
 
-func (d *resourceDecoder) Child(name xml.Name) (child NodeDecoder) {
+func (d *resourceDecoder) Child(name xml.Name) (child xml.NodeDecoder) {
 	if name.Space == Namespace {
 		switch name.Local {
 		case attrObject:
@@ -248,18 +248,18 @@ func (d *resourceDecoder) Child(name xml.Name) (child NodeDecoder) {
 }
 
 type resourceDecoderWrapper struct {
-	NodeDecoder
+	xml.NodeDecoder
 	ctx *decoderContext
 }
 
-func (d *resourceDecoderWrapper) Child(name xml.Name) (child NodeDecoder) {
-	if v, ok := d.NodeDecoder.(ChildNodeDecoder); ok {
+func (d *resourceDecoderWrapper) Child(name xml.Name) (child xml.NodeDecoder) {
+	if v, ok := d.NodeDecoder.(xml.ChildNodeDecoder); ok {
 		return v.Child(name)
 	}
 	return nil
 }
 
-func (d *resourceDecoderWrapper) Start(attrs []XMLAttr) error {
+func (d *resourceDecoderWrapper) Start(attrs []xml.Attr) error {
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrID {
 			id, _ := strconv.ParseUint(string(a.Value), 10, 32)
@@ -286,14 +286,14 @@ func (d *baseMaterialsDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *baseMaterialsDecoder) Child(name xml.Name) (child NodeDecoder) {
+func (d *baseMaterialsDecoder) Child(name xml.Name) (child xml.NodeDecoder) {
 	if name.Space == Namespace && name.Local == attrBase {
 		child = &d.baseMaterialDecoder
 	}
 	return
 }
 
-func (d *baseMaterialsDecoder) Start(attrs []XMLAttr) (err error) {
+func (d *baseMaterialsDecoder) Start(attrs []xml.Attr) (err error) {
 	d.baseMaterialDecoder.resource = &d.resource
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrID {
@@ -313,7 +313,7 @@ type baseMaterialDecoder struct {
 	resource *BaseMaterials
 }
 
-func (d *baseMaterialDecoder) Start(attrs []XMLAttr) (err error) {
+func (d *baseMaterialDecoder) Start(attrs []xml.Attr) (err error) {
 	var name string
 	var baseColor color.RGBA
 	for _, a := range attrs {
@@ -338,12 +338,12 @@ type meshDecoder struct {
 	resource *Object
 }
 
-func (d *meshDecoder) Start(_ []XMLAttr) error {
+func (d *meshDecoder) Start(_ []xml.Attr) error {
 	d.resource.Mesh = new(Mesh)
 	return nil
 }
 
-func (d *meshDecoder) Child(name xml.Name) (child NodeDecoder) {
+func (d *meshDecoder) Child(name xml.Name) (child xml.NodeDecoder) {
 	if name.Space == Namespace {
 		if name.Local == attrVertices {
 			child = &verticesDecoder{mesh: d.resource.Mesh}
@@ -364,12 +364,12 @@ type verticesDecoder struct {
 	vertexDecoder vertexDecoder
 }
 
-func (d *verticesDecoder) Start(_ []XMLAttr) error {
+func (d *verticesDecoder) Start(_ []xml.Attr) error {
 	d.vertexDecoder.mesh = d.mesh
 	return nil
 }
 
-func (d *verticesDecoder) Child(name xml.Name) (child NodeDecoder) {
+func (d *verticesDecoder) Child(name xml.Name) (child xml.NodeDecoder) {
 	if name.Space == Namespace && name.Local == attrVertex {
 		child = &d.vertexDecoder
 	}
@@ -381,7 +381,7 @@ type vertexDecoder struct {
 	mesh *Mesh
 }
 
-func (d *vertexDecoder) Start(attrs []XMLAttr) (err error) {
+func (d *vertexDecoder) Start(attrs []xml.Attr) (err error) {
 	var x, y, z float32
 	for _, a := range attrs {
 		val, err1 := strconv.ParseFloat(*(*string)(unsafe.Pointer(&a.Value)), 32)
@@ -407,7 +407,7 @@ type trianglesDecoder struct {
 	triangleDecoder triangleDecoder
 }
 
-func (d *trianglesDecoder) Start(_ []XMLAttr) error {
+func (d *trianglesDecoder) Start(_ []xml.Attr) error {
 	d.triangleDecoder.mesh = d.resource.Mesh
 	d.triangleDecoder.defaultPropertyID = d.resource.PID
 	d.triangleDecoder.defaultPropertyIndex = d.resource.PIndex
@@ -418,7 +418,7 @@ func (d *trianglesDecoder) Start(_ []XMLAttr) error {
 	return nil
 }
 
-func (d *trianglesDecoder) Child(name xml.Name) (child NodeDecoder) {
+func (d *trianglesDecoder) Child(name xml.Name) (child xml.NodeDecoder) {
 	if name.Space == Namespace && name.Local == attrTriangle {
 		child = &d.triangleDecoder
 	}
@@ -431,7 +431,7 @@ type triangleDecoder struct {
 	defaultPropertyIndex, defaultPropertyID uint32
 }
 
-func (d *triangleDecoder) Start(attrs []XMLAttr) (err error) {
+func (d *triangleDecoder) Start(attrs []xml.Attr) (err error) {
 	var t Triangle
 	var pid, p1, p2, p3 uint32
 	var hasPID, hasP1, hasP2, hasP3 bool
@@ -495,7 +495,7 @@ func (d *objectDecoder) End() {
 	d.resources.Objects = append(d.resources.Objects, &d.resource)
 }
 
-func (d *objectDecoder) Start(attrs []XMLAttr) (err error) {
+func (d *objectDecoder) Start(attrs []xml.Attr) (err error) {
 	for _, a := range attrs {
 		if a.Name.Space == "" {
 			err = specerr.Append(err, d.parseCoreAttr(a))
@@ -506,7 +506,7 @@ func (d *objectDecoder) Start(attrs []XMLAttr) (err error) {
 	return
 }
 
-func (d *objectDecoder) Child(name xml.Name) (child NodeDecoder) {
+func (d *objectDecoder) Child(name xml.Name) (child xml.NodeDecoder) {
 	if name.Space == Namespace {
 		if name.Local == attrMesh {
 			child = &meshDecoder{resource: &d.resource, ctx: d.ctx}
@@ -519,7 +519,7 @@ func (d *objectDecoder) Child(name xml.Name) (child NodeDecoder) {
 	return
 }
 
-func (d *objectDecoder) parseCoreAttr(a XMLAttr) (err error) {
+func (d *objectDecoder) parseCoreAttr(a xml.Attr) (err error) {
 	switch a.Name.Local {
 	case attrID:
 		id, err1 := strconv.ParseUint(string(a.Value), 10, 32)
@@ -562,14 +562,14 @@ type componentsDecoder struct {
 	componentDecoder componentDecoder
 }
 
-func (d *componentsDecoder) Start(_ []XMLAttr) error {
+func (d *componentsDecoder) Start(_ []xml.Attr) error {
 	d.resource.Components = make([]*Component, 0)
 	d.componentDecoder.resource = d.resource
 	d.componentDecoder.ctx = d.ctx
 	return nil
 }
 
-func (d *componentsDecoder) Child(name xml.Name) (child NodeDecoder) {
+func (d *componentsDecoder) Child(name xml.Name) (child xml.NodeDecoder) {
 	if name.Space == Namespace && name.Local == attrComponent {
 		child = &d.componentDecoder
 	}
@@ -582,7 +582,7 @@ type componentDecoder struct {
 	resource *Object
 }
 
-func (d *componentDecoder) Start(attrs []XMLAttr) (err error) {
+func (d *componentDecoder) Start(attrs []xml.Attr) (err error) {
 	var component Component
 	for _, a := range attrs {
 		if a.Name.Space == "" {

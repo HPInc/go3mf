@@ -1,39 +1,20 @@
 package go3mf
 
 import (
-	"encoding/xml"
 	"errors"
 	"fmt"
 	"image/color"
 	"strings"
 
 	specerr "github.com/qmuntal/go3mf/errors"
+	"github.com/qmuntal/go3mf/spec/xml"
 )
-
-type XMLAttr struct {
-	Name  xml.Name
-	Value []byte
-}
-
-// NodeDecoder defines the minimum contract to decode a 3MF node.
-type NodeDecoder interface {
-	Start([]XMLAttr) error
-	End()
-}
-
-type ChildNodeDecoder interface {
-	Child(xml.Name) NodeDecoder
-}
-
-type textNodeDecoder interface {
-	Text([]byte)
-}
 
 type baseDecoder struct {
 }
 
-func (d *baseDecoder) Start([]XMLAttr) error { return nil }
-func (d *baseDecoder) End()                  {}
+func (d *baseDecoder) Start([]xml.Attr) error { return nil }
+func (d *baseDecoder) End()                   {}
 
 // A decoderContext is a 3mf model file scanning state machine.
 type decoderContext struct {

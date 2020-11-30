@@ -5,12 +5,13 @@ import (
 	"testing"
 
 	"github.com/qmuntal/go3mf/spec"
+	"github.com/qmuntal/go3mf/spec/xml"
 )
 
-var _ spec.Decoder = new(Spec)
+var _ xml.Decoder = new(Spec)
 var _ spec.MeshElementDecoder = new(Spec)
 var _ spec.ObjectValidator = new(Spec)
-var _ spec.Marshaler = new(BeamLattice)
+var _ xml.Marshaler = new(BeamLattice)
 
 func TestCapMode_String(t *testing.T) {
 	tests := []struct {
