@@ -1,9 +1,7 @@
 package materials
 
 import (
-	"encoding/xml"
 	"image/color"
-	"reflect"
 	"testing"
 
 	"github.com/go-test/deep"
@@ -133,25 +131,4 @@ func TestDecode_warns(t *testing.T) {
 			return
 		}
 	})
-}
-
-func Test_baseDecoder_Child(t *testing.T) {
-	type args struct {
-		in0 xml.Name
-	}
-	tests := []struct {
-		name string
-		d    *baseDecoder
-		args args
-		want go3mf.NodeDecoder
-	}{
-		{"base", new(baseDecoder), args{xml.Name{}}, nil},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.d.Child(tt.args.in0); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseDecoder.Child() = %v, want %v", got, tt.want)
-			}
-		})
-	}
 }

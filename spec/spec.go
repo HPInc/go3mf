@@ -33,6 +33,10 @@ type Decoder interface {
 	DecodeAttribute(interface{}, go3mf.XMLAttr) error
 }
 
+type TextNodeDecoder interface {
+	Text([]byte)
+}
+
 type MeshElementDecoder interface {
 	NewMeshElementDecoder(*go3mf.Mesh, string) go3mf.NodeDecoder
 }

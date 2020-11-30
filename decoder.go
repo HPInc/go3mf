@@ -252,6 +252,13 @@ type resourceDecoderWrapper struct {
 	ctx *decoderContext
 }
 
+func (d *resourceDecoderWrapper) Child(name xml.Name) (child NodeDecoder) {
+	if v, ok := d.NodeDecoder.(ChildNodeDecoder); ok {
+		return v.Child(name)
+	}
+	return nil
+}
+
 func (d *resourceDecoderWrapper) Start(attrs []XMLAttr) error {
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrID {

@@ -27,6 +27,8 @@ var _ objectValidator = new(fakeSpec)
 var _ specDecoder = new(fakeSpec)
 var _ postProcessorSpecDecoder = new(fakeSpec)
 var _ resourcesElementDecoder = new(fakeSpec)
+var _ textNodeDecoder = new(metadataDecoder)
+var _ ChildNodeDecoder = new(baseMaterialsDecoder)
 
 type fakeSpec struct {
 }
@@ -431,19 +433,17 @@ func TestDecoder_processRootModel(t *testing.T) {
 		<other />
 		`).build("")
 
-	t.Run("base", func(t *testing.T) {
-		d := new(Decoder)
-		d.Strict = true
-		got.WithSpec(&fakeSpec{})
-		if err := d.processRootModel(context.Background(), rootFile, got); err != nil {
-			t.Errorf("Decoder.processRootModel() unexpected error = %v", err)
-			return
-		}
-		if diff := deep.Equal(got, want); diff != nil {
-			t.Errorf("Decoder.processRootModel() = %v", diff)
-			return
-		}
-	})
+	d := new(Decoder)
+	d.Strict = true
+	got.WithSpec(&fakeSpec{})
+	if err := d.processRootModel(context.Background(), rootFile, got); err != nil {
+		t.Errorf("Decoder.processRootModel() unexpected error = %v", err)
+		return
+	}
+	if diff := deep.Equal(got, want); diff != nil {
+		t.Errorf("Decoder.processRootModel() = %v", diff)
+		return
+	}
 }
 
 func TestDecoder_processNonRootModels(t *testing.T) {

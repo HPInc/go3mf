@@ -18,18 +18,22 @@ type XMLAttr struct {
 // NodeDecoder defines the minimum contract to decode a 3MF node.
 type NodeDecoder interface {
 	Start([]XMLAttr) error
-	Text([]byte)
-	Child(xml.Name) NodeDecoder
 	End()
+}
+
+type ChildNodeDecoder interface {
+	Child(xml.Name) NodeDecoder
+}
+
+type textNodeDecoder interface {
+	Text([]byte)
 }
 
 type baseDecoder struct {
 }
 
-func (d *baseDecoder) Start([]XMLAttr) error      { return nil }
-func (d *baseDecoder) Text([]byte)                {}
-func (d *baseDecoder) Child(xml.Name) NodeDecoder { return nil }
-func (d *baseDecoder) End()                       {}
+func (d *baseDecoder) Start([]XMLAttr) error { return nil }
+func (d *baseDecoder) End()                  {}
 
 // A decoderContext is a 3mf model file scanning state machine.
 type decoderContext struct {

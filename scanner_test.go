@@ -1,7 +1,6 @@
 package go3mf
 
 import (
-	"encoding/xml"
 	"image/color"
 	"reflect"
 	"testing"
@@ -57,27 +56,6 @@ func TestFormatRGBA(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := FormatRGBA(tt.c); got != tt.want {
 				t.Errorf("FormatRGBA() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_baseDecoder_Child(t *testing.T) {
-	type args struct {
-		in0 xml.Name
-	}
-	tests := []struct {
-		name string
-		d    *baseDecoder
-		args args
-		want NodeDecoder
-	}{
-		{"base", new(baseDecoder), args{xml.Name{}}, nil},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.d.Child(tt.args.in0); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseDecoder.Child() = %v, want %v", got, tt.want)
 			}
 		})
 	}

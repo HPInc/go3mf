@@ -92,15 +92,17 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 	currentDecoder = &topLevelDecoder{isRoot: isRoot, model: model, ctx: &scanner}
 	var err error
 	x.OnStart = func(tp xml3mf.StartElement) {
-		tmpDecoder = currentDecoder.Child(tp.Name)
-		if tmpDecoder != nil {
-			state = append(state, currentDecoder)
-			names = append(names, currentName)
-			scanner.contex = append(names, tp.Name)
-			currentName = tp.Name
-			currentDecoder = tmpDecoder
-			if err := currentDecoder.Start(*(*[]XMLAttr)(unsafe.Pointer(&tp.Attr))); err != nil {
-				scanner.addErrContext(err)
+		if childDecoder, ok := currentDecoder.(ChildNodeDecoder); ok {
+			tmpDecoder = childDecoder.Child(tp.Name)
+			if tmpDecoder != nil {
+				state = append(state, currentDecoder)
+				names = append(names, currentName)
+				scanner.contex = append(names, tp.Name)
+				currentName = tp.Name
+				currentDecoder = tmpDecoder
+				if err := currentDecoder.Start(*(*[]XMLAttr)(unsafe.Pointer(&tp.Attr))); err != nil {
+					scanner.addErrContext(err)
+				}
 			}
 		}
 	}
@@ -112,7 +114,9 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 		}
 	}
 	x.OnChar = func(tp xml.CharData) {
-		currentDecoder.Text(tp)
+		if currentDecoder, ok := currentDecoder.(textNodeDecoder); ok {
+			currentDecoder.Text(tp)
+		}
 	}
 	var i int
 	for {

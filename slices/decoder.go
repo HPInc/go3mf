@@ -269,6 +269,4 @@ func (d *polygonSegmentDecoder) Start(attrs []go3mf.XMLAttr) (err error) {
 type baseDecoder struct {
 }
 
-func (d *baseDecoder) Text([]byte)                      {}
-func (d *baseDecoder) Child(xml.Name) go3mf.NodeDecoder { return nil }
-func (d *baseDecoder) End()                             {}
+func (d *baseDecoder) End() {}
