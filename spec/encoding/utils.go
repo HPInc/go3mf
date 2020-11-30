@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"image/color"
+	"strconv"
+	"strings"
 )
 
 // ParseRGBA parses s as a RGBA color.
@@ -50,4 +52,24 @@ func FormatRGBA(c color.RGBA) string {
 		return fmt.Sprintf("#%02x%02x%02x", c.R, c.G, c.B)
 	}
 	return fmt.Sprintf("#%02x%02x%02x%02x", c.R, c.G, c.B, c.A)
+}
+
+// ParseMatrix parses s as a Matrix.
+func ParseMatrix(s string) ([16]float32, bool) {
+	values := strings.Fields(s)
+	if len(values) != 12 {
+		return [16]float32{}, false
+	}
+	var t [12]float32
+	for i := 0; i < 12; i++ {
+		val, err := strconv.ParseFloat(values[i], 32)
+		if err != nil {
+			return [16]float32{}, false
+		}
+		t[i] = float32(val)
+	}
+	return [16]float32{t[0], t[1], t[2], 0.0,
+		t[3], t[4], t[5], 0.0,
+		t[6], t[7], t[8], 0.0,
+		t[9], t[10], t[11], 1.0}, true
 }

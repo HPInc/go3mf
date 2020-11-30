@@ -3,8 +3,6 @@ package go3mf
 import (
 	"fmt"
 	"math"
-	"strconv"
-	"strings"
 )
 
 type pairEntry struct {
@@ -136,26 +134,6 @@ func (v1 Point3D) Cross(v2 Point3D) Point3D {
 //
 // m[4*r + c] is the element in the r'th row and c'th column.
 type Matrix [16]float32
-
-// ParseMatrix parses s as a Matrix.
-func ParseMatrix(s string) (Matrix, bool) {
-	values := strings.Fields(s)
-	if len(values) != 12 {
-		return Matrix{}, false
-	}
-	var t [12]float32
-	for i := 0; i < 12; i++ {
-		val, err := strconv.ParseFloat(values[i], 32)
-		if err != nil {
-			return Matrix{}, false
-		}
-		t[i] = float32(val)
-	}
-	return Matrix{t[0], t[1], t[2], 0.0,
-		t[3], t[4], t[5], 0.0,
-		t[6], t[7], t[8], 0.0,
-		t[9], t[10], t[11], 1.0}, true
-}
 
 // String returns the string representation of a Matrix.
 func (m1 Matrix) String() string {

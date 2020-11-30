@@ -107,7 +107,7 @@ type beamDecoder struct {
 
 func (d *beamDecoder) Start(attrs []encoding.Attr) (err error) {
 	var (
-		beam Beam
+		beam             Beam
 		hasCap1, hasCap2 bool
 	)
 	beamLattice := GetBeamLattice(d.mesh)

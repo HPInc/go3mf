@@ -214,7 +214,7 @@ func (d *buildItemDecoder) parseCoreAttr(a encoding.Attr) (err error) {
 		d.item.PartNumber = string(a.Value)
 	case attrTransform:
 		var ok bool
-		d.item.Transform, ok = ParseMatrix(string(a.Value))
+		d.item.Transform, ok = encoding.ParseMatrix(string(a.Value))
 		if !ok {
 			err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, false))
 		}
@@ -594,7 +594,7 @@ func (d *componentDecoder) Start(attrs []encoding.Attr) (err error) {
 				component.ObjectID = uint32(val)
 			} else if a.Name.Local == attrTransform {
 				var ok bool
-				component.Transform, ok = ParseMatrix(string(a.Value))
+				component.Transform, ok = encoding.ParseMatrix(string(a.Value))
 				if !ok {
 					err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, false))
 				}
