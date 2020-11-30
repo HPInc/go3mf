@@ -2,10 +2,6 @@ package spec
 
 import "github.com/qmuntal/go3mf"
 
-type ObjectPather interface {
-	ObjectPath() string
-}
-
 type PropertyGroup interface {
 	Len() int
 }

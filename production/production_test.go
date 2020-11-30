@@ -16,9 +16,7 @@ var _ spec.ModelValidator = new(Spec)
 var _ spec.ObjectValidator = new(Spec)
 var _ encoding.MarshalerAttr = new(BuildAttr)
 var _ encoding.MarshalerAttr = new(ItemAttr)
-var _ spec.ObjectPather = new(ItemAttr)
 var _ encoding.MarshalerAttr = new(ComponentAttr)
-var _ spec.ObjectPather = new(ComponentAttr)
 var _ encoding.MarshalerAttr = new(ObjectAttr)
 
 func TestComponentAttr_ObjectPath(t *testing.T) {
