@@ -1,6 +1,6 @@
 package go3mf
 
-import "github.com/qmuntal/go3mf/spec/xml"
+import "github.com/qmuntal/go3mf/spec/encoding"
 
 type Spec interface {
 	Namespace() string
@@ -33,7 +33,7 @@ type specDecoder interface {
 	Namespace() string
 	Local() string
 	Required() bool
-	DecodeAttribute(interface{}, xml.Attr) error
+	DecodeAttribute(interface{}, encoding.Attr) error
 }
 
 type propertyGroup interface {

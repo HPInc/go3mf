@@ -7,13 +7,13 @@ import (
 	"strings"
 
 	specerr "github.com/qmuntal/go3mf/errors"
-	"github.com/qmuntal/go3mf/spec/xml"
+	"github.com/qmuntal/go3mf/spec/encoding"
 )
 
 type baseDecoder struct {
 }
 
-func (d *baseDecoder) Start([]xml.Attr) error { return nil }
+func (d *baseDecoder) Start([]encoding.Attr) error { return nil }
 func (d *baseDecoder) End()                   {}
 
 // A decoderContext is a 3mf model file scanning state machine.
@@ -22,7 +22,7 @@ type decoderContext struct {
 	extensionDecoder map[string]specDecoder
 	modelPath        string
 	isRoot           bool
-	contex           []xml.Name
+	contex           []encoding.Name
 	resourceID       uint32
 }
 

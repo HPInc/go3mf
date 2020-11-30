@@ -15,7 +15,7 @@ import (
 
 	"github.com/go-test/deep"
 	specerr "github.com/qmuntal/go3mf/errors"
-	"github.com/qmuntal/go3mf/spec/xml"
+	"github.com/qmuntal/go3mf/spec/encoding"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -25,10 +25,10 @@ var _ modelValidator = new(fakeSpec)
 var _ assetValidator = new(fakeSpec)
 var _ objectValidator = new(fakeSpec)
 var _ specDecoder = new(fakeSpec)
-var _ xml.PostProcessorDecoder = new(fakeSpec)
-var _ xml.ElementDecoder = new(fakeSpec)
-var _ xml.TextNodeDecoder = new(metadataDecoder)
-var _ xml.ChildNodeDecoder = new(baseMaterialsDecoder)
+var _ encoding.PostProcessorDecoder = new(fakeSpec)
+var _ encoding.ElementDecoder = new(fakeSpec)
+var _ encoding.TextNodeDecoder = new(metadataDecoder)
+var _ encoding.ChildNodeDecoder = new(baseMaterialsDecoder)
 
 type fakeSpec struct {
 	m *Model
@@ -43,14 +43,14 @@ func (f *fakeSpec) SetModel(m *Model)  { f.m = m }
 
 func (e *fakeSpec) PostProcessDecode() {}
 
-func (f *fakeSpec) NewElementDecoder(e interface{}, nodeName string) xml.NodeDecoder {
+func (f *fakeSpec) NewElementDecoder(e interface{}, nodeName string) encoding.NodeDecoder {
 	if e, ok := e.(*Resources); ok {
 		return &fakeAssetDecoder{resources: e}
 	}
 	return nil
 }
 
-func (f *fakeSpec) DecodeAttribute(parentNode interface{}, attr xml.Attr) error {
+func (f *fakeSpec) DecodeAttribute(parentNode interface{}, attr encoding.Attr) error {
 	switch t := parentNode.(type) {
 	case *Object:
 		t.AnyAttr = append(t.AnyAttr, &fakeAttr{string(attr.Value)})
@@ -102,7 +102,7 @@ type fakeAssetDecoder struct {
 	resources *Resources
 }
 
-func (f *fakeAssetDecoder) Start(att []xml.Attr) error {
+func (f *fakeAssetDecoder) Start(att []encoding.Attr) error {
 	id, _ := strconv.ParseUint(string(att[0].Value), 10, 32)
 	f.resources.Assets = append(f.resources.Assets, &fakeAsset{ID: uint32(id)})
 	return nil
@@ -361,7 +361,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 
 	components := &Object{
 		ID: 20, Type: ObjectTypeSupport,
-		Metadata:   []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}, {Name: xml.Name{Space: "qm", Local: "CustomMetadata4"}, Type: "xs:boolean", Value: "2"}},
+		Metadata:   []Metadata{{Name: encoding.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}, {Name: encoding.Name{Space: "qm", Local: "CustomMetadata4"}, Type: "xs:boolean", Value: "2"}},
 		Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
 	}
 
@@ -374,11 +374,11 @@ func TestDecoder_processRootModel(t *testing.T) {
 	}
 	want.Build.Items = append(want.Build.Items, &Item{
 		ObjectID: 20, PartNumber: "bob", Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
-		Metadata: []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}},
+		Metadata: []Metadata{{Name: encoding.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}},
 	})
 	want.Metadata = append(want.Metadata, []Metadata{
-		{Name: xml.Name{Local: "Application"}, Value: "go3mf app"},
-		{Name: xml.Name{Space: "qm", Local: "CustomMetadata1"}, Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},
+		{Name: encoding.Name{Local: "Application"}, Value: "go3mf app"},
+		{Name: encoding.Name{Space: "qm", Local: "CustomMetadata1"}, Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},
 	}...)
 	got := new(Model)
 	got.Path = "/3D/3dmodel.model"

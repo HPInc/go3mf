@@ -12,7 +12,7 @@ import (
 	"unsafe"
 
 	xml3mf "github.com/qmuntal/go3mf/internal/xml"
-	"github.com/qmuntal/go3mf/spec/xml"
+	"github.com/qmuntal/go3mf/spec/encoding"
 )
 
 var checkEveryTokens = 1000
@@ -63,8 +63,8 @@ type topLevelDecoder struct {
 	isRoot bool
 }
 
-func (d *topLevelDecoder) Child(name xml.Name) (child xml.NodeDecoder) {
-	modelName := xml.Name{Space: Namespace, Local: attrModel}
+func (d *topLevelDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
+	modelName := encoding.Name{Space: Namespace, Local: attrModel}
 	if name == modelName {
 		child = &modelDecoder{model: d.model, isRoot: d.isRoot, ctx: d.ctx}
 	}
@@ -83,16 +83,16 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 			scanner.extensionDecoder[ext.Namespace()] = ext
 		}
 	}
-	state, names := make([]xml.NodeDecoder, 0, 10), make([]xml.Name, 0, 10)
+	state, names := make([]encoding.NodeDecoder, 0, 10), make([]encoding.Name, 0, 10)
 
 	var (
-		currentDecoder, tmpDecoder xml.NodeDecoder
-		currentName                xml.Name
+		currentDecoder, tmpDecoder encoding.NodeDecoder
+		currentName                encoding.Name
 	)
 	currentDecoder = &topLevelDecoder{isRoot: isRoot, model: model, ctx: &scanner}
 	var err error
 	x.OnStart = func(tp xml3mf.StartElement) {
-		if childDecoder, ok := currentDecoder.(xml.ChildNodeDecoder); ok {
+		if childDecoder, ok := currentDecoder.(encoding.ChildNodeDecoder); ok {
 			tmpDecoder = childDecoder.Child(tp.Name)
 			if tmpDecoder != nil {
 				state = append(state, currentDecoder)
@@ -100,21 +100,21 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 				scanner.contex = append(names, tp.Name)
 				currentName = tp.Name
 				currentDecoder = tmpDecoder
-				if err := currentDecoder.Start(*(*[]xml.Attr)(unsafe.Pointer(&tp.Attr))); err != nil {
+				if err := currentDecoder.Start(*(*[]encoding.Attr)(unsafe.Pointer(&tp.Attr))); err != nil {
 					scanner.addErrContext(err)
 				}
 			}
 		}
 	}
-	x.OnEnd = func(tp xml.EndElement) {
+	x.OnEnd = func(tp encoding.EndElement) {
 		if currentName == tp.Name {
 			currentDecoder.End()
 			currentDecoder, state = state[len(state)-1], state[:len(state)-1]
 			currentName, names = names[len(names)-1], names[:len(names)-1]
 		}
 	}
-	x.OnChar = func(tp xml.CharData) {
-		if currentDecoder, ok := currentDecoder.(xml.TextNodeDecoder); ok {
+	x.OnChar = func(tp encoding.CharData) {
+		if currentDecoder, ok := currentDecoder.(encoding.TextNodeDecoder); ok {
 			currentDecoder.Text(tp)
 		}
 	}
@@ -148,7 +148,7 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 	}
 	if err == nil && isRoot {
 		for _, ext := range scanner.extensionDecoder {
-			if ext, ok := ext.(xml.PostProcessorDecoder); ok {
+			if ext, ok := ext.(encoding.PostProcessorDecoder); ok {
 				ext.PostProcessDecode()
 			}
 		}
