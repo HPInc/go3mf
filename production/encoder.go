@@ -8,21 +8,21 @@ import (
 	"github.com/qmuntal/go3mf/uuid"
 )
 
-func (s *Spec) PreProcessEncode(m *go3mf.Model) {
+func (s *Spec) PreProcessEncode() {
 	if s.DisableAutoUUID {
 		return
 	}
 	var buildAttr *BuildAttr
-	if !m.Build.AnyAttr.Get(&buildAttr) {
-		m.Build.AnyAttr = append(m.Build.AnyAttr, &BuildAttr{UUID: uuid.New()})
+	if !s.m.Build.AnyAttr.Get(&buildAttr) {
+		s.m.Build.AnyAttr = append(s.m.Build.AnyAttr, &BuildAttr{UUID: uuid.New()})
 	}
-	for _, item := range m.Build.Items {
+	for _, item := range s.m.Build.Items {
 		var itemAttr *ItemAttr
 		if !item.AnyAttr.Get(&itemAttr) {
 			item.AnyAttr = append(item.AnyAttr, &ItemAttr{UUID: uuid.New()})
 		}
 	}
-	m.WalkObjects(func(s string, o *go3mf.Object) error {
+	s.m.WalkObjects(func(s string, o *go3mf.Object) error {
 		var objAttr *ObjectAttr
 		if !o.AnyAttr.Get(&objAttr) {
 			o.AnyAttr = append(o.AnyAttr, &ObjectAttr{UUID: uuid.New()})

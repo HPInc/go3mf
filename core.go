@@ -218,6 +218,7 @@ func (m *Model) WithSpec(extension Spec) {
 	if m.Specs == nil {
 		m.Specs = make(map[string]Spec)
 	}
+	extension.SetModel(m)
 	m.Specs[extension.Namespace()] = extension
 }
 

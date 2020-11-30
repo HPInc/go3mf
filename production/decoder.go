@@ -7,15 +7,15 @@ import (
 	"github.com/qmuntal/go3mf/uuid"
 )
 
-func (e Spec) PostProcessDecode(m *go3mf.Model) {
+func (e Spec) PostProcessDecode() {
 	var (
 		buildAttr *BuildAttr
 		pu        *ItemAttr
 	)
-	if !m.Build.AnyAttr.Get(&buildAttr) {
-		m.Build.AnyAttr = append(m.Build.AnyAttr, &BuildAttr{UUID: uuid.New()})
+	if !e.m.Build.AnyAttr.Get(&buildAttr) {
+		e.m.Build.AnyAttr = append(e.m.Build.AnyAttr, &BuildAttr{UUID: uuid.New()})
 	}
-	for _, item := range m.Build.Items {
+	for _, item := range e.m.Build.Items {
 		if !item.AnyAttr.Get(&pu) {
 			item.AnyAttr = append(item.AnyAttr, &ItemAttr{
 				UUID: uuid.New(),
@@ -24,8 +24,8 @@ func (e Spec) PostProcessDecode(m *go3mf.Model) {
 			pu.UUID = uuid.New()
 		}
 	}
-	e.fillResourceUUID(&m.Resources)
-	for _, c := range m.Childs {
+	e.fillResourceUUID(&e.m.Resources)
+	for _, c := range e.m.Childs {
 		e.fillResourceUUID(&c.Resources)
 	}
 	return

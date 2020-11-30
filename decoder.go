@@ -34,8 +34,8 @@ func (d *modelDecoder) Child(name xml.Name) (child xml.NodeDecoder) {
 			}
 		}
 	} else if ext, ok := d.ctx.extensionDecoder[name.Space]; ok {
-		if ext, ok := ext.(modelElementDecoder); ok {
-			child = ext.NewModelElementDecoder(d.model, name.Local)
+		if ext, ok := ext.(xml.ElementDecoder); ok {
+			child = ext.NewElementDecoder(d.model, name.Local)
 		}
 	}
 	return
@@ -237,8 +237,8 @@ func (d *resourceDecoder) Child(name xml.Name) (child xml.NodeDecoder) {
 			child = &baseMaterialsDecoder{resources: d.resources}
 		}
 	} else if ext, ok := d.ctx.extensionDecoder[name.Space]; ok {
-		if ext, ok := ext.(resourcesElementDecoder); ok {
-			child = ext.NewResourcesElementDecoder(d.resources, name.Local)
+		if ext, ok := ext.(xml.ElementDecoder); ok {
+			child = ext.NewElementDecoder(d.resources, name.Local)
 		}
 	}
 	if child != nil {
@@ -351,8 +351,8 @@ func (d *meshDecoder) Child(name xml.Name) (child xml.NodeDecoder) {
 			child = &trianglesDecoder{resource: d.resource}
 		}
 	} else if ext, ok := d.ctx.extensionDecoder[name.Space]; ok {
-		if ext, ok := ext.(meshElementDecoder); ok {
-			child = ext.NewMeshElementDecoder(d.resource.Mesh, name.Local)
+		if ext, ok := ext.(xml.ElementDecoder); ok {
+			child = ext.NewElementDecoder(d.resource.Mesh, name.Local)
 		}
 	}
 	return

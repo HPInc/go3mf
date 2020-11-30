@@ -9,8 +9,8 @@ import (
 
 func TestSpec_PreProcessEncode_AutoUUIDDisabled(t *testing.T) {
 	m := &go3mf.Model{Path: "/3D/3dmodel.model", Build: go3mf.Build{}}
-	s := &Spec{LocalName: "p", DisableAutoUUID: true}
-	s.PreProcessEncode(m)
+	s := &Spec{LocalName: "p", DisableAutoUUID: true, m: m}
+	s.PreProcessEncode()
 	if len(m.Build.AnyAttr) != 0 {
 		t.Errorf("Spec.PreProcessEncode() shouldn't have filled build attrs")
 	}
@@ -24,8 +24,8 @@ func TestSpec_PreProcessEncode(t *testing.T) {
 	m := &go3mf.Model{Path: "/3D/3dmodel.model", Build: go3mf.Build{}}
 	m.Resources = go3mf.Resources{Objects: []*go3mf.Object{components}}
 	m.Build.Items = append(m.Build.Items, &go3mf.Item{ObjectID: 20}, &go3mf.Item{ObjectID: 8})
-	s := &Spec{LocalName: "p"}
-	s.PreProcessEncode(m)
+	s := &Spec{LocalName: "p", m: m}
+	s.PreProcessEncode()
 	if len(m.Build.AnyAttr) == 0 {
 		t.Errorf("Spec.PreProcessEncode() should have filled build attrs")
 	}

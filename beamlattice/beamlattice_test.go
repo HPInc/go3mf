@@ -9,7 +9,7 @@ import (
 )
 
 var _ xml.Decoder = new(Spec)
-var _ spec.MeshElementDecoder = new(Spec)
+var _ xml.ElementDecoder = new(Spec)
 var _ spec.ObjectValidator = new(Spec)
 var _ xml.Marshaler = new(BeamLattice)
 

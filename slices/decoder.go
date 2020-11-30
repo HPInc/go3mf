@@ -8,9 +8,9 @@ import (
 	"github.com/qmuntal/go3mf/spec/xml"
 )
 
-func (e Spec) NewResourcesElementDecoder(resources *go3mf.Resources, nodeName string) xml.NodeDecoder {
+func (e Spec) NewElementDecoder(el interface{}, nodeName string) xml.NodeDecoder {
 	if nodeName == attrSliceStack {
-		return &sliceStackDecoder{resources: resources}
+		return &sliceStackDecoder{resources: el.(*go3mf.Resources)}
 	}
 	return nil
 }

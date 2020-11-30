@@ -10,7 +10,7 @@ import (
 )
 
 var _ xml.Decoder = new(Spec)
-var _ spec.ResourcesElementDecoder = new(Spec)
+var _ xml.ElementDecoder = new(Spec)
 var _ spec.ObjectValidator = new(Spec)
 var _ spec.AssetValidator = new(Spec)
 var _ go3mf.Asset = new(SliceStack)

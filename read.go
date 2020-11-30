@@ -148,8 +148,8 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 	}
 	if err == nil && isRoot {
 		for _, ext := range scanner.extensionDecoder {
-			if ext, ok := ext.(postProcessorSpecDecoder); ok {
-				ext.PostProcessDecode(model)
+			if ext, ok := ext.(xml.PostProcessorDecoder); ok {
+				ext.PostProcessDecode()
 			}
 		}
 	}

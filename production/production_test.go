@@ -9,8 +9,8 @@ import (
 )
 
 var _ xml.Decoder = new(Spec)
-var _ spec.PostProcessorDecoder = new(Spec)
-var _ spec.PreProcessEncoder = new(Spec)
+var _ xml.PostProcessorDecoder = new(Spec)
+var _ xml.PreProcessEncoder = new(Spec)
 var _ go3mf.Spec = new(Spec)
 var _ spec.ModelValidator = new(Spec)
 var _ spec.ObjectValidator = new(Spec)

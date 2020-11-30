@@ -8,12 +8,14 @@ type Spec interface {
 	Required() bool
 	SetRequired(bool)
 	SetLocal(string)
+	SetModel(*Model)
 }
 
 type UnknownSpec struct {
 	SpaceName  string
 	LocalName  string
 	IsRequired bool
+	m          *Model
 }
 
 func (u *UnknownSpec) Namespace() string  { return u.SpaceName }
@@ -21,17 +23,10 @@ func (u *UnknownSpec) Local() string      { return u.LocalName }
 func (u *UnknownSpec) Required() bool     { return u.IsRequired }
 func (u *UnknownSpec) SetLocal(l string)  { u.LocalName = l }
 func (u *UnknownSpec) SetRequired(r bool) { u.IsRequired = r }
+func (u *UnknownSpec) SetModel(m *Model)  { u.m = m }
 
 type objectPather interface {
 	ObjectPath() string
-}
-
-type preProcessEncoder interface {
-	PreProcessEncode(m *Model)
-}
-
-type postProcessorSpecDecoder interface {
-	PostProcessDecode(m *Model)
 }
 
 type specDecoder interface {
@@ -41,30 +36,18 @@ type specDecoder interface {
 	DecodeAttribute(interface{}, xml.Attr) error
 }
 
-type meshElementDecoder interface {
-	NewMeshElementDecoder(*Mesh, string) xml.NodeDecoder
-}
-
-type resourcesElementDecoder interface {
-	NewResourcesElementDecoder(*Resources, string) xml.NodeDecoder
-}
-
-type modelElementDecoder interface {
-	NewModelElementDecoder(*Model, string) xml.NodeDecoder
-}
-
 type propertyGroup interface {
 	Len() int
 }
 
 type modelValidator interface {
-	ValidateModel(*Model) error
+	ValidateModel() error
 }
 
 type assetValidator interface {
-	ValidateAsset(*Model, string, Asset) error
+	ValidateAsset(string, Asset) error
 }
 
 type objectValidator interface {
-	ValidateObject(*Model, string, *Object) error
+	ValidateObject(string, *Object) error
 }

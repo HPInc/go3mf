@@ -25,12 +25,13 @@ var _ modelValidator = new(fakeSpec)
 var _ assetValidator = new(fakeSpec)
 var _ objectValidator = new(fakeSpec)
 var _ specDecoder = new(fakeSpec)
-var _ postProcessorSpecDecoder = new(fakeSpec)
-var _ resourcesElementDecoder = new(fakeSpec)
+var _ xml.PostProcessorDecoder = new(fakeSpec)
+var _ xml.ElementDecoder = new(fakeSpec)
 var _ xml.TextNodeDecoder = new(metadataDecoder)
 var _ xml.ChildNodeDecoder = new(baseMaterialsDecoder)
 
 type fakeSpec struct {
+	m *Model
 }
 
 func (f *fakeSpec) Namespace() string  { return fakeExtension }
@@ -38,11 +39,15 @@ func (f *fakeSpec) Required() bool     { return true }
 func (f *fakeSpec) Local() string      { return "qm" }
 func (f *fakeSpec) SetLocal(_ string)  {}
 func (f *fakeSpec) SetRequired(_ bool) {}
+func (f *fakeSpec) SetModel(m *Model)  { f.m = m }
 
-func (e *fakeSpec) PostProcessDecode(_ *Model) {}
+func (e *fakeSpec) PostProcessDecode() {}
 
-func (f *fakeSpec) NewResourcesElementDecoder(resources *Resources, nodeName string) xml.NodeDecoder {
-	return &fakeAssetDecoder{resources: resources}
+func (f *fakeSpec) NewElementDecoder(e interface{}, nodeName string) xml.NodeDecoder {
+	if e, ok := e.(*Resources); ok {
+		return &fakeAssetDecoder{resources: e}
+	}
+	return nil
 }
 
 func (f *fakeSpec) DecodeAttribute(parentNode interface{}, attr xml.Attr) error {
@@ -61,18 +66,18 @@ func (f *fakeSpec) DecodeAttribute(parentNode interface{}, attr xml.Attr) error 
 	return nil
 }
 
-func (f *fakeSpec) ValidateObject(_ *Model, _ string, _ *Object) error {
+func (f *fakeSpec) ValidateObject(_ string, _ *Object) error {
 	return nil
 }
 
-func (f *fakeSpec) ValidateAsset(_ *Model, _ string, _ Asset) error {
+func (f *fakeSpec) ValidateAsset(_ string, _ Asset) error {
 	return nil
 }
 
-func (f *fakeSpec) ValidateModel(m *Model) error {
+func (f *fakeSpec) ValidateModel() error {
 	var errs []error
 	var a *fakeAttr
-	if m.Build.AnyAttr.Get(&a) {
+	if f.m.Build.AnyAttr.Get(&a) {
 		errs = append(errs, errors.New("Build: fake"))
 	}
 	return specerr.Append(nil, errs...)

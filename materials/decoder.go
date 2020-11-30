@@ -9,18 +9,18 @@ import (
 	"github.com/qmuntal/go3mf/spec/xml"
 )
 
-func (e Spec) NewResourcesElementDecoder(resources *go3mf.Resources, nodeName string) (child xml.NodeDecoder) {
+func (e Spec) NewElementDecoder(el interface{}, nodeName string) (child xml.NodeDecoder) {
 	switch nodeName {
 	case attrColorGroup:
-		child = &colorGroupDecoder{resources: resources}
+		child = &colorGroupDecoder{resources: el.(*go3mf.Resources)}
 	case attrTexture2DGroup:
-		child = &tex2DGroupDecoder{resources: resources}
+		child = &tex2DGroupDecoder{resources: el.(*go3mf.Resources)}
 	case attrTexture2D:
-		child = &texture2DDecoder{resources: resources}
+		child = &texture2DDecoder{resources: el.(*go3mf.Resources)}
 	case attrCompositematerials:
-		child = &compositeMaterialsDecoder{resources: resources}
+		child = &compositeMaterialsDecoder{resources: el.(*go3mf.Resources)}
 	case attrMultiProps:
-		child = &multiPropertiesDecoder{resources: resources}
+		child = &multiPropertiesDecoder{resources: el.(*go3mf.Resources)}
 	}
 	return
 }

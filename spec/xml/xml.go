@@ -44,6 +44,10 @@ type Decoder interface {
 	DecodeAttribute(interface{}, Attr) error
 }
 
+type ElementDecoder interface {
+	NewElementDecoder(interface{}, string) NodeDecoder
+}
+
 type ChildNodeDecoder interface {
 	Child(xml.Name) NodeDecoder
 }
@@ -58,4 +62,12 @@ type Encoder interface {
 	EncodeToken(t xml.Token)
 	Flush() error
 	SetAutoClose(autoClose bool)
+}
+
+type PreProcessEncoder interface {
+	PreProcessEncode()
+}
+
+type PostProcessorDecoder interface {
+	PostProcessDecode()
 }
