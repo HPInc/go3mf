@@ -406,7 +406,7 @@ func Test_newPairEntry(t *testing.T) {
 	}
 }
 
-func TestBox_ExtendPoint(t *testing.T) {
+func TestBox_extendPoint(t *testing.T) {
 	type args struct {
 		v Point3D
 	}
@@ -422,7 +422,7 @@ func TestBox_ExtendPoint(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.b.ExtendPoint(tt.args.v)
+			got := tt.b.extendPoint(tt.args.v)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Box.ExtendPoint() = %v, want %v", got, tt.want)
 			}
@@ -430,7 +430,7 @@ func TestBox_ExtendPoint(t *testing.T) {
 	}
 }
 
-func TestBox_Extend(t *testing.T) {
+func TestBox_extend(t *testing.T) {
 	type args struct {
 		v Box
 	}
@@ -465,7 +465,7 @@ func TestBox_Extend(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.b.Extend(tt.args.v)
+			got := tt.b.extend(tt.args.v)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Box.Extend() = %v, want %v", got, tt.want)
 			}

@@ -248,7 +248,7 @@ func (m *Model) BoundingBox() Box {
 				ibox := o.boundingBox(m, "")
 				if ibox != emptyBox {
 					mu.Lock()
-					box = box.Extend(item.Transform.MulBox(ibox))
+					box = box.extend(item.Transform.MulBox(ibox))
 					mu.Unlock()
 				}
 			}
@@ -411,7 +411,7 @@ func (o *Object) boundingBox(m *Model, path string) Box {
 		if obj, ok := m.FindObject(c.ObjectPath(path), c.ObjectID); ok {
 			cbox := obj.boundingBox(m, path)
 			if cbox != emptyBox {
-				box = box.Extend(c.Transform.MulBox(cbox))
+				box = box.extend(c.Transform.MulBox(cbox))
 			}
 		}
 	}
@@ -508,7 +508,7 @@ func (m *Mesh) BoundingBox() Box {
 	}
 	box := newLimitBox()
 	for _, v := range m.Vertices {
-		box = box.ExtendPoint(v)
+		box = box.extendPoint(v)
 	}
 	return box
 }

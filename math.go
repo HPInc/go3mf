@@ -258,8 +258,7 @@ func newLimitBox() Box {
 	}
 }
 
-// Extends adds v to the box.
-func (b Box) Extend(v Box) Box {
+func (b Box) extend(v Box) Box {
 	return Box{
 		Min: Point3D{
 			min(b.Min.X(), v.Min.X()),
@@ -274,8 +273,7 @@ func (b Box) Extend(v Box) Box {
 	}
 }
 
-// ExtendPoint adds v to the box.
-func (b Box) ExtendPoint(v Point3D) Box {
+func (b Box) extendPoint(v Point3D) Box {
 	return Box{
 		Min: Point3D{
 			min(b.Min.X(), v.X()),
