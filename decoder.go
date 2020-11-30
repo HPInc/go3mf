@@ -606,3 +606,24 @@ func (d *componentDecoder) Start(attrs []encoding.Attr) (err error) {
 	d.resource.Components = append(d.resource.Components, &component)
 	return
 }
+
+type baseDecoder struct {
+}
+
+func (d *baseDecoder) Start([]encoding.Attr) error { return nil }
+func (d *baseDecoder) End()                        {}
+
+type topLevelDecoder struct {
+	baseDecoder
+	ctx    *decoderContext
+	model  *Model
+	isRoot bool
+}
+
+func (d *topLevelDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
+	modelName := encoding.Name{Space: Namespace, Local: attrModel}
+	if name == modelName {
+		child = &modelDecoder{model: d.model, isRoot: d.isRoot, ctx: d.ctx}
+	}
+	return
+}

@@ -11,6 +11,7 @@ import (
 	"sync"
 	"unsafe"
 
+	specerr "github.com/qmuntal/go3mf/errors"
 	xml3mf "github.com/qmuntal/go3mf/internal/xml"
 	"github.com/qmuntal/go3mf/spec/encoding"
 )
@@ -54,21 +55,6 @@ func OpenReader(name string) (*ReadCloser, error) {
 // Close closes the 3MF file, rendering it unusable for I/O.
 func (r *ReadCloser) Close() error {
 	return r.f.Close()
-}
-
-type topLevelDecoder struct {
-	baseDecoder
-	ctx    *decoderContext
-	model  *Model
-	isRoot bool
-}
-
-func (d *topLevelDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
-	modelName := encoding.Name{Space: Namespace, Local: attrModel}
-	if name == modelName {
-		child = &modelDecoder{model: d.model, isRoot: d.isRoot, ctx: d.ctx}
-	}
-	return
 }
 
 func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string, isRoot, strict bool) error {
@@ -340,4 +326,46 @@ func (f *fakePackageFile) FindFileFromName(string) (packageFile, bool) { return 
 func (f *fakePackageFile) Relationships() []Relationship               { return nil }
 func (f *fakePackageFile) Open() (io.ReadCloser, error) {
 	return ioutil.NopCloser(bytes.NewBuffer(f.data)), nil
+}
+
+// A decoderContext is a 3mf model file scanning state machine.
+type decoderContext struct {
+	Err              specerr.List
+	extensionDecoder map[string]encoding.Decoder
+	modelPath        string
+	isRoot           bool
+	contex           []encoding.Name
+	resourceID       uint32
+}
+
+func (s *decoderContext) namespace(local string) (string, bool) {
+	for _, ext := range s.extensionDecoder {
+		if ext.Local() == local {
+			return ext.Namespace(), true
+		}
+	}
+	return "", false
+}
+
+func (s *decoderContext) addErrContext(err error) {
+	ct := make([]string, len(s.contex))
+	ct[0] = s.modelPath
+	for i, s := range s.contex[1:] {
+		ct[i+1] = s.Local
+	}
+	if s.isRoot {
+		ct = ct[1:] // don't add path in case happend in root file
+	}
+	ctx := strings.Join(ct, "@")
+	if err, ok := err.(*specerr.List); ok {
+		for _, err := range err.Errors {
+			specerr.Append(&s.Err, &specerr.ResourceError{
+				Context: ctx, ResourceID: s.resourceID, Err: err,
+			})
+		}
+	} else {
+		specerr.Append(&s.Err, &specerr.ResourceError{
+			Context: ctx, ResourceID: s.resourceID, Err: err,
+		})
+	}
 }
