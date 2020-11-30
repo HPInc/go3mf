@@ -11,36 +11,32 @@ type uuidPath interface {
 	ObjectPath() string
 }
 
-func (e *Spec) ValidateAsset(_ *go3mf.Model, _ string, _ go3mf.Asset) error {
-	return nil
-}
-
-func (e *Spec) ValidateModel(m *go3mf.Model) error {
+func (e *Spec) ValidateModel() error {
 	var (
 		u    *BuildAttr
 		errs error
 	)
-	if !m.Build.AnyAttr.Get(&u) {
-		errs = errors.Append(errs, errors.Wrap(errors.NewMissingFieldError(attrProdUUID), m.Build))
+	if !e.m.Build.AnyAttr.Get(&u) {
+		errs = errors.Append(errs, errors.Wrap(errors.NewMissingFieldError(attrProdUUID), e.m.Build))
 	} else if uuid.Validate(u.UUID) != nil {
-		errs = errors.Append(errs, errors.Wrap(errors.ErrUUID, m.Build))
+		errs = errors.Append(errs, errors.Wrap(errors.ErrUUID, e.m.Build))
 	}
-	for i, item := range m.Build.Items {
+	for i, item := range e.m.Build.Items {
 		var iErrs error
 		var p *ItemAttr
 		if !item.AnyAttr.Get(&p) {
 			iErrs = errors.Append(iErrs, errors.NewMissingFieldError(attrProdUUID))
 		} else {
-			iErrs = errors.Append(iErrs, e.validatePathUUID(m, "", p))
+			iErrs = errors.Append(iErrs, e.validatePathUUID("", p))
 		}
 		if iErrs != nil {
-			errs = errors.Append(errs, errors.Wrap(errors.WrapIndex(iErrs, item, i), m.Build))
+			errs = errors.Append(errs, errors.Wrap(errors.WrapIndex(iErrs, item, i), e.m.Build))
 		}
 	}
 	return errs
 }
 
-func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) error {
+func (e *Spec) ValidateObject(path string, obj *go3mf.Object) error {
 	var (
 		u    *ObjectAttr
 		errs error
@@ -56,7 +52,7 @@ func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) er
 		if !c.AnyAttr.Get(&p) {
 			cErrs = errors.Append(cErrs, errors.NewMissingFieldError(attrProdUUID))
 		} else {
-			cErrs = errors.Append(cErrs, e.validatePathUUID(m, path, p))
+			cErrs = errors.Append(cErrs, e.validatePathUUID(path, p))
 		}
 		if cErrs != nil {
 			errs = errors.Append(errs, errors.WrapIndex(cErrs, c, i))
@@ -65,7 +61,7 @@ func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) er
 	return errs
 }
 
-func (e *Spec) validatePathUUID(m *go3mf.Model, path string, p uuidPath) error {
+func (e *Spec) validatePathUUID(path string, p uuidPath) error {
 	var errs error
 	if p.getUUID() == "" {
 		errs = errors.Append(errs, errors.NewMissingFieldError(attrProdUUID))
@@ -73,7 +69,7 @@ func (e *Spec) validatePathUUID(m *go3mf.Model, path string, p uuidPath) error {
 		errs = errors.Append(errs, errors.ErrUUID)
 	}
 	if p.ObjectPath() != "" {
-		if path == "" || path == m.PathOrDefault() { // root
+		if path == "" || path == e.m.PathOrDefault() { // root
 			// Path is validated as part if the core validations
 		} else {
 			errs = errors.Append(errs, errors.ErrProdRefInNonRoot)

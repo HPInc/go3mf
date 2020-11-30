@@ -4,17 +4,22 @@ import (
 	"testing"
 
 	"github.com/qmuntal/go3mf"
+	"github.com/qmuntal/go3mf/spec"
+	"github.com/qmuntal/go3mf/spec/encoding"
 )
 
-var _ go3mf.SpecDecoder = new(Spec)
-var _ go3mf.SpecEncoder = new(Spec)
-var _ go3mf.SpecValidator = new(Spec)
-var _ go3mf.MarshalerAttr = new(BuildAttr)
-var _ go3mf.MarshalerAttr = new(ItemAttr)
-var _ go3mf.ObjectPather = new(ItemAttr)
-var _ go3mf.MarshalerAttr = new(ComponentAttr)
-var _ go3mf.ObjectPather = new(ComponentAttr)
-var _ go3mf.MarshalerAttr = new(ObjectAttr)
+var _ encoding.Decoder = new(Spec)
+var _ encoding.PostProcessorDecoder = new(Spec)
+var _ encoding.PreProcessEncoder = new(Spec)
+var _ go3mf.Spec = new(Spec)
+var _ spec.ModelValidator = new(Spec)
+var _ spec.ObjectValidator = new(Spec)
+var _ encoding.MarshalerAttr = new(BuildAttr)
+var _ encoding.MarshalerAttr = new(ItemAttr)
+var _ spec.ObjectPather = new(ItemAttr)
+var _ encoding.MarshalerAttr = new(ComponentAttr)
+var _ spec.ObjectPather = new(ComponentAttr)
+var _ encoding.MarshalerAttr = new(ObjectAttr)
 
 func TestComponentAttr_ObjectPath(t *testing.T) {
 	tests := []struct {

@@ -252,7 +252,7 @@ func TestMatrix_String(t *testing.T) {
 	}
 }
 
-func TestParseToMatrixOptional(t *testing.T) {
+func TestParseMatrix(t *testing.T) {
 	type args struct {
 		s string
 	}
@@ -272,7 +272,7 @@ func TestParseToMatrixOptional(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, _ := ParseMatrix(tt.args.s)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Scanner.ParseMatrix() = %v, want %v", got, tt.want)
+				t.Errorf("ParseMatrix() = %v, want %v", got, tt.want)
 			}
 		})
 	}

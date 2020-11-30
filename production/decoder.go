@@ -2,22 +2,20 @@ package production
 
 import (
 	"github.com/qmuntal/go3mf"
+	specerr "github.com/qmuntal/go3mf/errors"
+	"github.com/qmuntal/go3mf/spec/encoding"
 	"github.com/qmuntal/go3mf/uuid"
 )
 
-func (e Spec) NewNodeDecoder(_ interface{}, _ string) go3mf.NodeDecoder {
-	return nil
-}
-
-func (e Spec) OnDecoded(m *go3mf.Model) {
+func (e Spec) PostProcessDecode() {
 	var (
 		buildAttr *BuildAttr
 		pu        *ItemAttr
 	)
-	if !m.Build.AnyAttr.Get(&buildAttr) {
-		m.Build.AnyAttr = append(m.Build.AnyAttr, &BuildAttr{UUID: uuid.New()})
+	if !e.m.Build.AnyAttr.Get(&buildAttr) {
+		e.m.Build.AnyAttr = append(e.m.Build.AnyAttr, &BuildAttr{UUID: uuid.New()})
 	}
-	for _, item := range m.Build.Items {
+	for _, item := range e.m.Build.Items {
 		if !item.AnyAttr.Get(&pu) {
 			item.AnyAttr = append(item.AnyAttr, &ItemAttr{
 				UUID: uuid.New(),
@@ -26,8 +24,8 @@ func (e Spec) OnDecoded(m *go3mf.Model) {
 			pu.UUID = uuid.New()
 		}
 	}
-	e.fillResourceUUID(&m.Resources)
-	for _, c := range m.Childs {
+	e.fillResourceUUID(&e.m.Resources)
+	for _, c := range e.m.Childs {
 		e.fillResourceUUID(&c.Resources)
 	}
 	return
@@ -54,20 +52,20 @@ func (e Spec) fillResourceUUID(res *go3mf.Resources) {
 	}
 }
 
-func (e Spec) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr go3mf.XMLAttr) {
+func (e Spec) DecodeAttribute(parentNode interface{}, attr encoding.Attr) (err error) {
 	switch t := parentNode.(type) {
 	case *go3mf.Build:
 		if attr.Name.Local == attrProdUUID {
-			if err := uuid.Validate(string(attr.Value)); err != nil {
-				s.InvalidAttr(attr.Name.Local, true)
+			if err1 := uuid.Validate(string(attr.Value)); err1 != nil {
+				err = specerr.Append(err, specerr.NewParseAttrError(attr.Name.Local, true))
 			}
 			t.AnyAttr = append(t.AnyAttr, &BuildAttr{UUID: string(attr.Value)})
 		}
 	case *go3mf.Item:
 		switch attr.Name.Local {
 		case attrProdUUID:
-			if err := uuid.Validate(string(attr.Value)); err != nil {
-				s.InvalidAttr(attr.Name.Local, true)
+			if err1 := uuid.Validate(string(attr.Value)); err1 != nil {
+				err = specerr.Append(err, specerr.NewParseAttrError(attr.Name.Local, true))
 			}
 			var ext *ItemAttr
 			if t.AnyAttr.Get(&ext) {
@@ -85,16 +83,16 @@ func (e Spec) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr go3
 		}
 	case *go3mf.Object:
 		if attr.Name.Local == attrProdUUID {
-			if err := uuid.Validate(string(attr.Value)); err != nil {
-				s.InvalidAttr(attr.Name.Local, true)
+			if err1 := uuid.Validate(string(attr.Value)); err1 != nil {
+				err = specerr.Append(err, specerr.NewParseAttrError(attr.Name.Local, true))
 			}
 			t.AnyAttr = append(t.AnyAttr, &ObjectAttr{UUID: string(attr.Value)})
 		}
 	case *go3mf.Component:
 		switch attr.Name.Local {
 		case attrProdUUID:
-			if err := uuid.Validate(string(attr.Value)); err != nil {
-				s.InvalidAttr(attr.Name.Local, true)
+			if err1 := uuid.Validate(string(attr.Value)); err1 != nil {
+				err = specerr.Append(err, specerr.NewParseAttrError(attr.Name.Local, true))
 			}
 			var ext *ComponentAttr
 			if t.AnyAttr.Get(&ext) {
@@ -111,4 +109,5 @@ func (e Spec) DecodeAttribute(s *go3mf.Scanner, parentNode interface{}, attr go3
 			}
 		}
 	}
+	return
 }

@@ -1,6 +1,10 @@
 package materials
 
-import "image/color"
+import (
+	"image/color"
+
+	"github.com/qmuntal/go3mf"
+)
 
 const (
 	// Namespace is the canonical name of this extension.
@@ -12,12 +16,14 @@ const (
 type Spec struct {
 	LocalName  string
 	IsRequired bool
+	m          *go3mf.Model
 }
 
-func (e Spec) Namespace() string   { return Namespace }
-func (e Spec) Required() bool      { return e.IsRequired }
-func (e *Spec) SetRequired(r bool) { e.IsRequired = r }
-func (e *Spec) SetLocal(l string)  { e.LocalName = l }
+func (e *Spec) SetModel(m *go3mf.Model) { e.m = m }
+func (e Spec) Namespace() string        { return Namespace }
+func (e Spec) Required() bool           { return e.IsRequired }
+func (e *Spec) SetRequired(r bool)      { e.IsRequired = r }
+func (e *Spec) SetLocal(l string)       { e.LocalName = l }
 
 func (e Spec) Local() string {
 	if e.LocalName != "" {

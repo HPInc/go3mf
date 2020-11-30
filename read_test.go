@@ -3,7 +3,6 @@ package go3mf
 import (
 	"bytes"
 	"context"
-	"encoding/xml"
 	"errors"
 	"fmt"
 	"image/color"
@@ -16,15 +15,23 @@ import (
 
 	"github.com/go-test/deep"
 	specerr "github.com/qmuntal/go3mf/errors"
+	"github.com/qmuntal/go3mf/spec/encoding"
 	"github.com/stretchr/testify/mock"
 )
 
 const fakeExtension = "http://dummy.com/fake_ext"
 
-var _ SpecValidator = new(fakeSpec)
-var _ SpecDecoder = new(fakeSpec)
+var _ modelValidator = new(fakeSpec)
+var _ assetValidator = new(fakeSpec)
+var _ objectValidator = new(fakeSpec)
+var _ encoding.Decoder = new(fakeSpec)
+var _ encoding.PostProcessorDecoder = new(fakeSpec)
+var _ encoding.ElementDecoder = new(fakeSpec)
+var _ encoding.TextNodeDecoder = new(metadataDecoder)
+var _ encoding.ChildNodeDecoder = new(baseMaterialsDecoder)
 
 type fakeSpec struct {
+	m *Model
 }
 
 func (f *fakeSpec) Namespace() string  { return fakeExtension }
@@ -32,14 +39,18 @@ func (f *fakeSpec) Required() bool     { return true }
 func (f *fakeSpec) Local() string      { return "qm" }
 func (f *fakeSpec) SetLocal(_ string)  {}
 func (f *fakeSpec) SetRequired(_ bool) {}
+func (f *fakeSpec) SetModel(m *Model)  { f.m = m }
 
-func (e *fakeSpec) OnDecoded(_ *Model) {}
+func (e *fakeSpec) PostProcessDecode() {}
 
-func (f *fakeSpec) NewNodeDecoder(_ interface{}, nodeName string) NodeDecoder {
-	return &fakeAssetDecoder{}
+func (f *fakeSpec) NewElementDecoder(e interface{}, nodeName string) encoding.NodeDecoder {
+	if e, ok := e.(*Resources); ok {
+		return &fakeAssetDecoder{resources: e}
+	}
+	return nil
 }
 
-func (f *fakeSpec) DecodeAttribute(s *Scanner, parentNode interface{}, attr XMLAttr) {
+func (f *fakeSpec) DecodeAttribute(parentNode interface{}, attr encoding.Attr) error {
 	switch t := parentNode.(type) {
 	case *Object:
 		t.AnyAttr = append(t.AnyAttr, &fakeAttr{string(attr.Value)})
@@ -52,20 +63,21 @@ func (f *fakeSpec) DecodeAttribute(s *Scanner, parentNode interface{}, attr XMLA
 	case *Component:
 		t.AnyAttr = append(t.AnyAttr, &fakeAttr{string(attr.Value)})
 	}
-}
-
-func (f *fakeSpec) ValidateObject(_ *Model, _ string, _ *Object) error {
 	return nil
 }
 
-func (f *fakeSpec) ValidateAsset(_ *Model, _ string, _ Asset) error {
+func (f *fakeSpec) ValidateObject(_ string, _ *Object) error {
 	return nil
 }
 
-func (f *fakeSpec) ValidateModel(m *Model) error {
+func (f *fakeSpec) ValidateAsset(_ string, _ Asset) error {
+	return nil
+}
+
+func (f *fakeSpec) ValidateModel() error {
 	var errs []error
 	var a *fakeAttr
-	if m.Build.AnyAttr.Get(&a) {
+	if f.m.Build.AnyAttr.Get(&a) {
 		errs = append(errs, errors.New("Build: fake"))
 	}
 	return specerr.Append(nil, errs...)
@@ -87,12 +99,13 @@ func (f *fakeAttr) ObjectPath() string { return f.Value }
 
 type fakeAssetDecoder struct {
 	baseDecoder
+	resources *Resources
 }
 
-func (f *fakeAssetDecoder) Start(att []XMLAttr) {
+func (f *fakeAssetDecoder) Start(att []encoding.Attr) error {
 	id, _ := strconv.ParseUint(string(att[0].Value), 10, 32)
-	f.Scanner.ResourceID = uint32(id)
-	f.Scanner.AddAsset(&fakeAsset{ID: uint32(id)})
+	f.resources.Assets = append(f.resources.Assets, &fakeAsset{ID: uint32(id)})
+	return nil
 }
 
 type modelBuilder struct {
@@ -348,7 +361,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 
 	components := &Object{
 		ID: 20, Type: ObjectTypeSupport,
-		Metadata:   []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}, {Name: xml.Name{Space: "qm", Local: "CustomMetadata4"}, Type: "xs:boolean", Value: "2"}},
+		Metadata:   []Metadata{{Name: encoding.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}, {Name: encoding.Name{Space: "qm", Local: "CustomMetadata4"}, Type: "xs:boolean", Value: "2"}},
 		Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
 	}
 
@@ -361,11 +374,11 @@ func TestDecoder_processRootModel(t *testing.T) {
 	}
 	want.Build.Items = append(want.Build.Items, &Item{
 		ObjectID: 20, PartNumber: "bob", Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
-		Metadata: []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}},
+		Metadata: []Metadata{{Name: encoding.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}},
 	})
 	want.Metadata = append(want.Metadata, []Metadata{
-		{Name: xml.Name{Local: "Application"}, Value: "go3mf app"},
-		{Name: xml.Name{Space: "qm", Local: "CustomMetadata1"}, Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},
+		{Name: encoding.Name{Local: "Application"}, Value: "go3mf app"},
+		{Name: encoding.Name{Space: "qm", Local: "CustomMetadata1"}, Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},
 	}...)
 	got := new(Model)
 	got.Path = "/3D/3dmodel.model"
@@ -425,19 +438,17 @@ func TestDecoder_processRootModel(t *testing.T) {
 		<other />
 		`).build("")
 
-	t.Run("base", func(t *testing.T) {
-		d := new(Decoder)
-		d.Strict = true
-		got.WithSpec(&fakeSpec{})
-		if err := d.processRootModel(context.Background(), rootFile, got); err != nil {
-			t.Errorf("Decoder.processRootModel() unexpected error = %v", err)
-			return
-		}
-		if diff := deep.Equal(got, want); diff != nil {
-			t.Errorf("Decoder.processRootModel() = %v", diff)
-			return
-		}
-	})
+	d := new(Decoder)
+	d.Strict = true
+	got.WithSpec(&fakeSpec{})
+	if err := d.processRootModel(context.Background(), rootFile, got); err != nil {
+		t.Errorf("Decoder.processRootModel() unexpected error = %v", err)
+		return
+	}
+	if diff := deep.Equal(got, want); diff != nil {
+		t.Errorf("Decoder.processRootModel() = %v", diff)
+		return
+	}
 }
 
 func TestDecoder_processNonRootModels(t *testing.T) {
@@ -537,7 +548,7 @@ func Test_modelFile_Decode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if _, err := decodeModelFile(tt.args.ctx, tt.args.r, new(Model), "", true, false); (err != nil) != tt.wantErr {
+			if err := decodeModelFile(tt.args.ctx, tt.args.r, new(Model), "", true, false); (err != nil) != tt.wantErr {
 				t.Errorf("modelFile.Decode() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -570,17 +581,17 @@ func TestNewDecoder(t *testing.T) {
 
 func TestDecoder_processRootModel_warns(t *testing.T) {
 	want := &specerr.List{Errors: []error{
-		&specerr.ParseFieldError{Required: true, ResourceID: 0, Name: "displaycolor", Context: "model@resources@basematerials@base"},
-		&specerr.ParseFieldError{Required: true, ResourceID: 0, Name: "id", Context: "model@resources@basematerials"},
-		&specerr.ParseFieldError{Required: true, ResourceID: 8, Name: "x", Context: "model@resources@object@mesh@vertices@vertex"},
-		&specerr.ParseFieldError{Required: true, ResourceID: 8, Name: "v1", Context: "model@resources@object@mesh@triangles@triangle"},
-		&specerr.ParseFieldError{Required: false, ResourceID: 22, Name: "pid", Context: "model@resources@object"},
-		&specerr.ParseFieldError{Required: false, ResourceID: 22, Name: "pindex", Context: "model@resources@object"},
-		&specerr.ParseFieldError{Required: false, ResourceID: 22, Name: "type", Context: "model@resources@object"},
-		&specerr.ParseFieldError{Required: false, ResourceID: 20, Name: "transform", Context: "model@resources@object@components@component"},
-		&specerr.ParseFieldError{Required: true, ResourceID: 20, Name: "objectid", Context: "model@resources@object@components@component"},
-		&specerr.ParseFieldError{Required: false, ResourceID: 20, Name: "transform", Context: "model@build@item"},
-		&specerr.ParseFieldError{Required: true, ResourceID: 0, Name: "objectid", Context: "model@build@item"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "displaycolor", Required: true}, ResourceID: 0, Context: "model@resources@basematerials@base"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "id", Required: true}, ResourceID: 0, Context: "model@resources@basematerials"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "x", Required: true}, ResourceID: 8, Context: "model@resources@object@mesh@vertices@vertex"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "v1", Required: true}, ResourceID: 8, Context: "model@resources@object@mesh@triangles@triangle"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "pid", Required: false}, ResourceID: 22, Context: "model@resources@object"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "pindex", Required: false}, ResourceID: 22, Context: "model@resources@object"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "type", Required: false}, ResourceID: 22, Context: "model@resources@object"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "transform", Required: false}, ResourceID: 20, Context: "model@resources@object@components@component"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "objectid", Required: true}, ResourceID: 20, Context: "model@resources@object@components@component"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "transform", Required: false}, ResourceID: 20, Context: "model@build@item"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "objectid", Required: true}, ResourceID: 0, Context: "model@build@item"},
 	}}
 	got := new(Model)
 	got.Path = "/3D/3dmodel.model"

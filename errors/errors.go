@@ -156,21 +156,37 @@ func (e *MissingFieldError) Error() string {
 	return fmt.Sprintf("required field '%s' is not set", e.Name)
 }
 
-// A &specerr.ParseFieldError represents an error while decoding a required or an optional property.
-// If ResourceID is 0 means that the error took place while parsing the resource property before the ID appeared.
-// When Element is 'item' the ResourceID is the objectID property of a build item.
-// Field value is not reported to avoid leaking confidential information.
-type ParseFieldError struct {
-	Context    string
-	ResourceID uint32
-	Name       string
-	Required   bool
+type ParseAttrError struct {
+	Name     string
+	Required bool
 }
 
-func (e *ParseFieldError) Error() string {
+func NewParseAttrError(name string, required bool) *ParseAttrError {
+	return &ParseAttrError{name, required}
+}
+
+func (e *ParseAttrError) Error() string {
 	req := "required"
 	if !e.Required {
 		req = "optional"
 	}
-	return fmt.Sprintf("%s#%d: error parsing %s attribute '%s'", e.Context, e.ResourceID, req, e.Name)
+	return fmt.Sprintf("error parsing %s attribute '%s'", req, e.Name)
+}
+
+// A ResourceError represents an error while decoding a required or an optional property.
+// If ResourceID is 0 means that the error took place while parsing the resource property before the ID appeared.
+// When Element is 'item' the ResourceID is the objectID property of a build item.
+// Field value is not reported to avoid leaking confidential information.
+type ResourceError struct {
+	Context    string
+	ResourceID uint32
+	Err        error
+}
+
+func (e *ResourceError) Error() string {
+	return fmt.Sprintf("%s#%d: %v", e.Context, e.ResourceID, e.Err)
+}
+
+func (e *ResourceError) Unwrap() error {
+	return e.Err
 }

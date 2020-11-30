@@ -5,10 +5,11 @@ import (
 	"strconv"
 
 	"github.com/qmuntal/go3mf"
+	"github.com/qmuntal/go3mf/spec/encoding"
 )
 
 // Marshal3MFAttr encodes the resource attributes.
-func (s *SliceStackInfo) Marshal3MFAttr(_ *go3mf.XMLEncoder) ([]xml.Attr, error) {
+func (s *SliceStackInfo) Marshal3MFAttr(_ encoding.Encoder) ([]xml.Attr, error) {
 	return []xml.Attr{
 		{Name: xml.Name{Space: Namespace, Local: attrSliceRefID}, Value: strconv.FormatUint(uint64(s.SliceStackID), 10)},
 		{Name: xml.Name{Space: Namespace, Local: attrMeshRes}, Value: s.MeshResolution.String()},
@@ -16,7 +17,7 @@ func (s *SliceStackInfo) Marshal3MFAttr(_ *go3mf.XMLEncoder) ([]xml.Attr, error)
 }
 
 // Marshal3MF encodes the resource.
-func (s *SliceStack) Marshal3MF(x *go3mf.XMLEncoder) error {
+func (s *SliceStack) Marshal3MF(x encoding.Encoder) error {
 	xs := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrSliceStack}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(s.ID), 10)},
 	}}
@@ -42,7 +43,7 @@ func (s *SliceStack) Marshal3MF(x *go3mf.XMLEncoder) error {
 	return nil
 }
 
-func (s *Slice) marshal3MF(x *go3mf.XMLEncoder) {
+func (s *Slice) marshal3MF(x encoding.Encoder) {
 	xs := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrSlice}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrZTop}, Value: strconv.FormatFloat(float64(s.TopZ), 'f', x.FloatPresicion(), 32)},
 	}}
@@ -54,7 +55,7 @@ func (s *Slice) marshal3MF(x *go3mf.XMLEncoder) {
 	x.EncodeToken(xs.End())
 }
 
-func marshalPolygons(x *go3mf.XMLEncoder, ply []Polygon) {
+func marshalPolygons(x encoding.Encoder, ply []Polygon) {
 	for _, p := range ply {
 		xp := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrPolygon}, Attr: []xml.Attr{
 			{Name: xml.Name{Local: attrStartV}, Value: strconv.FormatUint(uint64(p.StartV), 10)},
@@ -86,7 +87,7 @@ func marshalPolygons(x *go3mf.XMLEncoder, ply []Polygon) {
 	}
 }
 
-func marshalVertices(x *go3mf.XMLEncoder, vs []go3mf.Point2D) {
+func marshalVertices(x encoding.Encoder, vs []go3mf.Point2D) {
 	xv := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrVertices}}
 	x.EncodeToken(xv)
 	x.SetAutoClose(true)

@@ -1,17 +1,21 @@
 package production
 
+import "github.com/qmuntal/go3mf"
+
 // Namespace is the canonical name of this extension.
 const Namespace = "http://schemas.microsoft.com/3dmanufacturing/production/2015/06"
 
 type Spec struct {
 	LocalName       string
 	DisableAutoUUID bool
+	m               *go3mf.Model
 }
 
-func (e Spec) Namespace() string   { return Namespace }
-func (e Spec) Required() bool      { return true }
-func (e *Spec) SetRequired(r bool) {}
-func (e *Spec) SetLocal(l string)  { e.LocalName = l }
+func (e *Spec) SetModel(m *go3mf.Model) { e.m = m }
+func (e Spec) Namespace() string        { return Namespace }
+func (e Spec) Required() bool           { return true }
+func (e *Spec) SetRequired(r bool)      {}
+func (e *Spec) SetLocal(l string)       { e.LocalName = l }
 
 func (e Spec) Local() string {
 	if e.LocalName != "" {

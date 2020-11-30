@@ -11,26 +11,22 @@ func validTransform(t go3mf.Matrix) bool {
 	return t[2] == 0 && t[6] == 0 && t[8] == 0 && t[9] == 0 && t[10] == 1
 }
 
-func (e *Spec) ValidateModel(_ *go3mf.Model) error {
-	return nil
-}
-
-func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) error {
+func (e *Spec) ValidateObject(path string, obj *go3mf.Object) error {
 	var sti *SliceStackInfo
 	if !obj.AnyAttr.Get(&sti) {
 		return nil
 	}
 	var errs error
-	res, _ := m.FindResources(path)
+	res, _ := e.m.FindResources(path)
 	if sti.SliceStackID == 0 {
 		errs = errors.Append(errs, errors.NewMissingFieldError(attrSliceRefID))
 	} else if r, ok := res.FindAsset(sti.SliceStackID); ok {
 		if r, ok := r.(*SliceStack); ok {
-			if !validateBuildTransforms(m, path, obj.ID) {
+			if !validateBuildTransforms(e.m, path, obj.ID) {
 				errs = errors.Append(errs, errors.ErrSliceInvalidTranform)
 			}
 			if obj.Type == go3mf.ObjectTypeModel || obj.Type == go3mf.ObjectTypeSolidSupport {
-				if !checkAllClosed(m, r) {
+				if !checkAllClosed(e.m, r) {
 					errs = errors.Append(errs, errors.ErrSlicePolygonNotClosed)
 				}
 			}
@@ -48,7 +44,7 @@ func (e *Spec) ValidateObject(m *go3mf.Model, path string, obj *go3mf.Object) er
 	return errs
 }
 
-func (e *Spec) ValidateAsset(m *go3mf.Model, path string, r go3mf.Asset) error {
+func (e *Spec) ValidateAsset(path string, r go3mf.Asset) error {
 	var (
 		st *SliceStack
 		ok bool
@@ -61,7 +57,7 @@ func (e *Spec) ValidateAsset(m *go3mf.Model, path string, r go3mf.Asset) error {
 		(len(st.Slices) == 0 && len(st.Refs) == 0) {
 		errs = errors.Append(errs, errors.ErrSlicesAndRefs)
 	}
-	errs = errors.Append(errs, st.validateRefs(m, path))
+	errs = errors.Append(errs, st.validateRefs(e.m, path))
 	errs = errors.Append(errs, st.validateSlices())
 	return errs
 }

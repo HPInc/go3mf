@@ -1,62 +1,63 @@
 package materials
 
 import (
-	"encoding/xml"
 	"strconv"
 	"strings"
 
 	"github.com/qmuntal/go3mf"
+	specerr "github.com/qmuntal/go3mf/errors"
+	"github.com/qmuntal/go3mf/spec/encoding"
 )
 
-func (e Spec) OnDecoded(_ *go3mf.Model) {}
-
-func (e Spec) NewNodeDecoder(_ interface{}, nodeName string) (child go3mf.NodeDecoder) {
+func (e Spec) NewElementDecoder(el interface{}, nodeName string) (child encoding.NodeDecoder) {
 	switch nodeName {
 	case attrColorGroup:
-		child = new(colorGroupDecoder)
+		child = &colorGroupDecoder{resources: el.(*go3mf.Resources)}
 	case attrTexture2DGroup:
-		child = new(tex2DGroupDecoder)
+		child = &tex2DGroupDecoder{resources: el.(*go3mf.Resources)}
 	case attrTexture2D:
-		child = new(texture2DDecoder)
+		child = &texture2DDecoder{resources: el.(*go3mf.Resources)}
 	case attrCompositematerials:
-		child = new(compositeMaterialsDecoder)
+		child = &compositeMaterialsDecoder{resources: el.(*go3mf.Resources)}
 	case attrMultiProps:
-		child = new(multiPropertiesDecoder)
+		child = &multiPropertiesDecoder{resources: el.(*go3mf.Resources)}
 	}
 	return
 }
 
-func (e Spec) DecodeAttribute(_ *go3mf.Scanner, _ interface{}, _ go3mf.XMLAttr) {}
+func (e Spec) DecodeAttribute(_ interface{}, _ encoding.Attr) error { return nil }
 
 type colorGroupDecoder struct {
 	baseDecoder
+	resources    *go3mf.Resources
 	resource     ColorGroup
 	colorDecoder colorDecoder
 }
 
 func (d *colorGroupDecoder) End() {
-	d.Scanner.AddAsset(&d.resource)
+	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *colorGroupDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
+func (d *colorGroupDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
 	if name.Space == Namespace && name.Local == attrColor {
 		child = &d.colorDecoder
 	}
 	return
 }
 
-func (d *colorGroupDecoder) Start(attrs []go3mf.XMLAttr) {
+func (d *colorGroupDecoder) Start(attrs []encoding.Attr) (err error) {
 	d.colorDecoder.resource = &d.resource
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrID {
-			id, err := strconv.ParseUint(string(a.Value), 10, 32)
-			if err != nil {
-				d.Scanner.InvalidAttr(a.Name.Local, true)
+			id, err1 := strconv.ParseUint(string(a.Value), 10, 32)
+			if err1 != nil {
+				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
 			}
-			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
+			d.resource.ID = uint32(id)
 			break
 		}
 	}
+	return
 }
 
 type colorDecoder struct {
@@ -64,16 +65,17 @@ type colorDecoder struct {
 	resource *ColorGroup
 }
 
-func (d *colorDecoder) Start(attrs []go3mf.XMLAttr) {
+func (d *colorDecoder) Start(attrs []encoding.Attr) (err error) {
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrColor {
-			c, err := go3mf.ParseRGBA(string(a.Value))
-			if err != nil {
-				d.Scanner.InvalidAttr(attrColor, true)
+			c, err1 := go3mf.ParseRGBA(string(a.Value))
+			if err1 != nil {
+				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
 			}
 			d.resource.Colors = append(d.resource.Colors, c)
 		}
 	}
+	return
 }
 
 type tex2DCoordDecoder struct {
@@ -81,15 +83,15 @@ type tex2DCoordDecoder struct {
 	resource *Texture2DGroup
 }
 
-func (d *tex2DCoordDecoder) Start(attrs []go3mf.XMLAttr) {
+func (d *tex2DCoordDecoder) Start(attrs []encoding.Attr) (err error) {
 	var u, v float32
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
 		}
-		val, err := strconv.ParseFloat(string(a.Value), 32)
-		if err != nil {
-			d.Scanner.InvalidAttr(a.Name.Local, true)
+		val, err1 := strconv.ParseFloat(string(a.Value), 32)
+		if err1 != nil {
+			err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
 		}
 		switch a.Name.Local {
 		case attrU:
@@ -99,26 +101,28 @@ func (d *tex2DCoordDecoder) Start(attrs []go3mf.XMLAttr) {
 		}
 	}
 	d.resource.Coords = append(d.resource.Coords, TextureCoord{u, v})
+	return
 }
 
 type tex2DGroupDecoder struct {
 	baseDecoder
+	resources         *go3mf.Resources
 	resource          Texture2DGroup
 	tex2DCoordDecoder tex2DCoordDecoder
 }
 
 func (d *tex2DGroupDecoder) End() {
-	d.Scanner.AddAsset(&d.resource)
+	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *tex2DGroupDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
+func (d *tex2DGroupDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
 	if name.Space == Namespace && name.Local == attrTex2DCoord {
 		child = &d.tex2DCoordDecoder
 	}
 	return
 }
 
-func (d *tex2DGroupDecoder) Start(attrs []go3mf.XMLAttr) {
+func (d *tex2DGroupDecoder) Start(attrs []encoding.Attr) (err error) {
 	d.tex2DCoordDecoder.resource = &d.resource
 	for _, a := range attrs {
 		if a.Name.Space != "" {
@@ -126,42 +130,44 @@ func (d *tex2DGroupDecoder) Start(attrs []go3mf.XMLAttr) {
 		}
 		switch a.Name.Local {
 		case attrID:
-			id, err := strconv.ParseUint(string(a.Value), 10, 32)
-			if err != nil {
-				d.Scanner.InvalidAttr(a.Name.Local, true)
+			id, err1 := strconv.ParseUint(string(a.Value), 10, 32)
+			if err1 != nil {
+				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
 			}
-			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
+			d.resource.ID = uint32(id)
 		case attrTexID:
-			val, err := strconv.ParseUint(string(a.Value), 10, 32)
-			if err != nil {
-				d.Scanner.InvalidAttr(a.Name.Local, true)
+			val, err1 := strconv.ParseUint(string(a.Value), 10, 32)
+			if err1 != nil {
+				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
 			}
 			d.resource.TextureID = uint32(val)
 		}
 	}
+	return
 }
 
 type texture2DDecoder struct {
 	baseDecoder
-	resource Texture2D
+	resources *go3mf.Resources
+	resource  Texture2D
 }
 
 func (d *texture2DDecoder) End() {
-	d.Scanner.AddAsset(&d.resource)
+	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *texture2DDecoder) Start(attrs []go3mf.XMLAttr) {
+func (d *texture2DDecoder) Start(attrs []encoding.Attr) (err error) {
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
 		}
 		switch a.Name.Local {
 		case attrID:
-			id, err := strconv.ParseUint(string(a.Value), 10, 32)
-			if err != nil {
-				d.Scanner.InvalidAttr(a.Name.Local, true)
+			id, err1 := strconv.ParseUint(string(a.Value), 10, 32)
+			if err1 != nil {
+				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
 			}
-			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
+			d.resource.ID = uint32(id)
 		case attrPath:
 			d.resource.Path = string(a.Value)
 		case attrContentType:
@@ -174,26 +180,28 @@ func (d *texture2DDecoder) Start(attrs []go3mf.XMLAttr) {
 			d.resource.Filter, _ = newTextureFilter(string(a.Value))
 		}
 	}
+	return
 }
 
 type compositeMaterialsDecoder struct {
 	baseDecoder
+	resources        *go3mf.Resources
 	resource         CompositeMaterials
 	compositeDecoder compositeDecoder
 }
 
 func (d *compositeMaterialsDecoder) End() {
-	d.Scanner.AddAsset(&d.resource)
+	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *compositeMaterialsDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
+func (d *compositeMaterialsDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
 	if name.Space == Namespace && name.Local == attrComposite {
 		child = &d.compositeDecoder
 	}
 	return
 }
 
-func (d *compositeMaterialsDecoder) Start(attrs []go3mf.XMLAttr) {
+func (d *compositeMaterialsDecoder) Start(attrs []encoding.Attr) (err error) {
 	d.compositeDecoder.resource = &d.resource
 	for _, a := range attrs {
 		if a.Name.Space != "" {
@@ -201,27 +209,28 @@ func (d *compositeMaterialsDecoder) Start(attrs []go3mf.XMLAttr) {
 		}
 		switch a.Name.Local {
 		case attrID:
-			id, err := strconv.ParseUint(string(a.Value), 10, 32)
-			if err != nil {
-				d.Scanner.InvalidAttr(a.Name.Local, true)
+			id, err1 := strconv.ParseUint(string(a.Value), 10, 32)
+			if err1 != nil {
+				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
 			}
-			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
+			d.resource.ID = uint32(id)
 		case attrMatID:
-			val, err := strconv.ParseUint(string(a.Value), 10, 32)
-			if err != nil {
-				d.Scanner.InvalidAttr(a.Name.Local, true)
+			val, err1 := strconv.ParseUint(string(a.Value), 10, 32)
+			if err1 != nil {
+				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
 			}
 			d.resource.MaterialID = uint32(val)
 		case attrMatIndices:
 			for _, f := range strings.Fields(string(a.Value)) {
-				val, err := strconv.ParseUint(f, 10, 32)
-				if err != nil {
-					d.Scanner.InvalidAttr(a.Name.Local, true)
+				val, err1 := strconv.ParseUint(f, 10, 32)
+				if err1 != nil {
+					err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
 				}
 				d.resource.Indices = append(d.resource.Indices, uint32(val))
 			}
 		}
 	}
+	return
 }
 
 type compositeDecoder struct {
@@ -229,40 +238,42 @@ type compositeDecoder struct {
 	resource *CompositeMaterials
 }
 
-func (d *compositeDecoder) Start(attrs []go3mf.XMLAttr) {
+func (d *compositeDecoder) Start(attrs []encoding.Attr) (err error) {
 	var composite Composite
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrValues {
 			for _, f := range strings.Fields(string(a.Value)) {
-				val, err := strconv.ParseFloat(f, 32)
-				if err != nil {
-					d.Scanner.InvalidAttr(a.Name.Local, true)
+				val, err1 := strconv.ParseFloat(f, 32)
+				if err1 != nil {
+					err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
 				}
 				composite.Values = append(composite.Values, float32(val))
 			}
 		}
 	}
 	d.resource.Composites = append(d.resource.Composites, composite)
+	return
 }
 
 type multiPropertiesDecoder struct {
 	baseDecoder
+	resources    *go3mf.Resources
 	resource     MultiProperties
 	multiDecoder multiDecoder
 }
 
 func (d *multiPropertiesDecoder) End() {
-	d.Scanner.AddAsset(&d.resource)
+	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *multiPropertiesDecoder) Child(name xml.Name) (child go3mf.NodeDecoder) {
+func (d *multiPropertiesDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
 	if name.Space == Namespace && name.Local == attrMulti {
 		child = &d.multiDecoder
 	}
 	return
 }
 
-func (d *multiPropertiesDecoder) Start(attrs []go3mf.XMLAttr) {
+func (d *multiPropertiesDecoder) Start(attrs []encoding.Attr) (err error) {
 	d.multiDecoder.resource = &d.resource
 	for _, a := range attrs {
 		if a.Name.Space != "" {
@@ -270,11 +281,11 @@ func (d *multiPropertiesDecoder) Start(attrs []go3mf.XMLAttr) {
 		}
 		switch a.Name.Local {
 		case attrID:
-			id, err := strconv.ParseUint(string(a.Value), 10, 32)
-			if err != nil {
-				d.Scanner.InvalidAttr(a.Name.Local, true)
+			id, err1 := strconv.ParseUint(string(a.Value), 10, 32)
+			if err1 != nil {
+				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
 			}
-			d.resource.ID, d.Scanner.ResourceID = uint32(id), uint32(id)
+			d.resource.ID = uint32(id)
 		case attrBlendMethods:
 			for _, f := range strings.Fields(string(a.Value)) {
 				val, _ := newBlendMethod(f)
@@ -282,14 +293,15 @@ func (d *multiPropertiesDecoder) Start(attrs []go3mf.XMLAttr) {
 			}
 		case attrPIDs:
 			for _, f := range strings.Fields(string(a.Value)) {
-				val, err := strconv.ParseUint(f, 10, 32)
-				if err != nil {
-					d.Scanner.InvalidAttr(a.Name.Local, true)
+				val, err1 := strconv.ParseUint(f, 10, 32)
+				if err1 != nil {
+					err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
 				}
 				d.resource.PIDs = append(d.resource.PIDs, uint32(val))
 			}
 		}
 	}
+	return
 }
 
 type multiDecoder struct {
@@ -297,27 +309,24 @@ type multiDecoder struct {
 	resource *MultiProperties
 }
 
-func (d *multiDecoder) Start(attrs []go3mf.XMLAttr) {
+func (d *multiDecoder) Start(attrs []encoding.Attr) (err error) {
 	var multi Multi
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrPIndices {
 			for _, f := range strings.Fields(string(a.Value)) {
-				val, err := strconv.ParseUint(f, 10, 32)
-				if err != nil {
-					d.Scanner.InvalidAttr(a.Name.Local, true)
+				val, err1 := strconv.ParseUint(f, 10, 32)
+				if err1 != nil {
+					err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
 				}
 				multi.PIndices = append(multi.PIndices, uint32(val))
 			}
 		}
 	}
 	d.resource.Multis = append(d.resource.Multis, multi)
+	return
 }
 
 type baseDecoder struct {
-	Scanner *go3mf.Scanner
 }
 
-func (d *baseDecoder) Text([]byte)                      {}
-func (d *baseDecoder) Child(xml.Name) go3mf.NodeDecoder { return nil }
-func (d *baseDecoder) End()                             {}
-func (d *baseDecoder) SetScanner(s *go3mf.Scanner)      { d.Scanner = s }
+func (d *baseDecoder) End() {}

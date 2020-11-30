@@ -8,26 +8,18 @@ import (
 	"github.com/qmuntal/go3mf/errors"
 )
 
-func (e *Spec) ValidateModel(_ *go3mf.Model) error {
-	return nil
-}
-
-func (e *Spec) ValidateObject(_ *go3mf.Model, _ string, _ *go3mf.Object) error {
-	return nil
-}
-
-func (e *Spec) ValidateAsset(m *go3mf.Model, path string, r go3mf.Asset) (errs error) {
+func (e *Spec) ValidateAsset(path string, r go3mf.Asset) (errs error) {
 	switch r := r.(type) {
 	case *ColorGroup:
 		errs = e.validateColorGroup(path, r)
 	case *Texture2DGroup:
-		errs = e.validateTexture2DGroup(m, path, r)
+		errs = e.validateTexture2DGroup(path, r)
 	case *Texture2D:
-		errs = e.validateTexture2D(m, path, r)
+		errs = e.validateTexture2D(path, r)
 	case *MultiProperties:
-		errs = e.validateMultiProps(m, path, r)
+		errs = e.validateMultiProps(path, r)
 	case *CompositeMaterials:
-		errs = e.validateCompositeMat(m, path, r)
+		errs = e.validateCompositeMat(path, r)
 	}
 	return
 }
@@ -47,13 +39,13 @@ func (e *Spec) validateColorGroup(path string, r *ColorGroup) (errs error) {
 	return
 }
 
-func (e *Spec) validateTexture2DGroup(m *go3mf.Model, path string, r *Texture2DGroup) (errs error) {
+func (e *Spec) validateTexture2DGroup(path string, r *Texture2DGroup) (errs error) {
 	if r.ID == 0 {
 		errs = errors.Append(errs, errors.ErrMissingID)
 	}
 	if r.TextureID == 0 {
 		errs = errors.Append(errs, errors.NewMissingFieldError(attrTexID))
-	} else if text, ok := m.FindAsset(path, r.TextureID); ok {
+	} else if text, ok := e.m.FindAsset(path, r.TextureID); ok {
 		if _, ok := text.(*Texture2D); !ok {
 			errs = errors.Append(errs, errors.ErrTextureReference)
 		}
@@ -66,7 +58,7 @@ func (e *Spec) validateTexture2DGroup(m *go3mf.Model, path string, r *Texture2DG
 	return
 }
 
-func (e *Spec) validateTexture2D(m *go3mf.Model, path string, r *Texture2D) (errs error) {
+func (e *Spec) validateTexture2D(path string, r *Texture2D) (errs error) {
 	if r.ID == 0 {
 		errs = errors.Append(errs, errors.ErrMissingID)
 	}
@@ -74,7 +66,7 @@ func (e *Spec) validateTexture2D(m *go3mf.Model, path string, r *Texture2D) (err
 		errs = errors.Append(errs, errors.NewMissingFieldError(attrPath))
 	} else {
 		var hasTexture bool
-		for _, a := range m.Attachments {
+		for _, a := range e.m.Attachments {
 			if strings.EqualFold(a.Path, r.Path) {
 				hasTexture = true
 				break
@@ -90,7 +82,7 @@ func (e *Spec) validateTexture2D(m *go3mf.Model, path string, r *Texture2D) (err
 	return
 }
 
-func (e *Spec) validateMultiProps(m *go3mf.Model, path string, r *MultiProperties) (errs error) {
+func (e *Spec) validateMultiProps(path string, r *MultiProperties) (errs error) {
 	if r.ID == 0 {
 		errs = errors.Append(errs, errors.ErrMissingID)
 	}
@@ -109,7 +101,7 @@ func (e *Spec) validateMultiProps(m *go3mf.Model, path string, r *MultiPropertie
 		lengths           = make([]int, len(r.PIDs))
 	)
 	for j, pid := range r.PIDs {
-		if pr, ok := m.FindAsset(path, pid); ok {
+		if pr, ok := e.m.FindAsset(path, pid); ok {
 			switch pr := pr.(type) {
 			case *go3mf.BaseMaterials:
 				if j != 0 {
@@ -146,13 +138,13 @@ func (e *Spec) validateMultiProps(m *go3mf.Model, path string, r *MultiPropertie
 	return
 }
 
-func (e *Spec) validateCompositeMat(m *go3mf.Model, path string, r *CompositeMaterials) (errs error) {
+func (e *Spec) validateCompositeMat(path string, r *CompositeMaterials) (errs error) {
 	if r.ID == 0 {
 		errs = errors.Append(errs, errors.ErrMissingID)
 	}
 	if r.MaterialID == 0 {
 		errs = errors.Append(errs, errors.NewMissingFieldError(attrMatID))
-	} else if mat, ok := m.FindAsset(path, r.MaterialID); ok {
+	} else if mat, ok := e.m.FindAsset(path, r.MaterialID); ok {
 		if bm, ok := mat.(*go3mf.BaseMaterials); ok {
 			for _, index := range r.Indices {
 				if int(index) > len(bm.Materials) {
