@@ -68,7 +68,7 @@ type colorDecoder struct {
 func (d *colorDecoder) Start(attrs []encoding.Attr) (err error) {
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrColor {
-			c, err1 := go3mf.ParseRGBA(string(a.Value))
+			c, err1 := encoding.ParseRGBA(string(a.Value))
 			if err1 != nil {
 				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
 			}

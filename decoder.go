@@ -322,7 +322,7 @@ func (d *baseMaterialDecoder) Start(attrs []encoding.Attr) (err error) {
 			name = string(a.Value)
 		case attrDisplayColor:
 			var err1 error
-			baseColor, err1 = ParseRGBA(string(a.Value))
+			baseColor, err1 = encoding.ParseRGBA(string(a.Value))
 			if err1 != nil {
 				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
 			}

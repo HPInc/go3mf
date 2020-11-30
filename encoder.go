@@ -476,7 +476,7 @@ func (r *BaseMaterials) Marshal3MF(x encoding.Encoder) error {
 			Name: xml.Name{Local: attrBase},
 			Attr: []xml.Attr{
 				{Name: xml.Name{Local: attrName}, Value: ma.Name},
-				{Name: xml.Name{Local: attrDisplayColor}, Value: FormatRGBA(ma.Color)},
+				{Name: xml.Name{Local: attrDisplayColor}, Value: encoding.FormatRGBA(ma.Color)},
 			},
 		})
 	}

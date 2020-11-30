@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/qmuntal/go3mf"
 	"github.com/qmuntal/go3mf/spec/encoding"
 )
 
@@ -18,7 +17,7 @@ func (r *ColorGroup) Marshal3MF(x encoding.Encoder) error {
 	x.SetAutoClose(true)
 	for _, c := range r.Colors {
 		x.EncodeToken(xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrColor}, Attr: []xml.Attr{
-			{Name: xml.Name{Local: attrColor}, Value: go3mf.FormatRGBA(c)},
+			{Name: xml.Name{Local: attrColor}, Value: encoding.FormatRGBA(c)},
 		}})
 	}
 	x.SetAutoClose(false)
