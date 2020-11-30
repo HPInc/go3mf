@@ -4,7 +4,6 @@ import (
 	"encoding/xml"
 	"image/color"
 	"io"
-	"reflect"
 	"sort"
 	"sync"
 
@@ -577,63 +576,9 @@ func newUnits(s string) (u Units, ok bool) {
 // The key should be the extension namespace.
 type AnyAttr []encoding.MarshalerAttr
 
-// Get will panic if target is not a non-nil pointer to either a type that implements
-// MarshalerAttr, or to any interface type.
-func (e AnyAttr) Get(target interface{}) bool {
-	if e == nil || len(e) == 0 {
-		return false
-	}
-	if target == nil {
-		panic("go3mf: target cannot be nil")
-	}
-
-	val := reflect.ValueOf(target)
-	typ := val.Type()
-	if typ.Kind() != reflect.Ptr || val.IsNil() {
-		panic("go3mf: target must be a non-nil pointer")
-	}
-	targetType := typ.Elem()
-	for _, v := range e {
-		if v != nil && reflect.TypeOf(v).AssignableTo(targetType) {
-			val.Elem().Set(reflect.ValueOf(v))
-			return true
-		}
-	}
-	return false
-}
-
 // Any is an extension point containing <any> information.
 // The key should be the extension namespace.
 type Any []encoding.Marshaler
-
-// Get finds the first Marshaller that matches target, and if so, sets
-// target to that extension value and returns true.
-// A Marshaller matches target if the marshaller's concrete value is assignable to the value
-// pointed to by target.
-// Get will panic if target is not a non-nil pointer to either a type that implements
-// Marshaller, or to any interface type.
-func (e Any) Get(target interface{}) bool {
-	if e == nil || len(e) == 0 {
-		return false
-	}
-	if target == nil {
-		panic("go3mf: target cannot be nil")
-	}
-
-	val := reflect.ValueOf(target)
-	typ := val.Type()
-	if typ.Kind() != reflect.Ptr || val.IsNil() {
-		panic("go3mf: target must be a non-nil pointer")
-	}
-	targetType := typ.Elem()
-	for _, v := range e {
-		if v != nil && reflect.TypeOf(v).AssignableTo(targetType) {
-			val.Elem().Set(reflect.ValueOf(v))
-			return true
-		}
-	}
-	return false
-}
 
 const (
 	nsXML   = "http://www.w3.org/XML/1998/namespace"

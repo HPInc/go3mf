@@ -32,24 +32,24 @@ func TestDecode_NoUUID(t *testing.T) {
 			t.Errorf("UnmarshalModel() unexpected error = %v", err)
 			return
 		}
-		var buildAttr *BuildAttr
-		if !got.Build.AnyAttr.Get(&buildAttr) || buildAttr.UUID == "" {
+		buildAttr := GetBuildAttr(&got.Build)
+		if buildAttr == nil || buildAttr.UUID == "" {
 			t.Error("UnmarshalModel() empty build uuid")
 		}
 		for _, item := range got.Build.Items {
-			var itemAttr *ItemAttr
-			if !item.AnyAttr.Get(&itemAttr) || itemAttr.UUID == "" {
+			itemAttr := GetItemAttr(item)
+			if itemAttr == nil || itemAttr.UUID == "" {
 				t.Error("UnmarshalModel() empty item uuid")
 			}
 		}
 		for _, o := range got.Resources.Objects {
-			var objectAttr *ObjectAttr
-			if !o.AnyAttr.Get(&objectAttr) || objectAttr.UUID == "" {
+			objectAttr := GetObjectAttr(o)
+			if objectAttr == nil || objectAttr.UUID == "" {
 				t.Error("UnmarshalModel() empty object uuid")
 			}
 			for _, c := range o.Components {
-				var compAttr *ComponentAttr
-				if !c.AnyAttr.Get(&compAttr) || compAttr.UUID == "" {
+				compAttr := GetComponentAttr(c)
+				if compAttr == nil || compAttr.UUID == "" {
 					t.Error("UnmarshalModel() empty component uuid")
 				}
 			}

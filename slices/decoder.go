@@ -31,23 +31,20 @@ func objectAttrDecoder(o *go3mf.Object, a encoding.Attr) (err error) {
 		if err1 != nil {
 			err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
 		}
-
-		var ext *SliceStackInfo
-		if o.AnyAttr.Get(&ext) {
+		if ext := GetObjectAttr(o); ext != nil {
 			ext.SliceStackID = uint32(val)
 		} else {
-			o.AnyAttr = append(o.AnyAttr, &SliceStackInfo{SliceStackID: uint32(val)})
+			o.AnyAttr = append(o.AnyAttr, &ObjectAttr{SliceStackID: uint32(val)})
 		}
 	case attrMeshRes:
 		res, ok := newMeshResolution(string(a.Value))
 		if !ok {
 			err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, false))
 		}
-		var ext *SliceStackInfo
-		if o.AnyAttr.Get(&ext) {
+		if ext := GetObjectAttr(o); ext != nil {
 			ext.MeshResolution = res
 		} else {
-			o.AnyAttr = append(o.AnyAttr, &SliceStackInfo{MeshResolution: res})
+			o.AnyAttr = append(o.AnyAttr, &ObjectAttr{MeshResolution: res})
 		}
 	}
 	return

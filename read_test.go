@@ -76,9 +76,10 @@ func (f *fakeSpec) ValidateAsset(_ string, _ Asset) error {
 
 func (f *fakeSpec) ValidateModel() error {
 	var errs []error
-	var a *fakeAttr
-	if f.m.Build.AnyAttr.Get(&a) {
-		errs = append(errs, errors.New("Build: fake"))
+	if len(f.m.Build.AnyAttr) == 1 {
+		if _, ok := f.m.Build.AnyAttr[0].(*fakeAttr); ok {
+			errs = append(errs, errors.New("Build: fake"))
+		}
 	}
 	return specerr.Append(nil, errs...)
 }

@@ -9,7 +9,7 @@ import (
 )
 
 // Marshal3MFAttr encodes the resource attributes.
-func (s *SliceStackInfo) Marshal3MFAttr(_ encoding.Encoder) ([]xml.Attr, error) {
+func (s *ObjectAttr) Marshal3MFAttr(_ encoding.Encoder) ([]xml.Attr, error) {
 	return []xml.Attr{
 		{Name: xml.Name{Space: Namespace, Local: attrSliceRefID}, Value: strconv.FormatUint(uint64(s.SliceStackID), 10)},
 		{Name: xml.Name{Space: Namespace, Local: attrMeshRes}, Value: s.MeshResolution.String()},

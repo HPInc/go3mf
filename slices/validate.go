@@ -12,8 +12,8 @@ func validTransform(t go3mf.Matrix) bool {
 }
 
 func (e *Spec) ValidateObject(path string, obj *go3mf.Object) error {
-	var sti *SliceStackInfo
-	if !obj.AnyAttr.Get(&sti) {
+	sti := GetObjectAttr(obj)
+	if sti == nil {
 		return nil
 	}
 	var errs error

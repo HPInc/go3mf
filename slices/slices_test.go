@@ -15,7 +15,7 @@ var _ spec.ObjectValidator = new(Spec)
 var _ spec.AssetValidator = new(Spec)
 var _ go3mf.Asset = new(SliceStack)
 var _ encoding.Marshaler = new(SliceStack)
-var _ encoding.MarshalerAttr = new(SliceStackInfo)
+var _ encoding.MarshalerAttr = new(ObjectAttr)
 
 func TestSliceStack_Identify(t *testing.T) {
 	tests := []struct {

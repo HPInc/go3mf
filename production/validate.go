@@ -12,22 +12,20 @@ type uuidPath interface {
 }
 
 func (e *Spec) ValidateModel() error {
-	var (
-		u    *BuildAttr
-		errs error
-	)
-	if !e.m.Build.AnyAttr.Get(&u) {
+	var errs error
+	u := GetBuildAttr(&e.m.Build)
+	if u == nil {
 		errs = errors.Append(errs, errors.Wrap(errors.NewMissingFieldError(attrProdUUID), e.m.Build))
 	} else if uuid.Validate(u.UUID) != nil {
 		errs = errors.Append(errs, errors.Wrap(errors.ErrUUID, e.m.Build))
 	}
 	for i, item := range e.m.Build.Items {
 		var iErrs error
-		var p *ItemAttr
-		if !item.AnyAttr.Get(&p) {
-			iErrs = errors.Append(iErrs, errors.NewMissingFieldError(attrProdUUID))
-		} else {
+
+		if p := GetItemAttr(item); p != nil {
 			iErrs = errors.Append(iErrs, e.validatePathUUID("", p))
+		} else {
+			iErrs = errors.Append(iErrs, errors.NewMissingFieldError(attrProdUUID))
 		}
 		if iErrs != nil {
 			errs = errors.Append(errs, errors.Wrap(errors.WrapIndex(iErrs, item, i), e.m.Build))
@@ -37,22 +35,19 @@ func (e *Spec) ValidateModel() error {
 }
 
 func (e *Spec) ValidateObject(path string, obj *go3mf.Object) error {
-	var (
-		u    *ObjectAttr
-		errs error
-	)
-	if !obj.AnyAttr.Get(&u) {
+	var errs error
+	u := GetObjectAttr(obj)
+	if u == nil {
 		errs = errors.Append(errs, errors.NewMissingFieldError(attrProdUUID))
 	} else if uuid.Validate(u.UUID) != nil {
 		errs = errors.Append(errs, errors.ErrUUID)
 	}
-	var p *ComponentAttr
 	for i, c := range obj.Components {
 		var cErrs error
-		if !c.AnyAttr.Get(&p) {
-			cErrs = errors.Append(cErrs, errors.NewMissingFieldError(attrProdUUID))
-		} else {
+		if p := GetComponentAttr(c); p != nil {
 			cErrs = errors.Append(cErrs, e.validatePathUUID(path, p))
+		} else {
+			cErrs = errors.Append(cErrs, errors.NewMissingFieldError(attrProdUUID))
 		}
 		if cErrs != nil {
 			errs = errors.Append(errs, errors.WrapIndex(cErrs, c, i))

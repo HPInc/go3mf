@@ -88,6 +88,15 @@ type BeamLattice struct {
 	CapMode              CapMode
 }
 
+func GetBeamLattice(mesh *go3mf.Mesh) *BeamLattice {
+	for _, a := range mesh.Any {
+		if a, ok := a.(*BeamLattice); ok {
+			return a
+		}
+	}
+	return nil
+}
+
 // BeamSet defines a set of beams.
 type BeamSet struct {
 	Refs       []uint32

@@ -8,15 +8,12 @@ import (
 )
 
 func (e Spec) PostProcessDecode() {
-	var (
-		buildAttr *BuildAttr
-		pu        *ItemAttr
-	)
-	if !e.m.Build.AnyAttr.Get(&buildAttr) {
+	if GetBuildAttr(&e.m.Build) == nil {
 		e.m.Build.AnyAttr = append(e.m.Build.AnyAttr, &BuildAttr{UUID: uuid.New()})
 	}
 	for _, item := range e.m.Build.Items {
-		if !item.AnyAttr.Get(&pu) {
+		pu := GetItemAttr(item)
+		if pu == nil {
 			item.AnyAttr = append(item.AnyAttr, &ItemAttr{
 				UUID: uuid.New(),
 			})
@@ -32,16 +29,13 @@ func (e Spec) PostProcessDecode() {
 }
 
 func (e Spec) fillResourceUUID(res *go3mf.Resources) {
-	var (
-		pu         *ComponentAttr
-		objectAttr *ObjectAttr
-	)
 	for _, o := range res.Objects {
-		if !o.AnyAttr.Get(&objectAttr) {
+		if GetObjectAttr(o) == nil {
 			o.AnyAttr = append(o.AnyAttr, &ObjectAttr{UUID: uuid.New()})
 		}
 		for _, c := range o.Components {
-			if !c.AnyAttr.Get(&pu) {
+			pu := GetComponentAttr(c)
+			if pu == nil {
 				c.AnyAttr = append(c.AnyAttr, &ComponentAttr{
 					UUID: uuid.New(),
 				})
@@ -67,15 +61,13 @@ func (e Spec) DecodeAttribute(parentNode interface{}, attr encoding.Attr) (err e
 			if err1 := uuid.Validate(string(attr.Value)); err1 != nil {
 				err = specerr.Append(err, specerr.NewParseAttrError(attr.Name.Local, true))
 			}
-			var ext *ItemAttr
-			if t.AnyAttr.Get(&ext) {
+			if ext := GetItemAttr(t); ext != nil {
 				ext.UUID = string(attr.Value)
 			} else {
 				t.AnyAttr = append(t.AnyAttr, &ItemAttr{UUID: string(attr.Value)})
 			}
 		case attrPath:
-			var ext *ItemAttr
-			if t.AnyAttr.Get(&ext) {
+			if ext := GetItemAttr(t); ext != nil {
 				ext.Path = string(attr.Value)
 			} else {
 				t.AnyAttr = append(t.AnyAttr, &ItemAttr{Path: string(attr.Value)})
@@ -94,15 +86,13 @@ func (e Spec) DecodeAttribute(parentNode interface{}, attr encoding.Attr) (err e
 			if err1 := uuid.Validate(string(attr.Value)); err1 != nil {
 				err = specerr.Append(err, specerr.NewParseAttrError(attr.Name.Local, true))
 			}
-			var ext *ComponentAttr
-			if t.AnyAttr.Get(&ext) {
+			if ext := GetComponentAttr(t); ext != nil {
 				ext.UUID = string(attr.Value)
 			} else {
 				t.AnyAttr = append(t.AnyAttr, &ComponentAttr{UUID: string(attr.Value)})
 			}
 		case attrPath:
-			var ext *ComponentAttr
-			if t.AnyAttr.Get(&ext) {
+			if ext := GetComponentAttr(t); ext != nil {
 				ext.Path = string(attr.Value)
 			} else {
 				t.AnyAttr = append(t.AnyAttr, &ComponentAttr{Path: string(attr.Value)})

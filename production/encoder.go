@@ -12,24 +12,24 @@ func (s *Spec) PreProcessEncode() {
 	if s.DisableAutoUUID {
 		return
 	}
-	var buildAttr *BuildAttr
-	if !s.m.Build.AnyAttr.Get(&buildAttr) {
+	buildAttr := GetBuildAttr(&s.m.Build)
+	if buildAttr == nil {
 		s.m.Build.AnyAttr = append(s.m.Build.AnyAttr, &BuildAttr{UUID: uuid.New()})
 	}
 	for _, item := range s.m.Build.Items {
-		var itemAttr *ItemAttr
-		if !item.AnyAttr.Get(&itemAttr) {
+		itemAttr := GetItemAttr(item)
+		if itemAttr == nil {
 			item.AnyAttr = append(item.AnyAttr, &ItemAttr{UUID: uuid.New()})
 		}
 	}
 	s.m.WalkObjects(func(s string, o *go3mf.Object) error {
-		var objAttr *ObjectAttr
-		if !o.AnyAttr.Get(&objAttr) {
+		objAttr := GetObjectAttr(o)
+		if objAttr == nil {
 			o.AnyAttr = append(o.AnyAttr, &ObjectAttr{UUID: uuid.New()})
 		}
 		for _, c := range o.Components {
-			var compAttr *ComponentAttr
-			if !c.AnyAttr.Get(&compAttr) {
+			compAttr := GetComponentAttr(c)
+			if compAttr == nil {
 				c.AnyAttr = append(c.AnyAttr, &ComponentAttr{UUID: uuid.New()})
 			}
 		}

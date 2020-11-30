@@ -30,10 +30,28 @@ type BuildAttr struct {
 	UUID string
 }
 
+func GetBuildAttr(build *go3mf.Build) *BuildAttr {
+	for _, a := range build.AnyAttr {
+		if a, ok := a.(*BuildAttr); ok {
+			return a
+		}
+	}
+	return nil
+}
+
 // ObjectAttr provides a UUID in the item element
 // for traceability across 3MF packages.
 type ObjectAttr struct {
 	UUID string
+}
+
+func GetObjectAttr(obj *go3mf.Object) *ObjectAttr {
+	for _, a := range obj.AnyAttr {
+		if a, ok := a.(*ObjectAttr); ok {
+			return a
+		}
+	}
+	return nil
 }
 
 // ItemAttr provides a UUID in the item element to ensure
@@ -41,6 +59,15 @@ type ObjectAttr struct {
 type ItemAttr struct {
 	UUID string
 	Path string
+}
+
+func GetItemAttr(item *go3mf.Item) *ItemAttr {
+	for _, a := range item.AnyAttr {
+		if a, ok := a.(*ItemAttr); ok {
+			return a
+		}
+	}
+	return nil
 }
 
 // ObjectPath returns the Path extension attribute.
@@ -57,6 +84,15 @@ func (p *ItemAttr) getUUID() string {
 type ComponentAttr struct {
 	UUID string
 	Path string
+}
+
+func GetComponentAttr(comp *go3mf.Component) *ComponentAttr {
+	for _, a := range comp.AnyAttr {
+		if a, ok := a.(*ComponentAttr); ok {
+			return a
+		}
+	}
+	return nil
 }
 
 // ObjectPath returns the Path extension attribute.

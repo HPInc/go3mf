@@ -106,12 +106,11 @@ type beamDecoder struct {
 }
 
 func (d *beamDecoder) Start(attrs []encoding.Attr) (err error) {
-	var beam Beam
 	var (
+		beam Beam
 		hasCap1, hasCap2 bool
 	)
-	var beamLattice *BeamLattice
-	d.mesh.Any.Get(&beamLattice)
+	beamLattice := GetBeamLattice(d.mesh)
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
@@ -191,8 +190,7 @@ type beamSetDecoder struct {
 }
 
 func (d *beamSetDecoder) End() {
-	var beamLattice *BeamLattice
-	d.mesh.Any.Get(&beamLattice)
+	beamLattice := GetBeamLattice(d.mesh)
 	beamLattice.BeamSets = append(beamLattice.BeamSets, d.beamSet)
 }
 

@@ -10,8 +10,8 @@ func (e *Spec) ValidateObject(path string, obj *go3mf.Object) error {
 		return nil
 	}
 
-	var bl *BeamLattice
-	if !obj.Mesh.Any.Get(&bl) {
+	bl := GetBeamLattice(obj.Mesh)
+	if bl == nil {
 		return nil
 	}
 
@@ -72,9 +72,8 @@ func (e *Spec) validateRefMesh(path string, meshID, selfID uint32) error {
 			if r.ID == selfID {
 				return errors.ErrMissingResource
 			}
-			var lattice *BeamLattice
 			if r.ID == meshID {
-				if r.Mesh == nil || r.Type != go3mf.ObjectTypeModel || r.Mesh.Any.Get(&lattice) {
+				if r.Mesh == nil || r.Type != go3mf.ObjectTypeModel || GetBeamLattice(r.Mesh) != nil {
 					return errors.ErrLatticeInvalidMesh
 				}
 				break

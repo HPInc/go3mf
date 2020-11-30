@@ -95,8 +95,17 @@ func (s *SliceStack) Identify() uint32 {
 	return s.ID
 }
 
-// SliceStackInfo defines the attributes added to Object.
-type SliceStackInfo struct {
+func GetObjectAttr(obj *go3mf.Object) *ObjectAttr {
+	for _, a := range obj.AnyAttr {
+		if a, ok := a.(*ObjectAttr); ok {
+			return a
+		}
+	}
+	return nil
+}
+
+// ObjectAttr defines the attributes added to Object.
+type ObjectAttr struct {
 	SliceStackID   uint32
 	MeshResolution MeshResolution
 }
