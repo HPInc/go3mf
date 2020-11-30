@@ -59,10 +59,10 @@ func TestDecode_NoUUID(t *testing.T) {
 
 func TestDecode(t *testing.T) {
 	components := &go3mf.Object{
-		AnyAttr: go3mf.ExtensionsAttr{&ObjectAttr{UUID: "cb828680-8895-4e08-a1fc-be63e033df15"}},
+		AnyAttr: go3mf.AnyAttr{&ObjectAttr{UUID: "cb828680-8895-4e08-a1fc-be63e033df15"}},
 		ID:      20,
 		Components: []*go3mf.Component{{
-			AnyAttr: go3mf.ExtensionsAttr{&ComponentAttr{
+			AnyAttr: go3mf.AnyAttr{&ComponentAttr{
 				Path: "/3D/other.model",
 				UUID: "cb828680-8895-4e08-a1fc-be63e033df16",
 			}},
@@ -73,13 +73,13 @@ func TestDecode(t *testing.T) {
 	want := &go3mf.Model{Path: "/3D/3dmodel.model", Resources: go3mf.Resources{
 		Objects: []*go3mf.Object{components},
 	}, Build: go3mf.Build{
-		AnyAttr: go3mf.ExtensionsAttr{&BuildAttr{UUID: "e9e25302-6428-402e-8633-cc95528d0ed3"}}},
+		AnyAttr: go3mf.AnyAttr{&BuildAttr{UUID: "e9e25302-6428-402e-8633-cc95528d0ed3"}}},
 	}
 	want.Build.Items = append(want.Build.Items, &go3mf.Item{ObjectID: 20,
-		AnyAttr:   go3mf.ExtensionsAttr{&ItemAttr{UUID: "e9e25302-6428-402e-8633-cc95528d0ed2"}},
+		AnyAttr:   go3mf.AnyAttr{&ItemAttr{UUID: "e9e25302-6428-402e-8633-cc95528d0ed2"}},
 		Transform: go3mf.Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
 	}, &go3mf.Item{ObjectID: 8,
-		AnyAttr: go3mf.ExtensionsAttr{&ItemAttr{
+		AnyAttr: go3mf.AnyAttr{&ItemAttr{
 			Path: "/3D/other.model",
 			UUID: "e9e25302-6428-402e-8633-cc95528d0ed4",
 		}},

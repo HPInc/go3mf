@@ -46,7 +46,7 @@ func TestValidate(t *testing.T) {
 		{"build", &Model{Resources: Resources{Assets: []Asset{&BaseMaterials{ID: 1, Materials: []Base{{Name: "a", Color: color.RGBA{A: 1}}}}}, Objects: []*Object{
 			{ID: 2, Type: ObjectTypeOther, Mesh: &Mesh{Vertices: []Point3D{{}, {}, {}, {}}, Triangles: []Triangle{
 				NewTriangle(0, 1, 2), NewTriangle(0, 3, 1), NewTriangle(0, 2, 3), NewTriangle(1, 3, 2),
-			}}}}}, Build: Build{AnyAttr: ExtensionsAttr{&fakeAttr{}}, Items: []*Item{
+			}}}}}, Build: Build{AnyAttr: AnyAttr{&fakeAttr{}}, Items: []*Item{
 			{},
 			{ObjectID: 2},
 			{ObjectID: 100},

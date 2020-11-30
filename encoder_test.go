@@ -47,7 +47,7 @@ func TestMarshalModel(t *testing.T) {
 	m := &Model{
 		Units: UnitMillimeter, Language: "en-US", Path: "/3D/3dmodel.model", Thumbnail: "/thumbnail.png",
 		Specs:   map[string]Spec{fakeExtension: &fakeSpec{}},
-		AnyAttr: ExtensionsAttr{&fakeAttr{Value: "model_fake"}},
+		AnyAttr: AnyAttr{&fakeAttr{Value: "model_fake"}},
 		Resources: Resources{
 			Assets: []Asset{
 				&BaseMaterials{ID: 5, Materials: []Base{
@@ -57,7 +57,7 @@ func TestMarshalModel(t *testing.T) {
 			Objects: []*Object{
 				{
 					ID: 8, Name: "Box 1", PartNumber: "11111111-1111-1111-1111-111111111111", Thumbnail: "/a.png",
-					AnyAttr: ExtensionsAttr{&fakeAttr{Value: "object_fake"}},
+					AnyAttr: AnyAttr{&fakeAttr{Value: "object_fake"}},
 					PID:     1, PIndex: 1, Type: ObjectTypeModel, Mesh: &Mesh{
 						Vertices: []Point3D{
 							{0, 0, 0}, {100, 0, 0}, {100, 100, 0},
@@ -82,18 +82,18 @@ func TestMarshalModel(t *testing.T) {
 					ID: 20, Type: ObjectTypeSupport,
 					Metadata: []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}, {Name: xml.Name{Space: "qm", Local: "CustomMetadata4"}, Type: "xs:boolean", Value: "2"}},
 					Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1},
-						AnyAttr: ExtensionsAttr{&fakeAttr{Value: "component_fake"}}}},
+						AnyAttr: AnyAttr{&fakeAttr{Value: "component_fake"}}}},
 				},
 			},
 		},
 		Build: Build{
-			AnyAttr: ExtensionsAttr{&fakeAttr{Value: "build_fake"}},
+			AnyAttr: AnyAttr{&fakeAttr{Value: "build_fake"}},
 			Items: []*Item{
 				{
 					ObjectID: 20, PartNumber: "bob", Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
 					Metadata: []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}},
 				},
-				{ObjectID: 21, AnyAttr: ExtensionsAttr{&fakeAttr{Value: "item_fake"}}},
+				{ObjectID: 21, AnyAttr: AnyAttr{&fakeAttr{Value: "item_fake"}}},
 			}}, Metadata: []Metadata{
 			{Name: xml.Name{Local: "Application"}, Value: "go3mf app"},
 			{Name: xml.Name{Space: "qm", Local: "CustomMetadata1"}, Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},

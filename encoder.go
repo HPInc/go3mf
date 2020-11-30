@@ -485,22 +485,18 @@ func (r *BaseMaterials) Marshal3MF(x encoding.Encoder) error {
 	return nil
 }
 
-func (e ExtensionsAttr) encode(x encoding.Encoder, start *xml.StartElement) {
+func (e AnyAttr) encode(x encoding.Encoder, start *xml.StartElement) {
 	for _, ext := range e {
-		if ext, ok := ext.(encoding.MarshalerAttr); ok {
-			if att, err := ext.Marshal3MFAttr(x); err == nil {
-				start.Attr = append(start.Attr, att...)
-			}
+		if att, err := ext.Marshal3MFAttr(x); err == nil {
+			start.Attr = append(start.Attr, att...)
 		}
 	}
 }
 
-func (e Extensions) encode(x encoding.Encoder) error {
+func (e Any) encode(x encoding.Encoder) error {
 	for _, ext := range e {
-		if ext, ok := ext.(encoding.Marshaler); ok {
-			if err := ext.Marshal3MF(x); err == nil {
-				return err
-			}
+		if err := ext.Marshal3MF(x); err == nil {
+			return err
 		}
 	}
 	return nil

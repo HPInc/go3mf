@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"sort"
 	"sync"
+
+	"github.com/qmuntal/go3mf/spec/encoding"
 )
 
 const (
@@ -119,7 +121,7 @@ type Relationship struct {
 // Build contains one or more items to manufacture as part of processing the job.
 type Build struct {
 	Items   []*Item
-	AnyAttr ExtensionsAttr
+	AnyAttr AnyAttr
 }
 
 // The Resources element acts as the root element of a library of constituent
@@ -127,7 +129,7 @@ type Build struct {
 type Resources struct {
 	Assets  []Asset
 	Objects []*Object
-	AnyAttr ExtensionsAttr
+	AnyAttr AnyAttr
 }
 
 // UnusedID returns the lowest unused ID.
@@ -186,7 +188,7 @@ func (rs *Resources) FindAsset(id uint32) (Asset, bool) {
 type ChildModel struct {
 	Resources     Resources
 	Relationships []Relationship
-	Any           Extensions
+	Any           Any
 }
 
 // A Model is an in memory representation of the 3MF file.
@@ -209,8 +211,8 @@ type Model struct {
 	Childs            map[string]*ChildModel // path -> child
 	RootRelationships []Relationship
 	Relationships     []Relationship
-	Any               Extensions
-	AnyAttr           ExtensionsAttr
+	Any               Any
+	AnyAttr           AnyAttr
 }
 
 // WithSpec adds a new extension
@@ -360,7 +362,7 @@ type Item struct {
 	Transform  Matrix
 	PartNumber string
 	Metadata   []Metadata
-	AnyAttr    ExtensionsAttr
+	AnyAttr    AnyAttr
 }
 
 // ObjectPath search an extension attribute with an ObjectPath
@@ -395,7 +397,7 @@ type Object struct {
 	Metadata   []Metadata
 	Mesh       *Mesh
 	Components []*Component
-	AnyAttr    ExtensionsAttr
+	AnyAttr    AnyAttr
 }
 
 func (o *Object) boundingBox(m *Model, path string) Box {
@@ -421,7 +423,7 @@ func (o *Object) boundingBox(m *Model, path string) Box {
 type Component struct {
 	ObjectID  uint32
 	Transform Matrix
-	AnyAttr   ExtensionsAttr
+	AnyAttr   AnyAttr
 }
 
 // ObjectPath search an extension attribute with an ObjectPath
@@ -496,8 +498,8 @@ func (t Triangle) PIndices() (uint32, uint32, uint32) {
 type Mesh struct {
 	Vertices  []Point3D
 	Triangles []Triangle
-	AnyAttr   ExtensionsAttr
-	Any       Extensions
+	AnyAttr   AnyAttr
+	Any       Any
 }
 
 // BoundingBox returns the bounding box of the mesh.
@@ -571,13 +573,13 @@ func newUnits(s string) (u Units, ok bool) {
 	return
 }
 
-// ExtensionsAttr is an extension point containing <anyAttribute> information.
+// AnyAttr is an extension point containing <anyAttribute> information.
 // The key should be the extension namespace.
-type ExtensionsAttr []interface{}
+type AnyAttr []encoding.MarshalerAttr
 
 // Get will panic if target is not a non-nil pointer to either a type that implements
-// MarshallerAttr, or to any interface type.
-func (e ExtensionsAttr) Get(target interface{}) bool {
+// MarshalerAttr, or to any interface type.
+func (e AnyAttr) Get(target interface{}) bool {
 	if e == nil || len(e) == 0 {
 		return false
 	}
@@ -600,19 +602,17 @@ func (e ExtensionsAttr) Get(target interface{}) bool {
 	return false
 }
 
-// Extensions is an extension point containing <any> information.
+// Any is an extension point containing <any> information.
 // The key should be the extension namespace.
-type Extensions []interface{}
+type Any []encoding.Marshaler
 
 // Get finds the first Marshaller that matches target, and if so, sets
 // target to that extension value and returns true.
-
 // A Marshaller matches target if the marshaller's concrete value is assignable to the value
 // pointed to by target.
-
 // Get will panic if target is not a non-nil pointer to either a type that implements
 // Marshaller, or to any interface type.
-func (e Extensions) Get(target interface{}) bool {
+func (e Any) Get(target interface{}) bool {
 	if e == nil || len(e) == 0 {
 		return false
 	}

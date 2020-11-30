@@ -331,8 +331,8 @@ func TestComponent_ObjectPath(t *testing.T) {
 		want string
 	}{
 		{"emptyattr", &Component{}, args{"/other.model"}, "/other.model"},
-		{"emptypath", &Component{AnyAttr: ExtensionsAttr{&fakeAttr{}}}, args{"/other.model"}, "/other.model"},
-		{"emptyattr", &Component{AnyAttr: ExtensionsAttr{&fakeAttr{Value: "/3dmodel.model"}}}, args{"/other.model"}, "/3dmodel.model"},
+		{"emptypath", &Component{AnyAttr: AnyAttr{&fakeAttr{}}}, args{"/other.model"}, "/other.model"},
+		{"emptyattr", &Component{AnyAttr: AnyAttr{&fakeAttr{Value: "/3dmodel.model"}}}, args{"/other.model"}, "/3dmodel.model"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -350,8 +350,8 @@ func TestItem_ObjectPath(t *testing.T) {
 		want string
 	}{
 		{"emptyattr", &Item{}, ""},
-		{"emptypath", &Item{AnyAttr: ExtensionsAttr{&fakeAttr{}}}, ""},
-		{"emptyattr", &Item{AnyAttr: ExtensionsAttr{&fakeAttr{Value: "/3dmodel.model"}}}, "/3dmodel.model"},
+		{"emptypath", &Item{AnyAttr: AnyAttr{&fakeAttr{}}}, ""},
+		{"emptyattr", &Item{AnyAttr: AnyAttr{&fakeAttr{Value: "/3dmodel.model"}}}, "/3dmodel.model"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -483,79 +483,79 @@ func TestModel_BoundingBox(t *testing.T) {
 	}
 }
 
-func TestExtensionsAttr_Get(t *testing.T) {
+func TestAnyAttr_Get(t *testing.T) {
 	tests := []struct {
 		name   string
-		e      ExtensionsAttr
+		e      AnyAttr
 		want   interface{}
 		wantOK bool
 	}{
 		{"nil", nil, new(fakeAttr), false},
-		{"empty", ExtensionsAttr{}, new(fakeAttr), false},
-		{"non-exist", ExtensionsAttr{nil}, new(fakeAttr), false},
-		{"exist", ExtensionsAttr{&fakeAttr{Value: "1"}}, &fakeAttr{Value: "1"}, true},
+		{"empty", AnyAttr{}, new(fakeAttr), false},
+		{"non-exist", AnyAttr{nil}, new(fakeAttr), false},
+		{"exist", AnyAttr{&fakeAttr{Value: "1"}}, &fakeAttr{Value: "1"}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			target := new(fakeAttr)
 			if got := tt.e.Get(&target); got != tt.wantOK {
-				t.Errorf("ExtensionsAttr.Get() = %v, wantOK %v", got, tt.wantOK)
+				t.Errorf("AnyAttr.Get() = %v, wantOK %v", got, tt.wantOK)
 				return
 			}
 			if !reflect.DeepEqual(target, tt.want) {
-				t.Errorf("ExtensionsAttr.Get() = %v, want %v", target, tt.want)
+				t.Errorf("AnyAttr.Get() = %v, want %v", target, tt.want)
 			}
 		})
 	}
 }
 
-func TestExtensions_Get(t *testing.T) {
+func TestAny_Get(t *testing.T) {
 	tests := []struct {
 		name   string
-		e      Extensions
+		e      Any
 		want   interface{}
 		wantOK bool
 	}{
 		{"nil", nil, new(fakeAsset), false},
-		{"empty", Extensions{}, new(fakeAsset), false},
-		{"non-exist", Extensions{nil}, new(fakeAsset), false},
-		{"exist", Extensions{&fakeAsset{ID: 1}}, &fakeAsset{ID: 1}, true},
+		{"empty", Any{}, new(fakeAsset), false},
+		{"non-exist", Any{nil}, new(fakeAsset), false},
+		{"exist", Any{&fakeAsset{ID: 1}}, &fakeAsset{ID: 1}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			target := new(fakeAsset)
 			if got := tt.e.Get(&target); got != tt.wantOK {
-				t.Errorf("Extensions.Get() = %v, wantOK %v", got, tt.wantOK)
+				t.Errorf("Any.Get() = %v, wantOK %v", got, tt.wantOK)
 				return
 			}
 			if !reflect.DeepEqual(target, tt.want) {
-				t.Errorf("Extensions.Get() = %v, want %v", target, tt.want)
+				t.Errorf("Any.Get() = %v, want %v", target, tt.want)
 			}
 		})
 	}
 }
 
-func TestExtensions_Get_Panic(t *testing.T) {
+func TestAny_Get_Panic(t *testing.T) {
 	type args struct {
 		target interface{}
 	}
 	tests := []struct {
 		name string
-		e    Extensions
+		e    Any
 		args args
 	}{
-		{"nil", Extensions{&fakeAsset{ID: 1}}, args{nil}},
-		{"int", Extensions{&fakeAsset{ID: 1}}, args{1}},
+		{"nil", Any{&fakeAsset{ID: 1}}, args{nil}},
+		{"int", Any{&fakeAsset{ID: 1}}, args{1}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			defer func() {
 				if err := recover(); err == nil {
-					t.Error("Extensions.Get() did not panic")
+					t.Error("Any.Get() did not panic")
 				}
 			}()
 			if tt.e.Get(tt.args.target) {
-				t.Error("Extensions.Get() want false")
+				t.Error("Any.Get() want false")
 			}
 		})
 	}
