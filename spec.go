@@ -1,7 +1,5 @@
 package go3mf
 
-import "github.com/qmuntal/go3mf/spec/encoding"
-
 type Spec interface {
 	Namespace() string
 	Local() string
@@ -27,13 +25,6 @@ func (u *UnknownSpec) SetModel(m *Model)  { u.m = m }
 
 type objectPather interface {
 	ObjectPath() string
-}
-
-type specDecoder interface {
-	Namespace() string
-	Local() string
-	Required() bool
-	DecodeAttribute(interface{}, encoding.Attr) error
 }
 
 type propertyGroup interface {

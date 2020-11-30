@@ -74,12 +74,12 @@ func (d *topLevelDecoder) Child(name encoding.Name) (child encoding.NodeDecoder)
 func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string, isRoot, strict bool) error {
 	x := xml3mf.NewDecoder(r)
 	scanner := decoderContext{
-		extensionDecoder: make(map[string]specDecoder),
+		extensionDecoder: make(map[string]encoding.Decoder),
 		isRoot:           isRoot,
 		modelPath:        path,
 	}
 	for _, ext := range model.Specs {
-		if ext, ok := ext.(specDecoder); ok {
+		if ext, ok := ext.(encoding.Decoder); ok {
 			scanner.extensionDecoder[ext.Namespace()] = ext
 		}
 	}

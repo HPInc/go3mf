@@ -14,12 +14,12 @@ type baseDecoder struct {
 }
 
 func (d *baseDecoder) Start([]encoding.Attr) error { return nil }
-func (d *baseDecoder) End()                   {}
+func (d *baseDecoder) End()                        {}
 
 // A decoderContext is a 3mf model file scanning state machine.
 type decoderContext struct {
 	Err              specerr.List
-	extensionDecoder map[string]specDecoder
+	extensionDecoder map[string]encoding.Decoder
 	modelPath        string
 	isRoot           bool
 	contex           []encoding.Name

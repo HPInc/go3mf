@@ -241,4 +241,4 @@ type baseDecoder struct {
 }
 
 func (d *baseDecoder) Start([]encoding.Attr) error { return nil }
-func (d *baseDecoder) End()                   {}
+func (d *baseDecoder) End()                        {}
