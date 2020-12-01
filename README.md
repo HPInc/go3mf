@@ -1,4 +1,4 @@
-[![Documentation](https://godoc.org/github.com/qmuntal/go3mf?status.svg)](https://godoc.org/github.com/qmuntal/go3mf)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/qmuntal/go3mf)](https://pkg.go.dev/github.com/qmuntal/go3mf)
 [![Build Status](https://travis-ci.com/qmuntal/go3mf.svg?branch=master)](https://travis-ci.com/qmuntal/go3mf)
 [![Go Report Card](https://goreportcard.com/badge/github.com/qmuntal/go3mf)](https://goreportcard.com/report/github.com/qmuntal/go3mf)
 [![codecov](https://coveralls.io/repos/github/qmuntal/go3mf/badge.svg)](https://coveralls.io/github/qmuntal/go3mf?branch=master)
