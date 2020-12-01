@@ -1,7 +1,6 @@
 package go3mf
 
 import (
-	"math"
 	"reflect"
 	"testing"
 )
@@ -108,105 +107,6 @@ func Test_vectorTree_RemoveVector(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.t.RemoveVector(tt.args.vec)
-		})
-	}
-}
-
-func TestPoint3D_Add(t *testing.T) {
-	type args struct {
-		v2 Point3D
-	}
-	tests := []struct {
-		name string
-		v1   Point3D
-		args args
-		want Point3D
-	}{
-		{"base", Point3D{1.0, 2.5, 1.1}, args{Point3D{0.0, 1.0, 9.9}}, Point3D{1.0, 3.5, 11.0}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.v1.Add(tt.args.v2); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Point3D.Add() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestPoint3D_Sub(t *testing.T) {
-	type args struct {
-		v2 Point3D
-	}
-	tests := []struct {
-		name string
-		v1   Point3D
-		args args
-		want Point3D
-	}{
-		{"base", Point3D{1.0, 2.5, 1.0}, args{Point3D{0.0, 1.0, 9.9}}, Point3D{1.0, 1.5, -8.9}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.v1.Sub(tt.args.v2); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Point3D.Sub() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestPoint3D_Len(t *testing.T) {
-	tests := []struct {
-		name string
-		v1   Point3D
-		want float32
-	}{
-		{"base", Point3D{2, -5, 4}, 6.708203932499},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.v1.Len(); math.Abs(float64(got-tt.want)) > 1e-6 {
-				t.Errorf("Point3D.Len() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestPoint3D_Normalize(t *testing.T) {
-	tests := []struct {
-		name string
-		v1   Point3D
-		want Point3D
-	}{
-		{"x", Point3D{2, 0, 0}, Point3D{1, 0, 0}},
-		{"y", Point3D{0, 3, 0}, Point3D{0, 1, 0}},
-		{"z", Point3D{0, 0, 4}, Point3D{0, 0, 1}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.v1.Normalize(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Point3D.Normalize() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestPoint3D_Cross(t *testing.T) {
-	type args struct {
-		v2 Point3D
-	}
-	tests := []struct {
-		name string
-		v1   Point3D
-		args args
-		want Point3D
-	}{
-		{"base", Point3D{1, 2, 3}, args{Point3D{10, 11, 12}}, Point3D{-9, 18, -9}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.v1.Cross(tt.args.v2); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Point3D.Cross() = %v, want %v", got, tt.want)
-			}
 		})
 	}
 }
