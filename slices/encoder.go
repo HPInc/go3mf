@@ -91,10 +91,11 @@ func marshalVertices(x encoding.Encoder, vs []go3mf.Point2D) {
 	xv := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrVertices}}
 	x.EncodeToken(xv)
 	x.SetAutoClose(true)
+	prec := x.FloatPresicion()
 	for _, v := range vs {
 		x.EncodeToken(xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrVertex}, Attr: []xml.Attr{
-			{Name: xml.Name{Local: attrX}, Value: strconv.FormatFloat(float64(v.X()), 'f', x.FloatPresicion(), 32)},
-			{Name: xml.Name{Local: attrY}, Value: strconv.FormatFloat(float64(v.Y()), 'f', x.FloatPresicion(), 32)},
+			{Name: xml.Name{Local: attrX}, Value: strconv.FormatFloat(float64(v.X()), 'f', prec, 32)},
+			{Name: xml.Name{Local: attrY}, Value: strconv.FormatFloat(float64(v.Y()), 'f', prec, 32)},
 		}})
 	}
 	x.SetAutoClose(false)

@@ -33,10 +33,11 @@ func (r *Texture2DGroup) Marshal3MF(x encoding.Encoder) error {
 	}}
 	x.EncodeToken(xs)
 	x.SetAutoClose(true)
+	prec := x.FloatPresicion()
 	for _, c := range r.Coords {
 		x.EncodeToken(xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrTex2DCoord}, Attr: []xml.Attr{
-			{Name: xml.Name{Local: attrU}, Value: strconv.FormatFloat(float64(c.U()), 'f', x.FloatPresicion(), 32)},
-			{Name: xml.Name{Local: attrV}, Value: strconv.FormatFloat(float64(c.V()), 'f', x.FloatPresicion(), 32)},
+			{Name: xml.Name{Local: attrU}, Value: strconv.FormatFloat(float64(c.U()), 'f', prec, 32)},
+			{Name: xml.Name{Local: attrV}, Value: strconv.FormatFloat(float64(c.V()), 'f', prec, 32)},
 		}})
 	}
 	x.SetAutoClose(false)

@@ -414,13 +414,14 @@ func (e *Encoder) writeMesh(x encoding.Encoder, r *Object, m *Mesh) {
 	xvs := xml.StartElement{Name: xml.Name{Local: attrVertices}}
 	x.EncodeToken(xvs)
 	x.SetAutoClose(true)
+	prec := x.FloatPresicion()
 	for _, v := range m.Vertices {
 		x.EncodeToken(xml.StartElement{
 			Name: xml.Name{Local: attrVertex},
 			Attr: []xml.Attr{
-				{Name: xml.Name{Local: attrX}, Value: strconv.FormatFloat(float64(v.X()), 'f', x.FloatPresicion(), 32)},
-				{Name: xml.Name{Local: attrY}, Value: strconv.FormatFloat(float64(v.Y()), 'f', x.FloatPresicion(), 32)},
-				{Name: xml.Name{Local: attrZ}, Value: strconv.FormatFloat(float64(v.Z()), 'f', x.FloatPresicion(), 32)},
+				{Name: xml.Name{Local: attrX}, Value: strconv.FormatFloat(float64(v.X()), 'f', prec, 32)},
+				{Name: xml.Name{Local: attrY}, Value: strconv.FormatFloat(float64(v.Y()), 'f', prec, 32)},
+				{Name: xml.Name{Local: attrZ}, Value: strconv.FormatFloat(float64(v.Z()), 'f', prec, 32)},
 			},
 		})
 	}
