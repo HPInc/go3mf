@@ -49,13 +49,13 @@ func (d *colorGroupDecoder) Child(name xml.Name) (child encoding.ElementDecoder)
 	return
 }
 
-func (d *colorGroupDecoder) Start(attrs []encoding.Attr) (err error) {
+func (d *colorGroupDecoder) Start(attrs []encoding.Attr) (errs error) {
 	d.colorDecoder.resource = &d.resource
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrID {
-			id, err1 := strconv.ParseUint(string(a.Value), 10, 32)
-			if err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+			id, err := strconv.ParseUint(string(a.Value), 10, 32)
+			if err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 			}
 			d.resource.ID = uint32(id)
 			break
@@ -69,12 +69,12 @@ type colorDecoder struct {
 	resource *ColorGroup
 }
 
-func (d *colorDecoder) Start(attrs []encoding.Attr) (err error) {
+func (d *colorDecoder) Start(attrs []encoding.Attr) (errs error) {
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrColor {
-			c, err1 := encoding.ParseRGBA(string(a.Value))
-			if err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+			c, err := encoding.ParseRGBA(string(a.Value))
+			if err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 			}
 			d.resource.Colors = append(d.resource.Colors, c)
 		}
@@ -87,15 +87,15 @@ type tex2DCoordDecoder struct {
 	resource *Texture2DGroup
 }
 
-func (d *tex2DCoordDecoder) Start(attrs []encoding.Attr) (err error) {
+func (d *tex2DCoordDecoder) Start(attrs []encoding.Attr) (errs error) {
 	var u, v float32
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
 		}
-		val, err1 := strconv.ParseFloat(string(a.Value), 32)
-		if err1 != nil {
-			err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+		val, err := strconv.ParseFloat(string(a.Value), 32)
+		if err != nil {
+			errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 		}
 		switch a.Name.Local {
 		case attrU:
@@ -126,7 +126,7 @@ func (d *tex2DGroupDecoder) Child(name xml.Name) (child encoding.ElementDecoder)
 	return
 }
 
-func (d *tex2DGroupDecoder) Start(attrs []encoding.Attr) (err error) {
+func (d *tex2DGroupDecoder) Start(attrs []encoding.Attr) (errs error) {
 	d.tex2DCoordDecoder.resource = &d.resource
 	for _, a := range attrs {
 		if a.Name.Space != "" {
@@ -134,15 +134,15 @@ func (d *tex2DGroupDecoder) Start(attrs []encoding.Attr) (err error) {
 		}
 		switch a.Name.Local {
 		case attrID:
-			id, err1 := strconv.ParseUint(string(a.Value), 10, 32)
-			if err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+			id, err := strconv.ParseUint(string(a.Value), 10, 32)
+			if err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 			}
 			d.resource.ID = uint32(id)
 		case attrTexID:
-			val, err1 := strconv.ParseUint(string(a.Value), 10, 32)
-			if err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+			val, err := strconv.ParseUint(string(a.Value), 10, 32)
+			if err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 			}
 			d.resource.TextureID = uint32(val)
 		}
@@ -160,16 +160,16 @@ func (d *texture2DDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *texture2DDecoder) Start(attrs []encoding.Attr) (err error) {
+func (d *texture2DDecoder) Start(attrs []encoding.Attr) (errs error) {
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
 		}
 		switch a.Name.Local {
 		case attrID:
-			id, err1 := strconv.ParseUint(string(a.Value), 10, 32)
-			if err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+			id, err := strconv.ParseUint(string(a.Value), 10, 32)
+			if err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 			}
 			d.resource.ID = uint32(id)
 		case attrPath:
@@ -205,7 +205,7 @@ func (d *compositeMaterialsDecoder) Child(name xml.Name) (child encoding.Element
 	return
 }
 
-func (d *compositeMaterialsDecoder) Start(attrs []encoding.Attr) (err error) {
+func (d *compositeMaterialsDecoder) Start(attrs []encoding.Attr) (errs error) {
 	d.compositeDecoder.resource = &d.resource
 	for _, a := range attrs {
 		if a.Name.Space != "" {
@@ -213,22 +213,22 @@ func (d *compositeMaterialsDecoder) Start(attrs []encoding.Attr) (err error) {
 		}
 		switch a.Name.Local {
 		case attrID:
-			id, err1 := strconv.ParseUint(string(a.Value), 10, 32)
-			if err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+			id, err := strconv.ParseUint(string(a.Value), 10, 32)
+			if err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 			}
 			d.resource.ID = uint32(id)
 		case attrMatID:
-			val, err1 := strconv.ParseUint(string(a.Value), 10, 32)
-			if err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+			val, err := strconv.ParseUint(string(a.Value), 10, 32)
+			if err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 			}
 			d.resource.MaterialID = uint32(val)
 		case attrMatIndices:
 			for _, f := range strings.Fields(string(a.Value)) {
-				val, err1 := strconv.ParseUint(f, 10, 32)
-				if err1 != nil {
-					err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+				val, err := strconv.ParseUint(f, 10, 32)
+				if err != nil {
+					errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 				}
 				d.resource.Indices = append(d.resource.Indices, uint32(val))
 			}
@@ -242,14 +242,14 @@ type compositeDecoder struct {
 	resource *CompositeMaterials
 }
 
-func (d *compositeDecoder) Start(attrs []encoding.Attr) (err error) {
+func (d *compositeDecoder) Start(attrs []encoding.Attr) (errs error) {
 	var composite Composite
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrValues {
 			for _, f := range strings.Fields(string(a.Value)) {
-				val, err1 := strconv.ParseFloat(f, 32)
-				if err1 != nil {
-					err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+				val, err := strconv.ParseFloat(f, 32)
+				if err != nil {
+					errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 				}
 				composite.Values = append(composite.Values, float32(val))
 			}
@@ -277,7 +277,7 @@ func (d *multiPropertiesDecoder) Child(name xml.Name) (child encoding.ElementDec
 	return
 }
 
-func (d *multiPropertiesDecoder) Start(attrs []encoding.Attr) (err error) {
+func (d *multiPropertiesDecoder) Start(attrs []encoding.Attr) (errs error) {
 	d.multiDecoder.resource = &d.resource
 	for _, a := range attrs {
 		if a.Name.Space != "" {
@@ -285,9 +285,9 @@ func (d *multiPropertiesDecoder) Start(attrs []encoding.Attr) (err error) {
 		}
 		switch a.Name.Local {
 		case attrID:
-			id, err1 := strconv.ParseUint(string(a.Value), 10, 32)
-			if err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+			id, err := strconv.ParseUint(string(a.Value), 10, 32)
+			if err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 			}
 			d.resource.ID = uint32(id)
 		case attrBlendMethods:
@@ -297,9 +297,9 @@ func (d *multiPropertiesDecoder) Start(attrs []encoding.Attr) (err error) {
 			}
 		case attrPIDs:
 			for _, f := range strings.Fields(string(a.Value)) {
-				val, err1 := strconv.ParseUint(f, 10, 32)
-				if err1 != nil {
-					err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+				val, err := strconv.ParseUint(f, 10, 32)
+				if err != nil {
+					errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 				}
 				d.resource.PIDs = append(d.resource.PIDs, uint32(val))
 			}
@@ -313,14 +313,14 @@ type multiDecoder struct {
 	resource *MultiProperties
 }
 
-func (d *multiDecoder) Start(attrs []encoding.Attr) (err error) {
+func (d *multiDecoder) Start(attrs []encoding.Attr) (errs error) {
 	var multi Multi
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrPIndices {
 			for _, f := range strings.Fields(string(a.Value)) {
-				val, err1 := strconv.ParseUint(f, 10, 32)
-				if err1 != nil {
-					err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+				val, err := strconv.ParseUint(f, 10, 32)
+				if err != nil {
+					errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 				}
 				multi.PIndices = append(multi.PIndices, uint32(val))
 			}

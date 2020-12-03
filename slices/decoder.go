@@ -25,12 +25,12 @@ func (e Spec) DecodeAttribute(parentNode interface{}, attr encoding.Attr) error 
 }
 
 // objectAttrDecoder decodes the slice attributes of an ObjectReosurce.
-func objectAttrDecoder(o *go3mf.Object, a encoding.Attr) (err error) {
+func objectAttrDecoder(o *go3mf.Object, a encoding.Attr) (errs error) {
 	switch a.Name.Local {
 	case attrSliceRefID:
-		val, err1 := strconv.ParseUint(string(a.Value), 10, 32)
-		if err1 != nil {
-			err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+		val, err := strconv.ParseUint(string(a.Value), 10, 32)
+		if err != nil {
+			errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 		}
 		if ext := GetObjectAttr(o); ext != nil {
 			ext.SliceStackID = uint32(val)
@@ -40,7 +40,7 @@ func objectAttrDecoder(o *go3mf.Object, a encoding.Attr) (err error) {
 	case attrMeshRes:
 		res, ok := newMeshResolution(string(a.Value))
 		if !ok {
-			err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, false))
+			errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, false))
 		}
 		if ext := GetObjectAttr(o); ext != nil {
 			ext.MeshResolution = res
@@ -72,19 +72,19 @@ func (d *sliceStackDecoder) Child(name xml.Name) (child encoding.ElementDecoder)
 	return
 }
 
-func (d *sliceStackDecoder) Start(attrs []encoding.Attr) (err error) {
+func (d *sliceStackDecoder) Start(attrs []encoding.Attr) (errs error) {
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrID:
-			id, err1 := strconv.ParseUint(string(a.Value), 10, 32)
-			if err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+			id, err := strconv.ParseUint(string(a.Value), 10, 32)
+			if err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 			}
 			d.resource.ID = uint32(id)
 		case attrZBottom:
-			val, err1 := strconv.ParseFloat(string(a.Value), 32)
-			if err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, false))
+			val, err := strconv.ParseFloat(string(a.Value), 32)
+			if err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, false))
 			}
 			d.resource.BottomZ = float32(val)
 		}
@@ -97,7 +97,7 @@ type sliceRefDecoder struct {
 	resource *SliceStack
 }
 
-func (d *sliceRefDecoder) Start(attrs []encoding.Attr) (err error) {
+func (d *sliceRefDecoder) Start(attrs []encoding.Attr) (errs error) {
 	var (
 		sliceStackID uint32
 		path         string
@@ -105,9 +105,9 @@ func (d *sliceRefDecoder) Start(attrs []encoding.Attr) (err error) {
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrSliceRefID:
-			val, err1 := strconv.ParseUint(string(a.Value), 10, 32)
-			if err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+			val, err := strconv.ParseUint(string(a.Value), 10, 32)
+			if err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 			}
 			sliceStackID = uint32(val)
 		case attrSlicePath:
@@ -140,14 +140,14 @@ func (d *sliceDecoder) Child(name xml.Name) (child encoding.ElementDecoder) {
 	return
 }
 
-func (d *sliceDecoder) Start(attrs []encoding.Attr) (err error) {
+func (d *sliceDecoder) Start(attrs []encoding.Attr) (errs error) {
 	d.polygonDecoder.slice = &d.slice
 	d.polygonVerticesDecoder.slice = &d.slice
 	for _, a := range attrs {
 		if a.Name.Local == attrZTop {
-			val, err1 := strconv.ParseFloat(string(a.Value), 32)
-			if err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+			val, err := strconv.ParseFloat(string(a.Value), 32)
+			if err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 			}
 			d.slice.TopZ = float32(val)
 			break
@@ -179,12 +179,12 @@ type polygonVertexDecoder struct {
 	slice *Slice
 }
 
-func (d *polygonVertexDecoder) Start(attrs []encoding.Attr) (err error) {
+func (d *polygonVertexDecoder) Start(attrs []encoding.Attr) (errs error) {
 	var p go3mf.Point2D
 	for _, a := range attrs {
-		val, err1 := strconv.ParseFloat(string(a.Value), 32)
-		if err1 != nil {
-			err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+		val, err := strconv.ParseFloat(string(a.Value), 32)
+		if err != nil {
+			errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 		}
 		switch a.Name.Local {
 		case attrX:
@@ -210,15 +210,15 @@ func (d *polygonDecoder) Child(name xml.Name) (child encoding.ElementDecoder) {
 	return
 }
 
-func (d *polygonDecoder) Start(attrs []encoding.Attr) (err error) {
+func (d *polygonDecoder) Start(attrs []encoding.Attr) (errs error) {
 	polygonIndex := len(d.slice.Polygons)
 	d.slice.Polygons = append(d.slice.Polygons, Polygon{})
 	d.polygonSegmentDecoder.polygon = &d.slice.Polygons[polygonIndex]
 	for _, a := range attrs {
 		if a.Name.Local == attrStartV {
-			val, err1 := strconv.ParseUint(string(a.Value), 10, 32)
-			if err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+			val, err := strconv.ParseUint(string(a.Value), 10, 32)
+			if err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 			}
 			d.slice.Polygons[polygonIndex].StartV = uint32(val)
 			break
@@ -232,14 +232,14 @@ type polygonSegmentDecoder struct {
 	polygon *Polygon
 }
 
-func (d *polygonSegmentDecoder) Start(attrs []encoding.Attr) (err error) {
+func (d *polygonSegmentDecoder) Start(attrs []encoding.Attr) (errs error) {
 	var (
 		segment      Segment
 		hasP1, hasP2 bool
 	)
 	for _, a := range attrs {
 		var required bool
-		val, err1 := strconv.ParseUint(string(a.Value), 10, 32)
+		val, err := strconv.ParseUint(string(a.Value), 10, 32)
 		switch a.Name.Local {
 		case attrV2:
 			segment.V2 = uint32(val)
@@ -256,8 +256,8 @@ func (d *polygonSegmentDecoder) Start(attrs []encoding.Attr) (err error) {
 		if hasP1 && !hasP2 {
 			segment.P2 = segment.P1
 		}
-		if err1 != nil {
-			err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, required))
+		if err != nil {
+			errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, required))
 		}
 	}
 	d.polygon.Segments = append(d.polygon.Segments, segment)

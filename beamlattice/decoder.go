@@ -23,7 +23,7 @@ type beamLatticeDecoder struct {
 	mesh *go3mf.Mesh
 }
 
-func (d *beamLatticeDecoder) Start(attrs []encoding.Attr) (err error) {
+func (d *beamLatticeDecoder) Start(attrs []encoding.Attr) (errs error) {
 	beamLattice := new(BeamLattice)
 	d.mesh.Any = append(d.mesh.Any, beamLattice)
 	for _, a := range attrs {
@@ -32,40 +32,40 @@ func (d *beamLatticeDecoder) Start(attrs []encoding.Attr) (err error) {
 		}
 		switch a.Name.Local {
 		case attrRadius:
-			val, err1 := strconv.ParseFloat(string(a.Value), 32)
-			if err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+			val, err := strconv.ParseFloat(string(a.Value), 32)
+			if err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 			}
 			beamLattice.Radius = float32(val)
 		case attrMinLength, attrPrecision: // lib3mf legacy
-			val, err1 := strconv.ParseFloat(string(a.Value), 32)
-			if err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+			val, err := strconv.ParseFloat(string(a.Value), 32)
+			if err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 			}
 			beamLattice.MinLength = float32(val)
 		case attrClippingMode, attrClipping: // lib3mf legacy
 			var ok bool
 			beamLattice.ClipMode, ok = newClipMode(string(a.Value))
 			if !ok {
-				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, false))
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, false))
 			}
 		case attrClippingMesh:
-			val, err1 := strconv.ParseUint(string(a.Value), 10, 32)
-			if err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, false))
+			val, err := strconv.ParseUint(string(a.Value), 10, 32)
+			if err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, false))
 			}
 			beamLattice.ClippingMeshID = uint32(val)
 		case attrRepresentationMesh:
-			val, err1 := strconv.ParseUint(string(a.Value), 10, 32)
-			if err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, false))
+			val, err := strconv.ParseUint(string(a.Value), 10, 32)
+			if err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, false))
 			}
 			beamLattice.RepresentationMeshID = uint32(val)
 		case attrCap:
 			var ok bool
 			beamLattice.CapMode, ok = newCapMode(string(a.Value))
 			if !ok {
-				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, false))
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, false))
 			}
 		}
 	}
@@ -106,7 +106,7 @@ type beamDecoder struct {
 	mesh *go3mf.Mesh
 }
 
-func (d *beamDecoder) Start(attrs []encoding.Attr) (err error) {
+func (d *beamDecoder) Start(attrs []encoding.Attr) (errs error) {
 	var (
 		beam             Beam
 		hasCap1, hasCap2 bool
@@ -118,27 +118,27 @@ func (d *beamDecoder) Start(attrs []encoding.Attr) (err error) {
 		}
 		switch a.Name.Local {
 		case attrV1:
-			val, err1 := strconv.ParseUint(string(a.Value), 10, 32)
-			if err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+			val, err := strconv.ParseUint(string(a.Value), 10, 32)
+			if err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 			}
 			beam.Indices[0] = uint32(val)
 		case attrV2:
-			val, err1 := strconv.ParseUint(string(a.Value), 10, 32)
-			if err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+			val, err := strconv.ParseUint(string(a.Value), 10, 32)
+			if err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 			}
 			beam.Indices[1] = uint32(val)
 		case attrR1:
-			val, err1 := strconv.ParseFloat(string(a.Value), 32)
-			if err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, false))
+			val, err := strconv.ParseFloat(string(a.Value), 32)
+			if err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, false))
 			}
 			beam.Radius[0] = float32(val)
 		case attrR2:
-			val, err1 := strconv.ParseFloat(string(a.Value), 32)
-			if err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, false))
+			val, err := strconv.ParseFloat(string(a.Value), 32)
+			if err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, false))
 			}
 			beam.Radius[1] = float32(val)
 		case attrCap1:
@@ -223,12 +223,12 @@ type beamRefDecoder struct {
 	beamSet *BeamSet
 }
 
-func (d *beamRefDecoder) Start(attrs []encoding.Attr) (err error) {
+func (d *beamRefDecoder) Start(attrs []encoding.Attr) (errs error) {
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrIndex {
-			val, err1 := strconv.ParseUint(string(a.Value), 10, 32)
-			if err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+			val, err := strconv.ParseUint(string(a.Value), 10, 32)
+			if err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 			}
 			d.beamSet.Refs = append(d.beamSet.Refs, uint32(val))
 		}

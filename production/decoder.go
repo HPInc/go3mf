@@ -51,20 +51,20 @@ func (e Spec) fillResourceUUID(res *go3mf.Resources) {
 	}
 }
 
-func (e Spec) DecodeAttribute(parentNode interface{}, attr encoding.Attr) (err error) {
+func (e Spec) DecodeAttribute(parentNode interface{}, attr encoding.Attr) (errs error) {
 	switch t := parentNode.(type) {
 	case *go3mf.Build:
 		if attr.Name.Local == attrProdUUID {
-			if err1 := uuid.Validate(string(attr.Value)); err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(attr.Name.Local, true))
+			if err := uuid.Validate(string(attr.Value)); err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(attr.Name.Local, true))
 			}
 			t.AnyAttr = append(t.AnyAttr, &BuildAttr{UUID: string(attr.Value)})
 		}
 	case *go3mf.Item:
 		switch attr.Name.Local {
 		case attrProdUUID:
-			if err1 := uuid.Validate(string(attr.Value)); err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(attr.Name.Local, true))
+			if err := uuid.Validate(string(attr.Value)); err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(attr.Name.Local, true))
 			}
 			if ext := GetItemAttr(t); ext != nil {
 				ext.UUID = string(attr.Value)
@@ -80,16 +80,16 @@ func (e Spec) DecodeAttribute(parentNode interface{}, attr encoding.Attr) (err e
 		}
 	case *go3mf.Object:
 		if attr.Name.Local == attrProdUUID {
-			if err1 := uuid.Validate(string(attr.Value)); err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(attr.Name.Local, true))
+			if err := uuid.Validate(string(attr.Value)); err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(attr.Name.Local, true))
 			}
 			t.AnyAttr = append(t.AnyAttr, &ObjectAttr{UUID: string(attr.Value)})
 		}
 	case *go3mf.Component:
 		switch attr.Name.Local {
 		case attrProdUUID:
-			if err1 := uuid.Validate(string(attr.Value)); err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(attr.Name.Local, true))
+			if err := uuid.Validate(string(attr.Value)); err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(attr.Name.Local, true))
 			}
 			if ext := GetComponentAttr(t); ext != nil {
 				ext.UUID = string(attr.Value)

@@ -197,7 +197,7 @@ func (d *Decoder) processRootModel(ctx context.Context, rootFile packageFile, mo
 	return nil
 }
 
-func (d *Decoder) processNonRootModels(ctx context.Context, model *Model) (err error) {
+func (d *Decoder) processNonRootModels(ctx context.Context, model *Model) (errs error) {
 	var (
 		wg                 sync.WaitGroup
 		nonRootModelsCount = len(d.nonRootModels)
@@ -208,16 +208,16 @@ func (d *Decoder) processNonRootModels(ctx context.Context, model *Model) (err e
 	for i := 0; i < nonRootModelsCount; i++ {
 		go func(i int) {
 			defer wg.Done()
-			err1 := d.readChildModel(ctx, i, model)
-			if err1 != nil {
-				err = err1
+			err := d.readChildModel(ctx, i, model)
+			if err != nil {
+				errs = err
 				cancel()
 			}
 		}(i)
 	}
 	wg.Wait()
-	if err != nil {
-		return err
+	if errs != nil {
+		return errs
 	}
 	return nil
 }

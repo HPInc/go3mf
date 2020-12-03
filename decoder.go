@@ -200,12 +200,12 @@ func (d *buildItemDecoder) Start(attrs []encoding.Attr) (err error) {
 	return
 }
 
-func (d *buildItemDecoder) parseCoreAttr(a encoding.Attr) (err error) {
+func (d *buildItemDecoder) parseCoreAttr(a encoding.Attr) (errs error) {
 	switch a.Name.Local {
 	case attrObjectID:
-		val, err1 := strconv.ParseUint(string(a.Value), 10, 32)
-		if err1 != nil {
-			err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+		val, err := strconv.ParseUint(string(a.Value), 10, 32)
+		if err != nil {
+			errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 		}
 		d.item.ObjectID = uint32(val)
 		d.ctx.resourceID = d.item.ObjectID
@@ -215,7 +215,7 @@ func (d *buildItemDecoder) parseCoreAttr(a encoding.Attr) (err error) {
 		var ok bool
 		d.item.Transform, ok = encoding.ParseMatrix(string(a.Value))
 		if !ok {
-			err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, false))
+			errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, false))
 		}
 	}
 	return
@@ -290,13 +290,13 @@ func (d *baseMaterialsDecoder) Child(name xml.Name) (child encoding.ElementDecod
 	return
 }
 
-func (d *baseMaterialsDecoder) Start(attrs []encoding.Attr) (err error) {
+func (d *baseMaterialsDecoder) Start(attrs []encoding.Attr) (errs error) {
 	d.baseMaterialDecoder.resource = &d.resource
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrID {
-			id, err1 := strconv.ParseUint(string(a.Value), 10, 32)
-			if err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+			id, err := strconv.ParseUint(string(a.Value), 10, 32)
+			if err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 			}
 			d.resource.ID = uint32(id)
 			break
@@ -310,7 +310,7 @@ type baseMaterialDecoder struct {
 	resource *BaseMaterials
 }
 
-func (d *baseMaterialDecoder) Start(attrs []encoding.Attr) (err error) {
+func (d *baseMaterialDecoder) Start(attrs []encoding.Attr) (errs error) {
 	var name string
 	var baseColor color.RGBA
 	for _, a := range attrs {
@@ -318,10 +318,10 @@ func (d *baseMaterialDecoder) Start(attrs []encoding.Attr) (err error) {
 		case attrName:
 			name = string(a.Value)
 		case attrDisplayColor:
-			var err1 error
-			baseColor, err1 = encoding.ParseRGBA(string(a.Value))
-			if err1 != nil {
-				err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+			var err error
+			baseColor, err = encoding.ParseRGBA(string(a.Value))
+			if err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 			}
 		}
 	}
@@ -376,12 +376,12 @@ type vertexDecoder struct {
 	mesh *Mesh
 }
 
-func (d *vertexDecoder) Start(attrs []encoding.Attr) (err error) {
+func (d *vertexDecoder) Start(attrs []encoding.Attr) (errs error) {
 	var x, y, z float32
 	for _, a := range attrs {
-		val, err1 := strconv.ParseFloat(*(*string)(unsafe.Pointer(&a.Value)), 32)
-		if err1 != nil {
-			err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+		val, err := strconv.ParseFloat(*(*string)(unsafe.Pointer(&a.Value)), 32)
+		if err != nil {
+			errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 		}
 		switch a.Name.Local {
 		case attrX:
@@ -426,13 +426,13 @@ type triangleDecoder struct {
 	defaultPropertyIndex, defaultPropertyID uint32
 }
 
-func (d *triangleDecoder) Start(attrs []encoding.Attr) (err error) {
+func (d *triangleDecoder) Start(attrs []encoding.Attr) (errs error) {
 	var t Triangle
 	var pid, p1, p2, p3 uint32
 	var hasPID, hasP1, hasP2, hasP3 bool
 	for _, a := range attrs {
 		required := true
-		val, err1 := strconv.ParseUint(string(a.Value), 10, 24)
+		val, err := strconv.ParseUint(string(a.Value), 10, 24)
 		switch a.Name.Local {
 		case attrV1:
 			t[0] = ToUint24(uint32(val))
@@ -457,8 +457,8 @@ func (d *triangleDecoder) Start(attrs []encoding.Attr) (err error) {
 			hasP3 = true
 			required = false
 		}
-		if err1 != nil {
-			err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, required))
+		if err != nil {
+			errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, required))
 		}
 	}
 
@@ -514,19 +514,19 @@ func (d *objectDecoder) Child(name xml.Name) (child encoding.ElementDecoder) {
 	return
 }
 
-func (d *objectDecoder) parseCoreAttr(a encoding.Attr) (err error) {
+func (d *objectDecoder) parseCoreAttr(a encoding.Attr) (errs error) {
 	switch a.Name.Local {
 	case attrID:
-		id, err1 := strconv.ParseUint(string(a.Value), 10, 32)
-		if err1 != nil {
-			err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+		id, err := strconv.ParseUint(string(a.Value), 10, 32)
+		if err != nil {
+			errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 		}
 		d.resource.ID = uint32(id)
 	case attrType:
 		var ok bool
 		d.resource.Type, ok = newObjectType(string(a.Value))
 		if !ok {
-			err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, false))
+			errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, false))
 		}
 	case attrThumbnail:
 		d.resource.Thumbnail = string(a.Value)
@@ -535,15 +535,15 @@ func (d *objectDecoder) parseCoreAttr(a encoding.Attr) (err error) {
 	case attrPartNumber:
 		d.resource.PartNumber = string(a.Value)
 	case attrPID:
-		val, err1 := strconv.ParseUint(string(a.Value), 10, 32)
-		if err1 != nil {
-			err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, false))
+		val, err := strconv.ParseUint(string(a.Value), 10, 32)
+		if err != nil {
+			errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, false))
 		}
 		d.resource.PID = uint32(val)
 	case attrPIndex:
-		val, err1 := strconv.ParseUint(string(a.Value), 10, 32)
-		if err1 != nil {
-			err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, false))
+		val, err := strconv.ParseUint(string(a.Value), 10, 32)
+		if err != nil {
+			errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, false))
 		}
 		d.resource.PIndex = uint32(val)
 	}
@@ -577,25 +577,25 @@ type componentDecoder struct {
 	resource *Object
 }
 
-func (d *componentDecoder) Start(attrs []encoding.Attr) (err error) {
+func (d *componentDecoder) Start(attrs []encoding.Attr) (errs error) {
 	var component Component
 	for _, a := range attrs {
 		if a.Name.Space == "" {
 			if a.Name.Local == attrObjectID {
-				val, err1 := strconv.ParseUint(string(a.Value), 10, 32)
-				if err1 != nil {
-					err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, true))
+				val, err := strconv.ParseUint(string(a.Value), 10, 32)
+				if err != nil {
+					errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 				}
 				component.ObjectID = uint32(val)
 			} else if a.Name.Local == attrTransform {
 				var ok bool
 				component.Transform, ok = encoding.ParseMatrix(string(a.Value))
 				if !ok {
-					err = specerr.Append(err, specerr.NewParseAttrError(a.Name.Local, false))
+					errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, false))
 				}
 			}
 		} else if ext, ok := d.ctx.extensionDecoder[a.Name.Space]; ok {
-			err = specerr.Append(err, ext.DecodeAttribute(&component, a))
+			errs = specerr.Append(errs, ext.DecodeAttribute(&component, a))
 		}
 	}
 	d.resource.Components = append(d.resource.Components, &component)
