@@ -9,7 +9,7 @@ import (
 	"github.com/qmuntal/go3mf/spec/encoding"
 )
 
-func (e Spec) NewElementDecoder(el interface{}, nodeName string) (child encoding.NodeDecoder) {
+func (e Spec) NewElementDecoder(el interface{}, nodeName string) (child encoding.ElementDecoder) {
 	switch nodeName {
 	case attrColorGroup:
 		child = &colorGroupDecoder{resources: el.(*go3mf.Resources)}
@@ -38,7 +38,7 @@ func (d *colorGroupDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *colorGroupDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
+func (d *colorGroupDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrColor {
 		child = &d.colorDecoder
 	}
@@ -115,7 +115,7 @@ func (d *tex2DGroupDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *tex2DGroupDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
+func (d *tex2DGroupDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrTex2DCoord {
 		child = &d.tex2DCoordDecoder
 	}
@@ -194,7 +194,7 @@ func (d *compositeMaterialsDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *compositeMaterialsDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
+func (d *compositeMaterialsDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrComposite {
 		child = &d.compositeDecoder
 	}
@@ -266,7 +266,7 @@ func (d *multiPropertiesDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *multiPropertiesDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
+func (d *multiPropertiesDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrMulti {
 		child = &d.multiDecoder
 	}

@@ -69,16 +69,16 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 			scanner.extensionDecoder[ext.Namespace()] = ext
 		}
 	}
-	state, names := make([]encoding.NodeDecoder, 0, 10), make([]encoding.Name, 0, 10)
+	state, names := make([]encoding.ElementDecoder, 0, 10), make([]encoding.Name, 0, 10)
 
 	var (
-		currentDecoder, tmpDecoder encoding.NodeDecoder
+		currentDecoder, tmpDecoder encoding.ElementDecoder
 		currentName                encoding.Name
 	)
 	currentDecoder = &topLevelDecoder{isRoot: isRoot, model: model, ctx: &scanner}
 	var err error
 	x.OnStart = func(tp xml3mf.StartElement) {
-		if childDecoder, ok := currentDecoder.(encoding.ChildNodeDecoder); ok {
+		if childDecoder, ok := currentDecoder.(encoding.ChildElementDecoder); ok {
 			tmpDecoder = childDecoder.Child(tp.Name)
 			if tmpDecoder != nil {
 				state = append(state, currentDecoder)
@@ -100,7 +100,7 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 		}
 	}
 	x.OnChar = func(tp encoding.CharData) {
-		if currentDecoder, ok := currentDecoder.(encoding.TextNodeDecoder); ok {
+		if currentDecoder, ok := currentDecoder.(encoding.TextElementDecoder); ok {
 			currentDecoder.Text(tp)
 		}
 	}

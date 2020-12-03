@@ -11,7 +11,7 @@ import (
 )
 
 var _ encoding.Decoder = new(Spec)
-var _ encoding.ElementDecoder = new(Spec)
+var _ encoding.ElementDecoderFactory = new(Spec)
 var _ spec.AssetValidator = new(Spec)
 var _ go3mf.Asset = new(Texture2D)
 var _ go3mf.Asset = new(Texture2DGroup)

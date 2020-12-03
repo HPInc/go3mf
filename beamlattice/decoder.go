@@ -8,7 +8,7 @@ import (
 	"github.com/qmuntal/go3mf/spec/encoding"
 )
 
-func (e Spec) NewElementDecoder(el interface{}, nodeName string) encoding.NodeDecoder {
+func (e Spec) NewElementDecoder(el interface{}, nodeName string) encoding.ElementDecoder {
 	if nodeName == attrBeamLattice {
 		return &beamLatticeDecoder{mesh: el.(*go3mf.Mesh)}
 	}
@@ -71,7 +71,7 @@ func (d *beamLatticeDecoder) Start(attrs []encoding.Attr) (err error) {
 	return
 }
 
-func (d *beamLatticeDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
+func (d *beamLatticeDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace {
 		if name.Local == attrBeams {
 			child = &beamsDecoder{mesh: d.mesh}
@@ -93,7 +93,7 @@ func (d *beamsDecoder) Start(_ []encoding.Attr) error {
 	return nil
 }
 
-func (d *beamsDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
+func (d *beamsDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrBeam {
 		child = &d.beamDecoder
 	}
@@ -175,7 +175,7 @@ type beamSetsDecoder struct {
 	mesh *go3mf.Mesh
 }
 
-func (d *beamSetsDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
+func (d *beamSetsDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrBeamSet {
 		child = &beamSetDecoder{mesh: d.mesh}
 	}
@@ -210,7 +210,7 @@ func (d *beamSetDecoder) Start(attrs []encoding.Attr) error {
 	return nil
 }
 
-func (d *beamSetDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
+func (d *beamSetDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrRef {
 		child = &d.beamRefDecoder
 	}

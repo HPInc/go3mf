@@ -26,9 +26,9 @@ var _ assetValidator = new(fakeSpec)
 var _ objectValidator = new(fakeSpec)
 var _ encoding.Decoder = new(fakeSpec)
 var _ encoding.PostProcessorDecoder = new(fakeSpec)
-var _ encoding.ElementDecoder = new(fakeSpec)
-var _ encoding.TextNodeDecoder = new(metadataDecoder)
-var _ encoding.ChildNodeDecoder = new(baseMaterialsDecoder)
+var _ encoding.ElementDecoderFactory = new(fakeSpec)
+var _ encoding.TextElementDecoder = new(metadataDecoder)
+var _ encoding.ChildElementDecoder = new(baseMaterialsDecoder)
 
 type fakeSpec struct {
 	m *Model
@@ -43,7 +43,7 @@ func (f *fakeSpec) SetModel(m *Model)  { f.m = m }
 
 func (e *fakeSpec) PostProcessDecode() {}
 
-func (f *fakeSpec) NewElementDecoder(e interface{}, nodeName string) encoding.NodeDecoder {
+func (f *fakeSpec) NewElementDecoder(e interface{}, nodeName string) encoding.ElementDecoder {
 	if e, ok := e.(*Resources); ok {
 		return &fakeAssetDecoder{resources: e}
 	}

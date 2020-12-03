@@ -8,7 +8,7 @@ import (
 	"github.com/qmuntal/go3mf/spec/encoding"
 )
 
-func (e Spec) NewElementDecoder(el interface{}, nodeName string) encoding.NodeDecoder {
+func (e Spec) NewElementDecoder(el interface{}, nodeName string) encoding.ElementDecoder {
 	if nodeName == attrSliceStack {
 		return &sliceStackDecoder{resources: el.(*go3mf.Resources)}
 	}
@@ -60,7 +60,7 @@ func (d *sliceStackDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *sliceStackDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
+func (d *sliceStackDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace {
 		if name.Local == attrSlice {
 			child = &sliceDecoder{resource: &d.resource}
@@ -128,7 +128,7 @@ type sliceDecoder struct {
 func (d *sliceDecoder) End() {
 	d.resource.Slices = append(d.resource.Slices, &d.slice)
 }
-func (d *sliceDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
+func (d *sliceDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace {
 		if name.Local == attrVertices {
 			child = &d.polygonVerticesDecoder
@@ -166,7 +166,7 @@ func (d *polygonVerticesDecoder) Start(_ []encoding.Attr) error {
 	return nil
 }
 
-func (d *polygonVerticesDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
+func (d *polygonVerticesDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrVertex {
 		child = &d.polygonVertexDecoder
 	}
@@ -202,7 +202,7 @@ type polygonDecoder struct {
 	polygonSegmentDecoder polygonSegmentDecoder
 }
 
-func (d *polygonDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
+func (d *polygonDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrSegment {
 		child = &d.polygonSegmentDecoder
 	}

@@ -31,31 +31,37 @@ type MarshalerAttr interface {
 	Marshal3MFAttr(Encoder) ([]xml.Attr, error)
 }
 
-// NodeDecoder defines the minimum contract to decode a 3MF node.
-type NodeDecoder interface {
-	Start([]Attr) error
-	End()
-}
-
+// Decoder must be implemented by specs that want to support
+// direct decoding from xml.
 type Decoder interface {
 	Namespace() string
 	Local() string
 	Required() bool
-	DecodeAttribute(interface{}, Attr) error
+	DecodeAttribute(parent interface{}, attr Attr) error
+	NewElementDecoder(parent interface{}, name string) ElementDecoder
 }
 
+// ElementDecoder defines the minimum contract to decode a 3MF node.
 type ElementDecoder interface {
-	NewElementDecoder(interface{}, string) NodeDecoder
+	Start([]Attr) error
+	End()
 }
 
-type ChildNodeDecoder interface {
-	Child(xml.Name) NodeDecoder
+// ChildElementDecoder must be implemented by element decoders
+// that need decoding nested elements.
+type ChildElementDecoder interface {
+	Child(xml.Name) ElementDecoder
 }
 
-type TextNodeDecoder interface {
+// TextElementDecoder must be implemented by element decoders
+// that need to decode raw text.
+type TextElementDecoder interface {
 	Text([]byte)
 }
 
+// Encoder provides de necessary methods to encode specs.
+// It should not be implemented by spec authors but
+// will be provided be go3mf itself.
 type Encoder interface {
 	AddRelationship(r Relationship)
 	FloatPresicion() int
@@ -64,10 +70,14 @@ type Encoder interface {
 	SetAutoClose(autoClose bool)
 }
 
+// PreProcessEncoder must be implemented by specs
+// that need to do some processing before encoding.
 type PreProcessEncoder interface {
 	PreProcessEncode()
 }
 
+// PostProcessDecode must be implemented by specs
+// that need to do some processing after encoding.
 type PostProcessorDecoder interface {
 	PostProcessDecode()
 }

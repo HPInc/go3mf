@@ -18,7 +18,7 @@ type modelDecoder struct {
 	isRoot bool
 }
 
-func (d *modelDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
+func (d *modelDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace {
 		switch name.Local {
 		case attrResources:
@@ -34,9 +34,7 @@ func (d *modelDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
 			}
 		}
 	} else if ext, ok := d.ctx.extensionDecoder[name.Space]; ok {
-		if ext, ok := ext.(encoding.ElementDecoder); ok {
-			child = ext.NewElementDecoder(d.model, name.Local)
-		}
+		child = ext.NewElementDecoder(d.model, name.Local)
 	}
 	return
 }
@@ -101,7 +99,7 @@ type metadataGroupDecoder struct {
 	metadatas *[]Metadata
 }
 
-func (d *metadataGroupDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
+func (d *metadataGroupDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrMetadata {
 		child = &metadataDecoder{metadatas: d.metadatas, ctx: d.ctx}
 	}
@@ -155,7 +153,7 @@ type buildDecoder struct {
 	build *Build
 }
 
-func (d *buildDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
+func (d *buildDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrItem {
 		child = &buildItemDecoder{build: d.build, ctx: d.ctx}
 	}
@@ -183,7 +181,7 @@ func (d *buildItemDecoder) End() {
 	d.ctx.resourceID = 0
 }
 
-func (d *buildItemDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
+func (d *buildItemDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrMetadataGroup {
 		child = &metadataGroupDecoder{metadatas: &d.item.Metadata, ctx: d.ctx}
 	}
@@ -228,7 +226,7 @@ type resourceDecoder struct {
 	resources *Resources
 }
 
-func (d *resourceDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
+func (d *resourceDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace {
 		switch name.Local {
 		case attrObject:
@@ -237,23 +235,21 @@ func (d *resourceDecoder) Child(name encoding.Name) (child encoding.NodeDecoder)
 			child = &baseMaterialsDecoder{resources: d.resources}
 		}
 	} else if ext, ok := d.ctx.extensionDecoder[name.Space]; ok {
-		if ext, ok := ext.(encoding.ElementDecoder); ok {
-			child = ext.NewElementDecoder(d.resources, name.Local)
-		}
+		child = ext.NewElementDecoder(d.resources, name.Local)
 	}
 	if child != nil {
-		child = &resourceDecoderWrapper{NodeDecoder: child, ctx: d.ctx}
+		child = &resourceDecoderWrapper{ElementDecoder: child, ctx: d.ctx}
 	}
 	return
 }
 
 type resourceDecoderWrapper struct {
-	encoding.NodeDecoder
+	encoding.ElementDecoder
 	ctx *decoderContext
 }
 
-func (d *resourceDecoderWrapper) Child(name encoding.Name) (child encoding.NodeDecoder) {
-	if v, ok := d.NodeDecoder.(encoding.ChildNodeDecoder); ok {
+func (d *resourceDecoderWrapper) Child(name encoding.Name) (child encoding.ElementDecoder) {
+	if v, ok := d.ElementDecoder.(encoding.ChildElementDecoder); ok {
 		return v.Child(name)
 	}
 	return nil
@@ -267,11 +263,11 @@ func (d *resourceDecoderWrapper) Start(attrs []encoding.Attr) error {
 			break
 		}
 	}
-	return d.NodeDecoder.Start(attrs)
+	return d.ElementDecoder.Start(attrs)
 }
 
 func (d *resourceDecoderWrapper) End() {
-	d.NodeDecoder.End()
+	d.ElementDecoder.End()
 	d.ctx.resourceID = 0
 }
 
@@ -286,7 +282,7 @@ func (d *baseMaterialsDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *baseMaterialsDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
+func (d *baseMaterialsDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrBase {
 		child = &d.baseMaterialDecoder
 	}
@@ -343,7 +339,7 @@ func (d *meshDecoder) Start(_ []encoding.Attr) error {
 	return nil
 }
 
-func (d *meshDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
+func (d *meshDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace {
 		if name.Local == attrVertices {
 			child = &verticesDecoder{mesh: d.resource.Mesh}
@@ -351,9 +347,7 @@ func (d *meshDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
 			child = &trianglesDecoder{resource: d.resource}
 		}
 	} else if ext, ok := d.ctx.extensionDecoder[name.Space]; ok {
-		if ext, ok := ext.(encoding.ElementDecoder); ok {
-			child = ext.NewElementDecoder(d.resource.Mesh, name.Local)
-		}
+		child = ext.NewElementDecoder(d.resource.Mesh, name.Local)
 	}
 	return
 }
@@ -369,7 +363,7 @@ func (d *verticesDecoder) Start(_ []encoding.Attr) error {
 	return nil
 }
 
-func (d *verticesDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
+func (d *verticesDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrVertex {
 		child = &d.vertexDecoder
 	}
@@ -418,7 +412,7 @@ func (d *trianglesDecoder) Start(_ []encoding.Attr) error {
 	return nil
 }
 
-func (d *trianglesDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
+func (d *trianglesDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrTriangle {
 		child = &d.triangleDecoder
 	}
@@ -506,7 +500,7 @@ func (d *objectDecoder) Start(attrs []encoding.Attr) (err error) {
 	return
 }
 
-func (d *objectDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
+func (d *objectDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace {
 		if name.Local == attrMesh {
 			child = &meshDecoder{resource: &d.resource, ctx: d.ctx}
@@ -569,7 +563,7 @@ func (d *componentsDecoder) Start(_ []encoding.Attr) error {
 	return nil
 }
 
-func (d *componentsDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
+func (d *componentsDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrComponent {
 		child = &d.componentDecoder
 	}
@@ -620,7 +614,7 @@ type topLevelDecoder struct {
 	isRoot bool
 }
 
-func (d *topLevelDecoder) Child(name encoding.Name) (child encoding.NodeDecoder) {
+func (d *topLevelDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
 	modelName := encoding.Name{Space: Namespace, Local: attrModel}
 	if name == modelName {
 		child = &modelDecoder{model: d.model, isRoot: d.isRoot, ctx: d.ctx}
