@@ -1,6 +1,7 @@
 package materials
 
 import (
+	"encoding/xml"
 	"strconv"
 	"strings"
 
@@ -9,8 +10,11 @@ import (
 	"github.com/qmuntal/go3mf/spec/encoding"
 )
 
-func (e Spec) NewElementDecoder(el interface{}, nodeName string) (child encoding.ElementDecoder) {
-	switch nodeName {
+func (e Spec) NewElementDecoder(el interface{}, name xml.Name) (child encoding.ElementDecoder) {
+	if name.Space != Namespace {
+		return
+	}
+	switch name.Local {
 	case attrColorGroup:
 		child = &colorGroupDecoder{resources: el.(*go3mf.Resources)}
 	case attrTexture2DGroup:
@@ -38,7 +42,7 @@ func (d *colorGroupDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *colorGroupDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
+func (d *colorGroupDecoder) Child(name xml.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrColor {
 		child = &d.colorDecoder
 	}
@@ -115,7 +119,7 @@ func (d *tex2DGroupDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *tex2DGroupDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
+func (d *tex2DGroupDecoder) Child(name xml.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrTex2DCoord {
 		child = &d.tex2DCoordDecoder
 	}
@@ -194,7 +198,7 @@ func (d *compositeMaterialsDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *compositeMaterialsDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
+func (d *compositeMaterialsDecoder) Child(name xml.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrComposite {
 		child = &d.compositeDecoder
 	}
@@ -266,7 +270,7 @@ func (d *multiPropertiesDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *multiPropertiesDecoder) Child(name encoding.Name) (child encoding.ElementDecoder) {
+func (d *multiPropertiesDecoder) Child(name xml.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrMulti {
 		child = &d.multiDecoder
 	}

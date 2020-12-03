@@ -3,6 +3,7 @@ package go3mf
 import (
 	"bytes"
 	"context"
+	"encoding/xml"
 	"errors"
 	"io"
 	"io/ioutil"
@@ -69,11 +70,11 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 			scanner.extensionDecoder[ext.Namespace()] = ext
 		}
 	}
-	state, names := make([]encoding.ElementDecoder, 0, 10), make([]encoding.Name, 0, 10)
+	state, names := make([]encoding.ElementDecoder, 0, 10), make([]xml.Name, 0, 10)
 
 	var (
 		currentDecoder, tmpDecoder encoding.ElementDecoder
-		currentName                encoding.Name
+		currentName                xml.Name
 	)
 	currentDecoder = &topLevelDecoder{isRoot: isRoot, model: model, ctx: &scanner}
 	var err error
@@ -92,16 +93,16 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 			}
 		}
 	}
-	x.OnEnd = func(tp encoding.EndElement) {
+	x.OnEnd = func(tp xml.EndElement) {
 		if currentName == tp.Name {
 			currentDecoder.End()
 			currentDecoder, state = state[len(state)-1], state[:len(state)-1]
 			currentName, names = names[len(names)-1], names[:len(names)-1]
 		}
 	}
-	x.OnChar = func(tp encoding.CharData) {
-		if currentDecoder, ok := currentDecoder.(encoding.TextElementDecoder); ok {
-			currentDecoder.Text(tp)
+	x.OnChar = func(tp xml.CharData) {
+		if currentDecoder, ok := currentDecoder.(encoding.CharDataElementDecoder); ok {
+			currentDecoder.CharData(tp)
 		}
 	}
 	var i int
@@ -334,7 +335,7 @@ type decoderContext struct {
 	extensionDecoder map[string]encoding.Decoder
 	modelPath        string
 	isRoot           bool
-	contex           []encoding.Name
+	contex           []xml.Name
 	resourceID       uint32
 }
 

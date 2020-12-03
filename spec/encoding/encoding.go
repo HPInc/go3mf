@@ -4,10 +4,6 @@ import (
 	"encoding/xml"
 )
 
-type Name = xml.Name
-type EndElement = xml.EndElement
-type CharData = xml.CharData
-
 type Attr struct {
 	Name  xml.Name
 	Value []byte
@@ -38,7 +34,7 @@ type Decoder interface {
 	Local() string
 	Required() bool
 	DecodeAttribute(parent interface{}, attr Attr) error
-	NewElementDecoder(parent interface{}, name string) ElementDecoder
+	NewElementDecoder(parent interface{}, name xml.Name) ElementDecoder
 }
 
 // ElementDecoder defines the minimum contract to decode a 3MF node.
@@ -53,10 +49,10 @@ type ChildElementDecoder interface {
 	Child(xml.Name) ElementDecoder
 }
 
-// TextElementDecoder must be implemented by element decoders
+// CharDataElementDecoder must be implemented by element decoders
 // that need to decode raw text.
-type TextElementDecoder interface {
-	Text([]byte)
+type CharDataElementDecoder interface {
+	CharData([]byte)
 }
 
 // Encoder provides de necessary methods to encode specs.

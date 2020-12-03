@@ -3,6 +3,7 @@ package go3mf
 import (
 	"bytes"
 	"context"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"image/color"
@@ -26,7 +27,7 @@ var _ assetValidator = new(fakeSpec)
 var _ objectValidator = new(fakeSpec)
 var _ encoding.Decoder = new(fakeSpec)
 var _ encoding.PostProcessorDecoder = new(fakeSpec)
-var _ encoding.TextElementDecoder = new(metadataDecoder)
+var _ encoding.CharDataElementDecoder = new(metadataDecoder)
 var _ encoding.ChildElementDecoder = new(baseMaterialsDecoder)
 
 type fakeSpec struct {
@@ -42,7 +43,7 @@ func (f *fakeSpec) SetModel(m *Model)  { f.m = m }
 
 func (e *fakeSpec) PostProcessDecode() {}
 
-func (f *fakeSpec) NewElementDecoder(e interface{}, nodeName string) encoding.ElementDecoder {
+func (f *fakeSpec) NewElementDecoder(e interface{}, _ xml.Name) encoding.ElementDecoder {
 	if e, ok := e.(*Resources); ok {
 		return &fakeAssetDecoder{resources: e}
 	}
@@ -361,7 +362,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 
 	components := &Object{
 		ID: 20, Type: ObjectTypeSupport,
-		Metadata:   []Metadata{{Name: encoding.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}, {Name: encoding.Name{Space: "qm", Local: "CustomMetadata4"}, Type: "xs:boolean", Value: "2"}},
+		Metadata:   []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}, {Name: xml.Name{Space: "qm", Local: "CustomMetadata4"}, Type: "xs:boolean", Value: "2"}},
 		Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}},
 	}
 
@@ -374,11 +375,11 @@ func TestDecoder_processRootModel(t *testing.T) {
 	}
 	want.Build.Items = append(want.Build.Items, &Item{
 		ObjectID: 20, PartNumber: "bob", Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
-		Metadata: []Metadata{{Name: encoding.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}},
+		Metadata: []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}},
 	})
 	want.Metadata = append(want.Metadata, []Metadata{
-		{Name: encoding.Name{Local: "Application"}, Value: "go3mf app"},
-		{Name: encoding.Name{Space: "qm", Local: "CustomMetadata1"}, Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},
+		{Name: xml.Name{Local: "Application"}, Value: "go3mf app"},
+		{Name: xml.Name{Space: "qm", Local: "CustomMetadata1"}, Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},
 	}...)
 	got := new(Model)
 	got.Path = "/3D/3dmodel.model"
