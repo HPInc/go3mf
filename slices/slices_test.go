@@ -10,7 +10,6 @@ import (
 )
 
 var _ encoding.Decoder = new(Spec)
-var _ encoding.ElementDecoderFactory = new(Spec)
 var _ spec.ObjectValidator = new(Spec)
 var _ spec.AssetValidator = new(Spec)
 var _ go3mf.Asset = new(SliceStack)

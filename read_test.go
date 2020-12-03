@@ -26,7 +26,6 @@ var _ assetValidator = new(fakeSpec)
 var _ objectValidator = new(fakeSpec)
 var _ encoding.Decoder = new(fakeSpec)
 var _ encoding.PostProcessorDecoder = new(fakeSpec)
-var _ encoding.ElementDecoderFactory = new(fakeSpec)
 var _ encoding.TextElementDecoder = new(metadataDecoder)
 var _ encoding.ChildElementDecoder = new(baseMaterialsDecoder)
 

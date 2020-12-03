@@ -7,6 +7,10 @@ import (
 	"github.com/qmuntal/go3mf/uuid"
 )
 
+func (e Spec) NewElementDecoder(_ interface{}, _ string) encoding.ElementDecoder {
+	return nil
+}
+
 func (e Spec) PostProcessDecode() {
 	if GetBuildAttr(&e.m.Build) == nil {
 		e.m.Build.AnyAttr = append(e.m.Build.AnyAttr, &BuildAttr{UUID: uuid.New()})
