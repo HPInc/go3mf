@@ -150,13 +150,15 @@ func (d *metadataDecoder) End() {
 
 type buildDecoder struct {
 	baseDecoder
-	ctx   *decoderContext
-	build *Build
+	ctx       *decoderContext
+	build     *Build
+	itemIndex uint32
 }
 
 func (d *buildDecoder) Child(name xml.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrItem {
-		child = &buildItemDecoder{build: d.build, ctx: d.ctx}
+		child = &buildItemDecoder{build: d.build, ctx: d.ctx, itemIndex: d.itemIndex}
+		d.itemIndex++
 	}
 	return
 }
@@ -172,14 +174,14 @@ func (d *buildDecoder) Start(attrs []encoding.Attr) (err error) {
 
 type buildItemDecoder struct {
 	baseDecoder
-	ctx   *decoderContext
-	build *Build
-	item  Item
+	ctx       *decoderContext
+	build     *Build
+	item      Item
+	itemIndex uint32
 }
 
 func (d *buildItemDecoder) End() {
 	d.build.Items = append(d.build.Items, &d.item)
-	d.ctx.resourceID = 0
 }
 
 func (d *buildItemDecoder) Child(name xml.Name) (child encoding.ElementDecoder) {
@@ -189,12 +191,27 @@ func (d *buildItemDecoder) Child(name xml.Name) (child encoding.ElementDecoder) 
 	return
 }
 
-func (d *buildItemDecoder) Start(attrs []encoding.Attr) (err error) {
+func (d *buildItemDecoder) Start(attrs []encoding.Attr) (errs error) {
+	var attrErrs error
 	for _, a := range attrs {
 		if a.Name.Space == "" {
-			err = specerr.Append(err, d.parseCoreAttr(a))
+			attrErrs = specerr.Append(attrErrs, d.parseCoreAttr(a))
 		} else if ext, ok := d.ctx.extensionDecoder[a.Name.Space]; ok {
-			err = specerr.Append(err, ext.DecodeAttribute(&d.item, a))
+			attrErrs = specerr.Append(attrErrs, ext.DecodeAttribute(&d.item, a))
+		}
+	}
+	if attrErrs != nil {
+		switch attrErrs := attrErrs.(type) {
+		case *specerr.List:
+			for _, err := range attrErrs.Errors {
+				errs = specerr.Append(errs, &specerr.BuildItemError{
+					Index: d.itemIndex, Err: err,
+				})
+			}
+		default:
+			errs = specerr.Append(errs, &specerr.BuildItemError{
+				Index: d.itemIndex, Err: attrErrs,
+			})
 		}
 	}
 	return
@@ -208,7 +225,6 @@ func (d *buildItemDecoder) parseCoreAttr(a encoding.Attr) (errs error) {
 			errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 		}
 		d.item.ObjectID = uint32(val)
-		d.ctx.resourceID = d.item.ObjectID
 	case attrPartNumber:
 		d.item.PartNumber = string(a.Value)
 	case attrTransform:

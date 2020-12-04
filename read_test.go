@@ -591,8 +591,8 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "type", Required: false}, ResourceID: 22, Context: "model@resources@object"},
 		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "transform", Required: false}, ResourceID: 20, Context: "model@resources@object@components@component"},
 		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "objectid", Required: true}, ResourceID: 20, Context: "model@resources@object@components@component"},
-		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "transform", Required: false}, ResourceID: 20, Context: "model@build@item"},
-		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "objectid", Required: true}, ResourceID: 0, Context: "model@build@item"},
+		&specerr.BuildItemError{Err: &specerr.ParseAttrError{Name: "transform", Required: false}, Index: 0, Context: "model@build@item"},
+		&specerr.BuildItemError{Err: &specerr.ParseAttrError{Name: "objectid", Required: true}, Index: 3, Context: "model@build@item"},
 	}}
 	got := new(Model)
 	got.Path = "/3D/3dmodel.model"

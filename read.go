@@ -358,13 +358,22 @@ func (s *decoderContext) addErrContext(err error) {
 		ct = ct[1:] // don't add path in case happend in root file
 	}
 	ctx := strings.Join(ct, "@")
-	if err, ok := err.(*specerr.List); ok {
+	s.addError(ctx, err)
+}
+
+func (s *decoderContext) addError(ctx string, err error) {
+	switch err := err.(type) {
+	case *specerr.BuildItemError:
+		err.Context = ctx
+		specerr.Append(&s.Err, err)
+	case *specerr.ResourceError:
+		err.Context = ctx
+		specerr.Append(&s.Err, err)
+	case *specerr.List:
 		for _, err := range err.Errors {
-			specerr.Append(&s.Err, &specerr.ResourceError{
-				Context: ctx, ResourceID: s.resourceID, Err: err,
-			})
+			s.addError(ctx, err)
 		}
-	} else {
+	default:
 		specerr.Append(&s.Err, &specerr.ResourceError{
 			Context: ctx, ResourceID: s.resourceID, Err: err,
 		})
