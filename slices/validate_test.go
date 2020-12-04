@@ -39,8 +39,8 @@ func TestValidate(t *testing.T) {
 				&SliceStack{ID: 2},
 			}}},
 		}}, []error{
-			fmt.Errorf("/other.model@Resources@SliceStack#0: %v", errors.ErrSlicesAndRefs),
-			fmt.Errorf("/that.model@Resources@SliceStack#0: %v", errors.ErrSlicesAndRefs),
+			fmt.Errorf("/other.model@Resources@SliceStack#0: %v", ErrSlicesAndRefs),
+			fmt.Errorf("/that.model@Resources@SliceStack#0: %v", ErrSlicesAndRefs),
 		}},
 		{"slicestack", &go3mf.Model{Resources: go3mf.Resources{
 			Assets: []go3mf.Asset{&SliceStack{
@@ -57,12 +57,12 @@ func TestValidate(t *testing.T) {
 			}},
 		}}, []error{
 			fmt.Errorf("Resources@SliceStack#0@Slice#0: %v", &errors.MissingFieldError{Name: attrZTop}),
-			fmt.Errorf("Resources@SliceStack#0@Slice#1: %v", errors.ErrSliceSmallTopZ),
-			fmt.Errorf("Resources@SliceStack#0@Slice#1: %v", errors.ErrSliceInsufficientVertices),
-			fmt.Errorf("Resources@SliceStack#0@Slice#1: %v", errors.ErrSliceInsufficientPolygons),
-			fmt.Errorf("Resources@SliceStack#0@Slice#2@Polygon#0: %v", errors.ErrSliceInsufficientSegments),
-			fmt.Errorf("Resources@SliceStack#0@Slice#3: %v", errors.ErrSliceNoMonotonic),
-			fmt.Errorf("Resources@SliceStack#0@Slice#4: %v", errors.ErrSliceNoMonotonic),
+			fmt.Errorf("Resources@SliceStack#0@Slice#1: %v", ErrSliceSmallTopZ),
+			fmt.Errorf("Resources@SliceStack#0@Slice#1: %v", ErrSliceInsufficientVertices),
+			fmt.Errorf("Resources@SliceStack#0@Slice#1: %v", ErrSliceInsufficientPolygons),
+			fmt.Errorf("Resources@SliceStack#0@Slice#2@Polygon#0: %v", ErrSliceInsufficientSegments),
+			fmt.Errorf("Resources@SliceStack#0@Slice#3: %v", ErrSliceNoMonotonic),
+			fmt.Errorf("Resources@SliceStack#0@Slice#4: %v", ErrSliceNoMonotonic),
 		}},
 		{"sliceref", &go3mf.Model{
 			Childs: map[string]*go3mf.ChildModel{
@@ -89,11 +89,11 @@ func TestValidate(t *testing.T) {
 			}}, []error{
 			fmt.Errorf("Resources@SliceStack#1@SliceRef#0: %v", &errors.MissingFieldError{Name: attrSlicePath}),
 			fmt.Errorf("Resources@SliceStack#1@SliceRef#0: %v", &errors.MissingFieldError{Name: attrSliceRefID}),
-			fmt.Errorf("Resources@SliceStack#1@SliceRef#1: %v", errors.ErrSliceRefSamePart),
+			fmt.Errorf("Resources@SliceStack#1@SliceRef#1: %v", ErrSliceRefSamePart),
 			fmt.Errorf("Resources@SliceStack#1@SliceRef#2: %v", errors.ErrMissingResource),
-			fmt.Errorf("Resources@SliceStack#1@SliceRef#3: %v", errors.ErrSliceRefRef),
-			fmt.Errorf("Resources@SliceStack#1@SliceRef#4: %v", errors.ErrNonSliceStack),
-			fmt.Errorf("Resources@SliceStack#1@SliceRef#6: %v", errors.ErrSliceNoMonotonic),
+			fmt.Errorf("Resources@SliceStack#1@SliceRef#3: %v", ErrSliceRefRef),
+			fmt.Errorf("Resources@SliceStack#1@SliceRef#4: %v", ErrNonSliceStack),
+			fmt.Errorf("Resources@SliceStack#1@SliceRef#6: %v", ErrSliceNoMonotonic),
 		}},
 		{"info", &go3mf.Model{Build: go3mf.Build{Items: []*go3mf.Item{
 			{ObjectID: 7},
@@ -152,14 +152,14 @@ func TestValidate(t *testing.T) {
 			fmt.Errorf("Resources@Object#0@Mesh: %v", errors.ErrInsufficientVertices),
 			fmt.Errorf("Resources@Object#0@Mesh: %v", errors.ErrInsufficientTriangles),
 			fmt.Errorf("Resources@Object#0: %v", errors.ErrMissingResource),
-			fmt.Errorf("Resources@Object#1: %v", errors.ErrSliceInvalidTranform),
-			fmt.Errorf("Resources@Object#1: %v", errors.ErrSliceExtRequired),
+			fmt.Errorf("Resources@Object#1: %v", ErrSliceInvalidTranform),
+			fmt.Errorf("Resources@Object#1: %v", ErrSliceExtRequired),
 			fmt.Errorf("Resources@Object#2: %v", &errors.MissingFieldError{Name: attrSliceRefID}),
-			fmt.Errorf("Resources@Object#3: %v", errors.ErrNonSliceStack),
-			fmt.Errorf("Resources@Object#4: %v", errors.ErrSliceInvalidTranform),
-			fmt.Errorf("Resources@Object#4: %v", errors.ErrSlicePolygonNotClosed),
-			fmt.Errorf("Resources@Object#5: %v", errors.ErrSliceInvalidTranform),
-			fmt.Errorf("Resources@Object#5: %v", errors.ErrSlicePolygonNotClosed),
+			fmt.Errorf("Resources@Object#3: %v", ErrNonSliceStack),
+			fmt.Errorf("Resources@Object#4: %v", ErrSliceInvalidTranform),
+			fmt.Errorf("Resources@Object#4: %v", ErrSlicePolygonNotClosed),
+			fmt.Errorf("Resources@Object#5: %v", ErrSliceInvalidTranform),
+			fmt.Errorf("Resources@Object#5: %v", ErrSlicePolygonNotClosed),
 			fmt.Errorf("Resources@Object#6@Component#1: %v", errors.ErrRecursion),
 		}},
 	}

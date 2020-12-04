@@ -1,9 +1,20 @@
 package beamlattice
 
-import "github.com/qmuntal/go3mf"
+import (
+	"errors"
+	"github.com/qmuntal/go3mf"
+)
 
 // Namespace is the canonical name of this extension.
 const Namespace = "http://schemas.microsoft.com/3dmanufacturing/beamlattice/2017/02"
+
+var (
+	ErrLatticeObjType       = errors.New("MUST only be added to a mesh object of type model or solidsupport")
+	ErrLatticeClippedNoMesh = errors.New("if clipping mode is not equal to none, a clippingmesh resource MUST be specified")
+	ErrLatticeInvalidMesh   = errors.New("the clippingmesh and representationmesh MUST be a mesh object of type model and MUST NOT contain a beamlattice")
+	ErrLatticeSameVertex    = errors.New("a beam MUST consist of two distinct vertex indices")
+	ErrLatticeBeamR2        = errors.New("r2 MUST not be defined, if r1 is not defined")
+)
 
 type Spec struct {
 	LocalName string

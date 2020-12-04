@@ -23,7 +23,7 @@ func TestValidate(t *testing.T) {
 			fmt.Errorf("/other.model@Resources@Object#0@Mesh: %v", errors.ErrInsufficientVertices),
 			fmt.Errorf("/other.model@Resources@Object#0@Mesh@BeamLattice: %v", &errors.MissingFieldError{Name: attrMinLength}),
 			fmt.Errorf("/other.model@Resources@Object#0@Mesh@BeamLattice: %v", &errors.MissingFieldError{Name: attrRadius}),
-			fmt.Errorf("/other.model@Resources@Object#0@Mesh@BeamLattice: %v", errors.ErrLatticeClippedNoMesh),
+			fmt.Errorf("/other.model@Resources@Object#0@Mesh@BeamLattice: %v", ErrLatticeClippedNoMesh),
 		}},
 		{"object without beamlattice", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
 			{ID: 1, Mesh: &go3mf.Mesh{}},
@@ -47,9 +47,9 @@ func TestValidate(t *testing.T) {
 				MinLength: 1, Radius: 1, ClipMode: ClipInside,
 			}}}},
 		}}}, []error{
-			fmt.Errorf("Resources@Object#0@Mesh@BeamLattice: %v", errors.ErrLatticeObjType),
-			fmt.Errorf("Resources@Object#1@Mesh@BeamLattice: %v", errors.ErrLatticeObjType),
-			fmt.Errorf("Resources@Object#2@Mesh@BeamLattice: %v", errors.ErrLatticeObjType),
+			fmt.Errorf("Resources@Object#0@Mesh@BeamLattice: %v", ErrLatticeObjType),
+			fmt.Errorf("Resources@Object#1@Mesh@BeamLattice: %v", ErrLatticeObjType),
+			fmt.Errorf("Resources@Object#2@Mesh@BeamLattice: %v", ErrLatticeObjType),
 		}},
 		{"incorrect mesh references", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
 			{ID: 1, Mesh: &go3mf.Mesh{Vertices: []go3mf.Point3D{{}, {}, {}}, Any: go3mf.Any{nil}}},
@@ -62,7 +62,7 @@ func TestValidate(t *testing.T) {
 		}}}, []error{
 			fmt.Errorf("Resources@Object#1@Mesh@BeamLattice: %v", errors.ErrMissingResource),
 			fmt.Errorf("Resources@Object#1@Mesh@BeamLattice: %v", errors.ErrRecursion),
-			fmt.Errorf("Resources@Object#2@Mesh@BeamLattice: %v", errors.ErrLatticeInvalidMesh),
+			fmt.Errorf("Resources@Object#2@Mesh@BeamLattice: %v", ErrLatticeInvalidMesh),
 		}},
 		{"incorrect beams", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
 			{ID: 2, Mesh: &go3mf.Mesh{Vertices: []go3mf.Point3D{{}, {}, {}}, Any: go3mf.Any{&BeamLattice{
@@ -71,9 +71,9 @@ func TestValidate(t *testing.T) {
 				},
 			}}}},
 		}}}, []error{
-			fmt.Errorf("Resources@Object#0@Mesh@BeamLattice@Beam#0: %v", errors.ErrLatticeSameVertex),
-			fmt.Errorf("Resources@Object#0@Mesh@BeamLattice@Beam#1: %v", errors.ErrLatticeSameVertex),
-			fmt.Errorf("Resources@Object#0@Mesh@BeamLattice@Beam#1: %v", errors.ErrLatticeBeamR2),
+			fmt.Errorf("Resources@Object#0@Mesh@BeamLattice@Beam#0: %v", ErrLatticeSameVertex),
+			fmt.Errorf("Resources@Object#0@Mesh@BeamLattice@Beam#1: %v", ErrLatticeSameVertex),
+			fmt.Errorf("Resources@Object#0@Mesh@BeamLattice@Beam#1: %v", ErrLatticeBeamR2),
 			fmt.Errorf("Resources@Object#0@Mesh@BeamLattice@Beam#2: %v", errors.ErrIndexOutOfBounds),
 		}},
 		{"incorrect beamseat", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{

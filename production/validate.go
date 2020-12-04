@@ -17,7 +17,7 @@ func (e *Spec) ValidateModel() error {
 	if u == nil {
 		errs = errors.Append(errs, errors.Wrap(errors.NewMissingFieldError(attrProdUUID), e.m.Build))
 	} else if uuid.Validate(u.UUID) != nil {
-		errs = errors.Append(errs, errors.Wrap(errors.ErrUUID, e.m.Build))
+		errs = errors.Append(errs, errors.Wrap(ErrUUID, e.m.Build))
 	}
 	for i, item := range e.m.Build.Items {
 		var iErrs error
@@ -40,7 +40,7 @@ func (e *Spec) ValidateObject(path string, obj *go3mf.Object) error {
 	if u == nil {
 		errs = errors.Append(errs, errors.NewMissingFieldError(attrProdUUID))
 	} else if uuid.Validate(u.UUID) != nil {
-		errs = errors.Append(errs, errors.ErrUUID)
+		errs = errors.Append(errs, ErrUUID)
 	}
 	for i, c := range obj.Components {
 		var cErrs error
@@ -61,13 +61,13 @@ func (e *Spec) validatePathUUID(path string, p uuidPath) error {
 	if p.getUUID() == "" {
 		errs = errors.Append(errs, errors.NewMissingFieldError(attrProdUUID))
 	} else if uuid.Validate(string(p.getUUID())) != nil {
-		errs = errors.Append(errs, errors.ErrUUID)
+		errs = errors.Append(errs, ErrUUID)
 	}
 	if p.ObjectPath() != "" {
 		if path == "" || path == e.m.PathOrDefault() { // root
 			// Path is validated as part if the core validations
 		} else {
-			errs = errors.Append(errs, errors.ErrProdRefInNonRoot)
+			errs = errors.Append(errs, ErrProdRefInNonRoot)
 		}
 	}
 	return errs

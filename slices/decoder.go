@@ -9,17 +9,16 @@ import (
 	"github.com/qmuntal/go3mf/spec/encoding"
 )
 
-func (e Spec) NewElementDecoder(el interface{}, name xml.Name) encoding.ElementDecoder {
-	if name.Space == Namespace && name.Local == attrSliceStack {
-		return &sliceStackDecoder{resources: el.(*go3mf.Resources)}
+func (e Spec) NewElementDecoder(ctx encoding.ElementDecoderContext) encoding.ElementDecoder {
+	if ctx.Name.Local == attrSliceStack {
+		return &sliceStackDecoder{resources: ctx.ParentElement.(*go3mf.Resources), ew: ctx.ErrorWrapper}
 	}
 	return nil
 }
 
 func (e Spec) DecodeAttribute(parentNode interface{}, attr encoding.Attr) error {
-	switch t := parentNode.(type) {
-	case *go3mf.Object:
-		return objectAttrDecoder(t, attr)
+	if parentNode, ok := parentNode.(*go3mf.Object); ok {
+		return objectAttrDecoder(parentNode, attr)
 	}
 	return nil
 }
@@ -55,16 +54,21 @@ type sliceStackDecoder struct {
 	baseDecoder
 	resources *go3mf.Resources
 	resource  SliceStack
+	ew        encoding.ErrorWrapper
 }
 
 func (d *sliceStackDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
+func (d *sliceStackDecoder) Wrap(err error) error {
+	return d.ew.Wrap(specerr.WrapIndex(err, d.resource, len(d.resources.Assets)))
+}
+
 func (d *sliceStackDecoder) Child(name xml.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace {
 		if name.Local == attrSlice {
-			child = &sliceDecoder{resource: &d.resource}
+			child = &sliceDecoder{resource: &d.resource, ew: d}
 		} else if name.Local == attrSliceRef {
 			child = &sliceRefDecoder{resource: &d.resource}
 		}
@@ -72,7 +76,8 @@ func (d *sliceStackDecoder) Child(name xml.Name) (child encoding.ElementDecoder)
 	return
 }
 
-func (d *sliceStackDecoder) Start(attrs []encoding.Attr) (errs error) {
+func (d *sliceStackDecoder) Start(attrs []encoding.Attr) error {
+	var errs error
 	for _, a := range attrs {
 		switch a.Name.Local {
 		case attrID:
@@ -89,7 +94,10 @@ func (d *sliceStackDecoder) Start(attrs []encoding.Attr) (errs error) {
 			d.resource.BottomZ = float32(val)
 		}
 	}
-	return
+	if errs != nil {
+		return specerr.WrapIndex(errs, d.resource, len(d.resources.Assets))
+	}
+	return nil
 }
 
 type sliceRefDecoder struct {
@@ -97,10 +105,11 @@ type sliceRefDecoder struct {
 	resource *SliceStack
 }
 
-func (d *sliceRefDecoder) Start(attrs []encoding.Attr) (errs error) {
+func (d *sliceRefDecoder) Start(attrs []encoding.Attr) error {
 	var (
 		sliceStackID uint32
 		path         string
+		errs         error
 	)
 	for _, a := range attrs {
 		switch a.Name.Local {
@@ -114,8 +123,12 @@ func (d *sliceRefDecoder) Start(attrs []encoding.Attr) (errs error) {
 			path = string(a.Value)
 		}
 	}
-	d.resource.Refs = append(d.resource.Refs, SliceRef{SliceStackID: sliceStackID, Path: path})
-	return
+	ref := SliceRef{SliceStackID: sliceStackID, Path: path}
+	d.resource.Refs = append(d.resource.Refs, ref)
+	if errs != nil {
+		return specerr.WrapIndex(errs, ref, len(d.resource.Refs)-1)
+	}
+	return nil
 }
 
 type sliceDecoder struct {
@@ -124,11 +137,17 @@ type sliceDecoder struct {
 	slice                  Slice
 	polygonDecoder         polygonDecoder
 	polygonVerticesDecoder polygonVerticesDecoder
+	ew                     encoding.ErrorWrapper
 }
 
 func (d *sliceDecoder) End() {
 	d.resource.Slices = append(d.resource.Slices, &d.slice)
 }
+
+func (d *sliceDecoder) Wrap(err error) error {
+	return d.ew.Wrap(specerr.WrapIndex(err, &d.slice, len(d.resource.Slices)))
+}
+
 func (d *sliceDecoder) Child(name xml.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace {
 		if name.Local == attrVertices {
@@ -140,9 +159,12 @@ func (d *sliceDecoder) Child(name xml.Name) (child encoding.ElementDecoder) {
 	return
 }
 
-func (d *sliceDecoder) Start(attrs []encoding.Attr) (errs error) {
+func (d *sliceDecoder) Start(attrs []encoding.Attr) error {
+	d.polygonDecoder.ew = d
+	d.polygonVerticesDecoder.ew = d
 	d.polygonDecoder.slice = &d.slice
 	d.polygonVerticesDecoder.slice = &d.slice
+	var errs error
 	for _, a := range attrs {
 		if a.Name.Local == attrZTop {
 			val, err := strconv.ParseFloat(string(a.Value), 32)
@@ -153,18 +175,26 @@ func (d *sliceDecoder) Start(attrs []encoding.Attr) (errs error) {
 			break
 		}
 	}
-	return
+	if errs != nil {
+		return specerr.WrapIndex(errs, &d.slice, len(d.resource.Slices))
+	}
+	return nil
 }
 
 type polygonVerticesDecoder struct {
 	baseDecoder
 	slice                *Slice
 	polygonVertexDecoder polygonVertexDecoder
+	ew                   encoding.ErrorWrapper
 }
 
 func (d *polygonVerticesDecoder) Start(_ []encoding.Attr) error {
 	d.polygonVertexDecoder.slice = d.slice
 	return nil
+}
+
+func (d *polygonVerticesDecoder) Wrap(err error) error {
+	return d.ew.Wrap(err)
 }
 
 func (d *polygonVerticesDecoder) Child(name xml.Name) (child encoding.ElementDecoder) {
@@ -179,8 +209,11 @@ type polygonVertexDecoder struct {
 	slice *Slice
 }
 
-func (d *polygonVertexDecoder) Start(attrs []encoding.Attr) (errs error) {
-	var p go3mf.Point2D
+func (d *polygonVertexDecoder) Start(attrs []encoding.Attr) error {
+	var (
+		p    go3mf.Point2D
+		errs error
+	)
 	for _, a := range attrs {
 		val, err := strconv.ParseFloat(string(a.Value), 32)
 		if err != nil {
@@ -194,13 +227,22 @@ func (d *polygonVertexDecoder) Start(attrs []encoding.Attr) (errs error) {
 		}
 	}
 	d.slice.Vertices = append(d.slice.Vertices, p)
-	return
+	if errs != nil {
+		return specerr.WrapIndex(errs, p, len(d.slice.Vertices)-1)
+	}
+	return nil
 }
 
 type polygonDecoder struct {
 	baseDecoder
 	slice                 *Slice
 	polygonSegmentDecoder polygonSegmentDecoder
+	ew                    encoding.ErrorWrapper
+}
+
+func (d *polygonDecoder) Wrap(err error) error {
+	index := len(d.slice.Polygons) - 1
+	return d.ew.Wrap(specerr.WrapIndex(err, &d.slice.Polygons[index], index))
 }
 
 func (d *polygonDecoder) Child(name xml.Name) (child encoding.ElementDecoder) {
@@ -210,7 +252,8 @@ func (d *polygonDecoder) Child(name xml.Name) (child encoding.ElementDecoder) {
 	return
 }
 
-func (d *polygonDecoder) Start(attrs []encoding.Attr) (errs error) {
+func (d *polygonDecoder) Start(attrs []encoding.Attr) error {
+	var errs error
 	polygonIndex := len(d.slice.Polygons)
 	d.slice.Polygons = append(d.slice.Polygons, Polygon{})
 	d.polygonSegmentDecoder.polygon = &d.slice.Polygons[polygonIndex]
@@ -224,7 +267,10 @@ func (d *polygonDecoder) Start(attrs []encoding.Attr) (errs error) {
 			break
 		}
 	}
-	return
+	if errs != nil {
+		return specerr.WrapIndex(errs, d.slice.Polygons[polygonIndex], polygonIndex)
+	}
+	return nil
 }
 
 type polygonSegmentDecoder struct {
@@ -232,10 +278,11 @@ type polygonSegmentDecoder struct {
 	polygon *Polygon
 }
 
-func (d *polygonSegmentDecoder) Start(attrs []encoding.Attr) (errs error) {
+func (d *polygonSegmentDecoder) Start(attrs []encoding.Attr) error {
 	var (
 		segment      Segment
 		hasP1, hasP2 bool
+		errs         error
 	)
 	for _, a := range attrs {
 		var required bool
@@ -261,7 +308,10 @@ func (d *polygonSegmentDecoder) Start(attrs []encoding.Attr) (errs error) {
 		}
 	}
 	d.polygon.Segments = append(d.polygon.Segments, segment)
-	return
+	if errs != nil {
+		return specerr.WrapIndex(errs, segment, len(d.polygon.Segments)-1)
+	}
+	return nil
 }
 
 type baseDecoder struct {

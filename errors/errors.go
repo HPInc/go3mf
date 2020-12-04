@@ -33,36 +33,6 @@ var (
 	ErrRecursion              = errors.New("MUST NOT contain recursive references")
 	ErrInvalidObject          = errors.New("MUST contain a mesh or components")
 	ErrMeshConsistency        = errors.New("mesh has non-manifold edges without consistent triangle orientation")
-	// materials
-	ErrMultiBlend         = errors.New("there MUST NOT be more blendmethods than layers – 1")
-	ErrMaterialMulti      = errors.New("a material, if included, MUST be positioned as the first layer")
-	ErrMultiRefMulti      = errors.New("the pids list MUST NOT contain any references to a multiproperties")
-	ErrMultiColors        = errors.New("the pids list MUST NOT contain more than one reference to a colorgroup")
-	ErrTextureReference   = errors.New("MUST reference to a texture resource")
-	ErrCompositeBase      = errors.New("MUST reference to a basematerials group")
-	ErrMissingTexturePart = errors.New("texture part MUST be added as an attachment")
-	// production
-	ErrUUID             = errors.New("UUID MUST be any of the four UUID variants described in IETF RFC 4122")
-	ErrProdRefInNonRoot = errors.New("non-root model file components MUST only reference objects in the same model file")
-	// slices
-	ErrSliceExtRequired          = errors.New("a 3MF package which uses low resolution objects MUST enlist the slice extension as required")
-	ErrNonSliceStack             = errors.New("slicestackid MUST reference a slice stack resource")
-	ErrSlicesAndRefs             = errors.New("may either contain slices or refs, but they MUST NOT contain both element types")
-	ErrSliceRefSamePart          = errors.New("the path of the referenced slice stack MUST be different than the path of the original slice stack")
-	ErrSliceRefRef               = errors.New("a referenced slice stack MUST NOT contain any further sliceref elements")
-	ErrSliceSmallTopZ            = errors.New("slice ztop is smaller than stack zbottom")
-	ErrSliceNoMonotonic          = errors.New("the first ztop in the next slicestack MUST be greater than the last ztop in the previous slicestack")
-	ErrSliceInsufficientVertices = errors.New("slice MUST contain at least 2 vertices")
-	ErrSliceInsufficientPolygons = errors.New("slice MUST contain at least 1 polygon")
-	ErrSliceInsufficientSegments = errors.New("slice polygon MUST contain at least 1 segment")
-	ErrSlicePolygonNotClosed     = errors.New("objects with type 'model' and 'solidsupport' MUST not reference slices with open polygons")
-	ErrSliceInvalidTranform      = errors.New("any transform applied to an object that references a slice stack MUST be planar")
-	// beamlattice
-	ErrLatticeObjType       = errors.New("MUST only be added to a mesh object of type model or solidsupport")
-	ErrLatticeClippedNoMesh = errors.New("if clipping mode is not equal to none, a clippingmesh resource MUST be specified")
-	ErrLatticeInvalidMesh   = errors.New("the clippingmesh and representationmesh MUST be a mesh object of type model and MUST NOT contain a beamlattice")
-	ErrLatticeSameVertex    = errors.New("a beam MUST consist of two distinct vertex indices")
-	ErrLatticeBeamR2        = errors.New("r2 MUST not be defined, if r1 is not defined")
 )
 
 type Level struct {
@@ -171,22 +141,4 @@ func (e *ParseAttrError) Error() string {
 		req = "optional"
 	}
 	return fmt.Sprintf("error parsing %s attribute '%s'", req, e.Name)
-}
-
-// A ResourceError represents an error while decoding a required or an optional property.
-// If ResourceID is 0 means that the error took place while parsing the resource property before the ID appeared.
-// When Element is 'item' the ResourceID is the objectID property of a build item.
-// Field value is not reported to avoid leaking confidential information.
-type ResourceError struct {
-	Context    string
-	ResourceID uint32
-	Err        error
-}
-
-func (e *ResourceError) Error() string {
-	return fmt.Sprintf("%s#%d: %v", e.Context, e.ResourceID, e.Err)
-}
-
-func (e *ResourceError) Unwrap() error {
-	return e.Err
 }

@@ -1,14 +1,13 @@
 package production
 
 import (
-	"encoding/xml"
 	"github.com/qmuntal/go3mf"
 	specerr "github.com/qmuntal/go3mf/errors"
 	"github.com/qmuntal/go3mf/spec/encoding"
 	"github.com/qmuntal/go3mf/uuid"
 )
 
-func (e Spec) NewElementDecoder(_ interface{}, _ xml.Name) encoding.ElementDecoder {
+func (e Spec) NewElementDecoder(_ encoding.ElementDecoderContext) encoding.ElementDecoder {
 	return nil
 }
 

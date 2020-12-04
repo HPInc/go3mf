@@ -1,6 +1,7 @@
 package materials
 
 import (
+	"errors"
 	"image/color"
 
 	"github.com/qmuntal/go3mf"
@@ -11,6 +12,16 @@ const (
 	Namespace = "http://schemas.microsoft.com/3dmanufacturing/material/2015/02"
 	// RelTypeTexture3D is the canonical 3D texture relationship type.
 	RelTypeTexture3D = "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture"
+)
+
+var (
+	ErrMultiBlend         = errors.New("there MUST NOT be more blendmethods than layers – 1")
+	ErrMaterialMulti      = errors.New("a material, if included, MUST be positioned as the first layer")
+	ErrMultiRefMulti      = errors.New("the pids list MUST NOT contain any references to a multiproperties")
+	ErrMultiColors        = errors.New("the pids list MUST NOT contain more than one reference to a colorgroup")
+	ErrTextureReference   = errors.New("MUST reference to a texture resource")
+	ErrCompositeBase      = errors.New("MUST reference to a basematerials group")
+	ErrMissingTexturePart = errors.New("texture part MUST be added as an attachment")
 )
 
 type Spec struct {

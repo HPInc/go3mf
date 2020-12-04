@@ -1,11 +1,27 @@
 package slices
 
 import (
+	"errors"
 	"github.com/qmuntal/go3mf"
 )
 
 // Namespace is the canonical name of this extension.
 const Namespace = "http://schemas.microsoft.com/3dmanufacturing/slice/2015/07"
+
+var (
+	ErrSliceExtRequired          = errors.New("a 3MF package which uses low resolution objects MUST enlist the slice extension as required")
+	ErrNonSliceStack             = errors.New("slicestackid MUST reference a slice stack resource")
+	ErrSlicesAndRefs             = errors.New("may either contain slices or refs, but they MUST NOT contain both element types")
+	ErrSliceRefSamePart          = errors.New("the path of the referenced slice stack MUST be different than the path of the original slice stack")
+	ErrSliceRefRef               = errors.New("a referenced slice stack MUST NOT contain any further sliceref elements")
+	ErrSliceSmallTopZ            = errors.New("slice ztop is smaller than stack zbottom")
+	ErrSliceNoMonotonic          = errors.New("the first ztop in the next slicestack MUST be greater than the last ztop in the previous slicestack")
+	ErrSliceInsufficientVertices = errors.New("slice MUST contain at least 2 vertices")
+	ErrSliceInsufficientPolygons = errors.New("slice MUST contain at least 1 polygon")
+	ErrSliceInsufficientSegments = errors.New("slice polygon MUST contain at least 1 segment")
+	ErrSlicePolygonNotClosed     = errors.New("objects with type 'model' and 'solidsupport' MUST not reference slices with open polygons")
+	ErrSliceInvalidTranform      = errors.New("any transform applied to an object that references a slice stack MUST be planar")
+)
 
 type Spec struct {
 	LocalName  string
