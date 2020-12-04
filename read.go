@@ -375,7 +375,7 @@ func (s *decoderContext) addError(ctx string, err error) {
 		}
 	default:
 		specerr.Append(&s.Err, &specerr.ResourceError{
-			Context: ctx, ResourceID: s.resourceID, Err: err,
+			Context: ctx, ID: s.resourceID, Err: err,
 		})
 	}
 }

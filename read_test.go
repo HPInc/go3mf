@@ -582,15 +582,15 @@ func TestNewDecoder(t *testing.T) {
 
 func TestDecoder_processRootModel_warns(t *testing.T) {
 	want := &specerr.List{Errors: []error{
-		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "displaycolor", Required: true}, ResourceID: 0, Context: "model@resources@basematerials@base"},
-		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "id", Required: true}, ResourceID: 0, Context: "model@resources@basematerials"},
-		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "x", Required: true}, ResourceID: 8, Context: "model@resources@object@mesh@vertices@vertex"},
-		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "v1", Required: true}, ResourceID: 8, Context: "model@resources@object@mesh@triangles@triangle"},
-		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "pid", Required: false}, ResourceID: 22, Context: "model@resources@object"},
-		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "pindex", Required: false}, ResourceID: 22, Context: "model@resources@object"},
-		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "type", Required: false}, ResourceID: 22, Context: "model@resources@object"},
-		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "transform", Required: false}, ResourceID: 20, Context: "model@resources@object@components@component"},
-		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "objectid", Required: true}, ResourceID: 20, Context: "model@resources@object@components@component"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "displaycolor", Required: true}, ID: 0, Context: "model@resources@basematerials@base"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "id", Required: true}, ID: 0, Context: "model@resources@basematerials"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "x", Required: true}, ID: 8, Context: "model@resources@object@mesh@vertices@vertex"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "v1", Required: true}, ID: 8, Context: "model@resources@object@mesh@triangles@triangle"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "pid", Required: false}, ID: 22, Context: "model@resources@object"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "pindex", Required: false}, ID: 22, Context: "model@resources@object"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "type", Required: false}, ID: 22, Context: "model@resources@object"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "transform", Required: false}, ID: 20, Context: "model@resources@object@components@component"},
+		&specerr.ResourceError{Err: &specerr.ParseAttrError{Name: "objectid", Required: true}, ID: 20, Context: "model@resources@object@components@component"},
 		&specerr.BuildItemError{Err: &specerr.ParseAttrError{Name: "transform", Required: false}, Index: 0, Context: "model@build@item"},
 		&specerr.BuildItemError{Err: &specerr.ParseAttrError{Name: "objectid", Required: true}, Index: 3, Context: "model@build@item"},
 	}}

@@ -59,14 +59,14 @@ func TestDecode(t *testing.T) {
 
 func TestDecode_warns(t *testing.T) {
 	want := &errors.List{Errors: []error{
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "id"}, ResourceID: 0, Context: "model@resources@texture2d"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "color"}, ResourceID: 1, Context: "model@resources@colorgroup@color"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "texid"}, ResourceID: 2, Context: "model@resources@texture2dgroup"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "u"}, ResourceID: 2, Context: "model@resources@texture2dgroup@tex2coord"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "v"}, ResourceID: 2, Context: "model@resources@texture2dgroup@tex2coord"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "matid"}, ResourceID: 4, Context: "model@resources@compositematerials"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "values"}, ResourceID: 4, Context: "model@resources@compositematerials@composite"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "pids"}, ResourceID: 9, Context: "model@resources@multiproperties"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "id"}, ID: 0, Context: "model@resources@texture2d"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "color"}, ID: 1, Context: "model@resources@colorgroup@color"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "texid"}, ID: 2, Context: "model@resources@texture2dgroup"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "u"}, ID: 2, Context: "model@resources@texture2dgroup@tex2coord"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "v"}, ID: 2, Context: "model@resources@texture2dgroup@tex2coord"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "matid"}, ID: 4, Context: "model@resources@compositematerials"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "values"}, ID: 4, Context: "model@resources@compositematerials@composite"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "pids"}, ID: 9, Context: "model@resources@multiproperties"},
 	}}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"

@@ -144,15 +144,15 @@ func (e *ParseAttrError) Error() string {
 }
 
 // A ResourceError represents an error while decoding a required or an optional resource property.
-// If ResourceID is 0 means that the error took place while parsing the resource property before the ID appeared.
+// If ID is 0 means that the error took place while parsing the resource property before the ID appeared.
 type ResourceError struct {
-	Context    string
-	ResourceID uint32
-	Err        error
+	Context string
+	ID      uint32
+	Err     error
 }
 
 func (e *ResourceError) Error() string {
-	return fmt.Sprintf("%s#%d: %v", e.Context, e.ResourceID, e.Err)
+	return fmt.Sprintf("%s#%d: %v", e.Context, e.ID, e.Err)
 }
 
 func (e *ResourceError) Unwrap() error {

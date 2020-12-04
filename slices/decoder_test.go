@@ -90,15 +90,15 @@ func TestDecode(t *testing.T) {
 
 func TestDecode_warns(t *testing.T) {
 	want := &errors.List{Errors: []error{
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: false, Name: "zbottom"}, ResourceID: 3, Context: "model@resources@slicestack"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "x"}, ResourceID: 3, Context: "model@resources@slicestack@slice@vertices@vertex"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "y"}, ResourceID: 3, Context: "model@resources@slicestack@slice@vertices@vertex"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "ztop"}, ResourceID: 3, Context: "model@resources@slicestack@slice"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "startv"}, ResourceID: 3, Context: "model@resources@slicestack@slice@polygon"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "v2"}, ResourceID: 3, Context: "model@resources@slicestack@slice@polygon@segment"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "slicestackid"}, ResourceID: 3, Context: "model@resources@slicestack@sliceref"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: false, Name: "meshresolution"}, ResourceID: 8, Context: "model@resources@object"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "slicestackid"}, ResourceID: 8, Context: "model@resources@object"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: false, Name: "zbottom"}, ID: 3, Context: "model@resources@slicestack"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "x"}, ID: 3, Context: "model@resources@slicestack@slice@vertices@vertex"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "y"}, ID: 3, Context: "model@resources@slicestack@slice@vertices@vertex"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "ztop"}, ID: 3, Context: "model@resources@slicestack@slice"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "startv"}, ID: 3, Context: "model@resources@slicestack@slice@polygon"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "v2"}, ID: 3, Context: "model@resources@slicestack@slice@polygon@segment"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "slicestackid"}, ID: 3, Context: "model@resources@slicestack@sliceref"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: false, Name: "meshresolution"}, ID: 8, Context: "model@resources@object"},
+		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "slicestackid"}, ID: 8, Context: "model@resources@object"},
 	}}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"
