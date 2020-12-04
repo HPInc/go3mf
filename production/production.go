@@ -1,9 +1,17 @@
 package production
 
-import "github.com/qmuntal/go3mf"
+import (
+	"errors"
+	"github.com/qmuntal/go3mf"
+)
 
 // Namespace is the canonical name of this extension.
 const Namespace = "http://schemas.microsoft.com/3dmanufacturing/production/2015/06"
+
+var (
+	ErrUUID             = errors.New("UUID MUST be any of the four UUID variants described in IETF RFC 4122")
+	ErrProdRefInNonRoot = errors.New("non-root model file components MUST only reference objects in the same model file")
+)
 
 type Spec struct {
 	LocalName       string

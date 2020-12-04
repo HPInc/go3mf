@@ -26,7 +26,7 @@ func TestValidate(t *testing.T) {
 		}}, []error{
 			fmt.Errorf("/other.model@Resources@ColorGroup#0: %v", errors.ErrEmptyResourceProps),
 			fmt.Errorf("/that.model@Resources@MultiProperties#0: %v", &errors.MissingFieldError{Name: attrPIDs}),
-			fmt.Errorf("/that.model@Resources@MultiProperties#0: %v", errors.ErrMultiBlend),
+			fmt.Errorf("/that.model@Resources@MultiProperties#0: %v", ErrMultiBlend),
 			fmt.Errorf("/that.model@Resources@MultiProperties#0: %v", errors.ErrEmptyResourceProps),
 		}},
 		{"multi", &go3mf.Model{
@@ -46,14 +46,14 @@ func TestValidate(t *testing.T) {
 			}},
 		}, []error{
 			fmt.Errorf("Resources@MultiProperties#0: %v", &errors.MissingFieldError{Name: attrPIDs}),
-			fmt.Errorf("Resources@MultiProperties#0: %v", errors.ErrMultiBlend),
+			fmt.Errorf("Resources@MultiProperties#0: %v", ErrMultiBlend),
 			fmt.Errorf("Resources@MultiProperties#0: %v", errors.ErrEmptyResourceProps),
-			fmt.Errorf("Resources@MultiProperties#1: %v", errors.ErrMultiRefMulti),
+			fmt.Errorf("Resources@MultiProperties#1: %v", ErrMultiRefMulti),
 			fmt.Errorf("Resources@MultiProperties#1: %v", errors.ErrMissingResource),
 			fmt.Errorf("Resources@MultiProperties#6@Multi#0: %v", errors.ErrIndexOutOfBounds),
-			fmt.Errorf("Resources@MultiProperties#7: %v", errors.ErrMaterialMulti),
-			fmt.Errorf("Resources@MultiProperties#7: %v", errors.ErrMultiColors),
-			fmt.Errorf("Resources@MultiProperties#8: %v", errors.ErrMaterialMulti),
+			fmt.Errorf("Resources@MultiProperties#7: %v", ErrMaterialMulti),
+			fmt.Errorf("Resources@MultiProperties#7: %v", ErrMultiColors),
+			fmt.Errorf("Resources@MultiProperties#8: %v", ErrMaterialMulti),
 		}},
 		{"missingTextPart", &go3mf.Model{
 			Resources: go3mf.Resources{Assets: []go3mf.Asset{
@@ -63,7 +63,7 @@ func TestValidate(t *testing.T) {
 		}, []error{
 			fmt.Errorf("Resources@Texture2D#0: %v", &errors.MissingFieldError{Name: attrPath}),
 			fmt.Errorf("Resources@Texture2D#0: %v", &errors.MissingFieldError{Name: attrContentType}),
-			fmt.Errorf("Resources@Texture2D#1: %v", errors.ErrMissingTexturePart),
+			fmt.Errorf("Resources@Texture2D#1: %v", ErrMissingTexturePart),
 		}},
 		{"textureGroup", &go3mf.Model{
 			Attachments: []go3mf.Attachment{{Path: "/a.png"}},
@@ -77,8 +77,8 @@ func TestValidate(t *testing.T) {
 		}, []error{
 			fmt.Errorf("Resources@Texture2DGroup#1: %v", &errors.MissingFieldError{Name: attrTexID}),
 			fmt.Errorf("Resources@Texture2DGroup#1: %v", errors.ErrEmptyResourceProps),
-			fmt.Errorf("Resources@Texture2DGroup#3: %v", errors.ErrTextureReference),
-			fmt.Errorf("Resources@Texture2DGroup#4: %v", errors.ErrTextureReference),
+			fmt.Errorf("Resources@Texture2DGroup#3: %v", ErrTextureReference),
+			fmt.Errorf("Resources@Texture2DGroup#4: %v", ErrTextureReference),
 		}},
 		{"colorGroup", &go3mf.Model{
 			Resources: go3mf.Resources{Assets: []go3mf.Asset{
@@ -106,7 +106,7 @@ func TestValidate(t *testing.T) {
 			fmt.Errorf("Resources@CompositeMaterials#1: %v", &errors.MissingFieldError{Name: attrMatIndices}),
 			fmt.Errorf("Resources@CompositeMaterials#1: %v", errors.ErrEmptyResourceProps),
 			fmt.Errorf("Resources@CompositeMaterials#3: %v", errors.ErrIndexOutOfBounds),
-			fmt.Errorf("Resources@CompositeMaterials#4: %v", errors.ErrCompositeBase),
+			fmt.Errorf("Resources@CompositeMaterials#4: %v", ErrCompositeBase),
 			fmt.Errorf("Resources@CompositeMaterials#5: %v", errors.ErrMissingResource),
 		}},
 	}

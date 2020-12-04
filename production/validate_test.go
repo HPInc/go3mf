@@ -23,11 +23,11 @@ func TestValidate(t *testing.T) {
 		}},
 		{"buildEmptyUUID", &go3mf.Model{Build: go3mf.Build{
 			AnyAttr: go3mf.AnyAttr{&BuildAttr{}}}}, []error{
-			fmt.Errorf("Build: %v", errors.ErrUUID),
+			fmt.Errorf("Build: %v", ErrUUID),
 		}},
 		{"buildNonValidUUID", &go3mf.Model{Build: go3mf.Build{
 			AnyAttr: go3mf.AnyAttr{&BuildAttr{"a-b-c-d"}}}}, []error{
-			fmt.Errorf("Build: %v", errors.ErrUUID),
+			fmt.Errorf("Build: %v", ErrUUID),
 		}},
 		{"extReq", &go3mf.Model{Specs: map[string]go3mf.Spec{Namespace: &Spec{}},
 			Childs: map[string]*go3mf.ChildModel{"/other.model": {Resources: go3mf.Resources{Objects: []*go3mf.Object{validMesh}}}},
@@ -52,7 +52,7 @@ func TestValidate(t *testing.T) {
 			Resources: go3mf.Resources{Objects: []*go3mf.Object{{ID: 1, Mesh: validMesh.Mesh}}}}, []error{
 			fmt.Errorf("Build@Item#1: %v", &errors.MissingFieldError{Name: attrProdUUID}),
 			fmt.Errorf("Build@Item#2: %v", &errors.MissingFieldError{Name: attrProdUUID}),
-			fmt.Errorf("Build@Item#3: %v", errors.ErrUUID),
+			fmt.Errorf("Build@Item#3: %v", ErrUUID),
 			fmt.Errorf("/other.model@Resources@Object#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
 			fmt.Errorf("Resources@Object#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
 		}},
@@ -66,9 +66,9 @@ func TestValidate(t *testing.T) {
 				}},
 			},
 		}, Build: go3mf.Build{AnyAttr: go3mf.AnyAttr{&BuildAttr{UUID: "f47ac10b-58cc-0372-8567-0e02b2c3d479"}}}}, []error{
-			fmt.Errorf("Resources@Object#0: %v", errors.ErrUUID),
+			fmt.Errorf("Resources@Object#0: %v", ErrUUID),
 			fmt.Errorf("Resources@Object#1@Component#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
-			fmt.Errorf("Resources@Object#1@Component#1: %v", errors.ErrUUID),
+			fmt.Errorf("Resources@Object#1@Component#1: %v", ErrUUID),
 			fmt.Errorf("Resources@Object#1@Component#2: %v", &errors.MissingFieldError{Name: attrProdUUID}),
 		}},
 		{"child", &go3mf.Model{Build: go3mf.Build{AnyAttr: go3mf.AnyAttr{&BuildAttr{UUID: "f47ac10b-58cc-0372-8567-0e02b2c3d479"}}},
@@ -82,7 +82,7 @@ func TestValidate(t *testing.T) {
 			fmt.Errorf("/b.model@Resources@Object#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
 			fmt.Errorf("/other.model@Resources@Object#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
 			fmt.Errorf("/other.model@Resources@Object#0@Component#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
-			fmt.Errorf("/other.model@Resources@Object#0@Component#0: %v", errors.ErrProdRefInNonRoot),
+			fmt.Errorf("/other.model@Resources@Object#0@Component#0: %v", ErrProdRefInNonRoot),
 		}},
 	}
 	for _, tt := range tests {

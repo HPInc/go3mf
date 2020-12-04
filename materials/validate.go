@@ -47,10 +47,10 @@ func (e *Spec) validateTexture2DGroup(path string, r *Texture2DGroup) (errs erro
 		errs = errors.Append(errs, errors.NewMissingFieldError(attrTexID))
 	} else if text, ok := e.m.FindAsset(path, r.TextureID); ok {
 		if _, ok := text.(*Texture2D); !ok {
-			errs = errors.Append(errs, errors.ErrTextureReference)
+			errs = errors.Append(errs, ErrTextureReference)
 		}
 	} else {
-		errs = errors.Append(errs, errors.ErrTextureReference)
+		errs = errors.Append(errs, ErrTextureReference)
 	}
 	if len(r.Coords) == 0 {
 		errs = errors.Append(errs, errors.ErrEmptyResourceProps)
@@ -73,7 +73,7 @@ func (e *Spec) validateTexture2D(path string, r *Texture2D) (errs error) {
 			}
 		}
 		if !hasTexture {
-			errs = errors.Append(errs, errors.ErrMissingTexturePart)
+			errs = errors.Append(errs, ErrMissingTexturePart)
 		}
 	}
 	if r.ContentType == 0 {
@@ -90,7 +90,7 @@ func (e *Spec) validateMultiProps(path string, r *MultiProperties) (errs error) 
 		errs = errors.Append(errs, errors.NewMissingFieldError(attrPIDs))
 	}
 	if len(r.BlendMethods) > len(r.PIDs)-1 {
-		errs = errors.Append(errs, errors.ErrMultiBlend)
+		errs = errors.Append(errs, ErrMultiBlend)
 	}
 	if len(r.Multis) == 0 {
 		errs = errors.Append(errs, errors.ErrEmptyResourceProps)
@@ -105,19 +105,19 @@ func (e *Spec) validateMultiProps(path string, r *MultiProperties) (errs error) 
 			switch pr := pr.(type) {
 			case *go3mf.BaseMaterials:
 				if j != 0 {
-					errs = errors.Append(errs, errors.ErrMaterialMulti)
+					errs = errors.Append(errs, ErrMaterialMulti)
 				}
 				lengths[j] = len(pr.Materials)
 			case *CompositeMaterials:
 				if j != 0 {
-					errs = errors.Append(errs, errors.ErrMaterialMulti)
+					errs = errors.Append(errs, ErrMaterialMulti)
 				}
 				lengths[j] = len(pr.Composites)
 			case *MultiProperties:
-				errs = errors.Append(errs, errors.ErrMultiRefMulti)
+				errs = errors.Append(errs, ErrMultiRefMulti)
 			case *ColorGroup:
 				if colorCount == 1 {
-					errs = errors.Append(errs, errors.ErrMultiColors)
+					errs = errors.Append(errs, ErrMultiColors)
 				}
 				colorCount++
 				lengths[j] = len(pr.Colors)
@@ -153,7 +153,7 @@ func (e *Spec) validateCompositeMat(path string, r *CompositeMaterials) (errs er
 				}
 			}
 		} else {
-			errs = errors.Append(errs, errors.ErrCompositeBase)
+			errs = errors.Append(errs, ErrCompositeBase)
 		}
 	} else {
 		errs = errors.Append(errs, errors.ErrMissingResource)

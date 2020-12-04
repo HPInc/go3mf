@@ -18,7 +18,7 @@ func (e *Spec) ValidateObject(path string, obj *go3mf.Object) error {
 	var errs error
 
 	if obj.Type != go3mf.ObjectTypeModel && obj.Type != go3mf.ObjectTypeSolidSupport {
-		errs = errors.Append(errs, errors.ErrLatticeObjType)
+		errs = errors.Append(errs, ErrLatticeObjType)
 	}
 	if bl.MinLength == 0 {
 		errs = errors.Append(errs, errors.NewMissingFieldError(attrMinLength))
@@ -27,7 +27,7 @@ func (e *Spec) ValidateObject(path string, obj *go3mf.Object) error {
 		errs = errors.Append(errs, errors.NewMissingFieldError(attrRadius))
 	}
 	if bl.ClipMode == ClipNone && bl.ClippingMeshID == 0 {
-		errs = errors.Append(errs, errors.ErrLatticeClippedNoMesh)
+		errs = errors.Append(errs, ErrLatticeClippedNoMesh)
 	}
 	if bl.ClippingMeshID != 0 {
 		errs = errors.Append(errs, e.validateRefMesh(path, bl.ClippingMeshID, obj.ID))
@@ -38,7 +38,7 @@ func (e *Spec) ValidateObject(path string, obj *go3mf.Object) error {
 
 	for i, b := range bl.Beams {
 		if b.Indices[0] == b.Indices[1] {
-			errs = errors.Append(errs, errors.WrapIndex(errors.ErrLatticeSameVertex, b, i))
+			errs = errors.Append(errs, errors.WrapIndex(ErrLatticeSameVertex, b, i))
 		} else {
 			l := len(obj.Mesh.Vertices)
 			if int(b.Indices[0]) >= l || int(b.Indices[1]) >= l {
@@ -46,7 +46,7 @@ func (e *Spec) ValidateObject(path string, obj *go3mf.Object) error {
 			}
 		}
 		if b.Radius[0] != 0 && b.Radius[0] != bl.Radius && b.Radius[0] != b.Radius[1] {
-			errs = errors.Append(errs, errors.WrapIndex(errors.ErrLatticeBeamR2, b, i))
+			errs = errors.Append(errs, errors.WrapIndex(ErrLatticeBeamR2, b, i))
 		}
 	}
 	for i, set := range bl.BeamSets {
@@ -74,7 +74,7 @@ func (e *Spec) validateRefMesh(path string, meshID, selfID uint32) error {
 			}
 			if r.ID == meshID {
 				if r.Mesh == nil || r.Type != go3mf.ObjectTypeModel || GetBeamLattice(r.Mesh) != nil {
-					return errors.ErrLatticeInvalidMesh
+					return ErrLatticeInvalidMesh
 				}
 				break
 			}
