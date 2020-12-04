@@ -264,45 +264,7 @@ func (d *resourceDecoder) Child(name xml.Name) (child encoding.ElementDecoder) {
 			ErrorWrapper:  d,
 		})
 	}
-	if child != nil {
-		child = &resourceDecoderWrapper{ElementDecoder: child, ctx: d.ctx}
-	}
 	return
-}
-
-type resourceDecoderWrapper struct {
-	encoding.ElementDecoder
-	ctx *decoderContext
-}
-
-func (d *resourceDecoderWrapper) Child(name xml.Name) (child encoding.ElementDecoder) {
-	if v, ok := d.ElementDecoder.(encoding.ChildElementDecoder); ok {
-		return v.Child(name)
-	}
-	return nil
-}
-
-func (d *resourceDecoderWrapper) Start(attrs []encoding.Attr) error {
-	for _, a := range attrs {
-		if a.Name.Space == "" && a.Name.Local == attrID {
-			id, _ := strconv.ParseUint(string(a.Value), 10, 32)
-			d.ctx.resourceID = uint32(id)
-			break
-		}
-	}
-	return d.ElementDecoder.Start(attrs)
-}
-
-func (d *resourceDecoderWrapper) Wrap(err error) error {
-	if wr, ok := d.ElementDecoder.(encoding.ErrorWrapper); ok {
-		return wr.Wrap(err)
-	}
-	return nil
-}
-
-func (d *resourceDecoderWrapper) End() {
-	d.ElementDecoder.End()
-	d.ctx.resourceID = 0
 }
 
 type baseMaterialsDecoder struct {

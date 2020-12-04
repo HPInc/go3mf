@@ -84,7 +84,6 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 			if tmpDecoder != nil {
 				state = append(state, currentDecoder)
 				names = append(names, currentName)
-				scanner.contex = append(names, tp.Name)
 				currentName = tp.Name
 				currentDecoder = tmpDecoder
 				if err := currentDecoder.Start(*(*[]encoding.Attr)(unsafe.Pointer(&tp.Attr))); err != nil {
@@ -338,8 +337,6 @@ type decoderContext struct {
 	extensionDecoder map[string]encoding.Decoder
 	modelPath        string
 	isRoot           bool
-	contex           []xml.Name
-	resourceID       uint32
 }
 
 func (s *decoderContext) namespace(local string) (string, bool) {
