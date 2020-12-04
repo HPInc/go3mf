@@ -17,13 +17,13 @@ func (e Spec) PostProcessDecode() {
 		e.m.Build.AnyAttr = append(e.m.Build.AnyAttr, &BuildAttr{UUID: uuid.New()})
 	}
 	for _, item := range e.m.Build.Items {
-		pu := GetItemAttr(item)
-		if pu == nil {
+		ext := GetItemAttr(item)
+		if ext == nil {
 			item.AnyAttr = append(item.AnyAttr, &ItemAttr{
 				UUID: uuid.New(),
 			})
-		} else if pu.UUID == "" {
-			pu.UUID = uuid.New()
+		} else if ext.UUID == "" {
+			ext.UUID = uuid.New()
 		}
 	}
 	e.fillResourceUUID(&e.m.Resources)
@@ -34,18 +34,18 @@ func (e Spec) PostProcessDecode() {
 }
 
 func (e Spec) fillResourceUUID(res *go3mf.Resources) {
-	for _, o := range res.Objects {
-		if GetObjectAttr(o) == nil {
-			o.AnyAttr = append(o.AnyAttr, &ObjectAttr{UUID: uuid.New()})
+	for _, obj := range res.Objects {
+		if GetObjectAttr(obj) == nil {
+			obj.AnyAttr = append(obj.AnyAttr, &ObjectAttr{UUID: uuid.New()})
 		}
-		for _, c := range o.Components {
-			pu := GetComponentAttr(c)
-			if pu == nil {
+		for _, c := range obj.Components {
+			ext := GetComponentAttr(c)
+			if ext == nil {
 				c.AnyAttr = append(c.AnyAttr, &ComponentAttr{
 					UUID: uuid.New(),
 				})
-			} else if pu.UUID == "" {
-				pu.UUID = uuid.New()
+			} else if ext.UUID == "" {
+				ext.UUID = uuid.New()
 			}
 		}
 	}
