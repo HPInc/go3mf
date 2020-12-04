@@ -1,6 +1,7 @@
 package slices
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/go-test/deep"
@@ -90,22 +91,23 @@ func TestDecode(t *testing.T) {
 
 func TestDecode_warns(t *testing.T) {
 	want := &errors.List{Errors: []error{
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: false, Name: "zbottom"}, ID: 3, Context: "model@resources@slicestack"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "x"}, ID: 3, Context: "model@resources@slicestack@slice@vertices@vertex"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "y"}, ID: 3, Context: "model@resources@slicestack@slice@vertices@vertex"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "ztop"}, ID: 3, Context: "model@resources@slicestack@slice"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "startv"}, ID: 3, Context: "model@resources@slicestack@slice@polygon"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "v2"}, ID: 3, Context: "model@resources@slicestack@slice@polygon@segment"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "slicestackid"}, ID: 3, Context: "model@resources@slicestack@sliceref"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: false, Name: "meshresolution"}, ID: 8, Context: "model@resources@object"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "slicestackid"}, ID: 8, Context: "model@resources@object"},
+		fmt.Errorf("Resources@SliceStack#0: %v", specerr.NewParseAttrError("id", true)),
+		fmt.Errorf("Resources@SliceStack#0: %v", specerr.NewParseAttrError("zbottom", false)),
+		fmt.Errorf("Resources@SliceStack#0@Slice#0@Point2D#0: %v", specerr.NewParseAttrError("x", true)),
+		fmt.Errorf("Resources@SliceStack#0@Slice#0@Point2D#1: %v", specerr.NewParseAttrError("y", true)),
+		fmt.Errorf("Resources@SliceStack#0@Slice#1: %v", specerr.NewParseAttrError("ztop", true)),
+		fmt.Errorf("Resources@SliceStack#0@Slice#1@Polygon#0: %v", specerr.NewParseAttrError("startv", true)),
+		fmt.Errorf("Resources@SliceStack#0@Slice#1@Polygon#0@Segment#1: %v", specerr.NewParseAttrError("v2", true)),
+		fmt.Errorf("Resources@SliceStack#0@SliceRef#0: %v", specerr.NewParseAttrError("slicestackid", true)),
+		fmt.Errorf("Resources@Object#0: %v", specerr.NewParseAttrError("meshresolution", false)),
+		fmt.Errorf("Resources@Object#0: %v", specerr.NewParseAttrError("slicestackid", true)),
 	}}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"
 	rootFile := `
 		<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:s="http://schemas.microsoft.com/3dmanufacturing/slice/2015/07">
 		<resources>
-			<s:slicestack id="3" zbottom="a">
+			<s:slicestack id="a" zbottom="a">
 				<s:slice>
 					<s:vertices>
 						<s:vertex x="a" y="1.02" /> <s:vertex x="9.03" y="b" /> <s:vertex x="9.05" y="9.06" /> <s:vertex x="1.07" y="9.08" />
@@ -120,7 +122,7 @@ func TestDecode_warns(t *testing.T) {
 						<s:vertex x="1.01" y="1.02" /> <s:vertex x="9.03" y="1.04" /> <s:vertex x="9.05" y="9.06" /> <s:vertex x="1.07" y="9.08" />
 					</s:vertices>
 					<s:polygon startv="a"> 
-						<s:segment v2="a"></s:segment> <s:segment v2="1"></s:segment> <s:segment v2="3"></s:segment> <s:segment v2="0"></s:segment>
+						<s:segment v2="1"></s:segment> <s:segment v2="a"></s:segment> <s:segment v2="3"></s:segment> <s:segment v2="0"></s:segment>
 					</s:polygon>
 				</s:slice>
 				<s:sliceref slicestackid="a" slicepath="/3D/3dmodel.model" />
@@ -128,7 +130,7 @@ func TestDecode_warns(t *testing.T) {
 			<s:slicestack id="7" zbottom="1.1">
 				<s:sliceref slicepath="/2D/2Dmodel.model" />
 			</s:slicestack>
-			<object id="8" name="Box 1"s:meshresolution="invalid" s:slicestackid="a">
+			<object id="8" name="Box 1" s:meshresolution="invalid" s:slicestackid="a">
 				<mesh>
 					<vertices>
 						<vertex x="0" y="0" z="0" />

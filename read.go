@@ -88,7 +88,10 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 				currentName = tp.Name
 				currentDecoder = tmpDecoder
 				if err := currentDecoder.Start(*(*[]encoding.Attr)(unsafe.Pointer(&tp.Attr))); err != nil {
-					scanner.addErrContext(err)
+					if childDecoder, ok := childDecoder.(encoding.ErrorWrapper); ok {
+						err = childDecoder.Wrap(err)
+					}
+					specerr.Append(&scanner.Err, err)
 				}
 			}
 		}
@@ -346,36 +349,4 @@ func (s *decoderContext) namespace(local string) (string, bool) {
 		}
 	}
 	return "", false
-}
-
-func (s *decoderContext) addErrContext(err error) {
-	ct := make([]string, len(s.contex))
-	ct[0] = s.modelPath
-	for i, s := range s.contex[1:] {
-		ct[i+1] = s.Local
-	}
-	if s.isRoot {
-		ct = ct[1:] // don't add path in case happend in root file
-	}
-	ctx := strings.Join(ct, "@")
-	s.addError(ctx, err)
-}
-
-func (s *decoderContext) addError(ctx string, err error) {
-	switch err := err.(type) {
-	case *specerr.BuildItemError:
-		err.Context = ctx
-		specerr.Append(&s.Err, err)
-	case *specerr.ResourceError:
-		err.Context = ctx
-		specerr.Append(&s.Err, err)
-	case *specerr.List:
-		for _, err := range err.Errors {
-			s.addError(ctx, err)
-		}
-	default:
-		specerr.Append(&s.Err, &specerr.ResourceError{
-			Context: ctx, ID: s.resourceID, Err: err,
-		})
-	}
 }

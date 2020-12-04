@@ -142,34 +142,3 @@ func (e *ParseAttrError) Error() string {
 	}
 	return fmt.Sprintf("error parsing %s attribute '%s'", req, e.Name)
 }
-
-// A ResourceError represents an error while decoding a required or an optional resource property.
-// If ID is 0 means that the error took place while parsing the resource property before the ID appeared.
-type ResourceError struct {
-	Context string
-	ID      uint32
-	Err     error
-}
-
-func (e *ResourceError) Error() string {
-	return fmt.Sprintf("%s#%d: %v", e.Context, e.ID, e.Err)
-}
-
-func (e *ResourceError) Unwrap() error {
-	return e.Err
-}
-
-// A BuildItemError represents an error while decoding a required or an optional build item property.
-type BuildItemError struct {
-	Context string
-	Index   uint32
-	Err     error
-}
-
-func (e *BuildItemError) Error() string {
-	return fmt.Sprintf("%s#%d: %v", e.Context, e.Index, e.Err)
-}
-
-func (e *BuildItemError) Unwrap() error {
-	return e.Err
-}

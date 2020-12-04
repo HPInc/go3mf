@@ -1,6 +1,7 @@
 package production
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/go-test/deep"
@@ -117,10 +118,10 @@ func TestDecode(t *testing.T) {
 
 func TestDecode_warns(t *testing.T) {
 	want := &errors.List{Errors: []error{
-		&errors.ResourceError{Err: &errors.ParseAttrError{Required: true, Name: "UUID"}, ID: 20, Context: "model@resources@object"},
-		&errors.ResourceError{Err: &errors.ParseAttrError{Required: true, Name: "UUID"}, ID: 20, Context: "model@resources@object@components@component"},
-		&errors.ResourceError{Err: &errors.ParseAttrError{Required: true, Name: "UUID"}, ID: 0, Context: "model@build"},
-		&errors.BuildItemError{Err: &errors.ParseAttrError{Required: true, Name: "UUID"}, Index: 0, Context: "model@build@item"},
+		fmt.Errorf("Resources@Object#1: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
+		fmt.Errorf("Resources@Object#1@Component#0: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
+		fmt.Errorf("Build: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
+		fmt.Errorf("Build@Item#0: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
 	}}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"

@@ -27,6 +27,12 @@ type MarshalerAttr interface {
 	Marshal3MFAttr(Encoder) ([]xml.Attr, error)
 }
 
+type ElementDecoderContext struct {
+	ParentElement interface{}
+	Name          xml.Name
+	ErrorWrapper  ErrorWrapper
+}
+
 // Decoder must be implemented by specs that want to support
 // direct decoding from xml.
 type Decoder interface {
@@ -34,7 +40,11 @@ type Decoder interface {
 	Local() string
 	Required() bool
 	DecodeAttribute(parent interface{}, attr Attr) error
-	NewElementDecoder(parent interface{}, name xml.Name) ElementDecoder
+	NewElementDecoder(ElementDecoderContext) ElementDecoder
+}
+
+type ErrorWrapper interface {
+	Wrap(error) error
 }
 
 // ElementDecoder defines the minimum contract to decode a 3MF node.

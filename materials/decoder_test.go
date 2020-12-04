@@ -1,13 +1,13 @@
 package materials
 
 import (
+	"fmt"
 	"image/color"
 	"testing"
 
 	"github.com/go-test/deep"
 	"github.com/qmuntal/go3mf"
 	"github.com/qmuntal/go3mf/errors"
-	specerr "github.com/qmuntal/go3mf/errors"
 )
 
 func TestDecode(t *testing.T) {
@@ -59,14 +59,14 @@ func TestDecode(t *testing.T) {
 
 func TestDecode_warns(t *testing.T) {
 	want := &errors.List{Errors: []error{
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "id"}, ID: 0, Context: "model@resources@texture2d"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "color"}, ID: 1, Context: "model@resources@colorgroup@color"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "texid"}, ID: 2, Context: "model@resources@texture2dgroup"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "u"}, ID: 2, Context: "model@resources@texture2dgroup@tex2coord"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "v"}, ID: 2, Context: "model@resources@texture2dgroup@tex2coord"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "matid"}, ID: 4, Context: "model@resources@compositematerials"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "values"}, ID: 4, Context: "model@resources@compositematerials@composite"},
-		&errors.ResourceError{Err: &specerr.ParseAttrError{Required: true, Name: "pids"}, ID: 9, Context: "model@resources@multiproperties"},
+		fmt.Errorf("Resources@Texture2D#1: %v", errors.NewParseAttrError("id", true)),
+		fmt.Errorf("Resources@ColorGroup#2@RGBA#0: %v", errors.NewParseAttrError("color", true)),
+		fmt.Errorf("Resources@Texture2DGroup#3: %v", errors.NewParseAttrError("texid", true)),
+		fmt.Errorf("Resources@Texture2DGroup#3@TextureCoord#0: %v", errors.NewParseAttrError("u", true)),
+		fmt.Errorf("Resources@Texture2DGroup#3@TextureCoord#1: %v", errors.NewParseAttrError("v", true)),
+		fmt.Errorf("Resources@CompositeMaterials#4: %v", errors.NewParseAttrError("matid", true)),
+		fmt.Errorf("Resources@CompositeMaterials#4@Composite#1: %v", errors.NewParseAttrError("values", true)),
+		fmt.Errorf("Resources@MultiProperties#5: %v", errors.NewParseAttrError("pids", true)),
 	}}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"
