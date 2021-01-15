@@ -41,7 +41,19 @@ func main() {
     model := new(go3mf.Model)
     r, _ := go3mf.OpenReader("/testdata/cube.3mf")
     r.Decode(model)
-    fmt.Println(model)
+    for _, item := range model.Build.Items {
+      fmt.Println("item:", *item)
+      obj, _ := model.FindObject(item.ObjectPath(), item.ObjectID)
+      fmt.Println("object:", *obj)
+      if obj.Mesh != nil {
+        for _, t := range obj.Mesh.Triangles {
+          fmt.Println(t.Indices())
+        }
+        for _, v := range obj.Mesh.Vertices {
+          fmt.Println(v.X(), v.Y(), v.Z())
+        }
+      }
+    }
 }
 ```
 
@@ -90,6 +102,8 @@ func main() {
 
 ### Extensions usage
 
+Extensions have to be attached to the `go3mf.Model` object before decoding or encoding a 3MF by calling `model.WithSpec`, which accepts the `go3mf.Spec` interface.
+
 ```go
 package main
 
@@ -98,13 +112,23 @@ import (
 
     "github.com/qmuntal/go3mf"
     "github.com/qmuntal/go3mf/production"
+    "github.com/qmuntal/go3mf/material"
+    "github.com/qmuntal/go3mf/beamlattice"
+    "github.com/qmuntal/go3mf/slices"
 )
 
 func main() {
     model := new(go3mf.Model)
     model.WithSpec(new(production.Spec))
+    model.WithSpec(new(material.Spec))
+    model.WithSpec(new(beamlattice.Spec))
+    model.WithSpec(new(slices.Spec))
     r, _ := go3mf.OpenReader("/testdata/cube.3mf")
     r.Decode(model)
     fmt.Println(production.GetBuildAttr(&model.Build).UUID)
+   
+    model.Resources.Assets = append(model.Resources.Assets, &materials.ColorGroup{
+      ID: 10, Colors: []color.RGBA{{R: 255, G: 255, B: 255, A: 255}},
+    }
 }
 ```
