@@ -12,23 +12,17 @@ The 3D Manufacturing Format (3MF) is a 3D printing format that allows design app
 ## Features
 
 * High parsing speed and moderate memory consumption
-  * [x] Optimized xml decoding for dealing with 3MF files.
-  * [x] Concurrent 3MF parsing when using Production spec and multiple model files.
-* Full 3MF Core spec implementation.
+* Complete 3MF Core spec implementation.
 * Clean API.
-* 3MF i/o
-  * [x] Read from io.ReaderAt.
-  * [x] Save to io.Writer.
-  * [x] Boilerplate to read from disk.
-  * [x] Validation and complete non-conformity report.
-  * [x] Read from ASCII and Binary STL.
+* STL importer
+* Spec conformance validation
 * Robust implementation with full coverage and validated against real cases.
 * Extensions
-  * [x] Support custom and private extensions.
-  * [x] spec_production.
-  * [x] spec_slice.
-  * [x] spec_beamlattice.
-  * [x] spec_materials, only missing the display resources.
+  * Support custom and private extensions.
+  * spec_production.
+  * spec_slice.
+  * spec_beamlattice.
+  * spec_materials, missing the display resources.
 
 ## Examples
 
@@ -91,5 +85,26 @@ func main() {
     file := os.Create("/testdata/cube.3mf")
     model := new(go3mf.Model)
     go3mf.NewEncoder(file).Encode(model)
+}
+```
+
+### Extensions usage
+
+```go
+package main
+
+import (
+    "fmt"
+
+    "github.com/qmuntal/go3mf"
+    "github.com/qmuntal/go3mf/production"
+)
+
+func main() {
+    model := new(go3mf.Model)
+    model.WithSpec(new(production.Spec))
+    r, _ := go3mf.OpenReader("/testdata/cube.3mf")
+    r.Decode(model)
+    fmt.Println(production.GetBuildAttr(&model.Build).UUID)
 }
 ```
