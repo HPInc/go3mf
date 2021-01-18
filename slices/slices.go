@@ -8,6 +8,16 @@ import (
 // Namespace is the canonical name of this extension.
 const Namespace = "http://schemas.microsoft.com/3dmanufacturing/slice/2015/07"
 
+var DefaultExtension = go3mf.Extension{
+	Namespace:  Namespace,
+	LocalName:  "s",
+	IsRequired: false,
+}
+
+func init() {
+	go3mf.RegisterExtension(Namespace, decodeAttribute, newElementDecoder, validate)
+}
+
 var (
 	ErrSliceExtRequired          = errors.New("a 3MF package which uses low resolution objects MUST enlist the slice extension as required")
 	ErrNonSliceStack             = errors.New("slicestackid MUST reference a slice stack resource")
@@ -22,25 +32,6 @@ var (
 	ErrSlicePolygonNotClosed     = errors.New("objects with type 'model' and 'solidsupport' MUST not reference slices with open polygons")
 	ErrSliceInvalidTranform      = errors.New("any transform applied to an object that references a slice stack MUST be planar")
 )
-
-type Spec struct {
-	LocalName  string
-	IsRequired bool
-	m          *go3mf.Model
-}
-
-func (e *Spec) SetModel(m *go3mf.Model) { e.m = m }
-func (e Spec) Namespace() string        { return Namespace }
-func (e Spec) Required() bool           { return e.IsRequired }
-func (e *Spec) SetRequired(r bool)      { e.IsRequired = r }
-func (e *Spec) SetLocal(l string)       { e.LocalName = l }
-
-func (e Spec) Local() string {
-	if e.LocalName != "" {
-		return e.LocalName
-	}
-	return "s"
-}
 
 // A Segment element represents a single line segment (or edge) of a polygon.
 // It runs from the vertex specified by the previous segment

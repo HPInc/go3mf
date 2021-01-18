@@ -8,6 +8,12 @@ import (
 // Namespace is the canonical name of this extension.
 const Namespace = "http://schemas.microsoft.com/3dmanufacturing/beamlattice/2017/02"
 
+var DefaultExtension = go3mf.Extension{
+	Namespace:  Namespace,
+	LocalName:  "b",
+	IsRequired: false,
+}
+
 var (
 	ErrLatticeObjType       = errors.New("MUST only be added to a mesh object of type model or solidsupport")
 	ErrLatticeClippedNoMesh = errors.New("if clipping mode is not equal to none, a clippingmesh resource MUST be specified")
@@ -16,22 +22,8 @@ var (
 	ErrLatticeBeamR2        = errors.New("r2 MUST not be defined, if r1 is not defined")
 )
 
-type Spec struct {
-	LocalName string
-	m         *go3mf.Model
-}
-
-func (e *Spec) SetModel(m *go3mf.Model) { e.m = m }
-func (e Spec) Namespace() string        { return Namespace }
-func (e Spec) Required() bool           { return true }
-func (e *Spec) SetRequired(r bool)      {}
-func (e *Spec) SetLocal(l string)       { e.LocalName = l }
-
-func (e Spec) Local() string {
-	if e.LocalName != "" {
-		return e.LocalName
-	}
-	return "b"
+func init() {
+	go3mf.RegisterExtension(Namespace, nil, newElementDecoder, validate)
 }
 
 // ClipMode defines the clipping modes for the beam lattices.

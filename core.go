@@ -205,22 +205,13 @@ type Model struct {
 	Resources         Resources
 	Build             Build
 	Attachments       []Attachment
-	Specs             map[string]Spec // space -> spec
+	Extensions        []Extension // space -> spec
 	Metadata          []Metadata
 	Childs            map[string]*ChildModel // path -> child
 	RootRelationships []Relationship
 	Relationships     []Relationship
 	Any               Any
 	AnyAttr           AnyAttr
-}
-
-// WithSpec adds a new extension
-func (m *Model) WithSpec(extension Spec) {
-	if m.Specs == nil {
-		m.Specs = make(map[string]Spec)
-	}
-	extension.SetModel(m)
-	m.Specs[extension.Namespace()] = extension
 }
 
 // PathOrDefault returns Path if not empty, else DefaultModelPath.

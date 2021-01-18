@@ -189,16 +189,13 @@ func (e *Encoder) modelToken(x encoding.Encoder, m *Model, isRoot bool) (xml.Sta
 		}
 		attrs = append(attrs, xml.Attr{Name: xml.Name{Local: attrThumbnail}, Value: m.Thumbnail})
 	}
-	sortedSpecs := m.sortedSpecs()
-	for _, ns := range sortedSpecs {
-		a := m.Specs[ns]
-		attrs = append(attrs, xml.Attr{Name: xml.Name{Space: attrXmlns, Local: a.Local()}, Value: a.Namespace()})
+	for _, ext := range m.Extensions {
+		attrs = append(attrs, xml.Attr{Name: xml.Name{Space: attrXmlns, Local: ext.LocalName}, Value: ext.Namespace})
 	}
 	var exts []string
-	for _, ns := range sortedSpecs {
-		a := m.Specs[ns]
-		if a.Required() {
-			exts = append(exts, a.Local())
+	for _, ext := range m.Extensions {
+		if ext.IsRequired {
+			exts = append(exts, ext.LocalName)
 		}
 	}
 	sort.Strings(exts)

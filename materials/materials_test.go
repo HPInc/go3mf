@@ -10,8 +10,6 @@ import (
 	"github.com/qmuntal/go3mf/spec/encoding"
 )
 
-var _ encoding.Decoder = new(Spec)
-var _ spec.AssetValidator = new(Spec)
 var _ go3mf.Asset = new(Texture2D)
 var _ go3mf.Asset = new(Texture2DGroup)
 var _ go3mf.Asset = new(CompositeMaterials)

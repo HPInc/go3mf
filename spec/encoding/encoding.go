@@ -43,6 +43,9 @@ type Decoder interface {
 	NewElementDecoder(ElementDecoderContext) ElementDecoder
 }
 
+type DecodeAttrFunc = func(parent interface{}, attr Attr) error
+type NewElementDecoderFunc = func(ElementDecoderContext) ElementDecoder
+
 type ErrorWrapper interface {
 	Wrap(error) error
 }

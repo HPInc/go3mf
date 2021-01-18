@@ -10,6 +10,12 @@ import (
 // Namespace is the canonical name of this extension.
 const Namespace = "http://schemas.microsoft.com/3dmanufacturing/production/2015/06"
 
+var DefaultExtension = go3mf.Extension{
+	Namespace:  Namespace,
+	LocalName:  "p",
+	IsRequired: true,
+}
+
 var (
 	ErrUUID             = errors.New("UUID MUST be any of the four UUID variants described in IETF RFC 4122")
 	ErrProdRefInNonRoot = errors.New("non-root model file components MUST only reference objects in the same model file")
@@ -20,22 +26,8 @@ const (
 	attrPath     = "path"
 )
 
-type Spec struct {
-	LocalName string
-	m         *go3mf.Model
-}
-
-func (e *Spec) SetModel(m *go3mf.Model) { e.m = m }
-func (e Spec) Namespace() string        { return Namespace }
-func (e Spec) Required() bool           { return true }
-func (e *Spec) SetRequired(r bool)      {}
-func (e *Spec) SetLocal(l string)       { e.LocalName = l }
-
-func (e Spec) Local() string {
-	if e.LocalName != "" {
-		return e.LocalName
-	}
-	return "p"
+func init() {
+	go3mf.RegisterExtension(Namespace, decodeAttribute, nil, validate)
 }
 
 // BuildAttr provides a UUID in the root model file build element to ensure

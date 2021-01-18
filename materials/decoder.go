@@ -10,7 +10,7 @@ import (
 	"github.com/qmuntal/go3mf/spec/encoding"
 )
 
-func (e Spec) NewElementDecoder(ctx encoding.ElementDecoderContext) (child encoding.ElementDecoder) {
+func newElementDecoder(ctx encoding.ElementDecoderContext) (child encoding.ElementDecoder) {
 	switch ctx.Name.Local {
 	case attrColorGroup:
 		child = &colorGroupDecoder{resources: ctx.ParentElement.(*go3mf.Resources), ew: ctx.ErrorWrapper}
@@ -25,8 +25,6 @@ func (e Spec) NewElementDecoder(ctx encoding.ElementDecoderContext) (child encod
 	}
 	return
 }
-
-func (e Spec) DecodeAttribute(_ interface{}, _ encoding.Attr) error { return nil }
 
 type colorGroupDecoder struct {
 	baseDecoder

@@ -44,10 +44,11 @@ func (m *mockPackagePart) AddRelationship(args0 Relationship) {
 }
 
 func TestMarshalModel(t *testing.T) {
+	RegisterExtension(fakeSpec.Namespace, decodeAttribute, newElementDecoder, validateFake)
 	m := &Model{
 		Units: UnitMillimeter, Language: "en-US", Path: "/3D/3dmodel.model", Thumbnail: "/thumbnail.png",
-		Specs:   map[string]Spec{fakeExtension: &fakeSpec{}},
-		AnyAttr: AnyAttr{&fakeAttr{Value: "model_fake"}},
+		Extensions: []Extension{fakeSpec},
+		AnyAttr:    AnyAttr{&fakeAttr{Value: "model_fake"}},
 		Resources: Resources{
 			Assets: []Asset{
 				&BaseMaterials{ID: 5, Materials: []Base{
@@ -106,7 +107,6 @@ func TestMarshalModel(t *testing.T) {
 			return
 		}
 		newModel := new(Model)
-		newModel.WithSpec(&fakeSpec{})
 		newModel.Path = m.Path
 		if err := UnmarshalModel(b, newModel); err != nil {
 			t.Errorf("MarshalModel() error decoding = %v, s = %s", err, string(b))

@@ -1,27 +1,17 @@
 package go3mf
 
-type Spec interface {
-	Namespace() string
-	Local() string
-	Required() bool
-	SetRequired(bool)
-	SetLocal(string)
-	SetModel(*Model)
-}
+import (
+	"sync"
 
-type UnknownSpec struct {
-	SpaceName  string
+	"github.com/qmuntal/go3mf/spec"
+	"github.com/qmuntal/go3mf/spec/encoding"
+)
+
+type Extension struct {
+	Namespace  string
 	LocalName  string
 	IsRequired bool
-	m          *Model
 }
-
-func (u *UnknownSpec) Namespace() string  { return u.SpaceName }
-func (u *UnknownSpec) Local() string      { return u.LocalName }
-func (u *UnknownSpec) Required() bool     { return u.IsRequired }
-func (u *UnknownSpec) SetLocal(l string)  { u.LocalName = l }
-func (u *UnknownSpec) SetRequired(r bool) { u.IsRequired = r }
-func (u *UnknownSpec) SetModel(m *Model)  { u.m = m }
 
 type objectPather interface {
 	ObjectPath() string
@@ -31,14 +21,50 @@ type propertyGroup interface {
 	Len() int
 }
 
-type modelValidator interface {
-	ValidateModel() error
+type extension struct {
+	namespace         string
+	decodeAttribute   encoding.DecodeAttrFunc
+	newElementDecoder encoding.NewElementDecoderFunc
+	validateFunc      spec.ValidateFunc
 }
 
-type assetValidator interface {
-	ValidateAsset(string, Asset) error
+var (
+	extensionsMu sync.RWMutex
+	extensions   = make(map[string]extension)
+)
+
+type nilElementDecoder struct{}
+
+func (e nilElementDecoder) Start([]encoding.Attr) error { return nil }
+
+func (e nilElementDecoder) End() {}
+
+// RegisterFormat registers an extension for use by Decode.
+// Namespace is the namespace of the extension.
+func RegisterExtension(namespace string, attrFn encoding.DecodeAttrFunc, elementFn encoding.NewElementDecoderFunc, validateFn spec.ValidateFunc) {
+	if attrFn == nil {
+		attrFn = func(interface{}, encoding.Attr) error {
+			return nil
+		}
+	}
+	if elementFn == nil {
+		elementFn = func(encoding.ElementDecoderContext) encoding.ElementDecoder {
+			return nilElementDecoder{}
+		}
+	}
+	if validateFn == nil {
+		validateFn = func(interface{}, string, interface{}) error {
+			return nil
+		}
+	}
+	extensionsMu.Lock()
+	defer extensionsMu.Unlock()
+	extensions[namespace] = extension{namespace, attrFn, elementFn, validateFn}
 }
 
-type objectValidator interface {
-	ValidateObject(string, *Object) error
+func loadExtension(ns string) (extension, bool) {
+	extensionsMu.RLock()
+	ext, ok := extensions[ns]
+	extensionsMu.RUnlock()
+	return ext, ok
 }

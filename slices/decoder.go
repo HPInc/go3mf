@@ -9,14 +9,14 @@ import (
 	"github.com/qmuntal/go3mf/spec/encoding"
 )
 
-func (e Spec) NewElementDecoder(ctx encoding.ElementDecoderContext) encoding.ElementDecoder {
+func newElementDecoder(ctx encoding.ElementDecoderContext) encoding.ElementDecoder {
 	if ctx.Name.Local == attrSliceStack {
 		return &sliceStackDecoder{resources: ctx.ParentElement.(*go3mf.Resources), ew: ctx.ErrorWrapper}
 	}
 	return nil
 }
 
-func (e Spec) DecodeAttribute(parentNode interface{}, attr encoding.Attr) error {
+func decodeAttribute(parentNode interface{}, attr encoding.Attr) error {
 	if parentNode, ok := parentNode.(*go3mf.Object); ok {
 		return objectAttrDecoder(parentNode, attr)
 	}

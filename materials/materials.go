@@ -14,6 +14,16 @@ const (
 	RelTypeTexture3D = "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture"
 )
 
+var DefaultExtension = go3mf.Extension{
+	Namespace:  Namespace,
+	LocalName:  "m",
+	IsRequired: false,
+}
+
+func init() {
+	go3mf.RegisterExtension(Namespace, nil, newElementDecoder, validate)
+}
+
 var (
 	ErrMultiBlend         = errors.New("there MUST NOT be more blendmethods than layers – 1")
 	ErrMaterialMulti      = errors.New("a material, if included, MUST be positioned as the first layer")
@@ -23,25 +33,6 @@ var (
 	ErrCompositeBase      = errors.New("MUST reference to a basematerials group")
 	ErrMissingTexturePart = errors.New("texture part MUST be added as an attachment")
 )
-
-type Spec struct {
-	LocalName  string
-	IsRequired bool
-	m          *go3mf.Model
-}
-
-func (e *Spec) SetModel(m *go3mf.Model) { e.m = m }
-func (e Spec) Namespace() string        { return Namespace }
-func (e Spec) Required() bool           { return e.IsRequired }
-func (e *Spec) SetRequired(r bool)      { e.IsRequired = r }
-func (e *Spec) SetLocal(l string)       { e.LocalName = l }
-
-func (e Spec) Local() string {
-	if e.LocalName != "" {
-		return e.LocalName
-	}
-	return "m"
-}
 
 // Texture2DType defines the allowed texture 2D types.
 type Texture2DType uint8

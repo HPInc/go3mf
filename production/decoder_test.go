@@ -36,10 +36,12 @@ func TestDecode(t *testing.T) {
 			UUID: "e9e25302-6428-402e-8633-cc95528d0ed4",
 		}},
 	})
+	want.Extensions = []go3mf.Extension{DefaultExtension}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"
 	rootFile := `
-		<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:p="http://schemas.microsoft.com/3dmanufacturing/production/2015/06">
+		<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:p="http://schemas.microsoft.com/3dmanufacturing/production/2015/06"
+		requiredextensions="p">
 		<resources>
 			<object id="20" p:UUID="cb828680-8895-4e08-a1fc-be63e033df15">
 				<components>
@@ -54,8 +56,6 @@ func TestDecode(t *testing.T) {
 		</model>
 		`
 	t.Run("base", func(t *testing.T) {
-		want.WithSpec(&Spec{LocalName: "p"})
-		got.WithSpec(&Spec{LocalName: "p"})
 		if err := go3mf.UnmarshalModel([]byte(rootFile), got); err != nil {
 			t.Errorf("UnmarshalModel() unexpected error = %v", err)
 			return
@@ -77,7 +77,9 @@ func TestDecode_warns(t *testing.T) {
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"
 	rootFile := `
-		<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:p="http://schemas.microsoft.com/3dmanufacturing/production/2015/06">
+		<model 
+			xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:p="http://schemas.microsoft.com/3dmanufacturing/production/2015/06"
+			requiredextensions="p">
 		<resources>
 			<object id="22" p:UUID="cb828680-8895-4e08-a1fc-be63e033df15" />
 			<object id="20" p:UUID="cb8286808895-4e08-a1fc-be63e033df15">
@@ -95,7 +97,6 @@ func TestDecode_warns(t *testing.T) {
 		</model>`
 
 	t.Run("base", func(t *testing.T) {
-		got.WithSpec(&Spec{LocalName: "p"})
 		err := go3mf.UnmarshalModel([]byte(rootFile), got)
 		if diff := deep.Equal(err, want); diff != nil {
 			t.Errorf("UnmarshalModel_warn() = %v", diff)

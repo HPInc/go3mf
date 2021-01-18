@@ -24,18 +24,18 @@ func (d *modelDecoder) Child(name xml.Name) (child encoding.ElementDecoder) {
 		switch name.Local {
 		case attrResources:
 			resources, _ := d.model.FindResources(d.ctx.modelPath)
-			child = &resourceDecoder{resources: resources, ctx: d.ctx}
+			child = &resourceDecoder{resources: resources, ctx: d.ctx, model: d.model}
 		case attrBuild:
 			if d.isRoot {
-				child = &buildDecoder{build: &d.model.Build, ctx: d.ctx}
+				child = &buildDecoder{build: &d.model.Build, ctx: d.ctx, model: d.model}
 			}
 		case attrMetadata:
 			if d.isRoot {
-				child = &metadataDecoder{metadatas: &d.model.Metadata, ctx: d.ctx}
+				child = &metadataDecoder{metadatas: &d.model.Metadata, ctx: d.ctx, model: d.model}
 			}
 		}
-	} else if ext, ok := d.ctx.extensionDecoder[name.Space]; ok {
-		child = ext.NewElementDecoder(encoding.ElementDecoderContext{
+	} else if ext, ok := loadExtension(name.Space); ok {
+		child = ext.newElementDecoder(encoding.ElementDecoderContext{
 			ParentElement: d.model,
 			Name:          name,
 		})
@@ -66,10 +66,11 @@ func (d *modelDecoder) Start(attrs []encoding.Attr) (err error) {
 		}
 	}
 
-	for _, ext := range requiredExts {
-		for _, x := range d.model.Specs {
-			if x.Local() == ext {
-				x.SetRequired(true)
+	for _, local := range requiredExts {
+		for i := range d.model.Extensions {
+			ext := &d.model.Extensions[i]
+			if ext.LocalName == local {
+				ext.IsRequired = true
 				break
 			}
 		}
@@ -84,14 +85,14 @@ func (d *modelDecoder) noCoreAttribute(a encoding.Attr) (err error) {
 			d.model.Language = string(a.Value)
 		}
 	case attrXmlns:
-		if ext, ok := d.model.Specs[string(a.Value)]; ok {
-			ext.SetLocal(a.Name.Local)
-		} else {
-			d.model.WithSpec(&UnknownSpec{SpaceName: string(a.Value), LocalName: a.Name.Local})
-		}
+		d.model.Extensions = append(d.model.Extensions, Extension{
+			Namespace:  string(a.Value),
+			LocalName:  a.Name.Local,
+			IsRequired: false,
+		})
 	default:
-		if ext, ok := d.ctx.extensionDecoder[a.Name.Space]; ok {
-			err = specerr.Append(err, ext.DecodeAttribute(d.model, a))
+		if ext, ok := loadExtension(a.Name.Space); ok {
+			err = specerr.Append(err, ext.decodeAttribute(d.model, a))
 		}
 	}
 	return
@@ -101,11 +102,12 @@ type metadataGroupDecoder struct {
 	baseDecoder
 	ctx       *decoderContext
 	metadatas *[]Metadata
+	model     *Model
 }
 
 func (d *metadataGroupDecoder) Child(name xml.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrMetadata {
-		child = &metadataDecoder{metadatas: d.metadatas, ctx: d.ctx}
+		child = &metadataDecoder{metadatas: d.metadatas, ctx: d.ctx, model: d.model}
 	}
 	return
 }
@@ -113,8 +115,18 @@ func (d *metadataGroupDecoder) Child(name xml.Name) (child encoding.ElementDecod
 type metadataDecoder struct {
 	baseDecoder
 	ctx       *decoderContext
+	model     *Model
 	metadatas *[]Metadata
 	metadata  Metadata
+}
+
+func (d *metadataDecoder) namespace(local string) (string, bool) {
+	for _, ext := range d.model.Extensions {
+		if ext.LocalName == local {
+			return ext.Namespace, true
+		}
+	}
+	return "", false
 }
 
 func (d *metadataDecoder) Start(attrs []encoding.Attr) error {
@@ -128,7 +140,7 @@ func (d *metadataDecoder) Start(attrs []encoding.Attr) error {
 			i := bytes.IndexByte(a.Value, ':')
 			if i < 0 {
 				d.metadata.Name.Local = string(a.Value)
-			} else if _, ok := d.ctx.namespace(string(a.Value[0:i])); ok {
+			} else if _, ok := d.namespace(string(a.Value[0:i])); ok {
 				d.metadata.Name.Space = string(a.Value[0:i])
 				d.metadata.Name.Local = string(a.Value[i+1:])
 			} else {
@@ -153,13 +165,14 @@ func (d *metadataDecoder) End() {
 
 type buildDecoder struct {
 	baseDecoder
+	model *Model
 	ctx   *decoderContext
 	build *Build
 }
 
 func (d *buildDecoder) Child(name xml.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrItem {
-		child = &buildItemDecoder{build: d.build, ctx: d.ctx}
+		child = &buildItemDecoder{build: d.build, ctx: d.ctx, model: d.model}
 	}
 	return
 }
@@ -171,8 +184,8 @@ func (d *buildDecoder) Wrap(err error) error {
 func (d *buildDecoder) Start(attrs []encoding.Attr) error {
 	var errs error
 	for _, a := range attrs {
-		if ext, ok := d.ctx.extensionDecoder[a.Name.Space]; ok {
-			errs = specerr.Append(errs, ext.DecodeAttribute(d.build, a))
+		if ext, ok := loadExtension(a.Name.Space); ok {
+			errs = specerr.Append(errs, ext.decodeAttribute(d.build, a))
 		}
 	}
 	if errs != nil {
@@ -184,6 +197,7 @@ func (d *buildDecoder) Start(attrs []encoding.Attr) error {
 type buildItemDecoder struct {
 	baseDecoder
 	ctx   *decoderContext
+	model *Model
 	build *Build
 	item  Item
 	ew    encoding.ErrorWrapper
@@ -199,7 +213,7 @@ func (d *buildItemDecoder) Wrap(err error) error {
 
 func (d *buildItemDecoder) Child(name xml.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrMetadataGroup {
-		child = &metadataGroupDecoder{metadatas: &d.item.Metadata, ctx: d.ctx}
+		child = &metadataGroupDecoder{metadatas: &d.item.Metadata, ctx: d.ctx, model: d.model}
 	}
 	return
 }
@@ -209,8 +223,8 @@ func (d *buildItemDecoder) Start(attrs []encoding.Attr) error {
 	for _, a := range attrs {
 		if a.Name.Space == "" {
 			errs = specerr.Append(errs, d.parseCoreAttr(a))
-		} else if ext, ok := d.ctx.extensionDecoder[a.Name.Space]; ok {
-			errs = specerr.Append(errs, ext.DecodeAttribute(&d.item, a))
+		} else if ext, ok := loadExtension(a.Name.Space); ok {
+			errs = specerr.Append(errs, ext.decodeAttribute(&d.item, a))
 		}
 	}
 	if errs != nil {
@@ -242,6 +256,7 @@ func (d *buildItemDecoder) parseCoreAttr(a encoding.Attr) (errs error) {
 type resourceDecoder struct {
 	baseDecoder
 	ctx       *decoderContext
+	model     *Model
 	resources *Resources
 }
 
@@ -253,12 +268,12 @@ func (d *resourceDecoder) Child(name xml.Name) (child encoding.ElementDecoder) {
 	if name.Space == Namespace {
 		switch name.Local {
 		case attrObject:
-			child = &objectDecoder{resources: d.resources, ctx: d.ctx, ew: d}
+			child = &objectDecoder{resources: d.resources, ctx: d.ctx, ew: d, model: d.model}
 		case attrBaseMaterials:
 			child = &baseMaterialsDecoder{resources: d.resources, ew: d}
 		}
-	} else if ext, ok := d.ctx.extensionDecoder[name.Space]; ok {
-		child = ext.NewElementDecoder(encoding.ElementDecoderContext{
+	} else if ext, ok := loadExtension(name.Space); ok {
+		child = ext.newElementDecoder(encoding.ElementDecoderContext{
 			ParentElement: d.resources,
 			Name:          name,
 			ErrorWrapper:  d,
@@ -362,8 +377,8 @@ func (d *meshDecoder) Child(name xml.Name) (child encoding.ElementDecoder) {
 		} else if name.Local == attrTriangles {
 			child = &trianglesDecoder{resource: d.resource, ew: d}
 		}
-	} else if ext, ok := d.ctx.extensionDecoder[name.Space]; ok {
-		child = ext.NewElementDecoder(encoding.ElementDecoderContext{
+	} else if ext, ok := loadExtension(name.Space); ok {
+		child = ext.newElementDecoder(encoding.ElementDecoderContext{
 			ParentElement: d.resource.Mesh,
 			Name:          name,
 			ErrorWrapper:  d,
@@ -524,6 +539,7 @@ func applyDefault(val, defVal uint32, noDef bool) uint32 {
 type objectDecoder struct {
 	baseDecoder
 	ctx       *decoderContext
+	model     *Model
 	resources *Resources
 	resource  Object
 	ew        encoding.ErrorWrapper
@@ -538,8 +554,8 @@ func (d *objectDecoder) Start(attrs []encoding.Attr) error {
 	for _, a := range attrs {
 		if a.Name.Space == "" {
 			errs = specerr.Append(errs, d.parseCoreAttr(a))
-		} else if ext, ok := d.ctx.extensionDecoder[a.Name.Space]; ok {
-			errs = specerr.Append(errs, ext.DecodeAttribute(&d.resource, a))
+		} else if ext, ok := loadExtension(a.Name.Space); ok {
+			errs = specerr.Append(errs, ext.decodeAttribute(&d.resource, a))
 		}
 	}
 	if errs != nil {
@@ -559,7 +575,7 @@ func (d *objectDecoder) Child(name xml.Name) (child encoding.ElementDecoder) {
 		} else if name.Local == attrComponents {
 			child = &componentsDecoder{resource: &d.resource, ctx: d.ctx, ew: d}
 		} else if name.Local == attrMetadataGroup {
-			child = &metadataGroupDecoder{metadatas: &d.resource.Metadata, ctx: d.ctx}
+			child = &metadataGroupDecoder{metadatas: &d.resource.Metadata, ctx: d.ctx, model: d.model}
 		}
 	}
 	return
@@ -653,8 +669,8 @@ func (d *componentDecoder) Start(attrs []encoding.Attr) error {
 					errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, false))
 				}
 			}
-		} else if ext, ok := d.ctx.extensionDecoder[a.Name.Space]; ok {
-			errs = specerr.Append(errs, ext.DecodeAttribute(&component, a))
+		} else if ext, ok := loadExtension(a.Name.Space); ok {
+			errs = specerr.Append(errs, ext.decodeAttribute(&component, a))
 		}
 	}
 	d.resource.Components = append(d.resource.Components, &component)

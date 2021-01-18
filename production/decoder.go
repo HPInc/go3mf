@@ -7,11 +7,7 @@ import (
 	"github.com/qmuntal/go3mf/uuid"
 )
 
-func (e Spec) NewElementDecoder(_ encoding.ElementDecoderContext) encoding.ElementDecoder {
-	return nil
-}
-
-func (e Spec) DecodeAttribute(parentNode interface{}, attr encoding.Attr) (errs error) {
+func decodeAttribute(parentNode interface{}, attr encoding.Attr) (errs error) {
 	switch t := parentNode.(type) {
 	case *go3mf.Build:
 		if attr.Name.Local == attrProdUUID {

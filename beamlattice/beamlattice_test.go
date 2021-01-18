@@ -4,12 +4,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/qmuntal/go3mf/spec"
 	"github.com/qmuntal/go3mf/spec/encoding"
 )
 
-var _ encoding.Decoder = new(Spec)
-var _ spec.ObjectValidator = new(Spec)
 var _ encoding.Marshaler = new(BeamLattice)
 
 func TestCapMode_String(t *testing.T) {

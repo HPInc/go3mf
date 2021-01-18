@@ -9,14 +9,12 @@ import (
 	"github.com/qmuntal/go3mf/spec/encoding"
 )
 
-func (e Spec) NewElementDecoder(ctx encoding.ElementDecoderContext) encoding.ElementDecoder {
+func newElementDecoder(ctx encoding.ElementDecoderContext) encoding.ElementDecoder {
 	if ctx.Name.Local == attrBeamLattice {
 		return &beamLatticeDecoder{mesh: ctx.ParentElement.(*go3mf.Mesh), ew: ctx.ErrorWrapper}
 	}
 	return nil
 }
-
-func (e Spec) DecodeAttribute(_ interface{}, _ encoding.Attr) error { return nil }
 
 type beamLatticeDecoder struct {
 	baseDecoder

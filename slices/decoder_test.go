@@ -32,7 +32,9 @@ func TestDecode(t *testing.T) {
 		AnyAttr: go3mf.AnyAttr{&ObjectAttr{SliceStackID: 3, MeshResolution: ResolutionLow}},
 	}
 
-	want := &go3mf.Model{Path: "/3D/3dmodel.model", Specs: map[string]go3mf.Spec{Namespace: &Spec{LocalName: "s"}},
+	want := &go3mf.Model{
+		Path:       "/3D/3dmodel.model",
+		Extensions: []go3mf.Extension{DefaultExtension},
 		Resources: go3mf.Resources{
 			Assets: []go3mf.Asset{sliceStack, sliceStackRef}, Objects: []*go3mf.Object{meshRes},
 		}}
@@ -77,7 +79,6 @@ func TestDecode(t *testing.T) {
 	</model>`
 
 	t.Run("base", func(t *testing.T) {
-		got.WithSpec(&Spec{})
 		if err := go3mf.UnmarshalModel([]byte(rootFile), got); err != nil {
 			t.Errorf("DecodeRawModel() unexpected error = %v", err)
 			return
@@ -167,7 +168,6 @@ func TestDecode_warns(t *testing.T) {
 		`
 
 	t.Run("base", func(t *testing.T) {
-		got.WithSpec(&Spec{})
 		err := go3mf.UnmarshalModel([]byte(rootFile), got)
 		if diff := deep.Equal(err, want); diff != nil {
 			t.Errorf("UnmarshalModel_warn() = %v", diff)
