@@ -1,5 +1,5 @@
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/qmuntal/go3mf)](https://pkg.go.dev/github.com/qmuntal/go3mf)
-[![Build Status](https://travis-ci.com/qmuntal/go3mf.svg?branch=master)](https://travis-ci.com/qmuntal/go3mf)
+[![Build Status](https://github.com/qmuntal/go3mf/workflows/CI/badge.svg)](https://github.com/qmuntal/go3mf/actions?query=workflow%3ACI)
 [![Go Report Card](https://goreportcard.com/badge/github.com/qmuntal/go3mf)](https://goreportcard.com/report/github.com/qmuntal/go3mf)
 [![codecov](https://coveralls.io/repos/github/qmuntal/go3mf/badge.svg)](https://coveralls.io/github/qmuntal/go3mf?branch=master)
 [![codeclimate](https://codeclimate.com/github/qmuntal/go3mf/badges/gpa.svg)](https://codeclimate.com/github/qmuntal/go3mf)
