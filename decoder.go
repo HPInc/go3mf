@@ -14,24 +14,24 @@ import (
 
 type modelDecoder struct {
 	baseDecoder
-	ctx    *decoderContext
 	model  *Model
 	isRoot bool
+	path   string
 }
 
 func (d *modelDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	if name.Space == Namespace {
 		switch name.Local {
 		case attrResources:
-			resources, _ := d.model.FindResources(d.ctx.modelPath)
-			child = &resourceDecoder{resources: resources, ctx: d.ctx, model: d.model}
+			resources, _ := d.model.FindResources(d.path)
+			child = &resourceDecoder{resources: resources, model: d.model}
 		case attrBuild:
 			if d.isRoot {
-				child = &buildDecoder{build: &d.model.Build, ctx: d.ctx, model: d.model}
+				child = &buildDecoder{build: &d.model.Build, model: d.model}
 			}
 		case attrMetadata:
 			if d.isRoot {
-				child = &metadataDecoder{metadatas: &d.model.Metadata, ctx: d.ctx, model: d.model}
+				child = &metadataDecoder{metadatas: &d.model.Metadata, model: d.model}
 			}
 		}
 	} else if ext, ok := loadExtension(name.Space); ok {
@@ -100,21 +100,19 @@ func (d *modelDecoder) noCoreAttribute(a spec.Attr) (err error) {
 
 type metadataGroupDecoder struct {
 	baseDecoder
-	ctx       *decoderContext
 	metadatas *[]Metadata
 	model     *Model
 }
 
 func (d *metadataGroupDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrMetadata {
-		child = &metadataDecoder{metadatas: d.metadatas, ctx: d.ctx, model: d.model}
+		child = &metadataDecoder{metadatas: d.metadatas, model: d.model}
 	}
 	return
 }
 
 type metadataDecoder struct {
 	baseDecoder
-	ctx       *decoderContext
 	model     *Model
 	metadatas *[]Metadata
 	metadata  Metadata
@@ -166,13 +164,12 @@ func (d *metadataDecoder) End() {
 type buildDecoder struct {
 	baseDecoder
 	model *Model
-	ctx   *decoderContext
 	build *Build
 }
 
 func (d *buildDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrItem {
-		child = &buildItemDecoder{build: d.build, ctx: d.ctx, model: d.model}
+		child = &buildItemDecoder{build: d.build, model: d.model}
 	}
 	return
 }
@@ -196,7 +193,6 @@ func (d *buildDecoder) Start(attrs []spec.Attr) error {
 
 type buildItemDecoder struct {
 	baseDecoder
-	ctx   *decoderContext
 	model *Model
 	build *Build
 	item  Item
@@ -213,7 +209,7 @@ func (d *buildItemDecoder) Wrap(err error) error {
 
 func (d *buildItemDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrMetadataGroup {
-		child = &metadataGroupDecoder{metadatas: &d.item.Metadata, ctx: d.ctx, model: d.model}
+		child = &metadataGroupDecoder{metadatas: &d.item.Metadata, model: d.model}
 	}
 	return
 }
@@ -255,7 +251,6 @@ func (d *buildItemDecoder) parseCoreAttr(a spec.Attr) (errs error) {
 
 type resourceDecoder struct {
 	baseDecoder
-	ctx       *decoderContext
 	model     *Model
 	resources *Resources
 }
@@ -268,7 +263,7 @@ func (d *resourceDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	if name.Space == Namespace {
 		switch name.Local {
 		case attrObject:
-			child = &objectDecoder{resources: d.resources, ctx: d.ctx, ew: d, model: d.model}
+			child = &objectDecoder{resources: d.resources, ew: d, model: d.model}
 		case attrBaseMaterials:
 			child = &baseMaterialsDecoder{resources: d.resources, ew: d}
 		}
@@ -356,7 +351,6 @@ func (d *baseMaterialDecoder) Start(attrs []spec.Attr) error {
 
 type meshDecoder struct {
 	baseDecoder
-	ctx      *decoderContext
 	resource *Object
 	ew       spec.ErrorWrapper
 }
@@ -538,7 +532,6 @@ func applyDefault(val, defVal uint32, noDef bool) uint32 {
 
 type objectDecoder struct {
 	baseDecoder
-	ctx       *decoderContext
 	model     *Model
 	resources *Resources
 	resource  Object
@@ -571,11 +564,11 @@ func (d *objectDecoder) Wrap(err error) error {
 func (d *objectDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	if name.Space == Namespace {
 		if name.Local == attrMesh {
-			child = &meshDecoder{resource: &d.resource, ctx: d.ctx, ew: d}
+			child = &meshDecoder{resource: &d.resource, ew: d}
 		} else if name.Local == attrComponents {
-			child = &componentsDecoder{resource: &d.resource, ctx: d.ctx, ew: d}
+			child = &componentsDecoder{resource: &d.resource, ew: d}
 		} else if name.Local == attrMetadataGroup {
-			child = &metadataGroupDecoder{metadatas: &d.resource.Metadata, ctx: d.ctx, model: d.model}
+			child = &metadataGroupDecoder{metadatas: &d.resource.Metadata, model: d.model}
 		}
 	}
 	return
@@ -619,7 +612,6 @@ func (d *objectDecoder) parseCoreAttr(a spec.Attr) (errs error) {
 
 type componentsDecoder struct {
 	baseDecoder
-	ctx              *decoderContext
 	resource         *Object
 	componentDecoder componentDecoder
 	ew               spec.ErrorWrapper
@@ -628,7 +620,6 @@ type componentsDecoder struct {
 func (d *componentsDecoder) Start(_ []spec.Attr) error {
 	d.resource.Components = make([]*Component, 0)
 	d.componentDecoder.resource = d.resource
-	d.componentDecoder.ctx = d.ctx
 	return nil
 }
 
@@ -645,7 +636,6 @@ func (d *componentsDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 
 type componentDecoder struct {
 	baseDecoder
-	ctx      *decoderContext
 	resource *Object
 }
 
@@ -688,15 +678,15 @@ func (d *baseDecoder) End()                    {}
 
 type topLevelDecoder struct {
 	baseDecoder
-	ctx    *decoderContext
 	model  *Model
 	isRoot bool
+	path   string
 }
 
 func (d *topLevelDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	modelName := xml.Name{Space: Namespace, Local: attrModel}
 	if name == modelName {
-		child = &modelDecoder{model: d.model, isRoot: d.isRoot, ctx: d.ctx}
+		child = &modelDecoder{model: d.model, isRoot: d.isRoot, path: d.path}
 	}
 	return
 }

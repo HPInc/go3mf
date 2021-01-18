@@ -60,17 +60,14 @@ func (r *ReadCloser) Close() error {
 
 func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string, isRoot, strict bool) error {
 	x := xml3mf.NewDecoder(r)
-	scanner := decoderContext{
-		isRoot:    isRoot,
-		modelPath: path,
-	}
 	state, names := make([]spec.ElementDecoder, 0, 10), make([]xml.Name, 0, 10)
 
 	var (
 		currentDecoder, tmpDecoder spec.ElementDecoder
 		currentName                xml.Name
+		errs                       specerr.List
 	)
-	currentDecoder = &topLevelDecoder{isRoot: isRoot, model: model, ctx: &scanner}
+	currentDecoder = &topLevelDecoder{isRoot: isRoot, model: model, path: path}
 	var err error
 	x.OnStart = func(tp xml3mf.StartElement) {
 		if childDecoder, ok := currentDecoder.(spec.ChildElementDecoder); ok {
@@ -84,7 +81,7 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 					if childDecoder, ok := childDecoder.(spec.ErrorWrapper); ok {
 						err = childDecoder.Wrap(err)
 					}
-					specerr.Append(&scanner.Err, err)
+					specerr.Append(&errs, err)
 				}
 			}
 		}
@@ -104,7 +101,7 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 	var i int
 	for {
 		err = x.RawToken()
-		if err != nil || (strict && scanner.Err.Len() != 0) {
+		if err != nil || (strict && errs.Len() != 0) {
 			break
 		}
 		if i%checkEveryTokens == 0 {
@@ -122,11 +119,11 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 	if err == io.EOF {
 		err = nil
 	}
-	if err == nil && scanner.Err.Len() != 0 {
-		if strict || scanner.Err.Len() == 1 {
-			err = scanner.Err.Unwrap()
+	if err == nil && errs.Len() != 0 {
+		if strict || errs.Len() == 1 {
+			err = errs.Unwrap()
 		} else {
-			err = &scanner.Err
+			err = &errs
 		}
 	}
 	return err
@@ -316,11 +313,4 @@ func (f *fakePackageFile) FindFileFromName(string) (packageFile, bool) { return 
 func (f *fakePackageFile) Relationships() []Relationship               { return nil }
 func (f *fakePackageFile) Open() (io.ReadCloser, error) {
 	return ioutil.NopCloser(bytes.NewBuffer(f.data)), nil
-}
-
-// A decoderContext is a 3mf model file scanning state machine.
-type decoderContext struct {
-	Err       specerr.List
-	modelPath string
-	isRoot    bool
 }
