@@ -118,7 +118,9 @@ func (p *ComponentAttr) getUUID() string {
 	return p.UUID
 }
 
-func AddMissingUUIDs(m *go3mf.Model) {
+// SetMissingUUIDs traverse all the model tree setting
+// all missing UUID attributes.
+func SetMissingUUIDs(m *go3mf.Model) {
 	if GetBuildAttr(&m.Build) == nil {
 		m.Build.AnyAttr = append(m.Build.AnyAttr, &BuildAttr{UUID: uuid.New()})
 	}

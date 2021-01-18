@@ -52,7 +52,7 @@ func TestItemAttr_ObjectPath(t *testing.T) {
 		})
 	}
 }
-func TestAddMissingUUIDs(t *testing.T) {
+func TestSetMissingUUIDs(t *testing.T) {
 	components := &go3mf.Object{
 		ID:         20,
 		Components: []*go3mf.Component{{ObjectID: 8}},
@@ -60,20 +60,20 @@ func TestAddMissingUUIDs(t *testing.T) {
 	m := &go3mf.Model{Path: "/3D/3dmodel.model", Build: go3mf.Build{}}
 	m.Resources = go3mf.Resources{Objects: []*go3mf.Object{components}}
 	m.Build.Items = append(m.Build.Items, &go3mf.Item{ObjectID: 20}, &go3mf.Item{ObjectID: 8})
-	AddMissingUUIDs(m)
+	SetMissingUUIDs(m)
 	if len(m.Build.AnyAttr) == 0 {
-		t.Errorf("Spec.PreProcessEncode() should have filled build attrs")
+		t.Errorf("SetMissingUUIDs() should have filled build attrs")
 	}
 	if len(m.Build.Items[0].AnyAttr) == 0 {
-		t.Errorf("Spec.PreProcessEncode() should have filled item attrs")
+		t.Errorf("SetMissingUUIDs() should have filled item attrs")
 	}
 	if len(m.Build.Items[1].AnyAttr) == 0 {
-		t.Errorf("Spec.PreProcessEncode() should have filled item attrs")
+		t.Errorf("SetMissingUUIDs() should have filled item attrs")
 	}
 	if len(m.Resources.Objects[0].AnyAttr) == 0 {
-		t.Errorf("Spec.PreProcessEncode() should have filled object attrs")
+		t.Errorf("SetMissingUUIDs() should have filled object attrs")
 	}
 	if len(m.Resources.Objects[0].Components[0].AnyAttr) == 0 {
-		t.Errorf("Spec.PreProcessEncode() should have filled object attrs")
+		t.Errorf("SetMissingUUIDs() should have filled object attrs")
 	}
 }
