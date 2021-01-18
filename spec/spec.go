@@ -82,9 +82,9 @@ type CharDataElementDecoder interface {
 // It should not be implemented by spec authors but
 // will be provided be go3mf itself.
 type Encoder interface {
-	AddRelationship(r Relationship)
+	AddRelationship(Relationship)
 	FloatPresicion() int
-	EncodeToken(t xml.Token)
+	EncodeToken(xml.Token)
 	Flush() error
-	SetAutoClose(autoClose bool)
+	SetAutoClose(bool)
 }
