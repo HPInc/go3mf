@@ -4,13 +4,13 @@ import (
 	"testing"
 
 	"github.com/qmuntal/go3mf"
-	"github.com/qmuntal/go3mf/spec/encoding"
+	"github.com/qmuntal/go3mf/spec"
 )
 
-var _ encoding.MarshalerAttr = new(BuildAttr)
-var _ encoding.MarshalerAttr = new(ItemAttr)
-var _ encoding.MarshalerAttr = new(ComponentAttr)
-var _ encoding.MarshalerAttr = new(ObjectAttr)
+var _ spec.MarshalerAttr = new(BuildAttr)
+var _ spec.MarshalerAttr = new(ItemAttr)
+var _ spec.MarshalerAttr = new(ComponentAttr)
+var _ spec.MarshalerAttr = new(ObjectAttr)
 
 func TestComponentAttr_ObjectPath(t *testing.T) {
 	tests := []struct {

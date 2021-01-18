@@ -6,10 +6,14 @@ import (
 
 	"github.com/qmuntal/go3mf"
 	specerr "github.com/qmuntal/go3mf/errors"
-	"github.com/qmuntal/go3mf/spec/encoding"
+	"github.com/qmuntal/go3mf/spec"
 )
 
-func newElementDecoder(ctx encoding.ElementDecoderContext) encoding.ElementDecoder {
+func (Spec) DecodeAttribute(interface{}, spec.Attr) error {
+	return nil
+}
+
+func (Spec) CreateElementDecoder(ctx spec.ElementDecoderContext) spec.ElementDecoder {
 	if ctx.Name.Local == attrBeamLattice {
 		return &beamLatticeDecoder{mesh: ctx.ParentElement.(*go3mf.Mesh), ew: ctx.ErrorWrapper}
 	}
@@ -19,10 +23,10 @@ func newElementDecoder(ctx encoding.ElementDecoderContext) encoding.ElementDecod
 type beamLatticeDecoder struct {
 	baseDecoder
 	mesh *go3mf.Mesh
-	ew   encoding.ErrorWrapper
+	ew   spec.ErrorWrapper
 }
 
-func (d *beamLatticeDecoder) Start(attrs []encoding.Attr) error {
+func (d *beamLatticeDecoder) Start(attrs []spec.Attr) error {
 	var errs error
 	beamLattice := new(BeamLattice)
 	d.mesh.Any = append(d.mesh.Any, beamLattice)
@@ -79,7 +83,7 @@ func (d *beamLatticeDecoder) Wrap(err error) error {
 	return d.ew.Wrap(specerr.Wrap(err, GetBeamLattice(d.mesh)))
 }
 
-func (d *beamLatticeDecoder) Child(name xml.Name) (child encoding.ElementDecoder) {
+func (d *beamLatticeDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	if name.Space == Namespace {
 		if name.Local == attrBeams {
 			child = &beamsDecoder{mesh: d.mesh, ew: d}
@@ -94,10 +98,10 @@ type beamsDecoder struct {
 	baseDecoder
 	mesh        *go3mf.Mesh
 	beamDecoder beamDecoder
-	ew          encoding.ErrorWrapper
+	ew          spec.ErrorWrapper
 }
 
-func (d *beamsDecoder) Start(_ []encoding.Attr) error {
+func (d *beamsDecoder) Start(_ []spec.Attr) error {
 	d.beamDecoder.mesh = d.mesh
 	return nil
 }
@@ -106,7 +110,7 @@ func (d *beamsDecoder) Wrap(err error) error {
 	return d.ew.Wrap(err)
 }
 
-func (d *beamsDecoder) Child(name xml.Name) (child encoding.ElementDecoder) {
+func (d *beamsDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrBeam {
 		child = &d.beamDecoder
 	}
@@ -118,7 +122,7 @@ type beamDecoder struct {
 	mesh *go3mf.Mesh
 }
 
-func (d *beamDecoder) Start(attrs []encoding.Attr) error {
+func (d *beamDecoder) Start(attrs []spec.Attr) error {
 	var (
 		beam             Beam
 		hasCap1, hasCap2 bool
@@ -190,14 +194,14 @@ func (d *beamDecoder) Start(attrs []encoding.Attr) error {
 type beamSetsDecoder struct {
 	baseDecoder
 	mesh *go3mf.Mesh
-	ew   encoding.ErrorWrapper
+	ew   spec.ErrorWrapper
 }
 
 func (d *beamSetsDecoder) Wrap(err error) error {
 	return d.ew.Wrap(err)
 }
 
-func (d *beamSetsDecoder) Child(name xml.Name) (child encoding.ElementDecoder) {
+func (d *beamSetsDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrBeamSet {
 		child = &beamSetDecoder{mesh: d.mesh, ew: d}
 	}
@@ -209,7 +213,7 @@ type beamSetDecoder struct {
 	mesh           *go3mf.Mesh
 	beamSet        BeamSet
 	beamRefDecoder beamRefDecoder
-	ew             encoding.ErrorWrapper
+	ew             spec.ErrorWrapper
 }
 
 func (d *beamSetDecoder) End() {
@@ -217,7 +221,7 @@ func (d *beamSetDecoder) End() {
 	beamLattice.BeamSets = append(beamLattice.BeamSets, d.beamSet)
 }
 
-func (d *beamSetDecoder) Start(attrs []encoding.Attr) error {
+func (d *beamSetDecoder) Start(attrs []spec.Attr) error {
 	d.beamRefDecoder.beamSet = &d.beamSet
 	for _, a := range attrs {
 		if a.Name.Space != "" {
@@ -237,7 +241,7 @@ func (d *beamSetDecoder) Wrap(err error) error {
 	return d.ew.Wrap(specerr.WrapIndex(err, &d.beamSet, len(GetBeamLattice(d.mesh).BeamSets)))
 }
 
-func (d *beamSetDecoder) Child(name xml.Name) (child encoding.ElementDecoder) {
+func (d *beamSetDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrRef {
 		child = &d.beamRefDecoder
 	}
@@ -249,7 +253,7 @@ type beamRefDecoder struct {
 	beamSet *BeamSet
 }
 
-func (d *beamRefDecoder) Start(attrs []encoding.Attr) error {
+func (d *beamRefDecoder) Start(attrs []spec.Attr) error {
 	var (
 		val  uint64
 		errs error
@@ -274,5 +278,5 @@ func (d *beamRefDecoder) Start(attrs []encoding.Attr) error {
 type baseDecoder struct {
 }
 
-func (d *baseDecoder) Start([]encoding.Attr) error { return nil }
+func (d *baseDecoder) Start([]spec.Attr) error { return nil }
 func (d *baseDecoder) End()                        {}

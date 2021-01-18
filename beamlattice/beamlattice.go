@@ -23,8 +23,10 @@ var (
 )
 
 func init() {
-	go3mf.RegisterExtension(Namespace, nil, newElementDecoder, validate)
+	go3mf.Register(Namespace, Spec{})
 }
+
+type Spec struct{}
 
 // ClipMode defines the clipping modes for the beam lattices.
 type ClipMode uint8

@@ -16,14 +16,11 @@ import (
 
 	"github.com/go-test/deep"
 	specerr "github.com/qmuntal/go3mf/errors"
-	"github.com/qmuntal/go3mf/spec/encoding"
+	"github.com/qmuntal/go3mf/spec"
 	"github.com/stretchr/testify/mock"
 )
 
 const fakeExtension = "http://dummy.com/fake_ext"
-
-var _ encoding.CharDataElementDecoder = new(metadataDecoder)
-var _ encoding.ChildElementDecoder = new(baseMaterialsDecoder)
 
 var fakeSpec = Extension{
 	Namespace:  fakeExtension,
@@ -31,14 +28,16 @@ var fakeSpec = Extension{
 	IsRequired: true,
 }
 
-func newElementDecoder(ctx encoding.ElementDecoderContext) encoding.ElementDecoder {
+type qmExtension struct{}
+
+func (qmExtension) CreateElementDecoder(ctx spec.ElementDecoderContext) spec.ElementDecoder {
 	if e, ok := ctx.ParentElement.(*Resources); ok {
 		return &fakeAssetDecoder{resources: e}
 	}
 	return nil
 }
 
-func decodeAttribute(parentNode interface{}, attr encoding.Attr) error {
+func (qmExtension) DecodeAttribute(parentNode interface{}, attr spec.Attr) error {
 	switch t := parentNode.(type) {
 	case *Object:
 		t.AnyAttr = append(t.AnyAttr, &fakeAttr{string(attr.Value)})
@@ -54,7 +53,7 @@ func decodeAttribute(parentNode interface{}, attr encoding.Attr) error {
 	return nil
 }
 
-func validateFake(model interface{}, path string, element interface{}) error {
+func (qmExtension) Validate(model interface{}, path string, element interface{}) error {
 	if _, ok := element.(*Model); !ok {
 		return nil
 	}
@@ -87,7 +86,7 @@ type fakeAssetDecoder struct {
 	resources *Resources
 }
 
-func (f *fakeAssetDecoder) Start(att []encoding.Attr) error {
+func (f *fakeAssetDecoder) Start(att []spec.Attr) error {
 	id, _ := strconv.ParseUint(string(att[0].Value), 10, 32)
 	f.resources.Assets = append(f.resources.Assets, &fakeAsset{ID: uint32(id)})
 	return nil
@@ -311,7 +310,7 @@ func TestDecoder_processRootModel_Fail(t *testing.T) {
 }
 
 func TestDecoder_processRootModel(t *testing.T) {
-	RegisterExtension(fakeSpec.Namespace, decodeAttribute, newElementDecoder, validateFake)
+	Register(fakeSpec.Namespace, new(qmExtension))
 	baseMaterials := &BaseMaterials{ID: 5, Materials: []Base{
 		{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 		{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
@@ -565,7 +564,7 @@ func TestNewDecoder(t *testing.T) {
 }
 
 func TestDecoder_processRootModel_warns(t *testing.T) {
-	RegisterExtension(fakeSpec.Namespace, decodeAttribute, newElementDecoder, validateFake)
+	Register(fakeSpec.Namespace, new(qmExtension))
 	want := &specerr.List{Errors: []error{
 		fmt.Errorf("Resources@BaseMaterials#0@RGBA#0: %v", specerr.NewParseAttrError("displaycolor", true)),
 		fmt.Errorf("Resources@BaseMaterials#1: %v", specerr.NewParseAttrError("id", true)),

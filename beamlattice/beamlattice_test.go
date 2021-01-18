@@ -4,10 +4,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/qmuntal/go3mf/spec/encoding"
+	"github.com/qmuntal/go3mf/spec"
 )
 
-var _ encoding.Marshaler = new(BeamLattice)
+var _ spec.Marshaler = new(BeamLattice)
 
 func TestCapMode_String(t *testing.T) {
 	tests := []struct {

@@ -4,10 +4,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/qmuntal/go3mf/spec/encoding"
+	"github.com/qmuntal/go3mf/spec"
 )
 
-var _ encoding.Marshaler = new(BaseMaterials)
+var _ spec.Marshaler = new(BaseMaterials)
 
 func TestResources_FindAsset(t *testing.T) {
 	id1 := &BaseMaterials{ID: 0}

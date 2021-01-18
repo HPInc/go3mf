@@ -4,14 +4,7 @@ import (
 	"sync"
 
 	"github.com/qmuntal/go3mf/spec"
-	"github.com/qmuntal/go3mf/spec/encoding"
 )
-
-type Extension struct {
-	Namespace  string
-	LocalName  string
-	IsRequired bool
-}
 
 type objectPather interface {
 	ObjectPath() string
@@ -21,50 +14,34 @@ type propertyGroup interface {
 	Len() int
 }
 
-type extension struct {
-	namespace         string
-	decodeAttribute   encoding.DecodeAttrFunc
-	newElementDecoder encoding.NewElementDecoderFunc
-	validateFunc      spec.ValidateFunc
-}
-
 var (
-	extensionsMu sync.RWMutex
-	extensions   = make(map[string]extension)
+	specMu sync.RWMutex
+	specs   = make(map[string]spec.Spec)
 )
 
-type nilElementDecoder struct{}
-
-func (e nilElementDecoder) Start([]encoding.Attr) error { return nil }
-
-func (e nilElementDecoder) End() {}
-
-// RegisterFormat registers an extension for use by Decode.
-// Namespace is the namespace of the extension.
-func RegisterExtension(namespace string, attrFn encoding.DecodeAttrFunc, elementFn encoding.NewElementDecoderFunc, validateFn spec.ValidateFunc) {
-	if attrFn == nil {
-		attrFn = func(interface{}, encoding.Attr) error {
-			return nil
-		}
-	}
-	if elementFn == nil {
-		elementFn = func(encoding.ElementDecoderContext) encoding.ElementDecoder {
-			return nilElementDecoder{}
-		}
-	}
-	if validateFn == nil {
-		validateFn = func(interface{}, string, interface{}) error {
-			return nil
-		}
-	}
-	extensionsMu.Lock()
-	defer extensionsMu.Unlock()
-	extensions[namespace] = extension{namespace, attrFn, elementFn, validateFn}
+// Register makes a spec available by the provided namesoace.
+// If Register is called twice with the same name or if spec is nil,
+// it panics.
+func Register(namespace string, spec spec.Spec) {
+	specMu.Lock()
+	defer specMu.Unlock()
+	specs[namespace] = spec
 }
 
-func loadExtension(ns string) (extension, bool) {
-	extensionsMu.RLock()
-	ext, ok := extensions[ns]
-	extensionsMu.RUnlock()
+func loadExtension(ns string) (spec.Spec, bool) {
+	specMu.RLock()
+	ext, ok := specs[ns]
+	specMu.RUnlock()
 	return ext, ok
+}
+
+func loadValidator(ns string) (spec.ValidateSpec, bool) {
+	specMu.RLock()
+	ext, ok := specs[ns]
+	specMu.RUnlock()
+	if ok {
+		ext, ok := ext.(spec.ValidateSpec)
+		return ext, ok
+	}
+	return nil, false
 }

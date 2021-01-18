@@ -5,11 +5,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/qmuntal/go3mf/spec/encoding"
+	"github.com/qmuntal/go3mf/spec"
 )
 
 // Marshal3MF encodes the resource.
-func (r *ColorGroup) Marshal3MF(x encoding.Encoder) error {
+func (r *ColorGroup) Marshal3MF(x spec.Encoder) error {
 	xs := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrColorGroup}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(r.ID), 10)},
 	}}
@@ -17,7 +17,7 @@ func (r *ColorGroup) Marshal3MF(x encoding.Encoder) error {
 	x.SetAutoClose(true)
 	for _, c := range r.Colors {
 		x.EncodeToken(xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrColor}, Attr: []xml.Attr{
-			{Name: xml.Name{Local: attrColor}, Value: encoding.FormatRGBA(c)},
+			{Name: xml.Name{Local: attrColor}, Value: spec.FormatRGBA(c)},
 		}})
 	}
 	x.SetAutoClose(false)
@@ -26,7 +26,7 @@ func (r *ColorGroup) Marshal3MF(x encoding.Encoder) error {
 }
 
 // Marshal3MF encodes the resource.
-func (r *Texture2DGroup) Marshal3MF(x encoding.Encoder) error {
+func (r *Texture2DGroup) Marshal3MF(x spec.Encoder) error {
 	xs := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrTexture2DGroup}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(r.ID), 10)},
 		{Name: xml.Name{Local: attrTexID}, Value: strconv.FormatUint(uint64(r.TextureID), 10)},
@@ -46,7 +46,7 @@ func (r *Texture2DGroup) Marshal3MF(x encoding.Encoder) error {
 }
 
 // Marshal3MF encodes the resource.
-func (r *CompositeMaterials) Marshal3MF(x encoding.Encoder) error {
+func (r *CompositeMaterials) Marshal3MF(x spec.Encoder) error {
 	indices := make([]string, len(r.Indices))
 	for i, idx := range r.Indices {
 		indices[i] = strconv.FormatUint(uint64(idx), 10)
@@ -73,7 +73,7 @@ func (r *CompositeMaterials) Marshal3MF(x encoding.Encoder) error {
 }
 
 // Marshal3MF encodes the resource.
-func (r *MultiProperties) Marshal3MF(x encoding.Encoder) error {
+func (r *MultiProperties) Marshal3MF(x spec.Encoder) error {
 	pids := make([]string, len(r.PIDs))
 	for i, idx := range r.PIDs {
 		pids[i] = strconv.FormatUint(uint64(idx), 10)
@@ -104,8 +104,8 @@ func (r *MultiProperties) Marshal3MF(x encoding.Encoder) error {
 }
 
 // Marshal3MF encodes the resource.
-func (r *Texture2D) Marshal3MF(x encoding.Encoder) error {
-	x.AddRelationship(encoding.Relationship{Path: r.Path, Type: RelTypeTexture3D})
+func (r *Texture2D) Marshal3MF(x spec.Encoder) error {
+	x.AddRelationship(spec.Relationship{Path: r.Path, Type: RelTypeTexture3D})
 	xs := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrTexture2D}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(r.ID), 10)},
 		{Name: xml.Name{Local: attrPath}, Value: r.Path},

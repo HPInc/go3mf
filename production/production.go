@@ -26,8 +26,10 @@ const (
 	attrPath     = "path"
 )
 
+type Spec struct {}
+
 func init() {
-	go3mf.RegisterExtension(Namespace, decodeAttribute, nil, validate)
+	go3mf.Register(Namespace, Spec{})
 }
 
 // BuildAttr provides a UUID in the root model file build element to ensure

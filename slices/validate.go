@@ -11,7 +11,7 @@ func validTransform(t go3mf.Matrix) bool {
 	return t[2] == 0 && t[6] == 0 && t[8] == 0 && t[9] == 0 && t[10] == 1
 }
 
-func validate(model interface{}, path string, e interface{}) error {
+func (Spec) Validate(model interface{}, path string, e interface{}) error {
 	switch e := e.(type) {
 	case *go3mf.Object:
 		return validateObject(model.(*go3mf.Model), path, e)

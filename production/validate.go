@@ -11,7 +11,7 @@ type uuidPath interface {
 	ObjectPath() string
 }
 
-func validate(model interface{}, path string, e interface{}) error {
+func (Spec) Validate(model interface{}, path string, e interface{}) error {
 	switch e := e.(type) {
 	case *go3mf.Model:
 		return validateModel(e)

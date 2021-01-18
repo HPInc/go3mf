@@ -14,7 +14,7 @@ import (
 
 	specerr "github.com/qmuntal/go3mf/errors"
 	xml3mf "github.com/qmuntal/go3mf/internal/xml"
-	"github.com/qmuntal/go3mf/spec/encoding"
+	"github.com/qmuntal/go3mf/spec"
 )
 
 var checkEveryTokens = 1000
@@ -64,24 +64,24 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 		isRoot:    isRoot,
 		modelPath: path,
 	}
-	state, names := make([]encoding.ElementDecoder, 0, 10), make([]xml.Name, 0, 10)
+	state, names := make([]spec.ElementDecoder, 0, 10), make([]xml.Name, 0, 10)
 
 	var (
-		currentDecoder, tmpDecoder encoding.ElementDecoder
+		currentDecoder, tmpDecoder spec.ElementDecoder
 		currentName                xml.Name
 	)
 	currentDecoder = &topLevelDecoder{isRoot: isRoot, model: model, ctx: &scanner}
 	var err error
 	x.OnStart = func(tp xml3mf.StartElement) {
-		if childDecoder, ok := currentDecoder.(encoding.ChildElementDecoder); ok {
+		if childDecoder, ok := currentDecoder.(spec.ChildElementDecoder); ok {
 			tmpDecoder = childDecoder.Child(tp.Name)
 			if tmpDecoder != nil {
 				state = append(state, currentDecoder)
 				names = append(names, currentName)
 				currentName = tp.Name
 				currentDecoder = tmpDecoder
-				if err := currentDecoder.Start(*(*[]encoding.Attr)(unsafe.Pointer(&tp.Attr))); err != nil {
-					if childDecoder, ok := childDecoder.(encoding.ErrorWrapper); ok {
+				if err := currentDecoder.Start(*(*[]spec.Attr)(unsafe.Pointer(&tp.Attr))); err != nil {
+					if childDecoder, ok := childDecoder.(spec.ErrorWrapper); ok {
 						err = childDecoder.Wrap(err)
 					}
 					specerr.Append(&scanner.Err, err)
@@ -97,7 +97,7 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 		}
 	}
 	x.OnChar = func(tp xml.CharData) {
-		if currentDecoder, ok := currentDecoder.(encoding.CharDataElementDecoder); ok {
+		if currentDecoder, ok := currentDecoder.(spec.CharDataElementDecoder); ok {
 			currentDecoder.CharData(tp)
 		}
 	}

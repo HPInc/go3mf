@@ -21,8 +21,10 @@ var DefaultExtension = go3mf.Extension{
 }
 
 func init() {
-	go3mf.RegisterExtension(Namespace, nil, newElementDecoder, validate)
+	go3mf.Register(Namespace, Spec{})
 }
+
+type Spec struct {}
 
 var (
 	ErrMultiBlend         = errors.New("there MUST NOT be more blendmethods than layers – 1")

@@ -5,7 +5,7 @@ import (
 	"github.com/qmuntal/go3mf/errors"
 )
 
-func validate(m interface{}, path string, obj interface{}) error {
+func (Spec) Validate(m interface{}, path string, obj interface{}) error {
 	if obj, ok := obj.(*go3mf.Object); ok {
 		return validateObject(m.(*go3mf.Model), path, obj)
 	}

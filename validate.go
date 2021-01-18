@@ -42,8 +42,8 @@ func (m *Model) Validate() error {
 	errs = errors.Append(errs, checkMetadadata(m, m.Metadata))
 
 	for _, ext := range m.Extensions {
-		if ext, ok := loadExtension(ext.Namespace); ok {
-			errs = errors.Append(errs, ext.validateFunc(m, m.Path, m))
+		if ext, ok := loadValidator(ext.Namespace); ok {
+			errs = errors.Append(errs, ext.Validate(m, m.Path, m))
 		}
 	}
 
@@ -174,8 +174,8 @@ func (res *Resources) validate(m *Model, path string) error {
 		}
 
 		for _, ext := range m.Extensions {
-			if ext, ok := loadExtension(ext.Namespace); ok {
-				aErrs = errors.Append(aErrs, ext.validateFunc(m, path, r))
+			if ext, ok := loadValidator(ext.Namespace); ok {
+				aErrs = errors.Append(aErrs, ext.Validate(m, path, r))
 			}
 		}
 		errs = errors.Append(errs, errors.WrapIndex(aErrs, r, i))
@@ -232,8 +232,8 @@ func (r *Object) Validate(m *Model, path string) error {
 	}
 
 	for _, ext := range m.Extensions {
-		if ext, ok := loadExtension(ext.Namespace); ok {
-			errs = errors.Append(errs, ext.validateFunc(m, path, r))
+		if ext, ok := loadValidator(ext.Namespace); ok {
+			errs = errors.Append(errs, ext.Validate(m, path, r))
 		}
 	}
 	return errs

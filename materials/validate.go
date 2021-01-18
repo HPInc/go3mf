@@ -8,7 +8,7 @@ import (
 	"github.com/qmuntal/go3mf/errors"
 )
 
-func validate(model interface{}, path string, asset interface{}) error {
+func (Spec) Validate(model interface{}, path string, asset interface{}) error {
 	if asset, ok := asset.(go3mf.Asset); ok {
 		return validateAsset(model.(*go3mf.Model), path, asset)
 	}

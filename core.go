@@ -7,7 +7,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/qmuntal/go3mf/spec/encoding"
+	"github.com/qmuntal/go3mf/spec"
 )
 
 const (
@@ -176,6 +176,12 @@ func (rs *Resources) FindAsset(id uint32) (Asset, bool) {
 		}
 	}
 	return nil, false
+}
+
+type Extension struct {
+	Namespace  string
+	LocalName  string
+	IsRequired bool
 }
 
 // ChildModel repreents de content of a non-root model file.
@@ -565,11 +571,11 @@ func newUnits(s string) (u Units, ok bool) {
 
 // AnyAttr is an extension point containing <anyAttribute> information.
 // The key should be the extension namespace.
-type AnyAttr []encoding.MarshalerAttr
+type AnyAttr []spec.MarshalerAttr
 
 // Any is an extension point containing <any> information.
 // The key should be the extension namespace.
-type Any []encoding.Marshaler
+type Any []spec.Marshaler
 
 const (
 	nsXML   = "http://www.w3.org/XML/1998/namespace"

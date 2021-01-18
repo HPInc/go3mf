@@ -12,6 +12,7 @@ import (
 )
 
 func TestValidate(t *testing.T) {
+	Register(fakeSpec.Namespace, new(qmExtension))
 	tests := []struct {
 		name  string
 		model *Model
