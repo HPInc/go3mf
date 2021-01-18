@@ -31,14 +31,13 @@ func TestMarshalModel(t *testing.T) {
 			UUID: "e9e25302-6428-402e-8633-cc95528d0ed4",
 		}},
 	})
-	m.WithSpec(&Spec{LocalName: "p"})
+	m.Extensions = []go3mf.Extension{DefaultExtension}
 	b, err := go3mf.MarshalModel(m)
 	if err != nil {
 		t.Errorf("production.MarshalModel() error = %v", err)
 		return
 	}
 	newModel := new(go3mf.Model)
-	newModel.WithSpec(&Spec{LocalName: "p"})
 	newModel.Path = m.Path
 	if err := go3mf.UnmarshalModel(b, newModel); err != nil {
 		t.Errorf("production.MarshalModel() error decoding = %v, s = %s", err, string(b))

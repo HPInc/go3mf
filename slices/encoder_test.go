@@ -31,12 +31,15 @@ func TestMarshalModel(t *testing.T) {
 	}
 	baseMaterial := &go3mf.BaseMaterials{ID: 10, Materials: []go3mf.Base{{Name: "a", Color: color.RGBA{R: 1}}, {Name: "b", Color: color.RGBA{R: 1}}}}
 
-	m := &go3mf.Model{Path: "/3D/3dmodel.model", Resources: go3mf.Resources{
-		Assets: []go3mf.Asset{baseMaterial, sliceStack, sliceStackRef}, Objects: []*go3mf.Object{meshRes},
-	}}
+	m := &go3mf.Model{
+		Path:       "/3D/3dmodel.model",
+		Extensions: []go3mf.Extension{DefaultExtension},
+		Resources: go3mf.Resources{
+			Assets: []go3mf.Asset{baseMaterial, sliceStack, sliceStackRef}, Objects: []*go3mf.Object{meshRes},
+		},
+	}
 
 	t.Run("base", func(t *testing.T) {
-		m.WithSpec(&Spec{LocalName: "s"})
 		b, err := go3mf.MarshalModel(m)
 		if err != nil {
 			t.Errorf("slices.MarshalModel() error = %v", err)
@@ -44,7 +47,6 @@ func TestMarshalModel(t *testing.T) {
 		}
 		newModel := new(go3mf.Model)
 		newModel.Path = m.Path
-		newModel.WithSpec(&Spec{LocalName: "s"})
 		if err := go3mf.UnmarshalModel(b, newModel); err != nil {
 			t.Errorf("slices.MarshalModel() error decoding = %v, s = %s", err, string(b))
 			return

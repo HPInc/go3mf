@@ -6,15 +6,12 @@ import (
 
 	"github.com/qmuntal/go3mf"
 	"github.com/qmuntal/go3mf/spec"
-	"github.com/qmuntal/go3mf/spec/encoding"
 )
 
-var _ encoding.Decoder = new(Spec)
-var _ spec.ObjectValidator = new(Spec)
-var _ spec.AssetValidator = new(Spec)
 var _ go3mf.Asset = new(SliceStack)
-var _ encoding.Marshaler = new(SliceStack)
-var _ encoding.MarshalerAttr = new(ObjectAttr)
+var _ spec.Marshaler = new(SliceStack)
+var _ spec.MarshalerAttr = new(ObjectAttr)
+var _ spec.Spec = new(Spec)
 
 func TestSliceStack_Identify(t *testing.T) {
 	tests := []struct {

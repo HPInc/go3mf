@@ -12,6 +12,7 @@ import (
 )
 
 func TestValidate(t *testing.T) {
+	Register(fakeSpec.Namespace, new(qmExtension))
 	tests := []struct {
 		name  string
 		model *Model
@@ -32,10 +33,10 @@ func TestValidate(t *testing.T) {
 			fmt.Errorf("/3D/3dmodel.model@Relationship#7: %v", errors.ErrOPCContentType),
 			fmt.Errorf("/3D/3dmodel.model@Relationship#7: %v", errors.ErrOPCDuplicatedTicket),
 		}},
-		{"namespaces", &Model{Specs: map[string]Spec{"fake": &UnknownSpec{IsRequired: true}}}, []error{
+		{"namespaces", &Model{Extensions: []Extension{{Namespace: "fake", LocalName: "f", IsRequired: true}}}, []error{
 			errors.ErrRequiredExt,
 		}},
-		{"metadata", &Model{Specs: map[string]Spec{"fake": &UnknownSpec{SpaceName: "fake", LocalName: "f"}}, Metadata: []Metadata{
+		{"metadata", &Model{Extensions: []Extension{{Namespace: "fake", LocalName: "f"}}, Metadata: []Metadata{
 			{Name: xml.Name{Space: "fake", Local: "issue"}}, {Name: xml.Name{Space: "f", Local: "issue"}}, {Name: xml.Name{Space: "fake", Local: "issue"}}, {Name: xml.Name{Local: "issue"}}, {},
 		}}, []error{
 			fmt.Errorf("Metadata#1: %v", errors.ErrMetadataNamespace),
@@ -126,7 +127,7 @@ func TestValidate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.model.WithSpec(&fakeSpec{})
+			tt.model.Extensions = append(tt.model.Extensions, fakeSpec)
 			got := tt.model.Validate()
 			if tt.want == nil {
 				if got != nil {

@@ -16,16 +16,14 @@ func TestMarshalModel(t *testing.T) {
 	multiGroup := &MultiProperties{ID: 9, BlendMethods: []BlendMethod{BlendMultiply}, PIDs: []uint32{5, 2}, Multis: []Multi{{PIndices: []uint32{0, 0}}, {PIndices: []uint32{1, 0}}, {PIndices: []uint32{2, 3}}}}
 	m := &go3mf.Model{Path: "/3D/3dmodel.model"}
 	m.Resources.Assets = append(m.Resources.Assets, baseTexture, colorGroup, texGroup, compositeGroup, multiGroup)
-
+	m.Extensions = []go3mf.Extension{DefaultExtension}
 	t.Run("base", func(t *testing.T) {
-		m.WithSpec(&Spec{LocalName: "m"})
 		b, err := go3mf.MarshalModel(m)
 		if err != nil {
 			t.Errorf("materials.MarshalModel() error = %v", err)
 			return
 		}
 		newModel := new(go3mf.Model)
-		newModel.WithSpec(&Spec{LocalName: "m"})
 		newModel.Path = m.Path
 		if err := go3mf.UnmarshalModel(b, newModel); err != nil {
 			t.Errorf("materials.MarshalModel() error decoding = %v, s = %s", err, string(b))

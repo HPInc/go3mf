@@ -11,22 +11,32 @@ func validTransform(t go3mf.Matrix) bool {
 	return t[2] == 0 && t[6] == 0 && t[8] == 0 && t[9] == 0 && t[10] == 1
 }
 
-func (e *Spec) ValidateObject(path string, obj *go3mf.Object) error {
+func (Spec) Validate(model interface{}, path string, e interface{}) error {
+	switch e := e.(type) {
+	case *go3mf.Object:
+		return validateObject(model.(*go3mf.Model), path, e)
+	case go3mf.Asset:
+		return validateAsset(model.(*go3mf.Model), path, e)
+	}
+	return nil
+}
+
+func validateObject(m *go3mf.Model, path string, obj *go3mf.Object) error {
 	sti := GetObjectAttr(obj)
 	if sti == nil {
 		return nil
 	}
 	var errs error
-	res, _ := e.m.FindResources(path)
+	res, _ := m.FindResources(path)
 	if sti.SliceStackID == 0 {
 		errs = errors.Append(errs, errors.NewMissingFieldError(attrSliceRefID))
 	} else if r, ok := res.FindAsset(sti.SliceStackID); ok {
 		if r, ok := r.(*SliceStack); ok {
-			if !validateBuildTransforms(e.m, path, obj.ID) {
+			if !validateBuildTransforms(m, path, obj.ID) {
 				errs = errors.Append(errs, ErrSliceInvalidTranform)
 			}
 			if obj.Type == go3mf.ObjectTypeModel || obj.Type == go3mf.ObjectTypeSolidSupport {
-				if !checkAllClosed(e.m, r) {
+				if !checkAllClosed(m, r) {
 					errs = errors.Append(errs, ErrSlicePolygonNotClosed)
 				}
 			}
@@ -37,14 +47,21 @@ func (e *Spec) ValidateObject(path string, obj *go3mf.Object) error {
 		errs = errors.Append(errs, errors.ErrMissingResource)
 	}
 	if sti.MeshResolution == ResolutionLow {
-		if !e.Required() {
+		var isRequired bool
+		for _, ext := range m.Extensions {
+			if ext.Namespace == Namespace {
+				isRequired = ext.IsRequired
+				break
+			}
+		}
+		if !isRequired {
 			errs = errors.Append(errs, ErrSliceExtRequired)
 		}
 	}
 	return errs
 }
 
-func (e *Spec) ValidateAsset(path string, r go3mf.Asset) error {
+func validateAsset(m *go3mf.Model, path string, r go3mf.Asset) error {
 	var (
 		st *SliceStack
 		ok bool
@@ -57,7 +74,7 @@ func (e *Spec) ValidateAsset(path string, r go3mf.Asset) error {
 		(len(st.Slices) == 0 && len(st.Refs) == 0) {
 		errs = errors.Append(errs, ErrSlicesAndRefs)
 	}
-	errs = errors.Append(errs, st.validateRefs(e.m, path))
+	errs = errors.Append(errs, st.validateRefs(m, path))
 	errs = errors.Append(errs, st.validateSlices())
 	return errs
 }

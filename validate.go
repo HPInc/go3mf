@@ -8,19 +8,8 @@ import (
 	"sync"
 
 	"github.com/qmuntal/go3mf/errors"
+	"github.com/qmuntal/go3mf/spec"
 )
-
-func (m *Model) sortedSpecs() []string {
-	if len(m.Specs) == 0 {
-		return nil
-	}
-	s := make([]string, 0, len(m.Specs))
-	for path := range m.Specs {
-		s = append(s, path)
-	}
-	sort.Strings(s)
-	return s
-}
 
 func (m *Model) sortedChilds() []string {
 	if len(m.Childs) == 0 {
@@ -53,11 +42,9 @@ func (m *Model) Validate() error {
 	errs = errors.Append(errs, validateRelationship(m, m.Relationships, rootPath))
 	errs = errors.Append(errs, checkMetadadata(m, m.Metadata))
 
-	sortedSpecs := m.sortedSpecs()
-	for _, ns := range sortedSpecs {
-		ext := m.Specs[ns]
-		if ext, ok := ext.(modelValidator); ok {
-			errs = errors.Append(errs, ext.ValidateModel())
+	for _, ext := range m.Extensions {
+		if ext, ok := loadValidator(ext.Namespace); ok {
+			errs = errors.Append(errs, ext.Validate(m, m.Path, m))
 		}
 	}
 
@@ -122,7 +109,14 @@ func (m *Metadata) validate(model *Model) error {
 			errs = errors.Append(errs, errors.ErrMetadataName)
 		}
 	} else {
-		if _, ok := model.Specs[m.Name.Space]; !ok {
+		var hasExt bool
+		for _, ext := range model.Extensions {
+			if ext.Namespace == m.Name.Space {
+				hasExt = true
+				break
+			}
+		}
+		if !hasExt {
 			errs = errors.Append(errs, errors.ErrMetadataNamespace)
 		}
 	}
@@ -180,11 +174,9 @@ func (res *Resources) validate(m *Model, path string) error {
 			aErrs = errors.Append(aErrs, r.Validate(m, path))
 		}
 
-		sortedSpecs := m.sortedSpecs()
-		for _, ns := range sortedSpecs {
-			ext := m.Specs[ns]
-			if ext, ok := ext.(assetValidator); ok {
-				aErrs = errors.Append(aErrs, ext.ValidateAsset(path, r))
+		for _, ext := range m.Extensions {
+			if ext, ok := loadValidator(ext.Namespace); ok {
+				aErrs = errors.Append(aErrs, ext.Validate(m, path, r))
 			}
 		}
 		errs = errors.Append(errs, errors.WrapIndex(aErrs, r, i))
@@ -219,7 +211,7 @@ func (r *Object) Validate(m *Model, path string) error {
 	if r.Mesh != nil {
 		if r.PID != 0 {
 			if a, ok := res.FindAsset(r.PID); ok {
-				if a, ok := a.(propertyGroup); ok {
+				if a, ok := a.(spec.PropertyGroup); ok {
 					if int(r.PIndex) >= a.Len() {
 						errs = errors.Append(errs, errors.ErrIndexOutOfBounds)
 					}
@@ -240,11 +232,9 @@ func (r *Object) Validate(m *Model, path string) error {
 		errs = errors.Append(errs, r.validateComponents(m, path))
 	}
 
-	sortedSpecs := m.sortedSpecs()
-	for _, ns := range sortedSpecs {
-		ext := m.Specs[ns]
-		if ext, ok := ext.(objectValidator); ok {
-			errs = errors.Append(errs, ext.ValidateObject(path, r))
+	for _, ext := range m.Extensions {
+		if ext, ok := loadValidator(ext.Namespace); ok {
+			errs = errors.Append(errs, ext.Validate(m, path, r))
 		}
 	}
 	return errs
@@ -280,7 +270,7 @@ func (r *Object) validateMesh(m *Model, path string) error {
 				continue
 			}
 			if a, ok := res.FindAsset(pid); ok {
-				if a, ok := a.(propertyGroup); ok {
+				if a, ok := a.(spec.PropertyGroup); ok {
 					l := a.Len()
 					if int(p1) >= l || int(p2) >= l || int(p3) >= l {
 						errs = errors.Append(errs, errors.WrapIndex(errors.ErrIndexOutOfBounds, face, i))
@@ -311,11 +301,9 @@ func (r *Object) validateComponents(m *Model, path string) error {
 }
 
 func (m *Model) validateNamespaces() error {
-	sortedSpecs := m.sortedSpecs()
-	for _, ns := range sortedSpecs {
-		ext := m.Specs[ns]
-		if ext.Required() {
-			if _, ok := ext.(*UnknownSpec); ok {
+	for _, ext := range m.Extensions {
+		if ext.IsRequired {
+			if _, ok := loadExtension(ext.Namespace); !ok {
 				return errors.ErrRequiredExt
 			}
 		}

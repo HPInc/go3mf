@@ -7,7 +7,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/qmuntal/go3mf/spec/encoding"
+	"github.com/qmuntal/go3mf/spec"
 )
 
 const (
@@ -178,6 +178,12 @@ func (rs *Resources) FindAsset(id uint32) (Asset, bool) {
 	return nil, false
 }
 
+type Extension struct {
+	Namespace  string
+	LocalName  string
+	IsRequired bool
+}
+
 // ChildModel repreents de content of a non-root model file.
 //
 // It is not supported by the core spec but a common concept
@@ -205,22 +211,13 @@ type Model struct {
 	Resources         Resources
 	Build             Build
 	Attachments       []Attachment
-	Specs             map[string]Spec // space -> spec
+	Extensions        []Extension // space -> spec
 	Metadata          []Metadata
 	Childs            map[string]*ChildModel // path -> child
 	RootRelationships []Relationship
 	Relationships     []Relationship
 	Any               Any
 	AnyAttr           AnyAttr
-}
-
-// WithSpec adds a new extension
-func (m *Model) WithSpec(extension Spec) {
-	if m.Specs == nil {
-		m.Specs = make(map[string]Spec)
-	}
-	extension.SetModel(m)
-	m.Specs[extension.Namespace()] = extension
 }
 
 // PathOrDefault returns Path if not empty, else DefaultModelPath.
@@ -574,11 +571,11 @@ func newUnits(s string) (u Units, ok bool) {
 
 // AnyAttr is an extension point containing <anyAttribute> information.
 // The key should be the extension namespace.
-type AnyAttr []encoding.MarshalerAttr
+type AnyAttr []spec.MarshalerAttr
 
 // Any is an extension point containing <any> information.
 // The key should be the extension namespace.
-type Any []encoding.Marshaler
+type Any []spec.Marshaler
 
 const (
 	nsXML   = "http://www.w3.org/XML/1998/namespace"

@@ -1,4 +1,4 @@
-package encoding
+package spec
 
 import (
 	"errors"

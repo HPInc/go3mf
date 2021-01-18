@@ -7,7 +7,6 @@ import (
 	"github.com/go-test/deep"
 	"github.com/qmuntal/go3mf"
 	"github.com/qmuntal/go3mf/errors"
-	"github.com/qmuntal/go3mf/spec/encoding"
 )
 
 func TestDecode(t *testing.T) {
@@ -47,11 +46,16 @@ func TestDecode(t *testing.T) {
 		{Indices: [2]uint32{0, 5}, Radius: [2]float32{1.5, 2}, CapMode: [2]CapMode{CapModeHemisphere, CapModeButt}},
 	}...)
 
-	want := &go3mf.Model{Path: "/3D/3dmodel.model", Resources: go3mf.Resources{
-		Objects: []*go3mf.Object{meshLattice},
-	}}
-	got := new(go3mf.Model)
-	got.Path = "/3D/3dmodel.model"
+	want := &go3mf.Model{
+		Path:       "/3D/3dmodel.model",
+		Extensions: []go3mf.Extension{DefaultExtension},
+		Resources: go3mf.Resources{
+			Objects: []*go3mf.Object{meshLattice},
+		},
+	}
+	got := &go3mf.Model{
+		Path: "/3D/3dmodel.model",
+	}
 	rootFile := `
 		<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:b="http://schemas.microsoft.com/3dmanufacturing/beamlattice/2017/02">
 		<resources>
@@ -98,8 +102,6 @@ func TestDecode(t *testing.T) {
 		`
 
 	t.Run("base", func(t *testing.T) {
-		want.WithSpec(&Spec{LocalName: "b"})
-		got.WithSpec(&Spec{LocalName: "b"})
 		if err := go3mf.UnmarshalModel([]byte(rootFile), got); err != nil {
 			t.Errorf("DecodeRawModel() unexpected error = %v", err)
 			return
@@ -176,15 +178,10 @@ func TestDecode_warns(t *testing.T) {
 		`
 
 	t.Run("base", func(t *testing.T) {
-		got.WithSpec(&Spec{LocalName: "b"})
 		err := go3mf.UnmarshalModel([]byte(rootFile), got)
 		if diff := deep.Equal(err, want); diff != nil {
 			t.Errorf("UnmarshalModel_warn() = %v", diff)
 			return
 		}
 	})
-}
-
-func TestSpec_DecodeAttribute(t *testing.T) {
-	new(Spec).DecodeAttribute(nil, encoding.Attr{})
 }

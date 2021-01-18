@@ -4,11 +4,11 @@ import (
 	"encoding/xml"
 	"strconv"
 
-	"github.com/qmuntal/go3mf/spec/encoding"
+	"github.com/qmuntal/go3mf/spec"
 )
 
 // Marshal3MF encodes the resource.
-func (m *BeamLattice) Marshal3MF(x encoding.Encoder) error {
+func (m *BeamLattice) Marshal3MF(x spec.Encoder) error {
 	xs := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrBeamLattice}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrMinLength}, Value: strconv.FormatFloat(float64(m.MinLength), 'f', x.FloatPresicion(), 32)},
 		{Name: xml.Name{Local: attrRadius}, Value: strconv.FormatFloat(float64(m.Radius), 'f', x.FloatPresicion(), 32)},
@@ -40,7 +40,7 @@ func (m *BeamLattice) Marshal3MF(x encoding.Encoder) error {
 	return nil
 }
 
-func marshalBeamsets(x encoding.Encoder, m *BeamLattice) {
+func marshalBeamsets(x spec.Encoder, m *BeamLattice) {
 	xb := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrBeamSets}}
 	x.EncodeToken(xb)
 	for _, bs := range m.BeamSets {
@@ -64,7 +64,7 @@ func marshalBeamsets(x encoding.Encoder, m *BeamLattice) {
 	x.EncodeToken(xb.End())
 }
 
-func marshalBeams(x encoding.Encoder, m *BeamLattice) {
+func marshalBeams(x spec.Encoder, m *BeamLattice) {
 	xb := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrBeams}}
 	x.EncodeToken(xb)
 	x.SetAutoClose(true)

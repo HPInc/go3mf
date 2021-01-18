@@ -3,15 +3,15 @@ package production
 import (
 	"github.com/qmuntal/go3mf"
 	specerr "github.com/qmuntal/go3mf/errors"
-	"github.com/qmuntal/go3mf/spec/encoding"
+	"github.com/qmuntal/go3mf/spec"
 	"github.com/qmuntal/go3mf/uuid"
 )
 
-func (e Spec) NewElementDecoder(_ encoding.ElementDecoderContext) encoding.ElementDecoder {
+func (Spec) CreateElementDecoder(spec.ElementDecoderContext) spec.ElementDecoder {
 	return nil
 }
 
-func (e Spec) DecodeAttribute(parentNode interface{}, attr encoding.Attr) (errs error) {
+func (Spec) DecodeAttribute(parentNode interface{}, attr spec.Attr) (errs error) {
 	switch t := parentNode.(type) {
 	case *go3mf.Build:
 		if attr.Name.Local == attrProdUUID {

@@ -1,44 +1,43 @@
 package go3mf
 
-type Spec interface {
-	Namespace() string
-	Local() string
-	Required() bool
-	SetRequired(bool)
-	SetLocal(string)
-	SetModel(*Model)
-}
+import (
+	"sync"
 
-type UnknownSpec struct {
-	SpaceName  string
-	LocalName  string
-	IsRequired bool
-	m          *Model
-}
-
-func (u *UnknownSpec) Namespace() string  { return u.SpaceName }
-func (u *UnknownSpec) Local() string      { return u.LocalName }
-func (u *UnknownSpec) Required() bool     { return u.IsRequired }
-func (u *UnknownSpec) SetLocal(l string)  { u.LocalName = l }
-func (u *UnknownSpec) SetRequired(r bool) { u.IsRequired = r }
-func (u *UnknownSpec) SetModel(m *Model)  { u.m = m }
+	"github.com/qmuntal/go3mf/spec"
+)
 
 type objectPather interface {
 	ObjectPath() string
 }
 
-type propertyGroup interface {
-	Len() int
+var (
+	specMu sync.RWMutex
+	specs  = make(map[string]spec.Spec)
+)
+
+// Register makes a spec available by the provided namesoace.
+// If Register is called twice with the same name or if spec is nil,
+// it panics.
+func Register(namespace string, spec spec.Spec) {
+	specMu.Lock()
+	defer specMu.Unlock()
+	specs[namespace] = spec
 }
 
-type modelValidator interface {
-	ValidateModel() error
+func loadExtension(ns string) (spec.Spec, bool) {
+	specMu.RLock()
+	ext, ok := specs[ns]
+	specMu.RUnlock()
+	return ext, ok
 }
 
-type assetValidator interface {
-	ValidateAsset(string, Asset) error
-}
-
-type objectValidator interface {
-	ValidateObject(string, *Object) error
+func loadValidator(ns string) (spec.ValidateSpec, bool) {
+	specMu.RLock()
+	ext, ok := specs[ns]
+	specMu.RUnlock()
+	if ok {
+		ext, ok := ext.(spec.ValidateSpec)
+		return ext, ok
+	}
+	return nil, false
 }

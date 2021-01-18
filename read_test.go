@@ -16,38 +16,28 @@ import (
 
 	"github.com/go-test/deep"
 	specerr "github.com/qmuntal/go3mf/errors"
-	"github.com/qmuntal/go3mf/spec/encoding"
+	"github.com/qmuntal/go3mf/spec"
 	"github.com/stretchr/testify/mock"
 )
 
 const fakeExtension = "http://dummy.com/fake_ext"
 
-var _ modelValidator = new(fakeSpec)
-var _ assetValidator = new(fakeSpec)
-var _ objectValidator = new(fakeSpec)
-var _ encoding.Decoder = new(fakeSpec)
-var _ encoding.CharDataElementDecoder = new(metadataDecoder)
-var _ encoding.ChildElementDecoder = new(baseMaterialsDecoder)
-
-type fakeSpec struct {
-	m *Model
+var fakeSpec = Extension{
+	Namespace:  fakeExtension,
+	LocalName:  "qm",
+	IsRequired: true,
 }
 
-func (f *fakeSpec) Namespace() string  { return fakeExtension }
-func (f *fakeSpec) Required() bool     { return true }
-func (f *fakeSpec) Local() string      { return "qm" }
-func (f *fakeSpec) SetLocal(_ string)  {}
-func (f *fakeSpec) SetRequired(_ bool) {}
-func (f *fakeSpec) SetModel(m *Model)  { f.m = m }
+type qmExtension struct{}
 
-func (f *fakeSpec) NewElementDecoder(ctx encoding.ElementDecoderContext) encoding.ElementDecoder {
+func (qmExtension) CreateElementDecoder(ctx spec.ElementDecoderContext) spec.ElementDecoder {
 	if e, ok := ctx.ParentElement.(*Resources); ok {
 		return &fakeAssetDecoder{resources: e}
 	}
 	return nil
 }
 
-func (f *fakeSpec) DecodeAttribute(parentNode interface{}, attr encoding.Attr) error {
+func (qmExtension) DecodeAttribute(parentNode interface{}, attr spec.Attr) error {
 	switch t := parentNode.(type) {
 	case *Object:
 		t.AnyAttr = append(t.AnyAttr, &fakeAttr{string(attr.Value)})
@@ -63,18 +53,14 @@ func (f *fakeSpec) DecodeAttribute(parentNode interface{}, attr encoding.Attr) e
 	return nil
 }
 
-func (f *fakeSpec) ValidateObject(_ string, _ *Object) error {
-	return nil
-}
-
-func (f *fakeSpec) ValidateAsset(_ string, _ Asset) error {
-	return nil
-}
-
-func (f *fakeSpec) ValidateModel() error {
+func (qmExtension) Validate(model interface{}, path string, element interface{}) error {
+	if _, ok := element.(*Model); !ok {
+		return nil
+	}
 	var errs []error
-	if len(f.m.Build.AnyAttr) == 1 {
-		if _, ok := f.m.Build.AnyAttr[0].(*fakeAttr); ok {
+	m := model.(*Model)
+	if len(m.Build.AnyAttr) == 1 {
+		if _, ok := m.Build.AnyAttr[0].(*fakeAttr); ok {
 			errs = append(errs, errors.New("Build: fake"))
 		}
 	}
@@ -100,7 +86,7 @@ type fakeAssetDecoder struct {
 	resources *Resources
 }
 
-func (f *fakeAssetDecoder) Start(att []encoding.Attr) error {
+func (f *fakeAssetDecoder) Start(att []spec.Attr) error {
 	id, _ := strconv.ParseUint(string(att[0].Value), 10, 32)
 	f.resources.Assets = append(f.resources.Assets, &fakeAsset{ID: uint32(id)})
 	return nil
@@ -324,6 +310,7 @@ func TestDecoder_processRootModel_Fail(t *testing.T) {
 }
 
 func TestDecoder_processRootModel(t *testing.T) {
+	Register(fakeSpec.Namespace, new(qmExtension))
 	baseMaterials := &BaseMaterials{ID: 5, Materials: []Base{
 		{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
 		{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
@@ -365,7 +352,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 
 	want := &Model{
 		Units: UnitMillimeter, Language: "en-US", Path: "/3D/3dmodel.model", Thumbnail: "/thumbnail.png",
-		Specs: map[string]Spec{fakeExtension: &fakeSpec{}},
+		Extensions: []Extension{fakeSpec},
 		Resources: Resources{
 			Assets: []Asset{baseMaterials}, Objects: []*Object{meshRes, components},
 		},
@@ -438,7 +425,6 @@ func TestDecoder_processRootModel(t *testing.T) {
 
 	d := new(Decoder)
 	d.Strict = true
-	got.WithSpec(&fakeSpec{})
 	if err := d.processRootModel(context.Background(), rootFile, got); err != nil {
 		t.Errorf("Decoder.processRootModel() unexpected error = %v", err)
 		return
@@ -578,6 +564,7 @@ func TestNewDecoder(t *testing.T) {
 }
 
 func TestDecoder_processRootModel_warns(t *testing.T) {
+	Register(fakeSpec.Namespace, new(qmExtension))
 	want := &specerr.List{Errors: []error{
 		fmt.Errorf("Resources@BaseMaterials#0@RGBA#0: %v", specerr.NewParseAttrError("displaycolor", true)),
 		fmt.Errorf("Resources@BaseMaterials#1: %v", specerr.NewParseAttrError("id", true)),
@@ -592,6 +579,7 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 		fmt.Errorf("Build@Item#3: %v", specerr.NewParseAttrError("objectid", true)),
 	}}
 	got := new(Model)
+	got.Extensions = append(got.Extensions, fakeSpec)
 	got.Path = "/3D/3dmodel.model"
 	rootFile := new(modelBuilder).withElement(`
 		<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" 
@@ -661,7 +649,6 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 	t.Run("base", func(t *testing.T) {
 		d := new(Decoder)
 		d.Strict = false
-		got.WithSpec(&fakeSpec{})
 		err := d.processRootModel(context.Background(), rootFile, got)
 		if diff := deep.Equal(err, want); diff != nil {
 			t.Errorf("Decoder.processRootModel() = %v", diff)

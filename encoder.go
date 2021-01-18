@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	xml3mf "github.com/qmuntal/go3mf/internal/xml"
-	"github.com/qmuntal/go3mf/spec/encoding"
+	"github.com/qmuntal/go3mf/spec"
 )
 
 const defaultFloatPrecision = 4
@@ -31,7 +31,7 @@ func newXMLEncoder(w io.Writer, floatPresicion int) *xmlEncoder {
 
 // AddRelationship adds a relationship to the encoded model.
 // Duplicated relationships will be removed before encoding.
-func (enc *xmlEncoder) AddRelationship(r encoding.Relationship) {
+func (enc *xmlEncoder) AddRelationship(r spec.Relationship) {
 	enc.relationships = append(enc.relationships, Relationship(r))
 }
 
@@ -124,7 +124,7 @@ func (e *Encoder) Encode(m *Model) error {
 	enc.relationships = make([]Relationship, len(m.Relationships))
 	copy(enc.relationships, m.Relationships)
 	for path := range m.Childs {
-		enc.AddRelationship(encoding.Relationship{Type: RelType3DModel, Path: path})
+		enc.AddRelationship(spec.Relationship{Type: RelType3DModel, Path: path})
 	}
 	if err = e.writeModel(enc, m); err != nil {
 		return err
@@ -177,7 +177,7 @@ func (e *Encoder) writeAttachements(att []Attachment) error {
 	return nil
 }
 
-func (e *Encoder) modelToken(x encoding.Encoder, m *Model, isRoot bool) (xml.StartElement, error) {
+func (e *Encoder) modelToken(x spec.Encoder, m *Model, isRoot bool) (xml.StartElement, error) {
 	attrs := []xml.Attr{
 		{Name: xml.Name{Local: attrXmlns}, Value: Namespace},
 		{Name: xml.Name{Local: attrUnit}, Value: m.Units.String()},
@@ -189,16 +189,13 @@ func (e *Encoder) modelToken(x encoding.Encoder, m *Model, isRoot bool) (xml.Sta
 		}
 		attrs = append(attrs, xml.Attr{Name: xml.Name{Local: attrThumbnail}, Value: m.Thumbnail})
 	}
-	sortedSpecs := m.sortedSpecs()
-	for _, ns := range sortedSpecs {
-		a := m.Specs[ns]
-		attrs = append(attrs, xml.Attr{Name: xml.Name{Space: attrXmlns, Local: a.Local()}, Value: a.Namespace()})
+	for _, ext := range m.Extensions {
+		attrs = append(attrs, xml.Attr{Name: xml.Name{Space: attrXmlns, Local: ext.LocalName}, Value: ext.Namespace})
 	}
 	var exts []string
-	for _, ns := range sortedSpecs {
-		a := m.Specs[ns]
-		if a.Required() {
-			exts = append(exts, a.Local())
+	for _, ext := range m.Extensions {
+		if ext.IsRequired {
+			exts = append(exts, ext.LocalName)
 		}
 	}
 	sort.Strings(exts)
@@ -210,7 +207,7 @@ func (e *Encoder) modelToken(x encoding.Encoder, m *Model, isRoot bool) (xml.Sta
 	return tm, nil
 }
 
-func (e *Encoder) writeChildModel(x encoding.Encoder, m *Model, child *ChildModel) error {
+func (e *Encoder) writeChildModel(x spec.Encoder, m *Model, child *ChildModel) error {
 	tm, _ := e.modelToken(x, m, false) // error already checked before
 	x.EncodeToken(tm)
 
@@ -226,7 +223,7 @@ func (e *Encoder) writeChildModel(x encoding.Encoder, m *Model, child *ChildMode
 	return x.Flush()
 }
 
-func (e *Encoder) writeModel(x encoding.Encoder, m *Model) error {
+func (e *Encoder) writeModel(x spec.Encoder, m *Model) error {
 	tm, err := e.modelToken(x, m, true)
 	if err != nil {
 		return err
@@ -243,14 +240,14 @@ func (e *Encoder) writeModel(x encoding.Encoder, m *Model) error {
 	return x.Flush()
 }
 
-func (e *Encoder) writeMetadataGroup(x encoding.Encoder, m []Metadata) {
+func (e *Encoder) writeMetadataGroup(x spec.Encoder, m []Metadata) {
 	xm := xml.StartElement{Name: xml.Name{Local: attrMetadataGroup}}
 	x.EncodeToken(xm)
 	e.writeMetadata(x, m)
 	x.EncodeToken(xm.End())
 }
 
-func (e *Encoder) writeBuild(x encoding.Encoder, m *Model) {
+func (e *Encoder) writeBuild(x spec.Encoder, m *Model) {
 	xb := xml.StartElement{Name: xml.Name{Local: attrBuild}}
 	m.Build.AnyAttr.encode(x, &xb)
 	x.EncodeToken(xb)
@@ -284,11 +281,11 @@ func (e *Encoder) writeBuild(x encoding.Encoder, m *Model) {
 	x.EncodeToken(xb.End())
 }
 
-func (e *Encoder) writeResources(x encoding.Encoder, rs *Resources) error {
+func (e *Encoder) writeResources(x spec.Encoder, rs *Resources) error {
 	xt := xml.StartElement{Name: xml.Name{Local: attrResources}}
 	x.EncodeToken(xt)
 	for _, r := range rs.Assets {
-		if r, ok := r.(encoding.Marshaler); ok {
+		if r, ok := r.(spec.Marshaler); ok {
 			if err := r.Marshal3MF(x); err != nil {
 				return err
 			}
@@ -308,7 +305,7 @@ func (e *Encoder) writeResources(x encoding.Encoder, rs *Resources) error {
 	return nil
 }
 
-func (e *Encoder) writeMetadata(x encoding.Encoder, metadata []Metadata) {
+func (e *Encoder) writeMetadata(x spec.Encoder, metadata []Metadata) {
 	for _, md := range metadata {
 		name := md.Name.Local
 		if md.Name.Space != "" {
@@ -333,7 +330,7 @@ func (e *Encoder) writeMetadata(x encoding.Encoder, metadata []Metadata) {
 	}
 }
 
-func (e *Encoder) writeObject(x encoding.Encoder, r *Object) {
+func (e *Encoder) writeObject(x spec.Encoder, r *Object) {
 	xo := xml.StartElement{Name: xml.Name{Local: attrObject}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(r.ID), 10)},
 	}}
@@ -341,7 +338,7 @@ func (e *Encoder) writeObject(x encoding.Encoder, r *Object) {
 		xo.Attr = append(xo.Attr, xml.Attr{Name: xml.Name{Local: attrType}, Value: r.Type.String()})
 	}
 	if r.Thumbnail != "" {
-		x.AddRelationship(encoding.Relationship{Path: r.Thumbnail, Type: RelTypeThumbnail})
+		x.AddRelationship(spec.Relationship{Path: r.Thumbnail, Type: RelTypeThumbnail})
 		xo.Attr = append(xo.Attr, xml.Attr{Name: xml.Name{Local: attrThumbnail}, Value: r.Thumbnail})
 	}
 	if r.PartNumber != "" {
@@ -377,7 +374,7 @@ func (e *Encoder) writeObject(x encoding.Encoder, r *Object) {
 	x.EncodeToken(xo.End())
 }
 
-func (e *Encoder) writeComponents(x encoding.Encoder, comps []*Component) {
+func (e *Encoder) writeComponents(x spec.Encoder, comps []*Component) {
 	xcs := xml.StartElement{Name: xml.Name{Local: attrComponents}}
 	x.EncodeToken(xcs)
 	x.SetAutoClose(true)
@@ -397,7 +394,7 @@ func (e *Encoder) writeComponents(x encoding.Encoder, comps []*Component) {
 	x.EncodeToken(xcs.End())
 }
 
-func (e *Encoder) writeMesh(x encoding.Encoder, r *Object, m *Mesh) {
+func (e *Encoder) writeMesh(x spec.Encoder, r *Object, m *Mesh) {
 	xm := xml.StartElement{Name: xml.Name{Local: attrMesh}}
 	m.AnyAttr.encode(x, &xm)
 	x.EncodeToken(xm)
@@ -456,7 +453,7 @@ func (e *Encoder) writeMesh(x encoding.Encoder, r *Object, m *Mesh) {
 	x.EncodeToken(xm.End())
 }
 
-func (r *BaseMaterials) Marshal3MF(x encoding.Encoder) error {
+func (r *BaseMaterials) Marshal3MF(x spec.Encoder) error {
 	xt := xml.StartElement{Name: xml.Name{Local: attrBaseMaterials}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(r.ID), 10)},
 	}}
@@ -467,7 +464,7 @@ func (r *BaseMaterials) Marshal3MF(x encoding.Encoder) error {
 			Name: xml.Name{Local: attrBase},
 			Attr: []xml.Attr{
 				{Name: xml.Name{Local: attrName}, Value: ma.Name},
-				{Name: xml.Name{Local: attrDisplayColor}, Value: encoding.FormatRGBA(ma.Color)},
+				{Name: xml.Name{Local: attrDisplayColor}, Value: spec.FormatRGBA(ma.Color)},
 			},
 		})
 	}
@@ -476,7 +473,7 @@ func (r *BaseMaterials) Marshal3MF(x encoding.Encoder) error {
 	return nil
 }
 
-func (e AnyAttr) encode(x encoding.Encoder, start *xml.StartElement) {
+func (e AnyAttr) encode(x spec.Encoder, start *xml.StartElement) {
 	for _, ext := range e {
 		if att, err := ext.Marshal3MFAttr(x); err == nil {
 			start.Attr = append(start.Attr, att...)
@@ -484,7 +481,7 @@ func (e AnyAttr) encode(x encoding.Encoder, start *xml.StartElement) {
 	}
 }
 
-func (e Any) encode(x encoding.Encoder) error {
+func (e Any) encode(x spec.Encoder) error {
 	for _, ext := range e {
 		if err := ext.Marshal3MF(x); err == nil {
 			return err
