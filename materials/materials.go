@@ -24,7 +24,7 @@ func init() {
 	go3mf.Register(Namespace, Spec{})
 }
 
-type Spec struct {}
+type Spec struct{}
 
 var (
 	ErrMultiBlend         = errors.New("there MUST NOT be more blendmethods than layers – 1")

@@ -10,13 +10,9 @@ type objectPather interface {
 	ObjectPath() string
 }
 
-type propertyGroup interface {
-	Len() int
-}
-
 var (
 	specMu sync.RWMutex
-	specs   = make(map[string]spec.Spec)
+	specs  = make(map[string]spec.Spec)
 )
 
 // Register makes a spec available by the provided namesoace.

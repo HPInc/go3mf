@@ -5,11 +5,11 @@ import (
 )
 
 // Spec is the interface that must be implemented by a 3mf spec.
-
+//
 // Specs may implement ValidateSpec.
 type Spec interface {
 	DecodeAttribute(parent interface{}, attr Attr) error
-	CreateElementDecoder(ElementDecoderContext) ElementDecoder	
+	CreateElementDecoder(ElementDecoderContext) ElementDecoder
 }
 
 type PropertyGroup interface {
@@ -19,7 +19,7 @@ type PropertyGroup interface {
 // If a Spec implemented ValidateSpec, then model.Validate will call
 // Validate and aggregate the resulting erros.
 //
-// model will always by a *go3mf.Model
+// model is guaranteed to be a *go3mf.Model
 // element can be a *go3mf.Model, go3mf.Asset or *go3mf.Object.
 type ValidateSpec interface {
 	Spec

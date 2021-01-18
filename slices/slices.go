@@ -18,7 +18,7 @@ func init() {
 	go3mf.Register(Namespace, Spec{})
 }
 
-type Spec struct {}
+type Spec struct{}
 
 var (
 	ErrSliceExtRequired          = errors.New("a 3MF package which uses low resolution objects MUST enlist the slice extension as required")

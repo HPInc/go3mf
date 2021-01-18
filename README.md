@@ -100,9 +100,9 @@ func main() {
 }
 ```
 
-### Extensions usage
+### Spec usage
 
-Extensions have to be attached to the `go3mf.Model` object before decoding or encoding a 3MF by calling `model.WithSpec`, which accepts the `go3mf.Spec` interface.
+Specs are automatically registered when importing them as a side effect of the init function.
 
 ```go
 package main
@@ -111,18 +111,14 @@ import (
     "fmt"
 
     "github.com/qmuntal/go3mf"
-    "github.com/qmuntal/go3mf/production"
     "github.com/qmuntal/go3mf/material"
-    "github.com/qmuntal/go3mf/beamlattice"
-    "github.com/qmuntal/go3mf/slices"
+    _"github.com/qmuntal/go3mf/production"
+    _ "github.com/qmuntal/go3mf/beamlattice"
+    _ "github.com/qmuntal/go3mf/slices"
 )
 
 func main() {
     model := new(go3mf.Model)
-    model.WithSpec(new(production.Spec))
-    model.WithSpec(new(material.Spec))
-    model.WithSpec(new(beamlattice.Spec))
-    model.WithSpec(new(slices.Spec))
     r, _ := go3mf.OpenReader("/testdata/cube.3mf")
     r.Decode(model)
     fmt.Println(production.GetBuildAttr(&model.Build).UUID)

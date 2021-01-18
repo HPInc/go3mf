@@ -26,7 +26,7 @@ const (
 	attrPath     = "path"
 )
 
-type Spec struct {}
+type Spec struct{}
 
 func init() {
 	go3mf.Register(Namespace, Spec{})

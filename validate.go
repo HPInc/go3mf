@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/qmuntal/go3mf/errors"
+	"github.com/qmuntal/go3mf/spec"
 )
 
 func (m *Model) sortedChilds() []string {
@@ -210,7 +211,7 @@ func (r *Object) Validate(m *Model, path string) error {
 	if r.Mesh != nil {
 		if r.PID != 0 {
 			if a, ok := res.FindAsset(r.PID); ok {
-				if a, ok := a.(propertyGroup); ok {
+				if a, ok := a.(spec.PropertyGroup); ok {
 					if int(r.PIndex) >= a.Len() {
 						errs = errors.Append(errs, errors.ErrIndexOutOfBounds)
 					}
@@ -269,7 +270,7 @@ func (r *Object) validateMesh(m *Model, path string) error {
 				continue
 			}
 			if a, ok := res.FindAsset(pid); ok {
-				if a, ok := a.(propertyGroup); ok {
+				if a, ok := a.(spec.PropertyGroup); ok {
 					l := a.Len()
 					if int(p1) >= l || int(p2) >= l || int(p3) >= l {
 						errs = errors.Append(errs, errors.WrapIndex(errors.ErrIndexOutOfBounds, face, i))

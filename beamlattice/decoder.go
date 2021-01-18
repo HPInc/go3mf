@@ -279,4 +279,4 @@ type baseDecoder struct {
 }
 
 func (d *baseDecoder) Start([]spec.Attr) error { return nil }
-func (d *baseDecoder) End()                        {}
+func (d *baseDecoder) End()                    {}
