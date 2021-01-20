@@ -14,18 +14,18 @@ func (Spec) DecodeAttribute(interface{}, spec.Attr) error {
 	return nil
 }
 
-func (Spec) CreateElementDecoder(ctx spec.ElementDecoderContext) (child spec.ElementDecoder) {
-	switch ctx.Name.Local {
+func (Spec) CreateElementDecoder(parent interface{}, name string) (child spec.ElementDecoder) {
+	switch name {
 	case attrColorGroup:
-		child = &colorGroupDecoder{resources: ctx.ParentElement.(*go3mf.Resources)}
+		child = &colorGroupDecoder{resources: parent.(*go3mf.Resources)}
 	case attrTexture2DGroup:
-		child = &tex2DGroupDecoder{resources: ctx.ParentElement.(*go3mf.Resources)}
+		child = &tex2DGroupDecoder{resources: parent.(*go3mf.Resources)}
 	case attrTexture2D:
-		child = &texture2DDecoder{resources: ctx.ParentElement.(*go3mf.Resources)}
+		child = &texture2DDecoder{resources: parent.(*go3mf.Resources)}
 	case attrCompositematerials:
-		child = &compositeMaterialsDecoder{resources: ctx.ParentElement.(*go3mf.Resources)}
+		child = &compositeMaterialsDecoder{resources: parent.(*go3mf.Resources)}
 	case attrMultiProps:
-		child = &multiPropertiesDecoder{resources: ctx.ParentElement.(*go3mf.Resources)}
+		child = &multiPropertiesDecoder{resources: parent.(*go3mf.Resources)}
 	}
 	return
 }

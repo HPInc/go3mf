@@ -9,7 +9,7 @@ import (
 // Specs may implement ValidateSpec.
 type Spec interface {
 	DecodeAttribute(parent interface{}, attr Attr) error
-	CreateElementDecoder(ElementDecoderContext) ElementDecoder
+	CreateElementDecoder(parent interface{}, name string) ElementDecoder
 }
 
 type PropertyGroup interface {
@@ -48,11 +48,6 @@ type Marshaler interface {
 // themselves into valid XML attributes.
 type MarshalerAttr interface {
 	Marshal3MFAttr(Encoder) ([]xml.Attr, error)
-}
-
-type ElementDecoderContext struct {
-	ParentElement interface{}
-	Name          xml.Name
 }
 
 type ErrorWrapper interface {

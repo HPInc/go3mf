@@ -30,8 +30,8 @@ var fakeSpec = Extension{
 
 type qmExtension struct{}
 
-func (qmExtension) CreateElementDecoder(ctx spec.ElementDecoderContext) spec.ElementDecoder {
-	if e, ok := ctx.ParentElement.(*Resources); ok {
+func (qmExtension) CreateElementDecoder(parent interface{}, name string) spec.ElementDecoder {
+	if e, ok := parent.(*Resources); ok {
 		return &fakeAssetDecoder{resources: e}
 	}
 	return nil

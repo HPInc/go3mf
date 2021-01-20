@@ -9,9 +9,9 @@ import (
 	"github.com/qmuntal/go3mf/spec"
 )
 
-func (Spec) CreateElementDecoder(ctx spec.ElementDecoderContext) spec.ElementDecoder {
-	if ctx.Name.Local == attrSliceStack {
-		return &sliceStackDecoder{resources: ctx.ParentElement.(*go3mf.Resources)}
+func (Spec) CreateElementDecoder(parent interface{}, name string) spec.ElementDecoder {
+	if name == attrSliceStack {
+		return &sliceStackDecoder{resources: parent.(*go3mf.Resources)}
 	}
 	return nil
 }

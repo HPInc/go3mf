@@ -13,9 +13,9 @@ func (Spec) DecodeAttribute(interface{}, spec.Attr) error {
 	return nil
 }
 
-func (Spec) CreateElementDecoder(ctx spec.ElementDecoderContext) spec.ElementDecoder {
-	if ctx.Name.Local == attrBeamLattice {
-		return &beamLatticeDecoder{mesh: ctx.ParentElement.(*go3mf.Mesh)}
+func (Spec) CreateElementDecoder(parent interface{}, name string) spec.ElementDecoder {
+	if name == attrBeamLattice {
+		return &beamLatticeDecoder{mesh: parent.(*go3mf.Mesh)}
 	}
 	return nil
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/qmuntal/go3mf/uuid"
 )
 
-func (Spec) CreateElementDecoder(spec.ElementDecoderContext) spec.ElementDecoder {
+func (Spec) CreateElementDecoder(_ interface{}, _ string) spec.ElementDecoder {
 	return nil
 }
 

@@ -35,10 +35,7 @@ func (d *modelDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 			}
 		}
 	} else if ext, ok := loadExtension(name.Space); ok {
-		child = ext.CreateElementDecoder(spec.ElementDecoderContext{
-			ParentElement: d.model,
-			Name:          name,
-		})
+		child = ext.CreateElementDecoder(d.model, name.Local)
 	}
 	return
 }
@@ -267,10 +264,7 @@ func (d *resourceDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 			child = &baseMaterialsDecoder{resources: d.resources}
 		}
 	} else if ext, ok := loadExtension(name.Space); ok {
-		child = ext.CreateElementDecoder(spec.ElementDecoderContext{
-			ParentElement: d.resources,
-			Name:          name,
-		})
+		child = ext.CreateElementDecoder(d.resources, name.Local)
 	}
 	return
 }
@@ -368,10 +362,7 @@ func (d *meshDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 			child = &trianglesDecoder{resource: d.resource}
 		}
 	} else if ext, ok := loadExtension(name.Space); ok {
-		child = ext.CreateElementDecoder(spec.ElementDecoderContext{
-			ParentElement: d.resource.Mesh,
-			Name:          name,
-		})
+		child = ext.CreateElementDecoder(d.resource.Mesh, name.Local)
 	}
 	return
 }
