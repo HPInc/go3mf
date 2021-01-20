@@ -77,9 +77,12 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 				names = append(names, currentName)
 				currentName = tp.Name
 				currentDecoder = tmpDecoder
-				if err := currentDecoder.Start(*(*[]spec.Attr)(unsafe.Pointer(&tp.Attr))); err != nil {
-					if childDecoder, ok := childDecoder.(spec.ErrorWrapper); ok {
-						err = childDecoder.Wrap(err)
+				err := currentDecoder.Start(*(*[]spec.Attr)(unsafe.Pointer(&tp.Attr)))
+				if err != nil {
+					for i := len(state) - 1; i >= 0; i-- {
+						if ew, ok := state[i].(spec.ErrorWrapper); ok {
+							err = ew.Wrap(err)
+						}
 					}
 					specerr.Append(&errs, err)
 				}

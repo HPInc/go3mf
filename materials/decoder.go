@@ -17,15 +17,15 @@ func (Spec) DecodeAttribute(interface{}, spec.Attr) error {
 func (Spec) CreateElementDecoder(ctx spec.ElementDecoderContext) (child spec.ElementDecoder) {
 	switch ctx.Name.Local {
 	case attrColorGroup:
-		child = &colorGroupDecoder{resources: ctx.ParentElement.(*go3mf.Resources), ew: ctx.ErrorWrapper}
+		child = &colorGroupDecoder{resources: ctx.ParentElement.(*go3mf.Resources)}
 	case attrTexture2DGroup:
-		child = &tex2DGroupDecoder{resources: ctx.ParentElement.(*go3mf.Resources), ew: ctx.ErrorWrapper}
+		child = &tex2DGroupDecoder{resources: ctx.ParentElement.(*go3mf.Resources)}
 	case attrTexture2D:
 		child = &texture2DDecoder{resources: ctx.ParentElement.(*go3mf.Resources)}
 	case attrCompositematerials:
-		child = &compositeMaterialsDecoder{resources: ctx.ParentElement.(*go3mf.Resources), ew: ctx.ErrorWrapper}
+		child = &compositeMaterialsDecoder{resources: ctx.ParentElement.(*go3mf.Resources)}
 	case attrMultiProps:
-		child = &multiPropertiesDecoder{resources: ctx.ParentElement.(*go3mf.Resources), ew: ctx.ErrorWrapper}
+		child = &multiPropertiesDecoder{resources: ctx.ParentElement.(*go3mf.Resources)}
 	}
 	return
 }
@@ -35,7 +35,6 @@ type colorGroupDecoder struct {
 	resources    *go3mf.Resources
 	resource     ColorGroup
 	colorDecoder colorDecoder
-	ew           spec.ErrorWrapper
 }
 
 func (d *colorGroupDecoder) End() {
@@ -43,7 +42,7 @@ func (d *colorGroupDecoder) End() {
 }
 
 func (d *colorGroupDecoder) Wrap(err error) error {
-	return d.ew.Wrap(specerr.WrapIndex(err, &d.resource, len(d.resources.Assets)))
+	return specerr.WrapIndex(err, &d.resource, len(d.resources.Assets))
 }
 
 func (d *colorGroupDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
@@ -127,7 +126,6 @@ type tex2DGroupDecoder struct {
 	resources         *go3mf.Resources
 	resource          Texture2DGroup
 	tex2DCoordDecoder tex2DCoordDecoder
-	ew                spec.ErrorWrapper
 }
 
 func (d *tex2DGroupDecoder) End() {
@@ -135,7 +133,7 @@ func (d *tex2DGroupDecoder) End() {
 }
 
 func (d *tex2DGroupDecoder) Wrap(err error) error {
-	return d.ew.Wrap(specerr.WrapIndex(err, &d.resource, len(d.resources.Assets)))
+	return specerr.WrapIndex(err, &d.resource, len(d.resources.Assets))
 }
 
 func (d *tex2DGroupDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
@@ -219,7 +217,6 @@ type compositeMaterialsDecoder struct {
 	resources        *go3mf.Resources
 	resource         CompositeMaterials
 	compositeDecoder compositeDecoder
-	ew               spec.ErrorWrapper
 }
 
 func (d *compositeMaterialsDecoder) End() {
@@ -227,7 +224,7 @@ func (d *compositeMaterialsDecoder) End() {
 }
 
 func (d *compositeMaterialsDecoder) Wrap(err error) error {
-	return d.ew.Wrap(specerr.WrapIndex(err, &d.resource, len(d.resources.Assets)))
+	return specerr.WrapIndex(err, &d.resource, len(d.resources.Assets))
 }
 
 func (d *compositeMaterialsDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
@@ -306,7 +303,6 @@ type multiPropertiesDecoder struct {
 	resources    *go3mf.Resources
 	resource     MultiProperties
 	multiDecoder multiDecoder
-	ew           spec.ErrorWrapper
 }
 
 func (d *multiPropertiesDecoder) End() {
@@ -314,7 +310,7 @@ func (d *multiPropertiesDecoder) End() {
 }
 
 func (d *multiPropertiesDecoder) Wrap(err error) error {
-	return d.ew.Wrap(specerr.WrapIndex(err, &d.resource, len(d.resources.Assets)))
+	return specerr.WrapIndex(err, &d.resource, len(d.resources.Assets))
 }
 
 func (d *multiPropertiesDecoder) Child(name xml.Name) (child spec.ElementDecoder) {

@@ -15,7 +15,7 @@ func (Spec) DecodeAttribute(interface{}, spec.Attr) error {
 
 func (Spec) CreateElementDecoder(ctx spec.ElementDecoderContext) spec.ElementDecoder {
 	if ctx.Name.Local == attrBeamLattice {
-		return &beamLatticeDecoder{mesh: ctx.ParentElement.(*go3mf.Mesh), ew: ctx.ErrorWrapper}
+		return &beamLatticeDecoder{mesh: ctx.ParentElement.(*go3mf.Mesh)}
 	}
 	return nil
 }
@@ -23,7 +23,6 @@ func (Spec) CreateElementDecoder(ctx spec.ElementDecoderContext) spec.ElementDec
 type beamLatticeDecoder struct {
 	baseDecoder
 	mesh *go3mf.Mesh
-	ew   spec.ErrorWrapper
 }
 
 func (d *beamLatticeDecoder) Start(attrs []spec.Attr) error {
@@ -80,15 +79,15 @@ func (d *beamLatticeDecoder) Start(attrs []spec.Attr) error {
 }
 
 func (d *beamLatticeDecoder) Wrap(err error) error {
-	return d.ew.Wrap(specerr.Wrap(err, GetBeamLattice(d.mesh)))
+	return specerr.Wrap(err, GetBeamLattice(d.mesh))
 }
 
 func (d *beamLatticeDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	if name.Space == Namespace {
 		if name.Local == attrBeams {
-			child = &beamsDecoder{mesh: d.mesh, ew: d}
+			child = &beamsDecoder{mesh: d.mesh}
 		} else if name.Local == attrBeamSets {
-			child = &beamSetsDecoder{mesh: d.mesh, ew: d}
+			child = &beamSetsDecoder{mesh: d.mesh}
 		}
 	}
 	return
@@ -98,16 +97,11 @@ type beamsDecoder struct {
 	baseDecoder
 	mesh        *go3mf.Mesh
 	beamDecoder beamDecoder
-	ew          spec.ErrorWrapper
 }
 
 func (d *beamsDecoder) Start(_ []spec.Attr) error {
 	d.beamDecoder.mesh = d.mesh
 	return nil
-}
-
-func (d *beamsDecoder) Wrap(err error) error {
-	return d.ew.Wrap(err)
 }
 
 func (d *beamsDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
@@ -194,16 +188,11 @@ func (d *beamDecoder) Start(attrs []spec.Attr) error {
 type beamSetsDecoder struct {
 	baseDecoder
 	mesh *go3mf.Mesh
-	ew   spec.ErrorWrapper
-}
-
-func (d *beamSetsDecoder) Wrap(err error) error {
-	return d.ew.Wrap(err)
 }
 
 func (d *beamSetsDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrBeamSet {
-		child = &beamSetDecoder{mesh: d.mesh, ew: d}
+		child = &beamSetDecoder{mesh: d.mesh}
 	}
 	return
 }
@@ -213,7 +202,6 @@ type beamSetDecoder struct {
 	mesh           *go3mf.Mesh
 	beamSet        BeamSet
 	beamRefDecoder beamRefDecoder
-	ew             spec.ErrorWrapper
 }
 
 func (d *beamSetDecoder) End() {
@@ -238,7 +226,7 @@ func (d *beamSetDecoder) Start(attrs []spec.Attr) error {
 }
 
 func (d *beamSetDecoder) Wrap(err error) error {
-	return d.ew.Wrap(specerr.WrapIndex(err, &d.beamSet, len(GetBeamLattice(d.mesh).BeamSets)))
+	return specerr.WrapIndex(err, &d.beamSet, len(GetBeamLattice(d.mesh).BeamSets))
 }
 
 func (d *beamSetDecoder) Child(name xml.Name) (child spec.ElementDecoder) {

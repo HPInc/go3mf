@@ -11,7 +11,7 @@ import (
 
 func (Spec) CreateElementDecoder(ctx spec.ElementDecoderContext) spec.ElementDecoder {
 	if ctx.Name.Local == attrSliceStack {
-		return &sliceStackDecoder{resources: ctx.ParentElement.(*go3mf.Resources), ew: ctx.ErrorWrapper}
+		return &sliceStackDecoder{resources: ctx.ParentElement.(*go3mf.Resources)}
 	}
 	return nil
 }
@@ -54,7 +54,6 @@ type sliceStackDecoder struct {
 	baseDecoder
 	resources *go3mf.Resources
 	resource  SliceStack
-	ew        spec.ErrorWrapper
 }
 
 func (d *sliceStackDecoder) End() {
@@ -62,13 +61,13 @@ func (d *sliceStackDecoder) End() {
 }
 
 func (d *sliceStackDecoder) Wrap(err error) error {
-	return d.ew.Wrap(specerr.WrapIndex(err, d.resource, len(d.resources.Assets)))
+	return specerr.WrapIndex(err, d.resource, len(d.resources.Assets))
 }
 
 func (d *sliceStackDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	if name.Space == Namespace {
 		if name.Local == attrSlice {
-			child = &sliceDecoder{resource: &d.resource, ew: d}
+			child = &sliceDecoder{resource: &d.resource}
 		} else if name.Local == attrSliceRef {
 			child = &sliceRefDecoder{resource: &d.resource}
 		}
@@ -137,7 +136,6 @@ type sliceDecoder struct {
 	slice                  Slice
 	polygonDecoder         polygonDecoder
 	polygonVerticesDecoder polygonVerticesDecoder
-	ew                     spec.ErrorWrapper
 }
 
 func (d *sliceDecoder) End() {
@@ -145,7 +143,7 @@ func (d *sliceDecoder) End() {
 }
 
 func (d *sliceDecoder) Wrap(err error) error {
-	return d.ew.Wrap(specerr.WrapIndex(err, &d.slice, len(d.resource.Slices)))
+	return specerr.WrapIndex(err, &d.slice, len(d.resource.Slices))
 }
 
 func (d *sliceDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
@@ -160,8 +158,6 @@ func (d *sliceDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 }
 
 func (d *sliceDecoder) Start(attrs []spec.Attr) error {
-	d.polygonDecoder.ew = d
-	d.polygonVerticesDecoder.ew = d
 	d.polygonDecoder.slice = &d.slice
 	d.polygonVerticesDecoder.slice = &d.slice
 	var errs error
@@ -185,16 +181,11 @@ type polygonVerticesDecoder struct {
 	baseDecoder
 	slice                *Slice
 	polygonVertexDecoder polygonVertexDecoder
-	ew                   spec.ErrorWrapper
 }
 
 func (d *polygonVerticesDecoder) Start(_ []spec.Attr) error {
 	d.polygonVertexDecoder.slice = d.slice
 	return nil
-}
-
-func (d *polygonVerticesDecoder) Wrap(err error) error {
-	return d.ew.Wrap(err)
 }
 
 func (d *polygonVerticesDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
@@ -237,12 +228,11 @@ type polygonDecoder struct {
 	baseDecoder
 	slice                 *Slice
 	polygonSegmentDecoder polygonSegmentDecoder
-	ew                    spec.ErrorWrapper
 }
 
 func (d *polygonDecoder) Wrap(err error) error {
 	index := len(d.slice.Polygons) - 1
-	return d.ew.Wrap(specerr.WrapIndex(err, &d.slice.Polygons[index], index))
+	return specerr.WrapIndex(err, &d.slice.Polygons[index], index)
 }
 
 func (d *polygonDecoder) Child(name xml.Name) (child spec.ElementDecoder) {

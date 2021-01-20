@@ -53,7 +53,6 @@ type MarshalerAttr interface {
 type ElementDecoderContext struct {
 	ParentElement interface{}
 	Name          xml.Name
-	ErrorWrapper  ErrorWrapper
 }
 
 type ErrorWrapper interface {
