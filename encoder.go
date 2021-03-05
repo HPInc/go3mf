@@ -394,61 +394,79 @@ func (e *Encoder) writeComponents(x spec.Encoder, comps []*Component) {
 	x.EncodeToken(xcs.End())
 }
 
-func (e *Encoder) writeMesh(x spec.Encoder, r *Object, m *Mesh) {
-	xm := xml.StartElement{Name: xml.Name{Local: attrMesh}}
-	m.AnyAttr.encode(x, &xm)
-	x.EncodeToken(xm)
+func (e *Encoder) writeVertices(x spec.Encoder, m *Mesh) {
 	xvs := xml.StartElement{Name: xml.Name{Local: attrVertices}}
 	x.EncodeToken(xvs)
 	x.SetAutoClose(true)
 	prec := x.FloatPresicion()
+	start := xml.StartElement{
+		Name: xml.Name{Local: attrVertex},
+		Attr: []xml.Attr{
+			{Name: xml.Name{Local: attrX}},
+			{Name: xml.Name{Local: attrY}},
+			{Name: xml.Name{Local: attrZ}},
+		},
+	}
 	for _, v := range m.Vertices {
-		x.EncodeToken(xml.StartElement{
-			Name: xml.Name{Local: attrVertex},
-			Attr: []xml.Attr{
-				{Name: xml.Name{Local: attrX}, Value: strconv.FormatFloat(float64(v.X()), 'f', prec, 32)},
-				{Name: xml.Name{Local: attrY}, Value: strconv.FormatFloat(float64(v.Y()), 'f', prec, 32)},
-				{Name: xml.Name{Local: attrZ}, Value: strconv.FormatFloat(float64(v.Z()), 'f', prec, 32)},
-			},
-		})
+		start.Attr[0].Value = strconv.FormatFloat(float64(v.X()), 'f', prec, 32)
+		start.Attr[1].Value = strconv.FormatFloat(float64(v.Y()), 'f', prec, 32)
+		start.Attr[2].Value = strconv.FormatFloat(float64(v.Z()), 'f', prec, 32)
+		x.EncodeToken(start)
 	}
 	x.SetAutoClose(false)
 	x.EncodeToken(xvs.End())
+}
 
+func (e *Encoder) writeTriangles(x spec.Encoder, r *Object, m *Mesh) {
 	xvt := xml.StartElement{Name: xml.Name{Local: attrTriangles}}
 	x.EncodeToken(xvt)
 	x.SetAutoClose(true)
+	attrs := []xml.Attr{
+		{Name: xml.Name{Local: attrV1}},
+		{Name: xml.Name{Local: attrV2}},
+		{Name: xml.Name{Local: attrV3}},
+		{Name: xml.Name{Local: attrPID}},
+		{Name: xml.Name{Local: attrP1}},
+		{Name: xml.Name{Local: attrP2}},
+		{Name: xml.Name{Local: attrP3}},
+	}
+	start := xml.StartElement{
+		Name: xml.Name{Local: attrTriangle},
+		Attr: attrs[:2],
+	}
 	for _, v := range m.Triangles {
 		v1, v2, v3 := v.Indices()
-		t := xml.StartElement{
-			Name: xml.Name{Local: attrTriangle},
-			Attr: []xml.Attr{
-				{Name: xml.Name{Local: attrV1}, Value: strconv.FormatUint(uint64(v1), 10)},
-				{Name: xml.Name{Local: attrV2}, Value: strconv.FormatUint(uint64(v2), 10)},
-				{Name: xml.Name{Local: attrV3}, Value: strconv.FormatUint(uint64(v3), 10)},
-			},
-		}
+		attrs[0].Value = strconv.FormatUint(uint64(v1), 10)
+		attrs[1].Value = strconv.FormatUint(uint64(v2), 10)
+		attrs[2].Value = strconv.FormatUint(uint64(v3), 10)
 		pid := v.PID()
 		if pid != 0 {
 			p1, p2, p3 := v.PIndices()
 			if (p1 != p2) || (p1 != p3) {
-				t.Attr = append(t.Attr,
-					xml.Attr{Name: xml.Name{Local: attrPID}, Value: strconv.FormatUint(uint64(pid), 10)},
-					xml.Attr{Name: xml.Name{Local: attrP1}, Value: strconv.FormatUint(uint64(p1), 10)},
-					xml.Attr{Name: xml.Name{Local: attrP2}, Value: strconv.FormatUint(uint64(p2), 10)},
-					xml.Attr{Name: xml.Name{Local: attrP3}, Value: strconv.FormatUint(uint64(p3), 10)},
-				)
+				attrs[3].Value = strconv.FormatUint(uint64(pid), 10)
+				attrs[4].Value = strconv.FormatUint(uint64(p1), 10)
+				attrs[5].Value = strconv.FormatUint(uint64(p2), 10)
+				attrs[6].Value = strconv.FormatUint(uint64(p3), 10)
+				start.Attr = attrs[:6]
 			} else if (pid != r.PID) || (p1 != r.PIndex) {
-				t.Attr = append(t.Attr,
-					xml.Attr{Name: xml.Name{Local: attrPID}, Value: strconv.FormatUint(uint64(pid), 10)},
-					xml.Attr{Name: xml.Name{Local: attrP1}, Value: strconv.FormatUint(uint64(p1), 10)},
-				)
+				attrs[3].Value = strconv.FormatUint(uint64(pid), 10)
+				attrs[4].Value = strconv.FormatUint(uint64(p1), 10)
+				start.Attr = attrs[:4]
 			}
 		}
-		x.EncodeToken(t)
+		x.EncodeToken(start)
 	}
 	x.SetAutoClose(false)
 	x.EncodeToken(xvt.End())
+}
+
+func (e *Encoder) writeMesh(x spec.Encoder, r *Object, m *Mesh) {
+	xm := xml.StartElement{Name: xml.Name{Local: attrMesh}}
+	m.AnyAttr.encode(x, &xm)
+	x.EncodeToken(xm)
+
+	e.writeVertices(x, m)
+	e.writeTriangles(x, r, m)
 	m.Any.encode(x)
 	x.EncodeToken(xm.End())
 }
