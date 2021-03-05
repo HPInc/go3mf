@@ -467,6 +467,7 @@ func (e *Encoder) writeMesh(x spec.Encoder, r *Object, m *Mesh) {
 
 	e.writeVertices(x, m)
 	e.writeTriangles(x, r, m)
+
 	m.Any.encode(x)
 	x.EncodeToken(xm.End())
 }
@@ -477,14 +478,17 @@ func (r *BaseMaterials) Marshal3MF(x spec.Encoder) error {
 	}}
 	x.EncodeToken(xt)
 	x.SetAutoClose(true)
+	start := xml.StartElement{
+		Name: xml.Name{Local: attrBase},
+		Attr: []xml.Attr{
+			{Name: xml.Name{Local: attrName}},
+			{Name: xml.Name{Local: attrDisplayColor}},
+		},
+	}
 	for _, ma := range r.Materials {
-		x.EncodeToken(xml.StartElement{
-			Name: xml.Name{Local: attrBase},
-			Attr: []xml.Attr{
-				{Name: xml.Name{Local: attrName}, Value: ma.Name},
-				{Name: xml.Name{Local: attrDisplayColor}, Value: spec.FormatRGBA(ma.Color)},
-			},
-		})
+		start.Attr[0].Value = ma.Name
+		start.Attr[1].Value = spec.FormatRGBA(ma.Color)
+		x.EncodeToken(start)
 	}
 	x.SetAutoClose(false)
 	x.EncodeToken(xt.End())
