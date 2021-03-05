@@ -15,10 +15,12 @@ func (r *ColorGroup) Marshal3MF(x spec.Encoder) error {
 	}}
 	x.EncodeToken(xs)
 	x.SetAutoClose(true)
+	start := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrColor}, Attr: []xml.Attr{
+		{Name: xml.Name{Local: attrColor}},
+	}}
 	for _, c := range r.Colors {
-		x.EncodeToken(xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrColor}, Attr: []xml.Attr{
-			{Name: xml.Name{Local: attrColor}, Value: spec.FormatRGBA(c)},
-		}})
+		start.Attr[0].Value = spec.FormatRGBA(c)
+		x.EncodeToken(start)
 	}
 	x.SetAutoClose(false)
 	x.EncodeToken(xs.End())
@@ -34,11 +36,14 @@ func (r *Texture2DGroup) Marshal3MF(x spec.Encoder) error {
 	x.EncodeToken(xs)
 	x.SetAutoClose(true)
 	prec := x.FloatPresicion()
+	start := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrTex2DCoord}, Attr: []xml.Attr{
+		{Name: xml.Name{Local: attrU}},
+		{Name: xml.Name{Local: attrV}},
+	}}
 	for _, c := range r.Coords {
-		x.EncodeToken(xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrTex2DCoord}, Attr: []xml.Attr{
-			{Name: xml.Name{Local: attrU}, Value: strconv.FormatFloat(float64(c.U()), 'f', prec, 32)},
-			{Name: xml.Name{Local: attrV}, Value: strconv.FormatFloat(float64(c.V()), 'f', prec, 32)},
-		}})
+		start.Attr[0].Value =  strconv.FormatFloat(float64(c.U()), 'f', prec, 32)
+		start.Attr[1].Value =  strconv.FormatFloat(float64(c.V()), 'f', prec, 32)
+		x.EncodeToken(start)
 	}
 	x.SetAutoClose(false)
 	x.EncodeToken(xs.End())
