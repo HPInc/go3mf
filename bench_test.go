@@ -6,6 +6,22 @@ import (
 	"testing"
 )
 
+func BenchmarkMarshalModel(b *testing.B) {
+	bt := []byte(benchModel(1000))
+	m := new(Model)
+	err := UnmarshalModel(bt, m)
+	if err != nil {
+		b.Errorf("MarshalModel err = %v", err)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, err = MarshalModel(m)
+		if err != nil {
+			b.Errorf("MarshalModel err = %v", err)
+		}
+	}
+}
+
 func BenchmarkUnmarshalModel(b *testing.B) {
 	bt := []byte(benchModel(1000))
 	b.ResetTimer()
