@@ -432,7 +432,7 @@ func (e *Encoder) writeTriangles(x spec.Encoder, r *Object, m *Mesh) {
 	}
 	start := xml.StartElement{
 		Name: xml.Name{Local: attrTriangle},
-		Attr: attrs[:2],
+		Attr: attrs[:3],
 	}
 	for _, v := range m.Triangles {
 		v1, v2, v3 := v.Indices()
@@ -447,11 +447,11 @@ func (e *Encoder) writeTriangles(x spec.Encoder, r *Object, m *Mesh) {
 				attrs[4].Value = strconv.FormatUint(uint64(p1), 10)
 				attrs[5].Value = strconv.FormatUint(uint64(p2), 10)
 				attrs[6].Value = strconv.FormatUint(uint64(p3), 10)
-				start.Attr = attrs[:6]
+				start.Attr = attrs[:7]
 			} else if (pid != r.PID) || (p1 != r.PIndex) {
 				attrs[3].Value = strconv.FormatUint(uint64(pid), 10)
 				attrs[4].Value = strconv.FormatUint(uint64(p1), 10)
-				start.Attr = attrs[:4]
+				start.Attr = attrs[:5]
 			}
 		}
 		x.EncodeToken(start)

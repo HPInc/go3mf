@@ -64,7 +64,7 @@ func marshalPolygons(x spec.Encoder, ply []Polygon) {
 	}
 	xs := xml.StartElement{
 		Name: xml.Name{Space: Namespace, Local: attrSegment},
-		Attr: xsattrs[:1],
+		Attr: xsattrs[:2],
 	}
 	for _, p := range ply {
 		xp := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrPolygon}, Attr: []xml.Attr{
@@ -79,9 +79,9 @@ func marshalPolygons(x spec.Encoder, ply []Polygon) {
 				xsattrs[2].Value = strconv.FormatUint(uint64(s.P1), 10)
 				if s.P1 != s.P2 {
 					xsattrs[3].Value = strconv.FormatUint(uint64(s.P2), 10)
-					xs.Attr = xsattrs[:3]
+					xs.Attr = xsattrs[:4]
 				} else {
-					xs.Attr = xsattrs[:2]
+					xs.Attr = xsattrs[:3]
 				}
 			}
 			x.EncodeToken(xs)
