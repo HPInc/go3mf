@@ -13,28 +13,28 @@ func TestValidate(t *testing.T) {
 	tests := []struct {
 		name  string
 		model *go3mf.Model
-		want  []error
+		want  []string
 	}{
 		{"error in child", &go3mf.Model{Childs: map[string]*go3mf.ChildModel{
 			"/other.model": {Resources: go3mf.Resources{Objects: []*go3mf.Object{
 				{ID: 1, Mesh: &go3mf.Mesh{Any: go3mf.Any{&BeamLattice{}}}},
 			}}},
-		}}, []error{
-			fmt.Errorf("/other.model@Resources@Object#0@Mesh: %v", errors.ErrInsufficientVertices),
-			fmt.Errorf("/other.model@Resources@Object#0@Mesh@BeamLattice: %v", &errors.MissingFieldError{Name: attrMinLength}),
-			fmt.Errorf("/other.model@Resources@Object#0@Mesh@BeamLattice: %v", &errors.MissingFieldError{Name: attrRadius}),
-			fmt.Errorf("/other.model@Resources@Object#0@Mesh@BeamLattice: %v", ErrLatticeClippedNoMesh),
+		}}, []string{
+			fmt.Sprintf("/other.model@Resources@Object#0@Mesh: %v", errors.ErrInsufficientVertices),
+			fmt.Sprintf("/other.model@Resources@Object#0@Mesh@BeamLattice: %v", &errors.MissingFieldError{Name: attrMinLength}),
+			fmt.Sprintf("/other.model@Resources@Object#0@Mesh@BeamLattice: %v", &errors.MissingFieldError{Name: attrRadius}),
+			fmt.Sprintf("/other.model@Resources@Object#0@Mesh@BeamLattice: %v", ErrLatticeClippedNoMesh),
 		}},
 		{"object without beamlattice", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
 			{ID: 1, Mesh: &go3mf.Mesh{}},
-		}}}, []error{
-			fmt.Errorf("Resources@Object#0@Mesh: %v", errors.ErrInsufficientVertices),
-			fmt.Errorf("Resources@Object#0@Mesh: %v", errors.ErrInsufficientTriangles),
+		}}}, []string{
+			fmt.Sprintf("Resources@Object#0@Mesh: %v", errors.ErrInsufficientVertices),
+			fmt.Sprintf("Resources@Object#0@Mesh: %v", errors.ErrInsufficientTriangles),
 		}},
 		{"object with components", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
 			{ID: 1, Components: []*go3mf.Component{{ObjectID: 2}}},
-		}}}, []error{
-			fmt.Errorf("Resources@Object#0@Component#0: %v", errors.ErrMissingResource),
+		}}}, []string{
+			fmt.Sprintf("Resources@Object#0@Component#0: %v", errors.ErrMissingResource),
 		}},
 		{"object incorret type", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
 			{ID: 1, Type: go3mf.ObjectTypeOther, Mesh: &go3mf.Mesh{Any: go3mf.Any{&BeamLattice{
@@ -46,10 +46,10 @@ func TestValidate(t *testing.T) {
 			{ID: 3, Type: go3mf.ObjectTypeSupport, Mesh: &go3mf.Mesh{Any: go3mf.Any{&BeamLattice{
 				MinLength: 1, Radius: 1, ClipMode: ClipInside,
 			}}}},
-		}}}, []error{
-			fmt.Errorf("Resources@Object#0@Mesh@BeamLattice: %v", ErrLatticeObjType),
-			fmt.Errorf("Resources@Object#1@Mesh@BeamLattice: %v", ErrLatticeObjType),
-			fmt.Errorf("Resources@Object#2@Mesh@BeamLattice: %v", ErrLatticeObjType),
+		}}}, []string{
+			fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice: %v", ErrLatticeObjType),
+			fmt.Sprintf("Resources@Object#1@Mesh@BeamLattice: %v", ErrLatticeObjType),
+			fmt.Sprintf("Resources@Object#2@Mesh@BeamLattice: %v", ErrLatticeObjType),
 		}},
 		{"incorrect mesh references", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
 			{ID: 1, Mesh: &go3mf.Mesh{Vertices: []go3mf.Point3D{{}, {}, {}}, Any: go3mf.Any{nil}}},
@@ -59,10 +59,10 @@ func TestValidate(t *testing.T) {
 			{ID: 3, Mesh: &go3mf.Mesh{Vertices: []go3mf.Point3D{{}, {}, {}}, Any: go3mf.Any{&BeamLattice{
 				MinLength: 1, Radius: 1, ClippingMeshID: 1, RepresentationMeshID: 2,
 			}}}},
-		}}}, []error{
-			fmt.Errorf("Resources@Object#1@Mesh@BeamLattice: %v", errors.ErrMissingResource),
-			fmt.Errorf("Resources@Object#1@Mesh@BeamLattice: %v", errors.ErrRecursion),
-			fmt.Errorf("Resources@Object#2@Mesh@BeamLattice: %v", ErrLatticeInvalidMesh),
+		}}}, []string{
+			fmt.Sprintf("Resources@Object#1@Mesh@BeamLattice: %v", errors.ErrMissingResource),
+			fmt.Sprintf("Resources@Object#1@Mesh@BeamLattice: %v", errors.ErrRecursion),
+			fmt.Sprintf("Resources@Object#2@Mesh@BeamLattice: %v", ErrLatticeInvalidMesh),
 		}},
 		{"incorrect beams", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
 			{ID: 2, Mesh: &go3mf.Mesh{Vertices: []go3mf.Point3D{{}, {}, {}}, Any: go3mf.Any{&BeamLattice{
@@ -70,11 +70,11 @@ func TestValidate(t *testing.T) {
 					{}, {Indices: [2]uint32{1, 1}, Radius: [2]float32{0.5, 0}}, {Indices: [2]uint32{1, 3}},
 				},
 			}}}},
-		}}}, []error{
-			fmt.Errorf("Resources@Object#0@Mesh@BeamLattice@Beam#0: %v", ErrLatticeSameVertex),
-			fmt.Errorf("Resources@Object#0@Mesh@BeamLattice@Beam#1: %v", ErrLatticeSameVertex),
-			fmt.Errorf("Resources@Object#0@Mesh@BeamLattice@Beam#1: %v", ErrLatticeBeamR2),
-			fmt.Errorf("Resources@Object#0@Mesh@BeamLattice@Beam#2: %v", errors.ErrIndexOutOfBounds),
+		}}}, []string{
+			fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@Beam#0: %v", ErrLatticeSameVertex),
+			fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@Beam#1: %v", ErrLatticeSameVertex),
+			fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@Beam#1: %v", ErrLatticeBeamR2),
+			fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@Beam#2: %v", errors.ErrIndexOutOfBounds),
 		}},
 		{"incorrect beamseat", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
 			{ID: 2, Mesh: &go3mf.Mesh{Vertices: []go3mf.Point3D{{}, {}, {}}, Any: go3mf.Any{&BeamLattice{
@@ -82,15 +82,22 @@ func TestValidate(t *testing.T) {
 					{Indices: [2]uint32{1, 2}},
 				}, BeamSets: []BeamSet{{Refs: []uint32{0, 2, 3}}},
 			}}}},
-		}}}, []error{
-			fmt.Errorf("Resources@Object#0@Mesh@BeamLattice@BeamSet#0: %v", errors.ErrIndexOutOfBounds),
+		}}}, []string{
+			fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@BeamSet#0: %v", errors.ErrIndexOutOfBounds),
 		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.model.Extensions = []go3mf.Extension{DefaultExtension}
-			got := tt.model.Validate()
-			if diff := deep.Equal(got.(*errors.List).Errors, tt.want); diff != nil {
+			err := tt.model.Validate()
+			if err == nil {
+				t.Fatal("error expected")
+			}
+			var errs []string
+			for _, err := range err.(*errors.List).Errors {
+				errs = append(errs, err.Error())
+			}
+			if diff := deep.Equal(errs, tt.want); diff != nil {
 				t.Errorf("Validate() = %v", diff)
 			}
 		})

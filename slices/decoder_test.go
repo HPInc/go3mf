@@ -6,7 +6,6 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/qmuntal/go3mf"
-	"github.com/qmuntal/go3mf/errors"
 	specerr "github.com/qmuntal/go3mf/errors"
 )
 
@@ -91,18 +90,18 @@ func TestDecode(t *testing.T) {
 }
 
 func TestDecode_warns(t *testing.T) {
-	want := &errors.List{Errors: []error{
-		fmt.Errorf("Resources@SliceStack#0: %v", specerr.NewParseAttrError("id", true)),
-		fmt.Errorf("Resources@SliceStack#0: %v", specerr.NewParseAttrError("zbottom", false)),
-		fmt.Errorf("Resources@SliceStack#0@Slice#0@Point2D#0: %v", specerr.NewParseAttrError("x", true)),
-		fmt.Errorf("Resources@SliceStack#0@Slice#0@Point2D#1: %v", specerr.NewParseAttrError("y", true)),
-		fmt.Errorf("Resources@SliceStack#0@Slice#1: %v", specerr.NewParseAttrError("ztop", true)),
-		fmt.Errorf("Resources@SliceStack#0@Slice#1@Polygon#0: %v", specerr.NewParseAttrError("startv", true)),
-		fmt.Errorf("Resources@SliceStack#0@Slice#1@Polygon#0@Segment#1: %v", specerr.NewParseAttrError("v2", true)),
-		fmt.Errorf("Resources@SliceStack#0@SliceRef#0: %v", specerr.NewParseAttrError("slicestackid", true)),
-		fmt.Errorf("Resources@Object#0: %v", specerr.NewParseAttrError("meshresolution", false)),
-		fmt.Errorf("Resources@Object#0: %v", specerr.NewParseAttrError("slicestackid", true)),
-	}}
+	want := []string{
+		fmt.Sprintf("Resources@SliceStack#0: %v", specerr.NewParseAttrError("id", true)),
+		fmt.Sprintf("Resources@SliceStack#0: %v", specerr.NewParseAttrError("zbottom", false)),
+		fmt.Sprintf("Resources@SliceStack#0@Slice#0@Point2D#0: %v", specerr.NewParseAttrError("x", true)),
+		fmt.Sprintf("Resources@SliceStack#0@Slice#0@Point2D#1: %v", specerr.NewParseAttrError("y", true)),
+		fmt.Sprintf("Resources@SliceStack#0@Slice#1: %v", specerr.NewParseAttrError("ztop", true)),
+		fmt.Sprintf("Resources@SliceStack#0@Slice#1@Polygon#0: %v", specerr.NewParseAttrError("startv", true)),
+		fmt.Sprintf("Resources@SliceStack#0@Slice#1@Polygon#0@Segment#1: %v", specerr.NewParseAttrError("v2", true)),
+		fmt.Sprintf("Resources@SliceStack#0@SliceRef#0: %v", specerr.NewParseAttrError("slicestackid", true)),
+		fmt.Sprintf("Resources@Object#0: %v", specerr.NewParseAttrError("meshresolution", false)),
+		fmt.Sprintf("Resources@Object#0: %v", specerr.NewParseAttrError("slicestackid", true)),
+	}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"
 	rootFile := `
@@ -169,7 +168,14 @@ func TestDecode_warns(t *testing.T) {
 
 	t.Run("base", func(t *testing.T) {
 		err := go3mf.UnmarshalModel([]byte(rootFile), got)
-		if diff := deep.Equal(err, want); diff != nil {
+		if err == nil {
+			t.Fatal("error expected")
+		}
+		var errs []string
+		for _, err := range err.(*specerr.List).Errors {
+			errs = append(errs, err.Error())
+		}
+		if diff := deep.Equal(errs, want); diff != nil {
 			t.Errorf("UnmarshalModel_warn() = %v", diff)
 			return
 		}

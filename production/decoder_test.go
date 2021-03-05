@@ -68,12 +68,12 @@ func TestDecode(t *testing.T) {
 }
 
 func TestDecode_warns(t *testing.T) {
-	want := &errors.List{Errors: []error{
-		fmt.Errorf("Resources@Object#1: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
-		fmt.Errorf("Resources@Object#1@Component#0: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
-		fmt.Errorf("Build: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
-		fmt.Errorf("Build@Item#0: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
-	}}
+	want := []string{
+		fmt.Sprintf("Resources@Object#1: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
+		fmt.Sprintf("Resources@Object#1@Component#0: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
+		fmt.Sprintf("Build: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
+		fmt.Sprintf("Build@Item#0: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
+	}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"
 	rootFile := `
@@ -98,7 +98,14 @@ func TestDecode_warns(t *testing.T) {
 
 	t.Run("base", func(t *testing.T) {
 		err := go3mf.UnmarshalModel([]byte(rootFile), got)
-		if diff := deep.Equal(err, want); diff != nil {
+		if err == nil {
+			t.Fatal("error expected")
+		}
+		var errs []string
+		for _, err := range err.(*errors.List).Errors {
+			errs = append(errs, err.Error())
+		}
+		if diff := deep.Equal(errs, want); diff != nil {
 			t.Errorf("UnmarshalModel_warn() = %v", diff)
 			return
 		}

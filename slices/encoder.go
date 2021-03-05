@@ -56,15 +56,14 @@ func (s *Slice) marshal3MF(x spec.Encoder) {
 }
 
 func marshalPolygons(x spec.Encoder, ply []Polygon) {
+	xs := xml.StartElement{
+		Name: xml.Name{Space: Namespace, Local: attrSegment},
+	}
 	xsattrs := []xml.Attr{
 		{Name: xml.Name{Local: attrV2}},
 		{Name: xml.Name{Local: attrPID}},
 		{Name: xml.Name{Local: attrP1}},
 		{Name: xml.Name{Local: attrP2}},
-	}
-	xs := xml.StartElement{
-		Name: xml.Name{Space: Namespace, Local: attrSegment},
-		Attr: xsattrs[:2],
 	}
 	for _, p := range ply {
 		xp := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrPolygon}, Attr: []xml.Attr{
@@ -74,6 +73,7 @@ func marshalPolygons(x spec.Encoder, ply []Polygon) {
 		x.SetAutoClose(true)
 		for _, s := range p.Segments {
 			xsattrs[0].Value = strconv.FormatUint(uint64(s.V2), 10)
+			xs.Attr = xsattrs[:1]
 			if s.PID != 0 {
 				xsattrs[1].Value = strconv.FormatUint(uint64(s.PID), 10)
 				xsattrs[2].Value = strconv.FormatUint(uint64(s.P1), 10)

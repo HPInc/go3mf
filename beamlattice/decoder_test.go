@@ -114,19 +114,19 @@ func TestDecode(t *testing.T) {
 }
 
 func TestDecode_warns(t *testing.T) {
-	want := &errors.List{Errors: []error{
-		fmt.Errorf("Resources@Object#0@Mesh@BeamLattice: %v", errors.NewParseAttrError("radius", true)),
-		fmt.Errorf("Resources@Object#0@Mesh@BeamLattice: %v", errors.NewParseAttrError("minlength", true)),
-		fmt.Errorf("Resources@Object#0@Mesh@BeamLattice: %v", errors.NewParseAttrError("cap", false)),
-		fmt.Errorf("Resources@Object#0@Mesh@BeamLattice: %v", errors.NewParseAttrError("clippingmode", false)),
-		fmt.Errorf("Resources@Object#0@Mesh@BeamLattice: %v", errors.NewParseAttrError("clippingmesh", false)),
-		fmt.Errorf("Resources@Object#0@Mesh@BeamLattice: %v", errors.NewParseAttrError("representationmesh", false)),
-		fmt.Errorf("Resources@Object#0@Mesh@BeamLattice@Beam#0: %v", errors.NewParseAttrError("r1", false)),
-		fmt.Errorf("Resources@Object#0@Mesh@BeamLattice@Beam#0: %v", errors.NewParseAttrError("r2", false)),
-		fmt.Errorf("Resources@Object#0@Mesh@BeamLattice@Beam#2: %v", errors.NewParseAttrError("v2", true)),
-		fmt.Errorf("Resources@Object#0@Mesh@BeamLattice@Beam#3: %v", errors.NewParseAttrError("v1", true)),
-		fmt.Errorf("Resources@Object#0@Mesh@BeamLattice@BeamSet#0@uint32#2: %v", errors.NewParseAttrError("index", true)),
-	}}
+	want := []string{
+		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice: %v", errors.NewParseAttrError("radius", true)),
+		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice: %v", errors.NewParseAttrError("minlength", true)),
+		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice: %v", errors.NewParseAttrError("cap", false)),
+		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice: %v", errors.NewParseAttrError("clippingmode", false)),
+		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice: %v", errors.NewParseAttrError("clippingmesh", false)),
+		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice: %v", errors.NewParseAttrError("representationmesh", false)),
+		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@Beam#0: %v", errors.NewParseAttrError("r1", false)),
+		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@Beam#0: %v", errors.NewParseAttrError("r2", false)),
+		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@Beam#2: %v", errors.NewParseAttrError("v2", true)),
+		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@Beam#3: %v", errors.NewParseAttrError("v1", true)),
+		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@BeamSet#0@uint32#2: %v", errors.NewParseAttrError("index", true)),
+	}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"
 	rootFile := `
@@ -179,7 +179,14 @@ func TestDecode_warns(t *testing.T) {
 
 	t.Run("base", func(t *testing.T) {
 		err := go3mf.UnmarshalModel([]byte(rootFile), got)
-		if diff := deep.Equal(err, want); diff != nil {
+		if err == nil {
+			t.Fatal("error expected")
+		}
+		var errs []string
+		for _, err := range err.(*errors.List).Errors {
+			errs = append(errs, err.Error())
+		}
+		if diff := deep.Equal(errs, want); diff != nil {
 			t.Errorf("UnmarshalModel_warn() = %v", diff)
 			return
 		}

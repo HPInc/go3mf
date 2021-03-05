@@ -15,7 +15,7 @@ func TestValidate(t *testing.T) {
 	tests := []struct {
 		name  string
 		model *go3mf.Model
-		want  []error
+		want  []string
 	}{
 		{"extRequired", &go3mf.Model{
 			AnyAttr:    go3mf.AnyAttr{&ObjectAttr{SliceStackID: 10}},
@@ -28,8 +28,8 @@ func TestValidate(t *testing.T) {
 						SliceStackID: 1, MeshResolution: ResolutionLow,
 					}}},
 				}},
-		}, []error{
-			fmt.Errorf("Resources@Object#0: %v", errors.ErrInvalidObject),
+		}, []string{
+			fmt.Sprintf("Resources@Object#0: %v", errors.ErrInvalidObject),
 		}},
 		{"child", &go3mf.Model{Childs: map[string]*go3mf.ChildModel{
 			"/other.model": {Resources: go3mf.Resources{Assets: []go3mf.Asset{
@@ -38,9 +38,9 @@ func TestValidate(t *testing.T) {
 			"/that.model": {Resources: go3mf.Resources{Assets: []go3mf.Asset{
 				&SliceStack{ID: 2},
 			}}},
-		}}, []error{
-			fmt.Errorf("/other.model@Resources@SliceStack#0: %v", ErrSlicesAndRefs),
-			fmt.Errorf("/that.model@Resources@SliceStack#0: %v", ErrSlicesAndRefs),
+		}}, []string{
+			fmt.Sprintf("/other.model@Resources@SliceStack#0: %v", ErrSlicesAndRefs),
+			fmt.Sprintf("/that.model@Resources@SliceStack#0: %v", ErrSlicesAndRefs),
 		}},
 		{"slicestack", &go3mf.Model{Resources: go3mf.Resources{
 			Assets: []go3mf.Asset{&SliceStack{
@@ -55,14 +55,14 @@ func TestValidate(t *testing.T) {
 					{TopZ: 1.4},
 				},
 			}},
-		}}, []error{
-			fmt.Errorf("Resources@SliceStack#0@Slice#0: %v", &errors.MissingFieldError{Name: attrZTop}),
-			fmt.Errorf("Resources@SliceStack#0@Slice#1: %v", ErrSliceSmallTopZ),
-			fmt.Errorf("Resources@SliceStack#0@Slice#1: %v", ErrSliceInsufficientVertices),
-			fmt.Errorf("Resources@SliceStack#0@Slice#1: %v", ErrSliceInsufficientPolygons),
-			fmt.Errorf("Resources@SliceStack#0@Slice#2@Polygon#0: %v", ErrSliceInsufficientSegments),
-			fmt.Errorf("Resources@SliceStack#0@Slice#3: %v", ErrSliceNoMonotonic),
-			fmt.Errorf("Resources@SliceStack#0@Slice#4: %v", ErrSliceNoMonotonic),
+		}}, []string{
+			fmt.Sprintf("Resources@SliceStack#0@Slice#0: %v", &errors.MissingFieldError{Name: attrZTop}),
+			fmt.Sprintf("Resources@SliceStack#0@Slice#1: %v", ErrSliceSmallTopZ),
+			fmt.Sprintf("Resources@SliceStack#0@Slice#1: %v", ErrSliceInsufficientVertices),
+			fmt.Sprintf("Resources@SliceStack#0@Slice#1: %v", ErrSliceInsufficientPolygons),
+			fmt.Sprintf("Resources@SliceStack#0@Slice#2@Polygon#0: %v", ErrSliceInsufficientSegments),
+			fmt.Sprintf("Resources@SliceStack#0@Slice#3: %v", ErrSliceNoMonotonic),
+			fmt.Sprintf("Resources@SliceStack#0@Slice#4: %v", ErrSliceNoMonotonic),
 		}},
 		{"sliceref", &go3mf.Model{
 			Childs: map[string]*go3mf.ChildModel{
@@ -86,14 +86,14 @@ func TestValidate(t *testing.T) {
 						{SliceStackID: 4, Path: "/that.model"},
 					},
 					}},
-			}}, []error{
-			fmt.Errorf("Resources@SliceStack#1@SliceRef#0: %v", &errors.MissingFieldError{Name: attrSlicePath}),
-			fmt.Errorf("Resources@SliceStack#1@SliceRef#0: %v", &errors.MissingFieldError{Name: attrSliceRefID}),
-			fmt.Errorf("Resources@SliceStack#1@SliceRef#1: %v", ErrSliceRefSamePart),
-			fmt.Errorf("Resources@SliceStack#1@SliceRef#2: %v", errors.ErrMissingResource),
-			fmt.Errorf("Resources@SliceStack#1@SliceRef#3: %v", ErrSliceRefRef),
-			fmt.Errorf("Resources@SliceStack#1@SliceRef#4: %v", ErrNonSliceStack),
-			fmt.Errorf("Resources@SliceStack#1@SliceRef#6: %v", ErrSliceNoMonotonic),
+			}}, []string{
+			fmt.Sprintf("Resources@SliceStack#1@SliceRef#0: %v", &errors.MissingFieldError{Name: attrSlicePath}),
+			fmt.Sprintf("Resources@SliceStack#1@SliceRef#0: %v", &errors.MissingFieldError{Name: attrSliceRefID}),
+			fmt.Sprintf("Resources@SliceStack#1@SliceRef#1: %v", ErrSliceRefSamePart),
+			fmt.Sprintf("Resources@SliceStack#1@SliceRef#2: %v", errors.ErrMissingResource),
+			fmt.Sprintf("Resources@SliceStack#1@SliceRef#3: %v", ErrSliceRefRef),
+			fmt.Sprintf("Resources@SliceStack#1@SliceRef#4: %v", ErrNonSliceStack),
+			fmt.Sprintf("Resources@SliceStack#1@SliceRef#6: %v", ErrSliceNoMonotonic),
 		}},
 		{"info", &go3mf.Model{Build: go3mf.Build{Items: []*go3mf.Item{
 			{ObjectID: 7},
@@ -148,19 +148,19 @@ func TestValidate(t *testing.T) {
 					}, AnyAttr: go3mf.AnyAttr{&ObjectAttr{
 						SliceStackID: 11,
 					}}},
-				}}}, []error{
-			fmt.Errorf("Resources@Object#0@Mesh: %v", errors.ErrInsufficientVertices),
-			fmt.Errorf("Resources@Object#0@Mesh: %v", errors.ErrInsufficientTriangles),
-			fmt.Errorf("Resources@Object#0: %v", errors.ErrMissingResource),
-			fmt.Errorf("Resources@Object#1: %v", ErrSliceInvalidTranform),
-			fmt.Errorf("Resources@Object#1: %v", ErrSliceExtRequired),
-			fmt.Errorf("Resources@Object#2: %v", &errors.MissingFieldError{Name: attrSliceRefID}),
-			fmt.Errorf("Resources@Object#3: %v", ErrNonSliceStack),
-			fmt.Errorf("Resources@Object#4: %v", ErrSliceInvalidTranform),
-			fmt.Errorf("Resources@Object#4: %v", ErrSlicePolygonNotClosed),
-			fmt.Errorf("Resources@Object#5: %v", ErrSliceInvalidTranform),
-			fmt.Errorf("Resources@Object#5: %v", ErrSlicePolygonNotClosed),
-			fmt.Errorf("Resources@Object#6@Component#1: %v", errors.ErrRecursion),
+				}}}, []string{
+			fmt.Sprintf("Resources@Object#0@Mesh: %v", errors.ErrInsufficientVertices),
+			fmt.Sprintf("Resources@Object#0@Mesh: %v", errors.ErrInsufficientTriangles),
+			fmt.Sprintf("Resources@Object#0: %v", errors.ErrMissingResource),
+			fmt.Sprintf("Resources@Object#1: %v", ErrSliceInvalidTranform),
+			fmt.Sprintf("Resources@Object#1: %v", ErrSliceExtRequired),
+			fmt.Sprintf("Resources@Object#2: %v", &errors.MissingFieldError{Name: attrSliceRefID}),
+			fmt.Sprintf("Resources@Object#3: %v", ErrNonSliceStack),
+			fmt.Sprintf("Resources@Object#4: %v", ErrSliceInvalidTranform),
+			fmt.Sprintf("Resources@Object#4: %v", ErrSlicePolygonNotClosed),
+			fmt.Sprintf("Resources@Object#5: %v", ErrSliceInvalidTranform),
+			fmt.Sprintf("Resources@Object#5: %v", ErrSlicePolygonNotClosed),
+			fmt.Sprintf("Resources@Object#6@Component#1: %v", errors.ErrRecursion),
 		}},
 	}
 	for _, tt := range tests {
@@ -168,8 +168,15 @@ func TestValidate(t *testing.T) {
 			if len(tt.model.Extensions) == 0 {
 				tt.model.Extensions = []go3mf.Extension{DefaultExtension}
 			}
-			got := tt.model.Validate()
-			if diff := deep.Equal(got.(*errors.List).Errors, tt.want); diff != nil {
+			err := tt.model.Validate()
+			if err == nil {
+				t.Fatal("error expected")
+			}
+			var errs []string
+			for _, err := range err.(*errors.List).Errors {
+				errs = append(errs, err.Error())
+			}
+			if diff := deep.Equal(errs, tt.want); diff != nil {
 				t.Errorf("Validate() = %v", diff)
 			}
 		})

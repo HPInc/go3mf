@@ -16,18 +16,18 @@ func TestValidate(t *testing.T) {
 	tests := []struct {
 		name  string
 		model *go3mf.Model
-		want  []error
+		want  []string
 	}{
-		{"buildNoUUID", &go3mf.Model{Build: go3mf.Build{}}, []error{
-			fmt.Errorf("Build: %v", &errors.MissingFieldError{Name: attrProdUUID}),
+		{"buildNoUUID", &go3mf.Model{Build: go3mf.Build{}}, []string{
+			fmt.Sprintf("Build: %v", &errors.MissingFieldError{Name: attrProdUUID}),
 		}},
 		{"buildEmptyUUID", &go3mf.Model{Build: go3mf.Build{
-			AnyAttr: go3mf.AnyAttr{&BuildAttr{}}}}, []error{
-			fmt.Errorf("Build: %v", ErrUUID),
+			AnyAttr: go3mf.AnyAttr{&BuildAttr{}}}}, []string{
+			fmt.Sprintf("Build: %v", ErrUUID),
 		}},
 		{"buildNonValidUUID", &go3mf.Model{Build: go3mf.Build{
-			AnyAttr: go3mf.AnyAttr{&BuildAttr{"a-b-c-d"}}}}, []error{
-			fmt.Errorf("Build: %v", ErrUUID),
+			AnyAttr: go3mf.AnyAttr{&BuildAttr{"a-b-c-d"}}}}, []string{
+			fmt.Sprintf("Build: %v", ErrUUID),
 		}},
 		{"extReq", &go3mf.Model{
 			Childs: map[string]*go3mf.ChildModel{"/other.model": {Resources: go3mf.Resources{Objects: []*go3mf.Object{validMesh}}}},
@@ -38,8 +38,8 @@ func TestValidate(t *testing.T) {
 					}}}}}}, Build: go3mf.Build{
 				AnyAttr: go3mf.AnyAttr{&BuildAttr{UUID: "f47ac10b-58cc-0372-8567-0e02b2c3d479"}}, Items: []*go3mf.Item{
 					{ObjectID: 1, AnyAttr: go3mf.AnyAttr{&ItemAttr{UUID: "f47ac10b-58cc-0372-8567-0e02b2c3d478", Path: "/other.model"}}},
-				}}}, []error{
-			fmt.Errorf("/other.model@Resources@Object#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
+				}}}, []string{
+			fmt.Sprintf("/other.model@Resources@Object#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
 		}},
 		{"items", &go3mf.Model{Build: go3mf.Build{
 			AnyAttr: go3mf.AnyAttr{&BuildAttr{UUID: "f47ac10b-58cc-0372-8567-0e02b2c3d479"}}, Items: []*go3mf.Item{
@@ -49,12 +49,12 @@ func TestValidate(t *testing.T) {
 				{ObjectID: 1, AnyAttr: go3mf.AnyAttr{&ItemAttr{UUID: "a-b-c-d"}}},
 			}},
 			Childs:    map[string]*go3mf.ChildModel{"/other.model": {Resources: go3mf.Resources{Objects: []*go3mf.Object{validMesh}}}},
-			Resources: go3mf.Resources{Objects: []*go3mf.Object{{ID: 1, Mesh: validMesh.Mesh}}}}, []error{
-			fmt.Errorf("Build@Item#1: %v", &errors.MissingFieldError{Name: attrProdUUID}),
-			fmt.Errorf("Build@Item#2: %v", &errors.MissingFieldError{Name: attrProdUUID}),
-			fmt.Errorf("Build@Item#3: %v", ErrUUID),
-			fmt.Errorf("/other.model@Resources@Object#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
-			fmt.Errorf("Resources@Object#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
+			Resources: go3mf.Resources{Objects: []*go3mf.Object{{ID: 1, Mesh: validMesh.Mesh}}}}, []string{
+			fmt.Sprintf("Build@Item#1: %v", &errors.MissingFieldError{Name: attrProdUUID}),
+			fmt.Sprintf("Build@Item#2: %v", &errors.MissingFieldError{Name: attrProdUUID}),
+			fmt.Sprintf("Build@Item#3: %v", ErrUUID),
+			fmt.Sprintf("/other.model@Resources@Object#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
+			fmt.Sprintf("Resources@Object#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
 		}},
 		{"components", &go3mf.Model{Resources: go3mf.Resources{
 			Objects: []*go3mf.Object{
@@ -65,11 +65,11 @@ func TestValidate(t *testing.T) {
 					{ObjectID: 2},
 				}},
 			},
-		}, Build: go3mf.Build{AnyAttr: go3mf.AnyAttr{&BuildAttr{UUID: "f47ac10b-58cc-0372-8567-0e02b2c3d479"}}}}, []error{
-			fmt.Errorf("Resources@Object#0: %v", ErrUUID),
-			fmt.Errorf("Resources@Object#1@Component#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
-			fmt.Errorf("Resources@Object#1@Component#1: %v", ErrUUID),
-			fmt.Errorf("Resources@Object#1@Component#2: %v", &errors.MissingFieldError{Name: attrProdUUID}),
+		}, Build: go3mf.Build{AnyAttr: go3mf.AnyAttr{&BuildAttr{UUID: "f47ac10b-58cc-0372-8567-0e02b2c3d479"}}}}, []string{
+			fmt.Sprintf("Resources@Object#0: %v", ErrUUID),
+			fmt.Sprintf("Resources@Object#1@Component#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
+			fmt.Sprintf("Resources@Object#1@Component#1: %v", ErrUUID),
+			fmt.Sprintf("Resources@Object#1@Component#2: %v", &errors.MissingFieldError{Name: attrProdUUID}),
 		}},
 		{"child", &go3mf.Model{Build: go3mf.Build{AnyAttr: go3mf.AnyAttr{&BuildAttr{UUID: "f47ac10b-58cc-0372-8567-0e02b2c3d479"}}},
 			Childs: map[string]*go3mf.ChildModel{
@@ -78,18 +78,25 @@ func TestValidate(t *testing.T) {
 					{ID: 2, Components: []*go3mf.Component{
 						{ObjectID: 1, AnyAttr: go3mf.AnyAttr{&ComponentAttr{Path: "/b.model"}}},
 					}},
-				}}}}}, []error{
-			fmt.Errorf("/b.model@Resources@Object#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
-			fmt.Errorf("/other.model@Resources@Object#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
-			fmt.Errorf("/other.model@Resources@Object#0@Component#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
-			fmt.Errorf("/other.model@Resources@Object#0@Component#0: %v", ErrProdRefInNonRoot),
+				}}}}}, []string{
+			fmt.Sprintf("/b.model@Resources@Object#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
+			fmt.Sprintf("/other.model@Resources@Object#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
+			fmt.Sprintf("/other.model@Resources@Object#0@Component#0: %v", &errors.MissingFieldError{Name: attrProdUUID}),
+			fmt.Sprintf("/other.model@Resources@Object#0@Component#0: %v", ErrProdRefInNonRoot),
 		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.model.Extensions = []go3mf.Extension{DefaultExtension}
-			got := tt.model.Validate()
-			if diff := deep.Equal(got.(*errors.List).Errors, tt.want); diff != nil {
+			err := tt.model.Validate()
+			if err == nil {
+				t.Fatal("error expected")
+			}
+			var errs []string
+			for _, err := range err.(*errors.List).Errors {
+				errs = append(errs, err.Error())
+			}
+			if diff := deep.Equal(errs, tt.want); diff != nil {
 				t.Errorf("Validate() = %v", diff)
 			}
 		})

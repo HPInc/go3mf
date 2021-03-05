@@ -565,19 +565,19 @@ func TestNewDecoder(t *testing.T) {
 
 func TestDecoder_processRootModel_warns(t *testing.T) {
 	Register(fakeSpec.Namespace, new(qmExtension))
-	want := &specerr.List{Errors: []error{
-		fmt.Errorf("Resources@BaseMaterials#0@RGBA#0: %v", specerr.NewParseAttrError("displaycolor", true)),
-		fmt.Errorf("Resources@BaseMaterials#1: %v", specerr.NewParseAttrError("id", true)),
-		fmt.Errorf("Resources@Object#0@Mesh@Point3D#8: %v", specerr.NewParseAttrError("x", true)),
-		fmt.Errorf("Resources@Object#0@Mesh@Triangle#13: %v", specerr.NewParseAttrError("v1", true)),
-		fmt.Errorf("Resources@Object#1: %v", specerr.NewParseAttrError("pid", false)),
-		fmt.Errorf("Resources@Object#1: %v", specerr.NewParseAttrError("pindex", false)),
-		fmt.Errorf("Resources@Object#1: %v", specerr.NewParseAttrError("type", false)),
-		fmt.Errorf("Resources@Object#2@Component#0: %v", specerr.NewParseAttrError("transform", false)),
-		fmt.Errorf("Resources@Object#2@Component#1: %v", specerr.NewParseAttrError("objectid", true)),
-		fmt.Errorf("Build@Item#0: %v", specerr.NewParseAttrError("transform", false)),
-		fmt.Errorf("Build@Item#3: %v", specerr.NewParseAttrError("objectid", true)),
-	}}
+	want := []string{
+		fmt.Sprintf("Resources@BaseMaterials#0@RGBA#0: %v", specerr.NewParseAttrError("displaycolor", true)),
+		fmt.Sprintf("Resources@BaseMaterials#1: %v", specerr.NewParseAttrError("id", true)),
+		fmt.Sprintf("Resources@Object#0@Mesh@Point3D#8: %v", specerr.NewParseAttrError("x", true)),
+		fmt.Sprintf("Resources@Object#0@Mesh@Triangle#13: %v", specerr.NewParseAttrError("v1", true)),
+		fmt.Sprintf("Resources@Object#1: %v", specerr.NewParseAttrError("pid", false)),
+		fmt.Sprintf("Resources@Object#1: %v", specerr.NewParseAttrError("pindex", false)),
+		fmt.Sprintf("Resources@Object#1: %v", specerr.NewParseAttrError("type", false)),
+		fmt.Sprintf("Resources@Object#2@Component#0: %v", specerr.NewParseAttrError("transform", false)),
+		fmt.Sprintf("Resources@Object#2@Component#1: %v", specerr.NewParseAttrError("objectid", true)),
+		fmt.Sprintf("Build@Item#0: %v", specerr.NewParseAttrError("transform", false)),
+		fmt.Sprintf("Build@Item#3: %v", specerr.NewParseAttrError("objectid", true)),
+	}
 	got := new(Model)
 	got.Extensions = append(got.Extensions, fakeSpec)
 	got.Path = "/3D/3dmodel.model"
@@ -646,15 +646,20 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 		</model>
 		`).build("")
 
-	t.Run("base", func(t *testing.T) {
-		d := new(Decoder)
-		d.Strict = false
-		err := d.processRootModel(context.Background(), rootFile, got)
-		if diff := deep.Equal(err, want); diff != nil {
-			t.Errorf("Decoder.processRootModel() = %v", diff)
-			return
-		}
-	})
+	d := new(Decoder)
+	d.Strict = false
+	err := d.processRootModel(context.Background(), rootFile, got)
+	if err == nil {
+		t.Fatal("error expected")
+	}
+	var errs []string
+	for _, err := range err.(*specerr.List).Errors {
+		errs = append(errs, err.Error())
+	}
+	if diff := deep.Equal(errs, want); diff != nil {
+		t.Errorf("Decoder.processRootModel() = %v", diff)
+		return
+	}
 }
 
 func TestOpenReader(t *testing.T) {

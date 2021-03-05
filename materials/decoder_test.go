@@ -59,16 +59,16 @@ func TestDecode(t *testing.T) {
 }
 
 func TestDecode_warns(t *testing.T) {
-	want := &errors.List{Errors: []error{
-		fmt.Errorf("Resources@Texture2D#1: %v", errors.NewParseAttrError("id", true)),
-		fmt.Errorf("Resources@ColorGroup#2@RGBA#0: %v", errors.NewParseAttrError("color", true)),
-		fmt.Errorf("Resources@Texture2DGroup#3: %v", errors.NewParseAttrError("texid", true)),
-		fmt.Errorf("Resources@Texture2DGroup#3@TextureCoord#0: %v", errors.NewParseAttrError("u", true)),
-		fmt.Errorf("Resources@Texture2DGroup#3@TextureCoord#1: %v", errors.NewParseAttrError("v", true)),
-		fmt.Errorf("Resources@CompositeMaterials#4: %v", errors.NewParseAttrError("matid", true)),
-		fmt.Errorf("Resources@CompositeMaterials#4@Composite#1: %v", errors.NewParseAttrError("values", true)),
-		fmt.Errorf("Resources@MultiProperties#5: %v", errors.NewParseAttrError("pids", true)),
-	}}
+	want := []string{
+		fmt.Sprintf("Resources@Texture2D#1: %v", errors.NewParseAttrError("id", true)),
+		fmt.Sprintf("Resources@ColorGroup#2@RGBA#0: %v", errors.NewParseAttrError("color", true)),
+		fmt.Sprintf("Resources@Texture2DGroup#3: %v", errors.NewParseAttrError("texid", true)),
+		fmt.Sprintf("Resources@Texture2DGroup#3@TextureCoord#0: %v", errors.NewParseAttrError("u", true)),
+		fmt.Sprintf("Resources@Texture2DGroup#3@TextureCoord#1: %v", errors.NewParseAttrError("v", true)),
+		fmt.Sprintf("Resources@CompositeMaterials#4: %v", errors.NewParseAttrError("matid", true)),
+		fmt.Sprintf("Resources@CompositeMaterials#4@Composite#1: %v", errors.NewParseAttrError("values", true)),
+		fmt.Sprintf("Resources@MultiProperties#5: %v", errors.NewParseAttrError("pids", true)),
+	}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"
 	rootFile := `
@@ -126,7 +126,14 @@ func TestDecode_warns(t *testing.T) {
 	</model>`
 	t.Run("base", func(t *testing.T) {
 		err := go3mf.UnmarshalModel([]byte(rootFile), got)
-		if diff := deep.Equal(err, want); diff != nil {
+		if err == nil {
+			t.Fatal("error expected")
+		}
+		var errs []string
+		for _, err := range err.(*errors.List).Errors {
+			errs = append(errs, err.Error())
+		}
+		if diff := deep.Equal(errs, want); diff != nil {
 			t.Errorf("UnmarshalModel_warn() = %v", diff)
 			return
 		}
