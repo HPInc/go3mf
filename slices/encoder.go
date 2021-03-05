@@ -56,6 +56,16 @@ func (s *Slice) marshal3MF(x spec.Encoder) {
 }
 
 func marshalPolygons(x spec.Encoder, ply []Polygon) {
+	xsattrs := []xml.Attr{
+		{Name: xml.Name{Local: attrV2}},
+		{Name: xml.Name{Local: attrPID}},
+		{Name: xml.Name{Local: attrP1}},
+		{Name: xml.Name{Local: attrP2}},
+	}
+	xs := xml.StartElement{
+		Name: xml.Name{Space: Namespace, Local: attrSegment},
+		Attr: xsattrs[:1],
+	}
 	for _, p := range ply {
 		xp := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrPolygon}, Attr: []xml.Attr{
 			{Name: xml.Name{Local: attrStartV}, Value: strconv.FormatUint(uint64(p.StartV), 10)},
@@ -63,21 +73,15 @@ func marshalPolygons(x spec.Encoder, ply []Polygon) {
 		x.EncodeToken(xp)
 		x.SetAutoClose(true)
 		for _, s := range p.Segments {
-			xs := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrSegment}, Attr: []xml.Attr{
-				{Name: xml.Name{Local: attrV2}, Value: strconv.FormatUint(uint64(s.V2), 10)},
-			}}
+			xsattrs[0].Value = strconv.FormatUint(uint64(s.V2), 10)
 			if s.PID != 0 {
+				xsattrs[1].Value = strconv.FormatUint(uint64(s.PID), 10)
+				xsattrs[2].Value = strconv.FormatUint(uint64(s.P1), 10)
 				if s.P1 != s.P2 {
-					xs.Attr = append(xs.Attr,
-						xml.Attr{Name: xml.Name{Local: attrPID}, Value: strconv.FormatUint(uint64(s.PID), 10)},
-						xml.Attr{Name: xml.Name{Local: attrP1}, Value: strconv.FormatUint(uint64(s.P1), 10)},
-						xml.Attr{Name: xml.Name{Local: attrP2}, Value: strconv.FormatUint(uint64(s.P2), 10)},
-					)
+					xsattrs[3].Value = strconv.FormatUint(uint64(s.P2), 10)
+					xs.Attr = xsattrs[:3]
 				} else {
-					xs.Attr = append(xs.Attr,
-						xml.Attr{Name: xml.Name{Local: attrPID}, Value: strconv.FormatUint(uint64(s.PID), 10)},
-						xml.Attr{Name: xml.Name{Local: attrP1}, Value: strconv.FormatUint(uint64(s.P1), 10)},
-					)
+					xs.Attr = xsattrs[:2]
 				}
 			}
 			x.EncodeToken(xs)
@@ -92,11 +96,14 @@ func marshalVertices(x spec.Encoder, vs []go3mf.Point2D) {
 	x.EncodeToken(xv)
 	x.SetAutoClose(true)
 	prec := x.FloatPresicion()
+	start := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrVertex}, Attr: []xml.Attr{
+		{Name: xml.Name{Local: attrX}},
+		{Name: xml.Name{Local: attrY}},
+	}}
 	for _, v := range vs {
-		x.EncodeToken(xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrVertex}, Attr: []xml.Attr{
-			{Name: xml.Name{Local: attrX}, Value: strconv.FormatFloat(float64(v.X()), 'f', prec, 32)},
-			{Name: xml.Name{Local: attrY}, Value: strconv.FormatFloat(float64(v.Y()), 'f', prec, 32)},
-		}})
+		start.Attr[0].Value = strconv.FormatFloat(float64(v.X()), 'f', prec, 32)
+		start.Attr[1].Value = strconv.FormatFloat(float64(v.Y()), 'f', prec, 32)
+		x.EncodeToken(start)
 	}
 	x.SetAutoClose(false)
 	x.EncodeToken(xv.End())
