@@ -66,6 +66,10 @@ func (enc *xmlEncoder) SetAutoClose(autoClose bool) {
 	enc.p.AutoClose = autoClose
 }
 
+func (enc *xmlEncoder) SetSkipAttrEscape(skip bool) {
+	enc.p.SkipAttrEscape = skip
+}
+
 type packagePart interface {
 	io.Writer
 	AddRelationship(Relationship)
@@ -397,7 +401,6 @@ func (e *Encoder) writeComponents(x spec.Encoder, comps []*Component) {
 func (e *Encoder) writeVertices(x spec.Encoder, m *Mesh) {
 	xvs := xml.StartElement{Name: xml.Name{Local: attrVertices}}
 	x.EncodeToken(xvs)
-	x.SetAutoClose(true)
 	prec := x.FloatPresicion()
 	start := xml.StartElement{
 		Name: xml.Name{Local: attrVertex},
@@ -407,12 +410,15 @@ func (e *Encoder) writeVertices(x spec.Encoder, m *Mesh) {
 			{Name: xml.Name{Local: attrZ}},
 		},
 	}
+	x.SetAutoClose(true)
+	x.SetSkipAttrEscape(true)
 	for _, v := range m.Vertices {
 		start.Attr[0].Value = strconv.FormatFloat(float64(v.X()), 'f', prec, 32)
 		start.Attr[1].Value = strconv.FormatFloat(float64(v.Y()), 'f', prec, 32)
 		start.Attr[2].Value = strconv.FormatFloat(float64(v.Z()), 'f', prec, 32)
 		x.EncodeToken(start)
 	}
+	x.SetSkipAttrEscape(false)
 	x.SetAutoClose(false)
 	x.EncodeToken(xvs.End())
 }
@@ -420,7 +426,6 @@ func (e *Encoder) writeVertices(x spec.Encoder, m *Mesh) {
 func (e *Encoder) writeTriangles(x spec.Encoder, r *Object, m *Mesh) {
 	xvt := xml.StartElement{Name: xml.Name{Local: attrTriangles}}
 	x.EncodeToken(xvt)
-	x.SetAutoClose(true)
 	start := xml.StartElement{
 		Name: xml.Name{Local: attrTriangle},
 	}
@@ -433,6 +438,8 @@ func (e *Encoder) writeTriangles(x spec.Encoder, r *Object, m *Mesh) {
 		{Name: xml.Name{Local: attrP2}},
 		{Name: xml.Name{Local: attrP3}},
 	}
+	x.SetAutoClose(true)
+	x.SetSkipAttrEscape(true)
 	for _, v := range m.Triangles {
 		v1, v2, v3 := v.Indices()
 		attrs[0].Value = strconv.FormatUint(uint64(v1), 10)
@@ -456,6 +463,7 @@ func (e *Encoder) writeTriangles(x spec.Encoder, r *Object, m *Mesh) {
 		}
 		x.EncodeToken(start)
 	}
+	x.SetSkipAttrEscape(false)
 	x.SetAutoClose(false)
 	x.EncodeToken(xvt.End())
 }

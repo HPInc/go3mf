@@ -15,6 +15,7 @@ func (r *ColorGroup) Marshal3MF(x spec.Encoder) error {
 	}}
 	x.EncodeToken(xs)
 	x.SetAutoClose(true)
+	x.SetSkipAttrEscape(true)
 	start := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrColor}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrColor}},
 	}}
@@ -22,6 +23,7 @@ func (r *ColorGroup) Marshal3MF(x spec.Encoder) error {
 		start.Attr[0].Value = spec.FormatRGBA(c)
 		x.EncodeToken(start)
 	}
+	x.SetSkipAttrEscape(false)
 	x.SetAutoClose(false)
 	x.EncodeToken(xs.End())
 	return nil
@@ -35,16 +37,18 @@ func (r *Texture2DGroup) Marshal3MF(x spec.Encoder) error {
 	}}
 	x.EncodeToken(xs)
 	x.SetAutoClose(true)
+	x.SetSkipAttrEscape(true)
 	prec := x.FloatPresicion()
 	start := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrTex2DCoord}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrU}},
 		{Name: xml.Name{Local: attrV}},
 	}}
 	for _, c := range r.Coords {
-		start.Attr[0].Value =  strconv.FormatFloat(float64(c.U()), 'f', prec, 32)
-		start.Attr[1].Value =  strconv.FormatFloat(float64(c.V()), 'f', prec, 32)
+		start.Attr[0].Value = strconv.FormatFloat(float64(c.U()), 'f', prec, 32)
+		start.Attr[1].Value = strconv.FormatFloat(float64(c.V()), 'f', prec, 32)
 		x.EncodeToken(start)
 	}
+	x.SetSkipAttrEscape(false)
 	x.SetAutoClose(false)
 	x.EncodeToken(xs.End())
 	return nil
@@ -63,6 +67,7 @@ func (r *CompositeMaterials) Marshal3MF(x spec.Encoder) error {
 	}}
 	x.EncodeToken(xs)
 	x.SetAutoClose(true)
+	x.SetSkipAttrEscape(true)
 	for _, c := range r.Composites {
 		values := make([]string, len(c.Values))
 		for i, v := range c.Values {
@@ -72,6 +77,7 @@ func (r *CompositeMaterials) Marshal3MF(x spec.Encoder) error {
 			{Name: xml.Name{Local: attrValues}, Value: strings.Join(values, " ")},
 		}})
 	}
+	x.SetSkipAttrEscape(false)
 	x.SetAutoClose(false)
 	x.EncodeToken(xs.End())
 	return nil
@@ -94,6 +100,7 @@ func (r *MultiProperties) Marshal3MF(x spec.Encoder) error {
 	}}
 	x.EncodeToken(xs)
 	x.SetAutoClose(true)
+	x.SetSkipAttrEscape(true)
 	for _, mu := range r.Multis {
 		indices := make([]string, len(mu.PIndices))
 		for i, v := range mu.PIndices {
@@ -103,6 +110,7 @@ func (r *MultiProperties) Marshal3MF(x spec.Encoder) error {
 			{Name: xml.Name{Local: attrPIndices}, Value: strings.Join(indices, " ")},
 		}})
 	}
+	x.SetSkipAttrEscape(false)
 	x.SetAutoClose(false)
 	x.EncodeToken(xs.End())
 	return nil

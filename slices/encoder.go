@@ -65,6 +65,7 @@ func marshalPolygons(x spec.Encoder, ply []Polygon) {
 		{Name: xml.Name{Local: attrP1}},
 		{Name: xml.Name{Local: attrP2}},
 	}
+	x.SetSkipAttrEscape(true)
 	for _, p := range ply {
 		xp := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrPolygon}, Attr: []xml.Attr{
 			{Name: xml.Name{Local: attrStartV}, Value: strconv.FormatUint(uint64(p.StartV), 10)},
@@ -89,12 +90,14 @@ func marshalPolygons(x spec.Encoder, ply []Polygon) {
 		x.SetAutoClose(false)
 		x.EncodeToken(xp.End())
 	}
+	x.SetSkipAttrEscape(false)
 }
 
 func marshalVertices(x spec.Encoder, vs []go3mf.Point2D) {
 	xv := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrVertices}}
 	x.EncodeToken(xv)
 	x.SetAutoClose(true)
+	x.SetSkipAttrEscape(true)
 	prec := x.FloatPresicion()
 	start := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrVertex}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrX}},
@@ -105,6 +108,7 @@ func marshalVertices(x spec.Encoder, vs []go3mf.Point2D) {
 		start.Attr[1].Value = strconv.FormatFloat(float64(v.Y()), 'f', prec, 32)
 		x.EncodeToken(start)
 	}
+	x.SetSkipAttrEscape(false)
 	x.SetAutoClose(false)
 	x.EncodeToken(xv.End())
 }

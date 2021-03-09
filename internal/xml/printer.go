@@ -11,8 +11,9 @@ const (
 
 type Printer struct {
 	*bufio.Writer
-	AutoClose  bool
-	attrPrefix map[string]string // map name space -> prefix
+	AutoClose       bool
+	SkipAttrEscape bool
+	attrPrefix      map[string]string // map name space -> prefix
 }
 
 // createAttrPrefix finds the name space prefix attribute to use for the given name space,
@@ -69,7 +70,11 @@ func (p *Printer) WriteStart(start *xml.StartElement) {
 		}
 		p.WriteString(name.Local)
 		p.WriteString(`="`)
-		p.EscapeString(attr.Value)
+		if p.SkipAttrEscape {
+			p.WriteString(attr.Value)
+		} else {
+			p.EscapeString(attr.Value)
+		}
 		p.WriteByte('"')
 	}
 	if p.AutoClose {

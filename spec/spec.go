@@ -81,4 +81,8 @@ type Encoder interface {
 	EncodeToken(xml.Token)
 	Flush() error
 	SetAutoClose(bool)
+	// Use SetSkipAttrEscape(true) when there is no need to escape
+	// StartElement attribute values, such as as when all attributes
+	// are filled using strconv.
+	SetSkipAttrEscape(bool)
 }

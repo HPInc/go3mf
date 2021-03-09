@@ -68,6 +68,7 @@ func marshalBeams(x spec.Encoder, m *BeamLattice) {
 	xb := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrBeams}}
 	x.EncodeToken(xb)
 	x.SetAutoClose(true)
+	x.SetSkipAttrEscape(true)
 	for _, b := range m.Beams {
 		xbeam := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrBeam}, Attr: []xml.Attr{
 			{Name: xml.Name{Local: attrV1}, Value: strconv.FormatUint(uint64(b.Indices[0]), 10)},
@@ -93,6 +94,7 @@ func marshalBeams(x spec.Encoder, m *BeamLattice) {
 		}
 		x.EncodeToken(xbeam)
 	}
+	x.SetSkipAttrEscape(false)
 	x.SetAutoClose(false)
 	x.EncodeToken(xb.End())
 }
