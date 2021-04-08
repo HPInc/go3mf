@@ -13,13 +13,13 @@ func TestDecode(t *testing.T) {
 	components := &go3mf.Object{
 		AnyAttr: go3mf.AnyAttr{&ObjectAttr{UUID: "cb828680-8895-4e08-a1fc-be63e033df15"}},
 		ID:      20,
-		Components: []*go3mf.Component{{
+		Components: &go3mf.Components{Component: []*go3mf.Component{{
 			AnyAttr: go3mf.AnyAttr{&ComponentAttr{
 				Path: "/3D/other.model",
 				UUID: "cb828680-8895-4e08-a1fc-be63e033df16",
 			}},
 			ObjectID: 8, Transform: go3mf.Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}},
-		},
+		}},
 	}
 
 	want := &go3mf.Model{Path: "/3D/3dmodel.model", Resources: go3mf.Resources{
@@ -70,7 +70,7 @@ func TestDecode(t *testing.T) {
 func TestDecode_warns(t *testing.T) {
 	want := []string{
 		fmt.Sprintf("Resources@Object#1: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
-		fmt.Sprintf("Resources@Object#1@Component#0: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
+		fmt.Sprintf("Resources@Object#1@Components@Component#0: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
 		fmt.Sprintf("Build: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
 		fmt.Sprintf("Build@Item#0: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
 	}

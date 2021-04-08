@@ -84,13 +84,13 @@ func TestValidate(t *testing.T) {
 			&BaseMaterials{ID: 5, Materials: []Base{{Name: "a", Color: color.RGBA{A: 1}}, {Name: "b", Color: color.RGBA{A: 1}}}},
 		}, Objects: []*Object{
 			{},
-			{ID: 1, PIndex: 1, Mesh: &Mesh{}, Components: []*Component{{ObjectID: 1}}},
+			{ID: 1, PIndex: 1, Mesh: &Mesh{}, Components: &Components{Component: []*Component{{ObjectID: 1}}}},
 			{ID: 2, Mesh: &Mesh{Vertices: []Point3D{{}, {}, {}, {}}, Triangles: []Triangle{
 				NewTriangle(0, 1, 2), NewTriangle(0, 3, 1), NewTriangle(0, 2, 3), NewTriangle(1, 3, 2),
 			}}},
-			{ID: 3, PID: 5, Components: []*Component{
+			{ID: 3, PID: 5, Components: &Components{Component: []*Component{
 				{ObjectID: 3}, {ObjectID: 2}, {}, {ObjectID: 5}, {ObjectID: 100},
-			}},
+			}}},
 			{ID: 4, PID: 100, Mesh: &Mesh{Vertices: make([]Point3D, 2), Triangles: make([]Triangle, 3)}},
 			{ID: 6, PID: 5, PIndex: 2, Mesh: &Mesh{Vertices: []Point3D{{}, {}, {}, {}},
 				Triangles: []Triangle{
@@ -107,12 +107,12 @@ func TestValidate(t *testing.T) {
 			fmt.Sprintf("Resources@Object#1: %v", errors.ErrInvalidObject),
 			fmt.Sprintf("Resources@Object#1@Mesh: %v", errors.ErrInsufficientVertices),
 			fmt.Sprintf("Resources@Object#1@Mesh: %v", errors.ErrInsufficientTriangles),
-			fmt.Sprintf("Resources@Object#1@Component#0: %v", errors.ErrRecursion),
+			fmt.Sprintf("Resources@Object#1@Components@Component#0: %v", errors.ErrRecursion),
 			fmt.Sprintf("Resources@Object#3: %v", errors.ErrComponentsPID),
-			fmt.Sprintf("Resources@Object#3@Component#0: %v", errors.ErrRecursion),
-			fmt.Sprintf("Resources@Object#3@Component#2: %v", &errors.MissingFieldError{Name: attrObjectID}),
-			fmt.Sprintf("Resources@Object#3@Component#3: %v", errors.ErrMissingResource),
-			fmt.Sprintf("Resources@Object#3@Component#4: %v", errors.ErrMissingResource),
+			fmt.Sprintf("Resources@Object#3@Components@Component#0: %v", errors.ErrRecursion),
+			fmt.Sprintf("Resources@Object#3@Components@Component#2: %v", &errors.MissingFieldError{Name: attrObjectID}),
+			fmt.Sprintf("Resources@Object#3@Components@Component#3: %v", errors.ErrMissingResource),
+			fmt.Sprintf("Resources@Object#3@Components@Component#4: %v", errors.ErrMissingResource),
 			fmt.Sprintf("Resources@Object#4: %v", errors.ErrMissingResource),
 			fmt.Sprintf("Resources@Object#4@Mesh: %v", errors.ErrInsufficientVertices),
 			fmt.Sprintf("Resources@Object#4@Mesh: %v", errors.ErrInsufficientTriangles),

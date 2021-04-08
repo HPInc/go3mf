@@ -592,7 +592,7 @@ type componentsDecoder struct {
 }
 
 func (d *componentsDecoder) Start(_ []spec.Attr) error {
-	d.resource.Components = make([]*Component, 0)
+	d.resource.Components = new(Components)
 	d.componentDecoder.resource = d.resource
 	return nil
 }
@@ -602,6 +602,10 @@ func (d *componentsDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 		child = &d.componentDecoder
 	}
 	return
+}
+
+func (d *componentsDecoder) Wrap(err error) error {
+	return specerr.Wrap(err, d.resource.Components)
 }
 
 type componentDecoder struct {
@@ -633,9 +637,9 @@ func (d *componentDecoder) Start(attrs []spec.Attr) error {
 			errs = specerr.Append(errs, ext.DecodeAttribute(&component, a))
 		}
 	}
-	d.resource.Components = append(d.resource.Components, &component)
+	d.resource.Components.Component = append(d.resource.Components.Component, &component)
 	if errs != nil {
-		return specerr.WrapIndex(errs, &component, len(d.resource.Components)-1)
+		return specerr.WrapIndex(errs, &component, len(d.resource.Components.Component)-1)
 	}
 	return nil
 }

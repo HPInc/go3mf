@@ -372,17 +372,18 @@ func (e *Encoder) writeObject(x spec.Encoder, r *Object) {
 
 	if r.Mesh != nil {
 		e.writeMesh(x, r, r.Mesh)
-	} else {
+	} else if r.Components != nil {
 		e.writeComponents(x, r.Components)
 	}
 	x.EncodeToken(xo.End())
 }
 
-func (e *Encoder) writeComponents(x spec.Encoder, comps []*Component) {
+func (e *Encoder) writeComponents(x spec.Encoder, comps *Components) {
 	xcs := xml.StartElement{Name: xml.Name{Local: attrComponents}}
+	comps.AnyAttr.encode(x, &xcs)
 	x.EncodeToken(xcs)
 	x.SetAutoClose(true)
-	for _, c := range comps {
+	for _, c := range comps.Component {
 		xt := xml.StartElement{
 			Name: xml.Name{Local: attrComponent}, Attr: []xml.Attr{
 				{Name: xml.Name{Local: attrObjectID}, Value: strconv.FormatUint(uint64(c.ObjectID), 10)},

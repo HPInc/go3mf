@@ -82,8 +82,8 @@ func TestMarshalModel(t *testing.T) {
 				{
 					ID: 20, Type: ObjectTypeSupport,
 					Metadata: []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}, {Name: xml.Name{Space: "qm", Local: "CustomMetadata4"}, Type: "xs:boolean", Value: "2"}},
-					Components: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1},
-						AnyAttr: AnyAttr{&fakeAttr{Value: "component_fake"}}}},
+					Components: &Components{Component: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1},
+						AnyAttr: AnyAttr{&fakeAttr{Value: "component_fake"}}}}},
 				},
 			},
 		},

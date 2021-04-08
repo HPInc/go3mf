@@ -467,10 +467,10 @@ func TestModel_BoundingBox(t *testing.T) {
 				{ID: 1, Mesh: &Mesh{Vertices: []Point3D{
 					{10, 20, 30},
 				}}},
-				{ID: 2, Components: []*Component{
+				{ID: 2, Components: &Components{Component: []*Component{
 					{ObjectID: 1, Transform: Identity().Translate(100, 100, 100)},
 					{ObjectID: 10},
-				}},
+				}}},
 			}},
 		}, Box{Min: Point3D{10, 20, 30}, Max: Point3D{110, 120, 130}}},
 	}
