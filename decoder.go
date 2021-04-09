@@ -591,9 +591,20 @@ type componentsDecoder struct {
 	componentDecoder componentDecoder
 }
 
-func (d *componentsDecoder) Start(_ []spec.Attr) error {
-	d.resource.Components = new(Components)
+func (d *componentsDecoder) Start(attrs []spec.Attr) error {
+	var errs error
+	components := new(Components)
 	d.componentDecoder.resource = d.resource
+
+	for _, a := range attrs {
+		if ext, ok := loadExtension(a.Name.Space); ok {
+			errs = specerr.Append(errs, ext.DecodeAttribute(components, a))
+		}
+	}
+	d.resource.Components = components
+	if errs != nil {
+		return d.Wrap(errs)
+	}
 	return nil
 }
 
