@@ -17,13 +17,13 @@ func (Spec) DecodeAttribute(parentNode interface{}, attr spec.Attr) (errs error)
 		case attrCompsBoolOperAssociation:
 			if ext := GetBooleanOperationAttr(t); ext != nil {
 				if association, ok := newAssociation(string(attr.Value)); ok {
-					ext.association = association
+					ext.Association = association
 				} else {
 					errs = specerr.Append(errs, specerr.NewParseAttrError(attr.Name.Local, true))
 				}
 			} else {
 				if association, ok := newAssociation(string(attr.Value)); ok {
-					t.AnyAttr = append(t.AnyAttr, &BooleanOperationAttr{association: association})
+					t.AnyAttr = append(t.AnyAttr, &BooleanOperationAttr{Association: association})
 				} else {
 					errs = specerr.Append(errs, specerr.NewParseAttrError(attr.Name.Local, true))
 				}
@@ -31,13 +31,13 @@ func (Spec) DecodeAttribute(parentNode interface{}, attr spec.Attr) (errs error)
 		case attrCompsBoolOperOperation:
 			if ext := GetBooleanOperationAttr(t); ext != nil {
 				if operation, ok := newOperation(string(attr.Value)); ok {
-					ext.operation = operation
+					ext.Operation = operation
 				} else {
 					errs = specerr.Append(errs, specerr.NewParseAttrError(attr.Name.Local, true))
 				}
 			} else {
 				if operation, ok := newOperation(string(attr.Value)); ok {
-					t.AnyAttr = append(t.AnyAttr, &BooleanOperationAttr{operation: operation})
+					t.AnyAttr = append(t.AnyAttr, &BooleanOperationAttr{Operation: operation})
 				} else {
 					errs = specerr.Append(errs, specerr.NewParseAttrError(attr.Name.Local, true))
 				}

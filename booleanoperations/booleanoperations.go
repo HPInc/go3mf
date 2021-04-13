@@ -90,15 +90,15 @@ func (b BooleanOperation) String() string {
 }
 
 type BooleanOperationAttr struct {
-	association Association
-	operation   BooleanOperation
+	Association Association
+	Operation   BooleanOperation
 }
 
 func (b *BooleanOperationAttr) GetAssociation() Association {
-	return b.association
+	return b.Association
 }
 func (b *BooleanOperationAttr) GetBooleanOperation() BooleanOperation {
-	return b.operation
+	return b.Operation
 }
 
 func GetBooleanOperationAttr(component *go3mf.Components) *BooleanOperationAttr {
