@@ -23,8 +23,7 @@ func TestMarshalModel(t *testing.T) {
 
 	components := &go3mf.Components{
 		AnyAttr: go3mf.AnyAttr{
-			&AssociationAttr{association: Association_physical},
-			&OperationAttr{operation: BooleanOperation_union},
+			&BooleanOperationAttr{association: Association_physical, operation: BooleanOperation_union},
 		}, Component: []*go3mf.Component{
 			{ObjectID: 1, Transform: go3mf.Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}},
 			{ObjectID: 2, Transform: go3mf.Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}},

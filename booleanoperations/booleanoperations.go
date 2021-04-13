@@ -89,25 +89,21 @@ func (b BooleanOperation) String() string {
 	}[b]
 }
 
-type AssociationAttr struct {
+type BooleanOperationAttr struct {
 	association Association
-}
-type OperationAttr struct {
-	operation BooleanOperation
+	operation   BooleanOperation
 }
 
-func GetAssociationAttr(component *go3mf.Components) *AssociationAttr {
-	for _, a := range component.AnyAttr {
-		if a, ok := a.(*AssociationAttr); ok {
-			return a
-		}
-	}
-	return nil
+func (b *BooleanOperationAttr) GetAssociation() Association {
+	return b.association
+}
+func (b *BooleanOperationAttr) GetBooleanOperation() BooleanOperation {
+	return b.operation
 }
 
-func GetOperationAttr(component *go3mf.Components) *OperationAttr {
+func GetBooleanOperationAttr(component *go3mf.Components) *BooleanOperationAttr {
 	for _, a := range component.AnyAttr {
-		if a, ok := a.(*OperationAttr); ok {
+		if a, ok := a.(*BooleanOperationAttr); ok {
 			return a
 		}
 	}

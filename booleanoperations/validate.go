@@ -32,11 +32,14 @@ func validateObject(m *go3mf.Model, path string, obj *go3mf.Object) error {
 }
 func validateComponents(m *go3mf.Components) error {
 	var errs error
-	if p := GetOperationAttr(m); p == nil {
-		errs = errors.Append(errs, errors.Wrap(errors.NewMissingFieldError(attrCompsBoolOperOperation), m))
+	if p := GetBooleanOperationAttr(m); p != nil {
+		if p.GetAssociation() == 0 {
+			errs = errors.Append(errs, errors.Wrap(errors.NewMissingFieldError(attrCompsBoolOperAssociation), m))
+		}
+		if p.GetBooleanOperation() == 0 {
+			errs = errors.Append(errs, errors.Wrap(errors.NewMissingFieldError(attrCompsBoolOperOperation), m))
+		}
 	}
-	if p := GetAssociationAttr(m); p == nil {
-		errs = errors.Append(errs, errors.Wrap(errors.NewMissingFieldError(attrCompsBoolOperAssociation), m))
-	}
+
 	return errs
 }

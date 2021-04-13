@@ -2,7 +2,7 @@ package booleanoperations
 
 import (
 	"github.com/qmuntal/go3mf"
-	"github.com/qmuntal/go3mf/errors"
+	specerr "github.com/qmuntal/go3mf/errors"
 
 	"github.com/qmuntal/go3mf/spec"
 )
@@ -12,35 +12,34 @@ func (Spec) CreateElementDecoder(_ interface{}, _ string) spec.ElementDecoder {
 }
 
 func (Spec) DecodeAttribute(parentNode interface{}, attr spec.Attr) (errs error) {
-	t, ok := parentNode.(*go3mf.Components)
-	if ok {
+	if t, ok := parentNode.(*go3mf.Components); ok {
 		switch attr.Name.Local {
 		case attrCompsBoolOperAssociation:
-			if ext := GetAssociationAttr(t); ext != nil {
-				association, ok := newAssociation(string(attr.Value))
-				if ok {
-					t.AnyAttr = append(t.AnyAttr, &AssociationAttr{association: association})
+			if ext := GetBooleanOperationAttr(t); ext != nil {
+				if association, ok := newAssociation(string(attr.Value)); ok {
+					ext.association = association
 				} else {
-					errs = errors.Append(errs, errors.NewParseAttrError(attr.Name.Local, true))
+					errs = specerr.Append(errs, specerr.NewParseAttrError(attr.Name.Local, true))
 				}
 			} else {
-				association, ok := newAssociation(string(attr.Value))
-				if ok {
-					t.AnyAttr = append(t.AnyAttr, &AssociationAttr{association: association})
+				if association, ok := newAssociation(string(attr.Value)); ok {
+					t.AnyAttr = append(t.AnyAttr, &BooleanOperationAttr{association: association})
+				} else {
+					errs = specerr.Append(errs, specerr.NewParseAttrError(attr.Name.Local, true))
 				}
 			}
 		case attrCompsBoolOperOperation:
-			if ext := GetOperationAttr(t); ext != nil {
-				operation, ok := newOperation(string(attr.Value))
-				if ok {
-					t.AnyAttr = append(t.AnyAttr, &OperationAttr{operation: operation})
+			if ext := GetBooleanOperationAttr(t); ext != nil {
+				if operation, ok := newOperation(string(attr.Value)); ok {
+					ext.operation = operation
 				} else {
-					errs = errors.Append(errs, errors.NewParseAttrError(attr.Name.Local, true))
+					errs = specerr.Append(errs, specerr.NewParseAttrError(attr.Name.Local, true))
 				}
 			} else {
-				operation, ok := newOperation(string(attr.Value))
-				if ok {
-					t.AnyAttr = append(t.AnyAttr, &OperationAttr{operation: operation})
+				if operation, ok := newOperation(string(attr.Value)); ok {
+					t.AnyAttr = append(t.AnyAttr, &BooleanOperationAttr{operation: operation})
+				} else {
+					errs = specerr.Append(errs, specerr.NewParseAttrError(attr.Name.Local, true))
 				}
 			}
 

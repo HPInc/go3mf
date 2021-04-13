@@ -27,7 +27,7 @@ func TestValidate(t *testing.T) {
 				{ID: 3,
 					Components: &go3mf.Components{
 						AnyAttr: go3mf.AnyAttr{
-							&AssociationAttr{association: Association_physical},
+							&BooleanOperationAttr{association: Association_physical},
 						}, Component: []*go3mf.Component{
 							{ObjectID: 1, Transform: go3mf.Matrix{1.0000, 0.0000, 0.0000, 0.0000, 1.0000, 0.0000, 0.0000, 0.0000, 1.0000, 34.1020, 35.1070, 5.1000}},
 							{ObjectID: 2, Transform: go3mf.Matrix{1.00000, 0.0000, 0.0000, 0.0000, 1.0000, 0.0000, 0.0000, 0.0000, 1.000, 35.7020, 35.7070, 5.7000}},
@@ -41,7 +41,7 @@ func TestValidate(t *testing.T) {
 				{ID: 3,
 					Components: &go3mf.Components{
 						AnyAttr: go3mf.AnyAttr{
-							&OperationAttr{operation: BooleanOperation_union},
+							&BooleanOperationAttr{operation: BooleanOperation_union},
 						}, Component: []*go3mf.Component{
 							{ObjectID: 1, Transform: go3mf.Matrix{1.0000, 0.0000, 0.0000, 0.0000, 1.0000, 0.0000, 0.0000, 0.0000, 1.0000, 34.1020, 35.1070, 5.1000}},
 							{ObjectID: 2, Transform: go3mf.Matrix{1.00000, 0.0000, 0.0000, 0.0000, 1.0000, 0.0000, 0.0000, 0.0000, 1.000, 35.7020, 35.7070, 5.7000}},
@@ -55,8 +55,7 @@ func TestValidate(t *testing.T) {
 				{ID: 3,
 					Components: &go3mf.Components{
 						AnyAttr: go3mf.AnyAttr{
-							&AssociationAttr{association: Association_physical},
-							&OperationAttr{operation: BooleanOperation_union},
+							&BooleanOperationAttr{association: Association_physical, operation: BooleanOperation_union},
 						}, Component: []*go3mf.Component{
 							{ObjectID: 1, Transform: go3mf.Matrix{1.0000, 0.0000, 0.0000, 0.0000, 1.0000, 0.0000, 0.0000, 0.0000, 1.0000, 34.1020, 35.1070, 5.1000}},
 							{ObjectID: 2, Transform: go3mf.Matrix{1.00000, 0.0000, 0.0000, 0.0000, 1.0000, 0.0000, 0.0000, 0.0000, 1.000, 35.7020, 35.7070, 5.7000}},
