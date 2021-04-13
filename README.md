@@ -23,6 +23,7 @@ The 3D Manufacturing Format (3MF) is a 3D printing format that allows design app
   * spec_slice.
   * spec_beamlattice.
   * spec_materials, missing the display resources.
+  * spec_booleanoperations
 
 ## Examples
 
@@ -115,6 +116,7 @@ import (
     _"github.com/qmuntal/go3mf/production"
     _ "github.com/qmuntal/go3mf/beamlattice"
     _ "github.com/qmuntal/go3mf/slices"
+    _ "github.com/qmuntal/go3mf/booleanoperations"
 )
 
 func main() {
