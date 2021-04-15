@@ -11,9 +11,9 @@ const (
 
 type Printer struct {
 	*bufio.Writer
-	AutoClose       bool
+	AutoClose      bool
 	SkipAttrEscape bool
-	attrPrefix      map[string]string // map name space -> prefix
+	attrPrefix     map[string]string // map name space -> prefix
 }
 
 // createAttrPrefix finds the name space prefix attribute to use for the given name space,

@@ -1,3 +1,6 @@
+// © Copyright 2021 HP Development Company, L.P.
+// SPDX-License Identifier: BSD-2-Clause
+
 package go3mf
 
 // Uint24 represents an unsigned integer of 24 bits.
