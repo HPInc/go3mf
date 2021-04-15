@@ -206,7 +206,10 @@ func validateBuildTransforms(m *go3mf.Model, path string, id uint32) bool {
 }
 
 func validateObjectTransforms(m *go3mf.Model, o *go3mf.Object, path string, id uint32) bool {
-	for _, c := range o.Components {
+	if o.Components == nil {
+		return true
+	}
+	for _, c := range o.Components.Component {
 		if c.ObjectID == id && c.ObjectPath(path) == path {
 			if c.HasTransform() && !validTransform(c.Transform) {
 				return false

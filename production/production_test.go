@@ -53,7 +53,7 @@ func TestItemAttr_ObjectPath(t *testing.T) {
 func TestSetMissingUUIDs(t *testing.T) {
 	components := &go3mf.Object{
 		ID:         20,
-		Components: []*go3mf.Component{{ObjectID: 8}},
+		Components: &go3mf.Components{Component: []*go3mf.Component{{ObjectID: 8}}},
 	}
 	m := &go3mf.Model{Path: "/3D/3dmodel.model", Build: go3mf.Build{}}
 	m.Resources = go3mf.Resources{Objects: []*go3mf.Object{components}}
@@ -71,7 +71,7 @@ func TestSetMissingUUIDs(t *testing.T) {
 	if len(m.Resources.Objects[0].AnyAttr) == 0 {
 		t.Errorf("SetMissingUUIDs() should have filled object attrs")
 	}
-	if len(m.Resources.Objects[0].Components[0].AnyAttr) == 0 {
+	if len(m.Resources.Objects[0].Components.Component[0].AnyAttr) == 0 {
 		t.Errorf("SetMissingUUIDs() should have filled object attrs")
 	}
 }

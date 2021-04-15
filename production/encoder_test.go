@@ -14,13 +14,13 @@ func TestMarshalModel(t *testing.T) {
 	components := &go3mf.Object{
 		AnyAttr: go3mf.AnyAttr{&ObjectAttr{UUID: "cb828680-8895-4e08-a1fc-be63e033df15"}},
 		ID:      20,
-		Components: []*go3mf.Component{{
+		Components: &go3mf.Components{Component: []*go3mf.Component{{
 			ObjectID: 8,
 			AnyAttr: go3mf.AnyAttr{&ComponentAttr{
 				Path: "/3D/other.model",
 				UUID: "cb828680-8895-4e08-a1fc-be63e033df16",
 			}}},
-		},
+		}},
 	}
 	m := &go3mf.Model{Path: "/3D/3dmodel.model", Build: go3mf.Build{
 		AnyAttr: go3mf.AnyAttr{&BuildAttr{UUID: "e9e25302-6428-402e-8633-cc95528d0ed3"}},

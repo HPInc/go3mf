@@ -395,7 +395,7 @@ type Object struct {
 	Type       ObjectType
 	Metadata   []Metadata
 	Mesh       *Mesh
-	Components []*Component
+	Components *Components
 	AnyAttr    AnyAttr
 }
 
@@ -403,11 +403,11 @@ func (o *Object) boundingBox(m *Model, path string) Box {
 	if o.Mesh != nil {
 		return o.Mesh.BoundingBox()
 	}
-	if len(o.Components) == 0 {
+	if o.Components == nil || len(o.Components.Component) == 0 {
 		return Box{}
 	}
 	box := newLimitBox()
-	for _, c := range o.Components {
+	for _, c := range o.Components.Component {
 		if obj, ok := m.FindObject(c.ObjectPath(path), c.ObjectID); ok {
 			cbox := obj.boundingBox(m, path)
 			if cbox != emptyBox {
@@ -416,6 +416,12 @@ func (o *Object) boundingBox(m *Model, path string) Box {
 		}
 	}
 	return box
+}
+
+// A Components is an in memory representation of the 3MF components.
+type Components struct {
+	Component []*Component
+	AnyAttr   AnyAttr
 }
 
 // A Component is an in memory representation of the 3MF component.

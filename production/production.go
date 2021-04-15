@@ -138,14 +138,16 @@ func SetMissingUUIDs(m *go3mf.Model) {
 		} else if oext.UUID == "" {
 			oext.UUID = uuid.New()
 		}
-		for _, c := range obj.Components {
-			ext := GetComponentAttr(c)
-			if ext == nil {
-				c.AnyAttr = append(c.AnyAttr, &ComponentAttr{
-					UUID: uuid.New(),
-				})
-			} else if ext.UUID == "" {
-				ext.UUID = uuid.New()
+		if obj.Components != nil {
+			for _, c := range obj.Components.Component {
+				ext := GetComponentAttr(c)
+				if ext == nil {
+					c.AnyAttr = append(c.AnyAttr, &ComponentAttr{
+						UUID: uuid.New(),
+					})
+				} else if ext.UUID == "" {
+					ext.UUID = uuid.New()
+				}
 			}
 		}
 		return nil

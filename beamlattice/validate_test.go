@@ -35,9 +35,9 @@ func TestValidate(t *testing.T) {
 			fmt.Sprintf("Resources@Object#0@Mesh: %v", errors.ErrInsufficientTriangles),
 		}},
 		{"object with components", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
-			{ID: 1, Components: []*go3mf.Component{{ObjectID: 2}}},
+			{ID: 1, Components: &go3mf.Components{Component: []*go3mf.Component{{ObjectID: 2}}}},
 		}}}, []string{
-			fmt.Sprintf("Resources@Object#0@Component#0: %v", errors.ErrMissingResource),
+			fmt.Sprintf("Resources@Object#0@Components@Component#0: %v", errors.ErrMissingResource),
 		}},
 		{"object incorret type", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
 			{ID: 1, Type: go3mf.ObjectTypeOther, Mesh: &go3mf.Mesh{Any: go3mf.Any{&BeamLattice{

@@ -55,15 +55,21 @@ func validateObject(m *go3mf.Model, path string, obj *go3mf.Object) error {
 	} else if uuid.Validate(u.UUID) != nil {
 		errs = errors.Append(errs, ErrUUID)
 	}
-	for i, c := range obj.Components {
+	if obj.Components != nil {
 		var cErrs error
-		if p := GetComponentAttr(c); p != nil {
-			cErrs = errors.Append(cErrs, validatePathUUID(m, path, p))
-		} else {
-			cErrs = errors.Append(cErrs, errors.NewMissingFieldError(attrProdUUID))
+		for i, c := range obj.Components.Component {
+			var err error
+			if p := GetComponentAttr(c); p != nil {
+				err = errors.Append(err, validatePathUUID(m, path, p))
+			} else {
+				err = errors.Append(err, errors.NewMissingFieldError(attrProdUUID))
+			}
+			if err != nil {
+				cErrs = errors.Append(cErrs, errors.WrapIndex(err, c, i))
+			}
 		}
 		if cErrs != nil {
-			errs = errors.Append(errs, errors.WrapIndex(cErrs, c, i))
+			errs = errors.Append(errs, errors.Wrap(cErrs, obj.Components))
 		}
 	}
 	return errs

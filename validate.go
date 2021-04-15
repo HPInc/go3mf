@@ -208,7 +208,7 @@ func (r *Object) Validate(m *Model, path string) error {
 	if r.PIndex != 0 && r.PID == 0 {
 		errs = errors.Append(errs, errors.NewMissingFieldError(attrPID))
 	}
-	if (r.Mesh != nil && len(r.Components) > 0) || (r.Mesh == nil && len(r.Components) == 0) {
+	if (r.Mesh != nil && r.Components != nil) || (r.Mesh == nil && r.Components == nil) {
 		errs = errors.Append(errs, errors.ErrInvalidObject)
 	}
 	if r.Mesh != nil {
@@ -228,7 +228,7 @@ func (r *Object) Validate(m *Model, path string) error {
 			errs = errors.Append(errs, errors.Wrap(err, r.Mesh))
 		}
 	}
-	if len(r.Components) > 0 {
+	if r.Components != nil && len(r.Components.Component) > 0 {
 		if r.PID != 0 {
 			errs = errors.Append(errs, errors.ErrComponentsPID)
 		}
@@ -289,7 +289,7 @@ func (r *Object) validateMesh(m *Model, path string) error {
 
 func (r *Object) validateComponents(m *Model, path string) error {
 	var errs error
-	for j, c := range r.Components {
+	for j, c := range r.Components.Component {
 		if c.ObjectID == 0 {
 			errs = errors.Append(errs, errors.WrapIndex(errors.NewMissingFieldError(attrObjectID), c, j))
 		} else if ref, ok := m.FindObject(c.ObjectPath(path), c.ObjectID); ok {
@@ -300,7 +300,10 @@ func (r *Object) validateComponents(m *Model, path string) error {
 			errs = errors.Append(errs, errors.WrapIndex(errors.ErrMissingResource, c, j))
 		}
 	}
-	return errs
+	if errs != nil {
+		return errors.Wrap(errs, r.Components)
+	}
+	return nil
 }
 
 func (m *Model) validateNamespaces() error {
