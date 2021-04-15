@@ -1,3 +1,6 @@
+// © Copyright 2021 HP Development Company, L.P.
+// SPDX-License Identifier: BSD-2-Clause
+
 package errors
 
 import (
