@@ -2,7 +2,6 @@
 [![Build Status](https://github.com/hpinc/go3mf/workflows/CI/badge.svg)](https://github.com/hpinc/go3mf/actions?query=workflow%3ACI)
 [![Go Report Card](https://goreportcard.com/badge/github.com/hpinc/go3mf)](https://goreportcard.com/report/github.com/hpinc/go3mf)
 [![codecov](https://coveralls.io/repos/github/hpinc/go3mf/badge.svg)](https://coveralls.io/github/hpinc/go3mf?branch=master)
-[![codeclimate](https://codeclimate.com/github/hpinc/go3mf/badges/gpa.svg)](https://codeclimate.com/github/hpinc/go3mf)
 [![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://opensource.org/licenses/BSD-2-Clause)
 
 # go3mf
