@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/go-test/deep"
-	"github.com/qmuntal/go3mf"
+	"github.com/hpinc/go3mf"
 )
 
 func Test_asciiDecoder_decode(t *testing.T) {

@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/qmuntal/go3mf"
+	"github.com/hpinc/go3mf"
 )
 
 // asciiDecoder can create a Model from a Read stream that is feeded with a ASCII STL.

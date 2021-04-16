@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/go-test/deep"
-	"github.com/qmuntal/go3mf"
-	"github.com/qmuntal/go3mf/errors"
+	"github.com/hpinc/go3mf"
+	"github.com/hpinc/go3mf/errors"
 )
 
 func TestDecode(t *testing.T) {

@@ -12,8 +12,8 @@ import (
 	"strconv"
 	"strings"
 
-	xml3mf "github.com/qmuntal/go3mf/internal/xml"
-	"github.com/qmuntal/go3mf/spec"
+	xml3mf "github.com/hpinc/go3mf/internal/xml"
+	"github.com/hpinc/go3mf/spec"
 )
 
 const defaultFloatPrecision = 4

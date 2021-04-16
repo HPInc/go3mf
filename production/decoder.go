@@ -4,10 +4,10 @@
 package production
 
 import (
-	"github.com/qmuntal/go3mf"
-	specerr "github.com/qmuntal/go3mf/errors"
-	"github.com/qmuntal/go3mf/spec"
-	"github.com/qmuntal/go3mf/uuid"
+	"github.com/hpinc/go3mf"
+	specerr "github.com/hpinc/go3mf/errors"
+	"github.com/hpinc/go3mf/spec"
+	"github.com/hpinc/go3mf/uuid"
 )
 
 func (Spec) CreateElementDecoder(_ interface{}, _ string) spec.ElementDecoder {

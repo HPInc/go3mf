@@ -1,8 +1,8 @@
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/qmuntal/go3mf)](https://pkg.go.dev/github.com/qmuntal/go3mf)
-[![Build Status](https://github.com/qmuntal/go3mf/workflows/CI/badge.svg)](https://github.com/qmuntal/go3mf/actions?query=workflow%3ACI)
-[![Go Report Card](https://goreportcard.com/badge/github.com/qmuntal/go3mf)](https://goreportcard.com/report/github.com/qmuntal/go3mf)
-[![codecov](https://coveralls.io/repos/github/qmuntal/go3mf/badge.svg)](https://coveralls.io/github/qmuntal/go3mf?branch=master)
-[![codeclimate](https://codeclimate.com/github/qmuntal/go3mf/badges/gpa.svg)](https://codeclimate.com/github/qmuntal/go3mf)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/hpinc/go3mf)](https://pkg.go.dev/github.com/hpinc/go3mf)
+[![Build Status](https://github.com/hpinc/go3mf/workflows/CI/badge.svg)](https://github.com/hpinc/go3mf/actions?query=workflow%3ACI)
+[![Go Report Card](https://goreportcard.com/badge/github.com/hpinc/go3mf)](https://goreportcard.com/report/github.com/hpinc/go3mf)
+[![codecov](https://coveralls.io/repos/github/hpinc/go3mf/badge.svg)](https://coveralls.io/github/hpinc/go3mf?branch=master)
+[![codeclimate](https://codeclimate.com/github/hpinc/go3mf/badges/gpa.svg)](https://codeclimate.com/github/hpinc/go3mf)
 [![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://opensource.org/licenses/BSD-2-Clause)
 
 # go3mf
@@ -34,7 +34,7 @@ package main
 import (
     "fmt"
 
-    "github.com/qmuntal/go3mf"
+    "github.com/hpinc/go3mf"
 )
 
 func main() {
@@ -67,7 +67,7 @@ import (
     "fmt"
     "io/ioutil"
     "net/http"
-    "github.com/qmuntal/go3mf"
+    "github.com/hpinc/go3mf"
 )
 
 func main() {
@@ -90,7 +90,7 @@ import (
     "fmt"
     "os"
 
-    "github.com/qmuntal/go3mf"
+    "github.com/hpinc/go3mf"
 )
 
 func main() {
@@ -110,11 +110,11 @@ package main
 import (
     "fmt"
 
-    "github.com/qmuntal/go3mf"
-    "github.com/qmuntal/go3mf/material"
-    _"github.com/qmuntal/go3mf/production"
-    _ "github.com/qmuntal/go3mf/beamlattice"
-    _ "github.com/qmuntal/go3mf/slices"
+    "github.com/hpinc/go3mf"
+    "github.com/hpinc/go3mf/material"
+    _"github.com/hpinc/go3mf/production"
+    _ "github.com/hpinc/go3mf/beamlattice"
+    _ "github.com/hpinc/go3mf/slices"
 )
 
 func main() {

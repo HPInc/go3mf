@@ -13,7 +13,7 @@ import (
 	"testing"
 
 	"github.com/go-test/deep"
-	"github.com/qmuntal/go3mf/spec"
+	"github.com/hpinc/go3mf/spec"
 	"github.com/stretchr/testify/mock"
 )
 

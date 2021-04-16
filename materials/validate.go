@@ -7,8 +7,8 @@ import (
 	"image/color"
 	"strings"
 
-	"github.com/qmuntal/go3mf"
-	"github.com/qmuntal/go3mf/errors"
+	"github.com/hpinc/go3mf"
+	"github.com/hpinc/go3mf/errors"
 )
 
 func (Spec) Validate(model interface{}, path string, asset interface{}) error {

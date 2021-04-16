@@ -6,8 +6,8 @@ package production
 import (
 	"errors"
 
-	"github.com/qmuntal/go3mf"
-	"github.com/qmuntal/go3mf/uuid"
+	"github.com/hpinc/go3mf"
+	"github.com/hpinc/go3mf/uuid"
 )
 
 // Namespace is the canonical name of this extension.

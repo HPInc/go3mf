@@ -11,8 +11,8 @@ import (
 	"strings"
 	"unsafe"
 
-	specerr "github.com/qmuntal/go3mf/errors"
-	"github.com/qmuntal/go3mf/spec"
+	specerr "github.com/hpinc/go3mf/errors"
+	"github.com/hpinc/go3mf/spec"
 )
 
 type modelDecoder struct {

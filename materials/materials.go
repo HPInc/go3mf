@@ -7,7 +7,7 @@ import (
 	"errors"
 	"image/color"
 
-	"github.com/qmuntal/go3mf"
+	"github.com/hpinc/go3mf"
 )
 
 const (

@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/go-test/deep"
-	"github.com/qmuntal/go3mf"
+	"github.com/hpinc/go3mf"
 )
 
 func TestMarshalModel(t *testing.T) {

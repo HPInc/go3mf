@@ -7,8 +7,8 @@ import (
 	"encoding/xml"
 	"strconv"
 
-	"github.com/qmuntal/go3mf"
-	"github.com/qmuntal/go3mf/spec"
+	"github.com/hpinc/go3mf"
+	"github.com/hpinc/go3mf/spec"
 )
 
 // Marshal3MFAttr encodes the resource attributes.
