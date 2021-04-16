@@ -1,4 +1,4 @@
-module github.com/qmuntal/go3mf
+module github.com/hpinc/go3mf
 
 require (
 	github.com/go-test/deep v1.0.7

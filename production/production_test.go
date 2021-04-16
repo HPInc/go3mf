@@ -6,8 +6,8 @@ package production
 import (
 	"testing"
 
-	"github.com/qmuntal/go3mf"
-	"github.com/qmuntal/go3mf/spec"
+	"github.com/hpinc/go3mf"
+	"github.com/hpinc/go3mf/spec"
 )
 
 var _ spec.MarshalerAttr = new(BuildAttr)

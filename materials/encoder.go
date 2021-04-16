@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/qmuntal/go3mf/spec"
+	"github.com/hpinc/go3mf/spec"
 )
 
 // Marshal3MF encodes the resource.

@@ -6,7 +6,7 @@ package go3mf
 import (
 	"sync"
 
-	"github.com/qmuntal/go3mf/spec"
+	"github.com/hpinc/go3mf/spec"
 )
 
 type objectPather interface {

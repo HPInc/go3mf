@@ -10,8 +10,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/qmuntal/go3mf/errors"
-	"github.com/qmuntal/go3mf/spec"
+	"github.com/hpinc/go3mf/errors"
+	"github.com/hpinc/go3mf/spec"
 )
 
 func (m *Model) sortedChilds() []string {

@@ -4,9 +4,9 @@
 package production
 
 import (
-	"github.com/qmuntal/go3mf"
-	"github.com/qmuntal/go3mf/errors"
-	"github.com/qmuntal/go3mf/uuid"
+	"github.com/hpinc/go3mf"
+	"github.com/hpinc/go3mf/errors"
+	"github.com/hpinc/go3mf/uuid"
 )
 
 type uuidPath interface {
