@@ -6,7 +6,7 @@ package go3mf
 import (
 	"io"
 
-	"github.com/hpinc/opc"
+	"github.com/qmuntal/opc"
 )
 
 type opcPart struct {

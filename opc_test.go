@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/hpinc/opc"
+	"github.com/qmuntal/opc"
 )
 
 func Test_newRelationships(t *testing.T) {
