@@ -391,18 +391,19 @@ func (m *Model) ValidateCoherency() error {
 	for path, c := range m.Childs {
 		wg.Add(len(c.Resources.Objects))
 		for i := range c.Resources.Objects {
-			go func(i int) {
+			go func(path string, i int) {
 				defer wg.Done()
-				r := c.Resources.Objects[i]
+				res := m.Childs[path].Resources
+				r := res.Objects[i]
 				if isSolidObject(r) {
 					err := r.Mesh.ValidateCoherency()
 					if err != nil {
 						mu.Lock()
-						errs = errors.Append(errs, errors.WrapPath(errors.WrapIndex(errors.Wrap(err, r.Mesh), r, i), c.Resources, path))
+						errs = errors.Append(errs, errors.WrapPath(errors.WrapIndex(errors.Wrap(err, r.Mesh), r, i), res, path))
 						mu.Unlock()
 					}
 				}
-			}(i)
+			}(path, i)
 		}
 	}
 	wg.Wait()
