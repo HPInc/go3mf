@@ -50,18 +50,18 @@ func TestMarshalModel(t *testing.T) {
 	Register(fakeSpec.Namespace, new(qmExtension))
 	m := &Model{
 		Units: UnitMillimeter, Language: "en-US", Path: "/3D/3dmodel.model", Thumbnail: "/thumbnail.png",
-		Extensions: []Extension{fakeSpec},
-		AnyAttr:    AnyAttr{&fakeAttr{Value: "model_fake"}},
+		Extensions: []Extension{fakeSpec, fooSpec},
+		AnyAttr:    AnyAttr{&fakeAttr{Value: "model_fake"}, UnknownAttr{Name: fooName, Value: "foo1"}},
 		Resources: Resources{
 			Assets: []Asset{
 				&BaseMaterials{ID: 5, Materials: []Base{
-					{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
+					{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}, AnyAttr: AnyAttr{UnknownAttr{Name: fooName, Value: "foo6"}}},
 					{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
-				}}, &fakeAsset{ID: 25}},
+				}, AnyAttr: AnyAttr{UnknownAttr{Name: fooName, Value: "foo2"}}}, &fakeAsset{ID: 25}},
 			Objects: []*Object{
 				{
 					ID: 8, Name: "Box 1", PartNumber: "11111111-1111-1111-1111-111111111111", Thumbnail: "/a.png",
-					AnyAttr: AnyAttr{&fakeAttr{Value: "object_fake"}},
+					AnyAttr: AnyAttr{&fakeAttr{Value: "object_fake"}, UnknownAttr{Name: fooName, Value: "foo3"}},
 					PID:     1, PIndex: 1, Type: ObjectTypeModel, Mesh: &Mesh{
 						Vertices: []Point3D{
 							{0, 0, 0}, {100, 0, 0}, {100, 100, 0},
@@ -86,18 +86,18 @@ func TestMarshalModel(t *testing.T) {
 					ID: 20, Type: ObjectTypeSupport,
 					Metadata: []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}, {Name: xml.Name{Space: "qm", Local: "CustomMetadata4"}, Type: "xs:boolean", Value: "2"}},
 					Components: &Components{Component: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1},
-						AnyAttr: AnyAttr{&fakeAttr{Value: "component_fake"}}}}},
+						AnyAttr: AnyAttr{&fakeAttr{Value: "component_fake"}, UnknownAttr{Name: fooName, Value: "foo8"}}}}},
 				},
 			},
 		},
 		Build: Build{
-			AnyAttr: AnyAttr{&fakeAttr{Value: "build_fake"}},
+			AnyAttr: AnyAttr{&fakeAttr{Value: "build_fake"}, UnknownAttr{Name: fooName, Value: "foo4"}},
 			Items: []*Item{
 				{
 					ObjectID: 20, PartNumber: "bob", Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
 					Metadata: []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}},
 				},
-				{ObjectID: 21, AnyAttr: AnyAttr{&fakeAttr{Value: "item_fake"}}},
+				{ObjectID: 21, AnyAttr: AnyAttr{&fakeAttr{Value: "item_fake"}, UnknownAttr{Name: fooName, Value: "foo5"}}},
 			}}, Metadata: []Metadata{
 			{Name: xml.Name{Local: "Application"}, Value: "go3mf app"},
 			{Name: xml.Name{Space: "qm", Local: "CustomMetadata1"}, Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},
