@@ -4,6 +4,7 @@
 package go3mf
 
 import (
+	"encoding/xml"
 	"sync"
 
 	"github.com/hpinc/go3mf/spec"
