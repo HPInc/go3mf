@@ -6,7 +6,6 @@ package go3mf
 import (
 	"bytes"
 	"encoding/xml"
-	"image/color"
 	"strconv"
 	"strings"
 	"unsafe"
@@ -93,6 +92,8 @@ func (d *modelDecoder) noCoreAttribute(a spec.Attr) (err error) {
 	default:
 		if ext, ok := loadExtension(a.Name.Space); ok {
 			err = specerr.Append(err, ext.DecodeAttribute(d.model, a))
+		} else {
+			d.model.AnyAttr = append(d.model.AnyAttr, NewUnkownAttr(a))
 		}
 	}
 	return
@@ -183,6 +184,8 @@ func (d *buildDecoder) Start(attrs []spec.Attr) error {
 	for _, a := range attrs {
 		if ext, ok := loadExtension(a.Name.Space); ok {
 			errs = specerr.Append(errs, ext.DecodeAttribute(d.build, a))
+		} else {
+			d.build.AnyAttr = append(d.build.AnyAttr, NewUnkownAttr(a))
 		}
 	}
 	if errs != nil {
@@ -220,6 +223,8 @@ func (d *buildItemDecoder) Start(attrs []spec.Attr) error {
 			errs = specerr.Append(errs, d.parseCoreAttr(a))
 		} else if ext, ok := loadExtension(a.Name.Space); ok {
 			errs = specerr.Append(errs, ext.DecodeAttribute(&d.item, a))
+		} else {
+			d.item.AnyAttr = append(d.item.AnyAttr, NewUnkownAttr(a))
 		}
 	}
 	if errs != nil {
@@ -252,6 +257,21 @@ type resourceDecoder struct {
 	baseDecoder
 	model     *Model
 	resources *Resources
+}
+
+func (d *resourceDecoder) Start(attrs []spec.Attr) error {
+	var errs error
+	for _, a := range attrs {
+		if ext, ok := loadExtension(a.Name.Space); ok {
+			errs = specerr.Append(errs, ext.DecodeAttribute(d.resources, a))
+		} else {
+			d.resources.AnyAttr = append(d.resources.AnyAttr, NewUnkownAttr(a))
+		}
+	}
+	if errs != nil {
+		return specerr.Wrap(errs, d.resources)
+	}
+	return errs
 }
 
 func (d *resourceDecoder) Wrap(err error) error {
@@ -298,13 +318,18 @@ func (d *baseMaterialsDecoder) Start(attrs []spec.Attr) error {
 	var errs error
 	d.baseMaterialDecoder.resource = &d.resource
 	for _, a := range attrs {
-		if a.Name.Space == "" && a.Name.Local == attrID {
-			id, err := strconv.ParseUint(string(a.Value), 10, 32)
-			if err != nil {
-				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
+		if a.Name.Space == "" {
+			if a.Name.Local == attrID {
+				id, err := strconv.ParseUint(string(a.Value), 10, 32)
+				if err != nil {
+					errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
+				}
+				d.resource.ID = uint32(id)
 			}
-			d.resource.ID = uint32(id)
-			break
+		} else if ext, ok := loadExtension(a.Name.Space); ok {
+			errs = specerr.Append(errs, ext.DecodeAttribute(&d.resource, a))
+		} else {
+			d.resource.AnyAttr = append(d.resource.AnyAttr, NewUnkownAttr(a))
 		}
 	}
 	if errs != nil {
@@ -320,25 +345,30 @@ type baseMaterialDecoder struct {
 
 func (d *baseMaterialDecoder) Start(attrs []spec.Attr) error {
 	var (
-		name      string
-		baseColor color.RGBA
-		errs      error
+		base Base
+		errs error
 	)
 	for _, a := range attrs {
-		switch a.Name.Local {
-		case attrName:
-			name = string(a.Value)
-		case attrDisplayColor:
-			var err error
-			baseColor, err = spec.ParseRGBA(string(a.Value))
-			if err != nil {
-				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
+		if a.Name.Space == "" {
+			switch a.Name.Local {
+			case attrName:
+				base.Name = string(a.Value)
+			case attrDisplayColor:
+				var err error
+				base.Color, err = spec.ParseRGBA(string(a.Value))
+				if err != nil {
+					errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
+				}
 			}
+		} else if ext, ok := loadExtension(a.Name.Space); ok {
+			errs = specerr.Append(errs, ext.DecodeAttribute(&base, a))
+		} else {
+			base.AnyAttr = append(base.AnyAttr, NewUnkownAttr(a))
 		}
 	}
-	d.resource.Materials = append(d.resource.Materials, Base{Name: name, Color: baseColor})
+	d.resource.Materials = append(d.resource.Materials, base)
 	if errs != nil {
-		return specerr.WrapIndex(errs, baseColor, len(d.resource.Materials)-1)
+		return specerr.WrapIndex(errs, base, len(d.resource.Materials)-1)
 	}
 	return nil
 }
@@ -348,9 +378,20 @@ type meshDecoder struct {
 	resource *Object
 }
 
-func (d *meshDecoder) Start(_ []spec.Attr) error {
+func (d *meshDecoder) Start(attrs []spec.Attr) error {
 	d.resource.Mesh = new(Mesh)
-	return nil
+	var errs error
+	for _, a := range attrs {
+		if ext, ok := loadExtension(a.Name.Space); ok {
+			errs = specerr.Append(errs, ext.DecodeAttribute(d.resource.Mesh, a))
+		} else {
+			d.resource.Mesh.AnyAttr = append(d.resource.Mesh.AnyAttr, NewUnkownAttr(a))
+		}
+	}
+	if errs != nil {
+		return specerr.Wrap(errs, d.resource.Mesh)
+	}
+	return errs
 }
 
 func (d *meshDecoder) Wrap(err error) error {
@@ -527,6 +568,8 @@ func (d *objectDecoder) Start(attrs []spec.Attr) error {
 			errs = specerr.Append(errs, d.parseCoreAttr(a))
 		} else if ext, ok := loadExtension(a.Name.Space); ok {
 			errs = specerr.Append(errs, ext.DecodeAttribute(&d.resource, a))
+		} else {
+			d.resource.AnyAttr = append(d.resource.AnyAttr, NewUnkownAttr(a))
 		}
 	}
 	if errs != nil {
@@ -602,6 +645,8 @@ func (d *componentsDecoder) Start(attrs []spec.Attr) error {
 	for _, a := range attrs {
 		if ext, ok := loadExtension(a.Name.Space); ok {
 			errs = specerr.Append(errs, ext.DecodeAttribute(components, a))
+		} else {
+			components.AnyAttr = append(components.AnyAttr, NewUnkownAttr(a))
 		}
 	}
 	d.resource.Components = components
@@ -649,6 +694,8 @@ func (d *componentDecoder) Start(attrs []spec.Attr) error {
 			}
 		} else if ext, ok := loadExtension(a.Name.Space); ok {
 			errs = specerr.Append(errs, ext.DecodeAttribute(&component, a))
+		} else {
+			component.AnyAttr = append(component.AnyAttr, NewUnkownAttr(a))
 		}
 	}
 	d.resource.Components.Component = append(d.resource.Components.Component, &component)

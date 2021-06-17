@@ -335,14 +335,16 @@ func (m *Model) WalkObjects(fn func(string, *Object) error) error {
 // A model material resource is an in memory representation of the 3MF
 // material resource object.
 type Base struct {
-	Name  string
-	Color color.RGBA
+	Name    string
+	Color   color.RGBA
+	AnyAttr AnyAttr
 }
 
 // BaseMaterials defines a slice of Base.
 type BaseMaterials struct {
 	ID        uint32
 	Materials []Base
+	AnyAttr   AnyAttr
 }
 
 // Len returns the materials count.

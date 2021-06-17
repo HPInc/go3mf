@@ -44,3 +44,13 @@ func loadValidator(ns string) (spec.ValidateSpec, bool) {
 	}
 	return nil, false
 }
+
+type UnknownAttr xml.Attr
+
+func NewUnkownAttr(att spec.Attr) UnknownAttr {
+	return UnknownAttr{Name: att.Name, Value: string(att.Value)}
+}
+
+func (u UnknownAttr) Marshal3MFAttr(enc spec.Encoder) ([]xml.Attr, error) {
+	return []xml.Attr{xml.Attr(u)}, nil
+}
