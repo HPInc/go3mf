@@ -46,8 +46,11 @@ func loadValidator(ns string) (spec.ValidateSpec, bool) {
 	return nil, false
 }
 
+// An UnknownAttr represents an attribute
+// that is not supported by any loaded Spec.
 type UnknownAttr xml.Attr
 
+// NewUnkownAttr creates a new UnkownAttr.
 func NewUnkownAttr(att spec.Attr) UnknownAttr {
 	return UnknownAttr{Name: att.Name, Value: string(att.Value)}
 }
