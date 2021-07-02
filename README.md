@@ -10,18 +10,18 @@ The 3D Manufacturing Format (3MF) is a 3D printing format that allows design app
 
 ## Features
 
-* High parsing speed and moderate memory consumption
-* Complete 3MF Core spec implementation.
-* Clean API.
-* STL importer
-* Spec conformance validation
-* Robust implementation with full coverage and validated against real cases.
-* Extensions
-  * Support custom and private extensions.
-  * spec_production.
-  * spec_slice.
-  * spec_beamlattice.
-  * spec_materials, missing the display resources.
+- High parsing speed and moderate memory consumption
+- Complete 3MF Core spec implementation.
+- Clean API.
+- STL importer
+- Spec conformance validation
+- Robust implementation with full coverage and validated against real cases.
+- Extensions
+  - Support custom and private extensions.
+  - spec_production.
+  - spec_slice.
+  - spec_beamlattice.
+  - spec_materials, missing the display resources.
 
 ## Examples
 
@@ -93,9 +93,10 @@ import (
 )
 
 func main() {
-    file := os.Create("/testdata/cube.3mf")
     model := new(go3mf.Model)
-    go3mf.NewEncoder(file).Encode(model)
+    w, _ := go3mf.CreateWriter("/testdata/cube.3mf")
+    w.Encode(model)
+    w.Close()
 }
 ```
 
@@ -121,7 +122,7 @@ func main() {
     r, _ := go3mf.OpenReader("/testdata/cube.3mf")
     r.Decode(model)
     fmt.Println(production.GetBuildAttr(&model.Build).UUID)
-   
+
     model.Resources.Assets = append(model.Resources.Assets, &materials.ColorGroup{
       ID: 10, Colors: []color.RGBA{{R: 255, G: 255, B: 255, A: 255}},
     }

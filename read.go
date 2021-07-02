@@ -38,8 +38,8 @@ type packageReader interface {
 
 // ReadCloser wrapps a Decoder than can be closed.
 type ReadCloser struct {
+	Decoder
 	f *os.File
-	*Decoder
 }
 
 // OpenReader will open the 3MF file specified by name and return a ReadCloser.
@@ -53,7 +53,7 @@ func OpenReader(name string) (*ReadCloser, error) {
 		f.Close()
 		return nil, err
 	}
-	return &ReadCloser{f: f, Decoder: NewDecoder(f, fi.Size())}, nil
+	return &ReadCloser{f: f, Decoder: *NewDecoder(f, fi.Size())}, nil
 }
 
 // Close closes the 3MF file, rendering it unusable for I/O.

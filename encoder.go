@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"encoding/xml"
 	"io"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -91,6 +92,29 @@ func MarshalModel(m *Model) ([]byte, error) {
 		return nil, err
 	}
 	return b.Bytes(), nil
+}
+
+// WriteCloser wrapps an Encoder than can be closed.
+type WriteCloser struct {
+	Encoder
+	f *os.File
+}
+
+// Close closes the 3MF file, rendering it unusable for I/O.
+func (w *WriteCloser) Close() error {
+	return w.f.Close()
+}
+
+// CreateWriter will create the 3MF file specified by name and return a WriteCloser.
+func CreateWriter(name string) (*WriteCloser, error) {
+	f, err := os.Create(name)
+	if err != nil {
+		return nil, err
+	}
+	return &WriteCloser{
+		Encoder: *NewEncoder(f),
+		f:       f,
+	}, nil
 }
 
 // An Encoder writes Model data to an output stream.
