@@ -742,14 +742,13 @@ type unknownAssetDecoder struct {
 func (d *unknownAssetDecoder) Start(attrs []spec.Attr) (errs error) {
 	d.UnknownTokensDecoder.Start(attrs)
 	for _, a := range attrs {
-		if a.Name.Space == "" {
-			if a.Name.Local == attrID {
-				id, err := strconv.ParseUint(string(a.Value), 10, 32)
-				if err != nil {
-					errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
-				}
-				d.resource.id = uint32(id)
+		if a.Name.Space == "" && a.Name.Local == attrID {
+			id, err := strconv.ParseUint(string(a.Value), 10, 32)
+			if err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 			}
+			d.resource.id = uint32(id)
+			break
 		}
 	}
 	if errs != nil {

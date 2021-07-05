@@ -45,7 +45,7 @@ func loadValidator(ns string) (spec.ValidateSpec, bool) {
 	return nil, false
 }
 
-// UnknownAsset wraps a spec.UnknownTokens to fullfill
+// UnknownAsset wraps a spec.UnknownTokens to fulfill
 // the Asset interface.
 type UnknownAsset struct {
 	spec.UnknownTokens
