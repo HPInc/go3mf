@@ -583,18 +583,18 @@ func newUnits(s string) (u Units, ok bool) {
 // AnyAttr is an extension point containing <anyAttribute> information.
 type AnyAttr []spec.MarshalerAttr
 
-func (any *AnyAttr) AppendUnknownAttr(a spec.Attr) {
+func (any *AnyAttr) AddUnknownAttr(a spec.Attr) {
 	ua := any.GetUnknownAttr()
 	if ua == nil {
-		ua = &spec.UnknownAttr{}
+		ua = &spec.UnknownAttrs{}
 		*any = append(*any, ua)
 	}
-	ua.AppendAttr(a)
+	*ua = append(*ua, xml.Attr{Name: a.Name, Value: string(a.Value)})
 }
 
-func (any AnyAttr) GetUnknownAttr() *spec.UnknownAttr {
+func (any AnyAttr) GetUnknownAttr() *spec.UnknownAttrs {
 	for _, a := range any {
-		if a, ok := a.(*spec.UnknownAttr); ok {
+		if a, ok := a.(*spec.UnknownAttrs); ok {
 			return a
 		}
 	}

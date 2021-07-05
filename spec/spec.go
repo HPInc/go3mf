@@ -99,15 +99,11 @@ type Encoder interface {
 	SetSkipAttrEscape(bool)
 }
 
-// An UnknownAttr represents an attribute
-// that is not supported by any loaded Spec.
-type UnknownAttr []xml.Attr
+// An UnknownAttrs represents a list of attributes
+// that are not supported by any loaded Spec.
+type UnknownAttrs []xml.Attr
 
-func (u *UnknownAttr) AppendAttr(att Attr) {
-	*u = append(*u, xml.Attr{Name: att.Name, Value: string(att.Value)})
-}
-
-func (u UnknownAttr) Marshal3MFAttr(enc Encoder) ([]xml.Attr, error) {
+func (u UnknownAttrs) Marshal3MFAttr(enc Encoder) ([]xml.Attr, error) {
 	return u, nil
 }
 

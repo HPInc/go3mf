@@ -325,12 +325,12 @@ func TestDecoder_processRootModel(t *testing.T) {
 	Register(fakeSpec.Namespace, new(qmExtension))
 	baseMaterials := &BaseMaterials{ID: 5, Materials: []Base{
 		{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
-		{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}, AnyAttr: AnyAttr{&spec.UnknownAttr{{Name: fooName, Value: "fooval8"}}}},
-	}, AnyAttr: AnyAttr{&spec.UnknownAttr{{Name: fooName, Value: "fooval7"}}}}
+		{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}, AnyAttr: AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval8"}}}},
+	}, AnyAttr: AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval7"}}}}
 	meshRes := &Object{
 		ID: 8, Name: "Box 1", Thumbnail: "/a.png", PID: 5, PartNumber: "11111111-1111-1111-1111-111111111111",
 		Mesh: &Mesh{
-			AnyAttr: AnyAttr{&spec.UnknownAttr{{Name: fooName, Value: "fooval9"}}},
+			AnyAttr: AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval9"}}},
 			Any: Any{spec.UnknownTokens{
 				xml.StartElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "fake"}},
 				xml.EndElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "fake"}},
@@ -364,14 +364,14 @@ func TestDecoder_processRootModel(t *testing.T) {
 
 	components := &Object{
 		ID: 20, Type: ObjectTypeSupport,
-		AnyAttr:  AnyAttr{&spec.UnknownAttr{{Name: fooName, Value: "fooval6"}}},
+		AnyAttr:  AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval6"}}},
 		Metadata: []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}, {Name: xml.Name{Space: "qm", Local: "CustomMetadata4"}, Type: "xs:boolean", Value: "2"}},
 		Components: &Components{
-			AnyAttr: AnyAttr{&spec.UnknownAttr{{Name: fooName, Value: "fooval4"}}},
+			AnyAttr: AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval4"}}},
 			Component: []*Component{
 				{
 					ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1},
-					AnyAttr: AnyAttr{&spec.UnknownAttr{{Name: fooName, Value: "fooval5"}}},
+					AnyAttr: AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval5"}}},
 				},
 			},
 		},
@@ -399,12 +399,12 @@ func TestDecoder_processRootModel(t *testing.T) {
 					xml.EndElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "resources"}},
 				},
 			}}, Objects: []*Object{meshRes, components},
-			AnyAttr: AnyAttr{&spec.UnknownAttr{{Name: fooName, Value: "fooval3"}}},
+			AnyAttr: AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval3"}}},
 		},
 		Build: Build{
-			AnyAttr: AnyAttr{&spec.UnknownAttr{{Name: fooName, Value: "fooval1"}}},
+			AnyAttr: AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval1"}}},
 		},
-		AnyAttr: AnyAttr{&spec.UnknownAttr{{Name: fooName, Value: "fooval"}}},
+		AnyAttr: AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval"}}},
 		Any: Any{
 			spec.UnknownTokens{
 				xml.StartElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "other"}},
@@ -423,7 +423,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 	want.Build.Items = append(want.Build.Items, &Item{
 		ObjectID: 20, PartNumber: "bob", Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
 		Metadata: []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}},
-		AnyAttr:  AnyAttr{&spec.UnknownAttr{{Name: fooName, Value: "fooval2"}}},
+		AnyAttr:  AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval2"}}},
 	})
 	want.Metadata = append(want.Metadata, []Metadata{
 		{Name: xml.Name{Local: "Application"}, Value: "go3mf app"},

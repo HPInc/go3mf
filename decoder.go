@@ -95,7 +95,7 @@ func (d *modelDecoder) noCoreAttribute(a spec.Attr) (err error) {
 		if ext, ok := loadExtension(a.Name.Space); ok {
 			err = specerr.Append(err, ext.DecodeAttribute(d.model, a))
 		} else {
-			d.model.AnyAttr.AppendUnknownAttr(a)
+			d.model.AnyAttr.AddUnknownAttr(a)
 		}
 	}
 	return
@@ -187,7 +187,7 @@ func (d *buildDecoder) Start(attrs []spec.Attr) error {
 		if ext, ok := loadExtension(a.Name.Space); ok {
 			errs = specerr.Append(errs, ext.DecodeAttribute(d.build, a))
 		} else {
-			d.build.AnyAttr.AppendUnknownAttr(a)
+			d.build.AnyAttr.AddUnknownAttr(a)
 		}
 	}
 	if errs != nil {
@@ -226,7 +226,7 @@ func (d *buildItemDecoder) Start(attrs []spec.Attr) error {
 		} else if ext, ok := loadExtension(a.Name.Space); ok {
 			errs = specerr.Append(errs, ext.DecodeAttribute(&d.item, a))
 		} else {
-			d.item.AnyAttr.AppendUnknownAttr(a)
+			d.item.AnyAttr.AddUnknownAttr(a)
 		}
 	}
 	if errs != nil {
@@ -267,7 +267,7 @@ func (d *resourceDecoder) Start(attrs []spec.Attr) error {
 		if ext, ok := loadExtension(a.Name.Space); ok {
 			errs = specerr.Append(errs, ext.DecodeAttribute(d.resources, a))
 		} else {
-			d.resources.AnyAttr.AppendUnknownAttr(a)
+			d.resources.AnyAttr.AddUnknownAttr(a)
 		}
 	}
 	if errs != nil {
@@ -333,7 +333,7 @@ func (d *baseMaterialsDecoder) Start(attrs []spec.Attr) error {
 		} else if ext, ok := loadExtension(a.Name.Space); ok {
 			errs = specerr.Append(errs, ext.DecodeAttribute(&d.resource, a))
 		} else {
-			d.resource.AnyAttr.AppendUnknownAttr(a)
+			d.resource.AnyAttr.AddUnknownAttr(a)
 		}
 	}
 	if errs != nil {
@@ -367,7 +367,7 @@ func (d *baseMaterialDecoder) Start(attrs []spec.Attr) error {
 		} else if ext, ok := loadExtension(a.Name.Space); ok {
 			errs = specerr.Append(errs, ext.DecodeAttribute(&base, a))
 		} else {
-			base.AnyAttr.AppendUnknownAttr(a)
+			base.AnyAttr.AddUnknownAttr(a)
 		}
 	}
 	d.resource.Materials = append(d.resource.Materials, base)
@@ -389,7 +389,7 @@ func (d *meshDecoder) Start(attrs []spec.Attr) error {
 		if ext, ok := loadExtension(a.Name.Space); ok {
 			errs = specerr.Append(errs, ext.DecodeAttribute(d.resource.Mesh, a))
 		} else {
-			d.resource.Mesh.AnyAttr.AppendUnknownAttr(a)
+			d.resource.Mesh.AnyAttr.AddUnknownAttr(a)
 		}
 	}
 	if errs != nil {
@@ -575,7 +575,7 @@ func (d *objectDecoder) Start(attrs []spec.Attr) error {
 		} else if ext, ok := loadExtension(a.Name.Space); ok {
 			errs = specerr.Append(errs, ext.DecodeAttribute(&d.resource, a))
 		} else {
-			d.resource.AnyAttr.AppendUnknownAttr(a)
+			d.resource.AnyAttr.AddUnknownAttr(a)
 		}
 	}
 	if errs != nil {
@@ -652,7 +652,7 @@ func (d *componentsDecoder) Start(attrs []spec.Attr) error {
 		if ext, ok := loadExtension(a.Name.Space); ok {
 			errs = specerr.Append(errs, ext.DecodeAttribute(components, a))
 		} else {
-			components.AnyAttr.AppendUnknownAttr(a)
+			components.AnyAttr.AddUnknownAttr(a)
 		}
 	}
 	d.resource.Components = components
@@ -701,7 +701,7 @@ func (d *componentDecoder) Start(attrs []spec.Attr) error {
 		} else if ext, ok := loadExtension(a.Name.Space); ok {
 			errs = specerr.Append(errs, ext.DecodeAttribute(&component, a))
 		} else {
-			component.AnyAttr.AppendUnknownAttr(a)
+			component.AnyAttr.AddUnknownAttr(a)
 		}
 	}
 	d.resource.Components.Component = append(d.resource.Components.Component, &component)
