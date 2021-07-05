@@ -6,7 +6,7 @@
 
 # go3mf
 
-The 3D Manufacturing Format (3MF) is a 3D printing format that allows design applications to send full-fidelity 3D models to a mix of other applications, platforms, services and printers. The 3MF specification allows companies to focus on innovation, rather than on basic interoperability issues, and it is engineered to avoid the problems associated with other 3D file formats. Detailed info about the 3MF specification can be fint at https://3mf.io/specification/.
+The 3D Manufacturing Format (3MF) is a 3D printing format that allows design applications to send full-fidelity 3D models to a mix of other applications, platforms, services and printers. The 3MF specification allows companies to focus on innovation, rather than on basic interoperability issues, and it is engineered to avoid the problems associated with other 3D file formats. Detailed info about the 3MF specification can be fint at [3mf.io](https://3mf.io/specification).
 
 ## Features
 
@@ -18,6 +18,7 @@ The 3D Manufacturing Format (3MF) is a 3D printing format that allows design app
 - Robust implementation with full coverage and validated against real cases.
 - Extensions
   - Support custom and private extensions.
+  - Support lossless decoding and encoding of unknown extensions.
   - spec_production.
   - spec_slice.
   - spec_beamlattice.
@@ -112,9 +113,6 @@ import (
 
     "github.com/hpinc/go3mf"
     "github.com/hpinc/go3mf/material"
-    _"github.com/hpinc/go3mf/production"
-    _ "github.com/hpinc/go3mf/beamlattice"
-    _ "github.com/hpinc/go3mf/slices"
 )
 
 func main() {

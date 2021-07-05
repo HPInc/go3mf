@@ -44,3 +44,14 @@ func loadValidator(ns string) (spec.ValidateSpec, bool) {
 	}
 	return nil, false
 }
+
+// UnknownAsset wraps a spec.UnknownTokens to fulfill
+// the Asset interface.
+type UnknownAsset struct {
+	spec.UnknownTokens
+	id uint32
+}
+
+func (u UnknownAsset) Identify() uint32 {
+	return u.id
+}

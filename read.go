@@ -90,6 +90,18 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 					specerr.Append(&errs, err)
 				}
 			}
+		} else if appendDecoder, ok := currentDecoder.(spec.AppendTokenElementDecoder); ok {
+			var xattrs []xml.Attr
+			if len(tp.Attr) > 0 {
+				xattrs = make([]xml.Attr, len(tp.Attr))
+				for i, att := range tp.Attr {
+					xattrs[i] = xml.Attr{Name: att.Name, Value: string(att.Value)}
+				}
+			}
+			appendDecoder.AppendToken(xml.StartElement{
+				Name: tp.Name,
+				Attr: xattrs,
+			})
 		}
 	}
 	x.OnEnd = func(tp xml.EndElement) {
@@ -97,11 +109,15 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 			currentDecoder.End()
 			currentDecoder, state = state[len(state)-1], state[:len(state)-1]
 			currentName, names = names[len(names)-1], names[:len(names)-1]
+		} else if appendDecoder, ok := currentDecoder.(spec.AppendTokenElementDecoder); ok {
+			appendDecoder.AppendToken(tp)
 		}
 	}
 	x.OnChar = func(tp xml.CharData) {
 		if currentDecoder, ok := currentDecoder.(spec.CharDataElementDecoder); ok {
 			currentDecoder.CharData(tp)
+		} else if appendDecoder, ok := currentDecoder.(spec.AppendTokenElementDecoder); ok {
+			appendDecoder.AppendToken(tp)
 		}
 	}
 	var i int

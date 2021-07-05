@@ -25,10 +25,18 @@ import (
 
 const fakeExtension = "http://dummy.com/fake_ext"
 
+var fooName = xml.Name{Space: "http://dummy.com/foo", Local: "fooname"}
+
 var fakeSpec = Extension{
 	Namespace:  fakeExtension,
 	LocalName:  "qm",
 	IsRequired: true,
+}
+
+var fooSpec = Extension{
+	Namespace:  fooName.Space,
+	LocalName:  "foo",
+	IsRequired: false,
 }
 
 type qmExtension struct{}
@@ -124,8 +132,9 @@ func (m *modelBuilder) withDefaultModel() *modelBuilder {
 func (m *modelBuilder) withModel(unit string, lang string, thumbnail string) *modelBuilder {
 	m.str.WriteString(`<model `)
 	m.addAttr("", "unit", unit).addAttr("xml", "lang", lang)
-	m.addAttr("", "xmlns", Namespace).addAttr("xmlns", "qm", fakeExtension)
+	m.addAttr("", "xmlns", Namespace).addAttr("xmlns", "qm", fakeExtension).addAttr("xmlns", fooSpec.LocalName, fooSpec.Namespace)
 	m.addAttr("", "requiredextensions", "qm")
+	m.addAttr(fooSpec.LocalName, fooName.Local, "fooval")
 	if thumbnail != "" {
 		m.addAttr("", "thumbnail", thumbnail)
 	}
@@ -316,11 +325,17 @@ func TestDecoder_processRootModel(t *testing.T) {
 	Register(fakeSpec.Namespace, new(qmExtension))
 	baseMaterials := &BaseMaterials{ID: 5, Materials: []Base{
 		{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
-		{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
-	}}
+		{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}, AnyAttr: AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval8"}}}},
+	}, AnyAttr: AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval7"}}}}
 	meshRes := &Object{
-		Mesh: new(Mesh),
-		ID:   8, Name: "Box 1", Thumbnail: "/a.png", PID: 5, PartNumber: "11111111-1111-1111-1111-111111111111",
+		ID: 8, Name: "Box 1", Thumbnail: "/a.png", PID: 5, PartNumber: "11111111-1111-1111-1111-111111111111",
+		Mesh: &Mesh{
+			AnyAttr: AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval9"}}},
+			Any: Any{spec.UnknownTokens{
+				xml.StartElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "fake"}},
+				xml.EndElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "fake"}},
+			}},
+		},
 	}
 	meshRes.Mesh.Vertices = append(meshRes.Mesh.Vertices, []Point3D{
 		{0, 0, 0},
@@ -349,20 +364,66 @@ func TestDecoder_processRootModel(t *testing.T) {
 
 	components := &Object{
 		ID: 20, Type: ObjectTypeSupport,
-		Metadata:   []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}, {Name: xml.Name{Space: "qm", Local: "CustomMetadata4"}, Type: "xs:boolean", Value: "2"}},
-		Components: &Components{Component: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1}}}},
+		AnyAttr:  AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval6"}}},
+		Metadata: []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}, {Name: xml.Name{Space: "qm", Local: "CustomMetadata4"}, Type: "xs:boolean", Value: "2"}},
+		Components: &Components{
+			AnyAttr: AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval4"}}},
+			Component: []*Component{
+				{
+					ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1},
+					AnyAttr: AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval5"}}},
+				},
+			},
+		},
 	}
 
 	want := &Model{
 		Units: UnitMillimeter, Language: "en-US", Path: "/3D/3dmodel.model", Thumbnail: "/thumbnail.png",
-		Extensions: []Extension{fakeSpec},
+		Extensions: []Extension{fakeSpec, fooSpec},
 		Resources: Resources{
-			Assets: []Asset{baseMaterials}, Objects: []*Object{meshRes, components},
+			Assets: []Asset{baseMaterials, &UnknownAsset{
+				id: 50,
+				UnknownTokens: spec.UnknownTokens{
+					xml.StartElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "resources"}, Attr: []xml.Attr{
+						{Name: xml.Name{Space: "", Local: "id"}, Value: "50"},
+						{Name: xml.Name{Space: "", Local: "name"}, Value: "test"},
+					}},
+					xml.StartElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "resource"}, Attr: []xml.Attr{
+						{Name: xml.Name{Space: "", Local: "val"}, Value: "1"},
+					}},
+					xml.StartElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "subresource"}, Attr: []xml.Attr{
+						{Name: xml.Name{Space: "", Local: "val"}, Value: "2"},
+					}},
+					xml.EndElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "subresource"}},
+					xml.EndElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "resource"}},
+					xml.EndElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "resources"}},
+				},
+			}}, Objects: []*Object{meshRes, components},
+			AnyAttr: AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval3"}}},
+		},
+		Build: Build{
+			AnyAttr: AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval1"}}},
+		},
+		AnyAttr: AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval"}}},
+		Any: Any{
+			spec.UnknownTokens{
+				xml.StartElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "other"}},
+				xml.EndElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "other"}},
+			},
+			spec.UnknownTokens{
+				xml.StartElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "other1"}, Attr: []xml.Attr{
+					{Name: xml.Name{Space: "", Local: "a"}, Value: "2"},
+				}},
+				xml.StartElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "child1"}},
+				xml.EndElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "child1"}},
+				xml.EndElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "other1"}},
+			},
 		},
 	}
 	want.Build.Items = append(want.Build.Items, &Item{
 		ObjectID: 20, PartNumber: "bob", Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
 		Metadata: []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}},
+		AnyAttr:  AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval2"}}},
 	})
 	want.Metadata = append(want.Metadata, []Metadata{
 		{Name: xml.Name{Local: "Application"}, Value: "go3mf app"},
@@ -371,13 +432,13 @@ func TestDecoder_processRootModel(t *testing.T) {
 	got := new(Model)
 	got.Path = "/3D/3dmodel.model"
 	rootFile := new(modelBuilder).withDefaultModel().withElement(`
-		<resources>
-			<basematerials id="5">
+		<resources foo:fooname="fooval3">
+			<basematerials id="5" foo:fooname="fooval7">
 				<base name="Blue PLA" displaycolor="#0000FF" />
-				<base name="Red ABS" displaycolor="#FF0000" />
+				<base name="Red ABS" displaycolor="#FF0000" foo:fooname="fooval8" />
 			</basematerials>
 			<object id="8" name="Box 1" pid="5" pindex="0" thumbnail="/a.png" partnumber="11111111-1111-1111-1111-111111111111" type="model">
-				<mesh>
+				<mesh foo:fooname="fooval9">
 					<vertices>
 						<vertex x="0" y="0" z="0" />
 						<vertex x="100.00000" y="0" z="0" />
@@ -402,20 +463,26 @@ func TestDecoder_processRootModel(t *testing.T) {
 						<triangle v1="3" v2="0" v3="4" />
 						<triangle v1="4" v2="7" v3="3" />
 					</triangles>
+					<foo:fake/>
 				</mesh>
 			</object>
-			<object id="20" type="support">
+			<object id="20" type="support" foo:fooname="fooval6">
 				<metadatagroup>
 					<metadata name="qm:CustomMetadata3" type="xs:boolean">1</metadata>
 					<metadata name="qm:CustomMetadata4" type="xs:boolean">2</metadata>
 				</metadatagroup>
-				<components>
-					<component objectid="8" transform="3 0 0 0 1 0 0 0 2 -66.4 -87.1 8.8"/>
+				<components foo:fooname="fooval4">
+					<component objectid="8" transform="3 0 0 0 1 0 0 0 2 -66.4 -87.1 8.8" foo:fooname="fooval5"/>
 				</components>
 			</object>
+			<foo:resources id="50" name="test">
+				<foo:resource val="1">
+					<foo:subresource val="2"/>
+				</foo:resource>
+			</foo:resources>
 		</resources>
-		<build>
-			<item partnumber="bob" objectid="20" transform="1 0 0 0 2 0 0 0 3 -66.4 -87.1 8.8">
+		<build foo:fooname="fooval1">
+			<item partnumber="bob" objectid="20" transform="1 0 0 0 2 0 0 0 3 -66.4 -87.1 8.8" foo:fooname="fooval2">
 				<metadatagroup>
 					<metadata name="qm:CustomMetadata3" type="xs:boolean">1</metadata>
 				</metadatagroup>
@@ -424,6 +491,10 @@ func TestDecoder_processRootModel(t *testing.T) {
 		<metadata name="Application">go3mf app</metadata>
 		<metadata name="qm:CustomMetadata1" type="xs:string" preserve="1">CE8A91FB-C44E-4F00-B634-BAA411465F6A</metadata>
 		<other />
+		<foo:other />
+		<foo:other1 a="2">
+			<foo:child1 />
+		</foo:other1>
 		`).build("")
 
 	d := new(Decoder)
@@ -569,7 +640,7 @@ func TestNewDecoder(t *testing.T) {
 func TestDecoder_processRootModel_warns(t *testing.T) {
 	Register(fakeSpec.Namespace, new(qmExtension))
 	want := []string{
-		fmt.Sprintf("Resources@BaseMaterials#0@RGBA#0: %v", specerr.NewParseAttrError("displaycolor", true)),
+		fmt.Sprintf("Resources@BaseMaterials#0@Base#0: %v", specerr.NewParseAttrError("displaycolor", true)),
 		fmt.Sprintf("Resources@BaseMaterials#1: %v", specerr.NewParseAttrError("id", true)),
 		fmt.Sprintf("Resources@Object#0@Mesh@Point3D#8: %v", specerr.NewParseAttrError("x", true)),
 		fmt.Sprintf("Resources@Object#0@Mesh@Triangle#13: %v", specerr.NewParseAttrError("v1", true)),

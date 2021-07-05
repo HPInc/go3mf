@@ -314,6 +314,7 @@ func (e *Encoder) writeBuild(x spec.Encoder, m *Model) {
 
 func (e *Encoder) writeResources(x spec.Encoder, rs *Resources) error {
 	xt := xml.StartElement{Name: xml.Name{Local: attrResources}}
+	rs.AnyAttr.encode(x, &xt)
 	x.EncodeToken(xt)
 	for _, r := range rs.Assets {
 		if r, ok := r.(spec.Marshaler); ok {
@@ -512,18 +513,18 @@ func (r *BaseMaterials) Marshal3MF(x spec.Encoder) error {
 	xt := xml.StartElement{Name: xml.Name{Local: attrBaseMaterials}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(r.ID), 10)},
 	}}
+	r.AnyAttr.encode(x, &xt)
 	x.EncodeToken(xt)
 	x.SetAutoClose(true)
-	start := xml.StartElement{
-		Name: xml.Name{Local: attrBase},
-		Attr: []xml.Attr{
-			{Name: xml.Name{Local: attrName}},
-			{Name: xml.Name{Local: attrDisplayColor}},
-		},
-	}
 	for _, ma := range r.Materials {
-		start.Attr[0].Value = ma.Name
-		start.Attr[1].Value = spec.FormatRGBA(ma.Color)
+		start := xml.StartElement{
+			Name: xml.Name{Local: attrBase},
+			Attr: []xml.Attr{
+				{Name: xml.Name{Local: attrName}, Value: ma.Name},
+				{Name: xml.Name{Local: attrDisplayColor}, Value: spec.FormatRGBA(ma.Color)},
+			},
+		}
+		ma.AnyAttr.encode(x, &start)
 		x.EncodeToken(start)
 	}
 	x.SetAutoClose(false)

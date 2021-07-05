@@ -66,13 +66,22 @@ type ElementDecoder interface {
 // ChildElementDecoder must be implemented by element decoders
 // that need decoding nested elements.
 type ChildElementDecoder interface {
+	ElementDecoder
 	Child(xml.Name) ElementDecoder
 }
 
 // CharDataElementDecoder must be implemented by element decoders
 // that need to decode raw text.
 type CharDataElementDecoder interface {
+	ElementDecoder
 	CharData([]byte)
+}
+
+// AppendTokenElementDecoder must be implemented by element decoders
+// that need to accumulate tokens to support loseless encoding.
+type AppendTokenElementDecoder interface {
+	ElementDecoder
+	AppendToken(xml.Token)
 }
 
 // Encoder provides de necessary methods to encode specs.
@@ -88,4 +97,58 @@ type Encoder interface {
 	// StartElement attribute values, such as as when all attributes
 	// are filled using strconv.
 	SetSkipAttrEscape(bool)
+}
+
+// An UnknownAttrs represents a list of attributes
+// that are not supported by any loaded Spec.
+type UnknownAttrs []xml.Attr
+
+func (u UnknownAttrs) Marshal3MFAttr(enc Encoder) ([]xml.Attr, error) {
+	return u, nil
+}
+
+// UnknownTokens represents a section of an xml
+// that cannot be decoded by any loaded Spec.
+type UnknownTokens []xml.Token
+
+func (u UnknownTokens) Marshal3MF(enc Encoder) error {
+	for _, t := range u {
+		enc.EncodeToken(t)
+	}
+	return nil
+}
+
+// UnknownTokensDecoder can be used by spec decoders to maintain the
+// xml tree elements of unknown extensions.
+type UnknownTokensDecoder struct {
+	Name xml.Name
+
+	tokens UnknownTokens
+}
+
+func (d *UnknownTokensDecoder) Start(attrs []Attr) error {
+	var xattrs []xml.Attr
+	if len(attrs) > 0 {
+		xattrs = make([]xml.Attr, len(attrs))
+		for i, att := range attrs {
+			xattrs[i] = xml.Attr{Name: att.Name, Value: string(att.Value)}
+		}
+	}
+	d.AppendToken(xml.StartElement{
+		Name: d.Name,
+		Attr: xattrs,
+	})
+	return nil
+}
+
+func (d *UnknownTokensDecoder) End() {
+	d.AppendToken(xml.EndElement{Name: d.Name})
+}
+
+func (d *UnknownTokensDecoder) AppendToken(t xml.Token) {
+	d.tokens = append(d.tokens, t)
+}
+
+func (d UnknownTokensDecoder) Tokens() UnknownTokens {
+	return d.tokens
 }
