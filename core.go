@@ -581,11 +581,27 @@ func newUnits(s string) (u Units, ok bool) {
 }
 
 // AnyAttr is an extension point containing <anyAttribute> information.
-// The key should be the extension namespace.
 type AnyAttr []spec.MarshalerAttr
 
+func (any *AnyAttr) AppendUnknownAttr(a spec.Attr) {
+	ua := any.GetUnknownAttr()
+	if ua == nil {
+		ua = &spec.UnknownAttr{}
+		*any = append(*any, ua)
+	}
+	ua.AppendAttr(a)
+}
+
+func (any AnyAttr) GetUnknownAttr() *spec.UnknownAttr {
+	for _, a := range any {
+		if a, ok := a.(*spec.UnknownAttr); ok {
+			return a
+		}
+	}
+	return nil
+}
+
 // Any is an extension point containing <any> information.
-// The key should be the extension namespace.
 type Any []spec.Marshaler
 
 const (

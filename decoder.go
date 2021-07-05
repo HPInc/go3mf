@@ -38,6 +38,8 @@ func (d *modelDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 		}
 	} else if ext, ok := loadExtension(name.Space); ok {
 		child = ext.CreateElementDecoder(d.model, name.Local)
+	} else {
+		child = &anyUnknownDecoder{UnknownTokensDecoder: spec.UnknownTokensDecoder{Name: name}, Any: &d.model.Any}
 	}
 	return
 }
@@ -93,7 +95,7 @@ func (d *modelDecoder) noCoreAttribute(a spec.Attr) (err error) {
 		if ext, ok := loadExtension(a.Name.Space); ok {
 			err = specerr.Append(err, ext.DecodeAttribute(d.model, a))
 		} else {
-			d.model.AnyAttr = append(d.model.AnyAttr, NewUnkownAttr(a))
+			d.model.AnyAttr.AppendUnknownAttr(a)
 		}
 	}
 	return
@@ -185,7 +187,7 @@ func (d *buildDecoder) Start(attrs []spec.Attr) error {
 		if ext, ok := loadExtension(a.Name.Space); ok {
 			errs = specerr.Append(errs, ext.DecodeAttribute(d.build, a))
 		} else {
-			d.build.AnyAttr = append(d.build.AnyAttr, NewUnkownAttr(a))
+			d.build.AnyAttr.AppendUnknownAttr(a)
 		}
 	}
 	if errs != nil {
@@ -224,7 +226,7 @@ func (d *buildItemDecoder) Start(attrs []spec.Attr) error {
 		} else if ext, ok := loadExtension(a.Name.Space); ok {
 			errs = specerr.Append(errs, ext.DecodeAttribute(&d.item, a))
 		} else {
-			d.item.AnyAttr = append(d.item.AnyAttr, NewUnkownAttr(a))
+			d.item.AnyAttr.AppendUnknownAttr(a)
 		}
 	}
 	if errs != nil {
@@ -265,7 +267,7 @@ func (d *resourceDecoder) Start(attrs []spec.Attr) error {
 		if ext, ok := loadExtension(a.Name.Space); ok {
 			errs = specerr.Append(errs, ext.DecodeAttribute(d.resources, a))
 		} else {
-			d.resources.AnyAttr = append(d.resources.AnyAttr, NewUnkownAttr(a))
+			d.resources.AnyAttr.AppendUnknownAttr(a)
 		}
 	}
 	if errs != nil {
@@ -288,6 +290,8 @@ func (d *resourceDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 		}
 	} else if ext, ok := loadExtension(name.Space); ok {
 		child = ext.CreateElementDecoder(d.resources, name.Local)
+	} else {
+		child = &unknownAssetDecoder{UnknownTokensDecoder: spec.UnknownTokensDecoder{Name: name}, resources: d.resources}
 	}
 	return
 }
@@ -329,7 +333,7 @@ func (d *baseMaterialsDecoder) Start(attrs []spec.Attr) error {
 		} else if ext, ok := loadExtension(a.Name.Space); ok {
 			errs = specerr.Append(errs, ext.DecodeAttribute(&d.resource, a))
 		} else {
-			d.resource.AnyAttr = append(d.resource.AnyAttr, NewUnkownAttr(a))
+			d.resource.AnyAttr.AppendUnknownAttr(a)
 		}
 	}
 	if errs != nil {
@@ -363,7 +367,7 @@ func (d *baseMaterialDecoder) Start(attrs []spec.Attr) error {
 		} else if ext, ok := loadExtension(a.Name.Space); ok {
 			errs = specerr.Append(errs, ext.DecodeAttribute(&base, a))
 		} else {
-			base.AnyAttr = append(base.AnyAttr, NewUnkownAttr(a))
+			base.AnyAttr.AppendUnknownAttr(a)
 		}
 	}
 	d.resource.Materials = append(d.resource.Materials, base)
@@ -385,7 +389,7 @@ func (d *meshDecoder) Start(attrs []spec.Attr) error {
 		if ext, ok := loadExtension(a.Name.Space); ok {
 			errs = specerr.Append(errs, ext.DecodeAttribute(d.resource.Mesh, a))
 		} else {
-			d.resource.Mesh.AnyAttr = append(d.resource.Mesh.AnyAttr, NewUnkownAttr(a))
+			d.resource.Mesh.AnyAttr.AppendUnknownAttr(a)
 		}
 	}
 	if errs != nil {
@@ -407,6 +411,8 @@ func (d *meshDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 		}
 	} else if ext, ok := loadExtension(name.Space); ok {
 		child = ext.CreateElementDecoder(d.resource.Mesh, name.Local)
+	} else {
+		child = &anyUnknownDecoder{UnknownTokensDecoder: spec.UnknownTokensDecoder{Name: name}, Any: &d.resource.Mesh.Any}
 	}
 	return
 }
@@ -569,7 +575,7 @@ func (d *objectDecoder) Start(attrs []spec.Attr) error {
 		} else if ext, ok := loadExtension(a.Name.Space); ok {
 			errs = specerr.Append(errs, ext.DecodeAttribute(&d.resource, a))
 		} else {
-			d.resource.AnyAttr = append(d.resource.AnyAttr, NewUnkownAttr(a))
+			d.resource.AnyAttr.AppendUnknownAttr(a)
 		}
 	}
 	if errs != nil {
@@ -646,7 +652,7 @@ func (d *componentsDecoder) Start(attrs []spec.Attr) error {
 		if ext, ok := loadExtension(a.Name.Space); ok {
 			errs = specerr.Append(errs, ext.DecodeAttribute(components, a))
 		} else {
-			components.AnyAttr = append(components.AnyAttr, NewUnkownAttr(a))
+			components.AnyAttr.AppendUnknownAttr(a)
 		}
 	}
 	d.resource.Components = components
@@ -695,7 +701,7 @@ func (d *componentDecoder) Start(attrs []spec.Attr) error {
 		} else if ext, ok := loadExtension(a.Name.Space); ok {
 			errs = specerr.Append(errs, ext.DecodeAttribute(&component, a))
 		} else {
-			component.AnyAttr = append(component.AnyAttr, NewUnkownAttr(a))
+			component.AnyAttr.AppendUnknownAttr(a)
 		}
 	}
 	d.resource.Components.Component = append(d.resource.Components.Component, &component)
@@ -724,4 +730,46 @@ func (d *topLevelDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 		child = &modelDecoder{model: d.model, isRoot: d.isRoot, path: d.path}
 	}
 	return
+}
+
+type unknownAssetDecoder struct {
+	spec.UnknownTokensDecoder
+	resources *Resources
+	id        string
+	resource  UnknownAsset
+}
+
+func (d *unknownAssetDecoder) Start(attrs []spec.Attr) (errs error) {
+	d.UnknownTokensDecoder.Start(attrs)
+	for _, a := range attrs {
+		if a.Name.Space == "" {
+			if a.Name.Local == attrID {
+				id, err := strconv.ParseUint(string(a.Value), 10, 32)
+				if err != nil {
+					errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
+				}
+				d.resource.id = uint32(id)
+			}
+		}
+	}
+	if errs != nil {
+		return specerr.WrapIndex(errs, &d.resource, len(d.resources.Assets))
+	}
+	return nil
+}
+
+func (d *unknownAssetDecoder) End() {
+	d.UnknownTokensDecoder.End()
+	d.resource.UnknownTokens = d.UnknownTokensDecoder.Tokens()
+	d.resources.Assets = append(d.resources.Assets, &d.resource)
+}
+
+type anyUnknownDecoder struct {
+	spec.UnknownTokensDecoder
+	Any *Any
+}
+
+func (d *anyUnknownDecoder) End() {
+	d.UnknownTokensDecoder.End()
+	*d.Any = append(*d.Any, d.Tokens())
 }

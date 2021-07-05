@@ -4,7 +4,6 @@
 package go3mf
 
 import (
-	"encoding/xml"
 	"sync"
 
 	"github.com/hpinc/go3mf/spec"
@@ -46,15 +45,13 @@ func loadValidator(ns string) (spec.ValidateSpec, bool) {
 	return nil, false
 }
 
-// An UnknownAttr represents an attribute
-// that is not supported by any loaded Spec.
-type UnknownAttr xml.Attr
-
-// NewUnkownAttr creates a new UnkownAttr.
-func NewUnkownAttr(att spec.Attr) UnknownAttr {
-	return UnknownAttr{Name: att.Name, Value: string(att.Value)}
+// UnknownAsset wraps a spec.UnknownTokens to fullfill
+// the Asset interface.
+type UnknownAsset struct {
+	spec.UnknownTokens
+	id uint32
 }
 
-func (u UnknownAttr) Marshal3MFAttr(enc spec.Encoder) ([]xml.Attr, error) {
-	return []xml.Attr{xml.Attr(u)}, nil
+func (u UnknownAsset) Identify() uint32 {
+	return u.id
 }
