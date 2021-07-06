@@ -456,46 +456,10 @@ func (c *Component) HasTransform() bool {
 // Triangle defines a triangle of a mesh.
 //
 // The 7 elements are: v1,v2,v3,pid,p1,p2,p3.
-type Triangle [7]Uint24
-
-func NewTriangle(v1, v2, v3 uint32) (t Triangle) {
-	t.SetIndices(v1, v2, v3)
-	return
-}
-
-func NewTrianglePID(v1, v2, v3, pid, p1, p2, p3 uint32) Triangle {
-	t := NewTriangle(v1, v2, v3)
-	t.SetPID(pid)
-	t.SetPIndices(p1, p2, p3)
-	return t
-}
-
-func (t *Triangle) SetIndices(v1, v2, v3 uint32) {
-	t[0] = ToUint24(v1)
-	t[1] = ToUint24(v2)
-	t[2] = ToUint24(v3)
-}
-
-func (t *Triangle) SetPID(pid uint32) {
-	t[3] = ToUint24(pid)
-}
-
-func (t *Triangle) SetPIndices(p1, p2, p3 uint32) {
-	t[4] = ToUint24(p1)
-	t[5] = ToUint24(p2)
-	t[6] = ToUint24(p3)
-}
-
-func (t Triangle) Indices() (uint32, uint32, uint32) {
-	return t[0].ToUint32(), t[1].ToUint32(), t[2].ToUint32()
-}
-
-func (t Triangle) PID() uint32 {
-	return t[3].ToUint32()
-}
-
-func (t Triangle) PIndices() (uint32, uint32, uint32) {
-	return t[4].ToUint32(), t[5].ToUint32(), t[6].ToUint32()
+type Triangle struct {
+	V1, V2, V3 uint32
+	PID        uint32
+	P1, P2, P3 uint32
 }
 
 // A Mesh is an in memory representation of the 3MF mesh object.
