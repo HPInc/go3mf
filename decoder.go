@@ -506,14 +506,14 @@ func (d *triangleDecoder) Start(attrs []spec.Attr) error {
 
 	for _, a := range attrs {
 		required := true
-		val, err := strconv.ParseUint(string(a.Value), 10, 24)
+		val, err := strconv.ParseUint(string(a.Value), 10, 32)
 		switch a.Name.Local {
 		case attrV1:
-			t[0] = ToUint24(uint32(val))
+			t.V1 = uint32(val)
 		case attrV2:
-			t[1] = ToUint24(uint32(val))
+			t.V2 = uint32(val)
 		case attrV3:
-			t[2] = ToUint24(uint32(val))
+			t.V3 = uint32(val)
 		case attrPID:
 			pid = uint32(val)
 			hasPID = true
@@ -540,8 +540,8 @@ func (d *triangleDecoder) Start(attrs []spec.Attr) error {
 	p2 = applyDefault(p2, p1, hasP2)
 	p3 = applyDefault(p3, p1, hasP3)
 	pid = applyDefault(pid, d.defaultPropertyID, hasPID)
-	t.SetPID(pid)
-	t.SetPIndices(p1, p2, p3)
+	t.PID = pid
+	t.P1, t.P2, t.P3 = p1, p2, p3
 	d.mesh.Triangles = append(d.mesh.Triangles, t)
 	if errs != nil {
 		return specerr.WrapIndex(errs, t, len(d.mesh.Triangles)-1)

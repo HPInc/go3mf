@@ -469,24 +469,21 @@ func (e *Encoder) writeTriangles(x spec.Encoder, r *Object, m *Mesh) {
 	}
 	x.SetAutoClose(true)
 	x.SetSkipAttrEscape(true)
-	for _, v := range m.Triangles {
-		v1, v2, v3 := v.Indices()
-		attrs[0].Value = strconv.FormatUint(uint64(v1), 10)
-		attrs[1].Value = strconv.FormatUint(uint64(v2), 10)
-		attrs[2].Value = strconv.FormatUint(uint64(v3), 10)
+	for _, t := range m.Triangles {
+		attrs[0].Value = strconv.FormatUint(uint64(t.V1), 10)
+		attrs[1].Value = strconv.FormatUint(uint64(t.V2), 10)
+		attrs[2].Value = strconv.FormatUint(uint64(t.V3), 10)
 		start.Attr = attrs[:3]
-		pid := v.PID()
-		if pid != 0 {
-			p1, p2, p3 := v.PIndices()
-			if (p1 != p2) || (p1 != p3) {
-				attrs[3].Value = strconv.FormatUint(uint64(pid), 10)
-				attrs[4].Value = strconv.FormatUint(uint64(p1), 10)
-				attrs[5].Value = strconv.FormatUint(uint64(p2), 10)
-				attrs[6].Value = strconv.FormatUint(uint64(p3), 10)
+		if t.PID != 0 {
+			if (t.P1 != t.P2) || (t.P1 != t.P3) {
+				attrs[3].Value = strconv.FormatUint(uint64(t.PID), 10)
+				attrs[4].Value = strconv.FormatUint(uint64(t.P1), 10)
+				attrs[5].Value = strconv.FormatUint(uint64(t.P2), 10)
+				attrs[6].Value = strconv.FormatUint(uint64(t.P3), 10)
 				start.Attr = attrs[:7]
-			} else if (pid != r.PID) || (p1 != r.PIndex) {
-				attrs[3].Value = strconv.FormatUint(uint64(pid), 10)
-				attrs[4].Value = strconv.FormatUint(uint64(p1), 10)
+			} else if (t.PID != r.PID) || (t.P1 != r.PIndex) {
+				attrs[3].Value = strconv.FormatUint(uint64(t.PID), 10)
+				attrs[4].Value = strconv.FormatUint(uint64(t.P1), 10)
 				start.Attr = attrs[:5]
 			}
 		}

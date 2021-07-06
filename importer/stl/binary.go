@@ -64,5 +64,5 @@ func (d *binaryDecoder) decodeFace(facet *binaryFace, mb *go3mf.MeshBuilder) {
 		pos := facet.Vertices[nVertex]
 		nodes[nVertex] = mb.AddVertex(go3mf.Point3D{pos[0], pos[1], pos[2]})
 	}
-	mb.Mesh.Triangles = append(mb.Mesh.Triangles, go3mf.NewTriangle(nodes[0], nodes[1], nodes[2]))
+	mb.Mesh.Triangles = append(mb.Mesh.Triangles, go3mf.Triangle{V1: nodes[0], V2: nodes[1], V3: nodes[2]})
 }
