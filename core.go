@@ -153,6 +153,7 @@ func (rs *Resources) UnusedID() uint32 {
 	for i, id := range ids {
 		if id != i {
 			lowest = i
+			break
 		}
 	}
 	if lowest == 0 {
