@@ -193,7 +193,9 @@ func TestResources_UnusedID(t *testing.T) {
 		{"one-object", &Resources{Objects: []*Object{{ID: 2}}}, 1},
 		{"two", &Resources{Assets: []Asset{&BaseMaterials{ID: 1}}}, 2},
 		{"sequence", &Resources{Assets: []Asset{&BaseMaterials{ID: 1}}, Objects: []*Object{{ID: 2}}}, 3},
-		{"sparce", &Resources{Assets: []Asset{&BaseMaterials{ID: 1}}, Objects: []*Object{{ID: 3}}}, 2},
+		{"sparce", &Resources{Assets: []Asset{&BaseMaterials{ID: 12}}, Objects: []*Object{
+			{ID: 6}, {ID: 4}, {ID: 8}, {ID: 10}, {ID: 2}}}, 1,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
