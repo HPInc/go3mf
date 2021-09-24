@@ -143,12 +143,6 @@ func (m *modelBuilder) withModel(unit string, lang string, thumbnail string) *mo
 	return m
 }
 
-func (m *modelBuilder) withEncoding(encode string) *modelBuilder {
-	m.str.WriteString(fmt.Sprintf(`<?xml version="1.0" encoding="%s"?>`, encode))
-	m.str.WriteString("\n")
-	return m
-}
-
 func (m *modelBuilder) build(name string) *mockFile {
 	if name == "" {
 		name = "/3D/3dmodel.model"
@@ -440,7 +434,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 			<object id="8" name="Box 1" pid="5" pindex="0" thumbnail="/a.png" partnumber="11111111-1111-1111-1111-111111111111" type="model">
 				<mesh foo:fooname="fooval9">
 					<vertices>
-						<vertex x="0" y="0" z="0" />
+						<vertex x="0" y="0" z="0" foo:fooname="f1"/>
 						<vertex x="100.00000" y="0" z="0" />
 						<vertex x="100.00000" y="100.00000" z="0" />
 						<vertex x="0" y="100.00000" z="0" />
@@ -450,7 +444,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 						<vertex x="0" y="100.00000" z="100.00000" />
 					</vertices>
 					<triangles>
-						<triangle v1="3" v2="2" v3="1" />
+						<triangle v1="3" v2="2" v3="1" foo:fooname="f1" />
 						<triangle v1="1" v2="0" v3="3" />
 						<triangle v1="4" v2="5" v3="6" p1="1" />
 						<triangle v1="6" v2="7" v3="4" pid="5" p1="1" />
