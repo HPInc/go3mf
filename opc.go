@@ -130,12 +130,3 @@ func findOPCFileFromName(name string, r *opc.Reader) (packageFile, bool) {
 	}
 	return nil, false
 }
-
-func findOPCFileURIFromRel(relType string, rels []*opc.Relationship) string {
-	for _, r := range rels {
-		if r.Type == relType {
-			return r.TargetURI
-		}
-	}
-	return ""
-}
