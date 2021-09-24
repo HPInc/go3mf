@@ -446,6 +446,9 @@ func (d *vertexDecoder) Start(attrs []spec.Attr) error {
 		errs    error
 	)
 	for _, a := range attrs {
+		if a.Name.Space != "" {
+			continue
+		}
 		val, err := strconv.ParseFloat(*(*string)(unsafe.Pointer(&a.Value)), 32)
 		if err != nil {
 			errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
@@ -505,6 +508,9 @@ func (d *triangleDecoder) Start(attrs []spec.Attr) error {
 	)
 
 	for _, a := range attrs {
+		if a.Name.Space != "" {
+			continue
+		}
 		required := true
 		val, err := strconv.ParseUint(string(a.Value), 10, 32)
 		switch a.Name.Local {
@@ -735,7 +741,6 @@ func (d *topLevelDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 type unknownAssetDecoder struct {
 	spec.UnknownTokensDecoder
 	resources *Resources
-	id        string
 	resource  UnknownAsset
 }
 
