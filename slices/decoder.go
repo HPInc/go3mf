@@ -19,38 +19,30 @@ func (Spec) CreateElementDecoder(parent interface{}, name string) spec.ElementDe
 	return nil
 }
 
-func (Spec) DecodeAttribute(parentNode interface{}, attr spec.Attr) error {
-	if parentNode, ok := parentNode.(*go3mf.Object); ok {
-		return objectAttrDecoder(parentNode, attr)
+func (Spec) NewAttr3MF(parentNode string) spec.Attr3MF {
+	switch parentNode {
+	case "object":
+		return new(ObjectAttr)
 	}
 	return nil
 }
 
-// objectAttrDecoder decodes the slice attributes of an ObjectReosurce.
-func objectAttrDecoder(o *go3mf.Object, a spec.Attr) (errs error) {
+func (u *ObjectAttr) Unmarshal3MFAttr(a spec.XMLAttr) error {
 	switch a.Name.Local {
 	case attrSliceRefID:
 		val, err := strconv.ParseUint(string(a.Value), 10, 32)
 		if err != nil {
-			errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
+			return specerr.NewParseAttrError(a.Name.Local, true)
 		}
-		if ext := GetObjectAttr(o); ext != nil {
-			ext.SliceStackID = uint32(val)
-		} else {
-			o.AnyAttr = append(o.AnyAttr, &ObjectAttr{SliceStackID: uint32(val)})
-		}
+		u.SliceStackID = uint32(val)
 	case attrMeshRes:
 		res, ok := newMeshResolution(string(a.Value))
 		if !ok {
-			errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, false))
+			return specerr.NewParseAttrError(a.Name.Local, false)
 		}
-		if ext := GetObjectAttr(o); ext != nil {
-			ext.MeshResolution = res
-		} else {
-			o.AnyAttr = append(o.AnyAttr, &ObjectAttr{MeshResolution: res})
-		}
+		u.MeshResolution = res
 	}
-	return
+	return nil
 }
 
 type sliceStackDecoder struct {
@@ -78,7 +70,7 @@ func (d *sliceStackDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	return
 }
 
-func (d *sliceStackDecoder) Start(attrs []spec.Attr) error {
+func (d *sliceStackDecoder) Start(attrs []spec.XMLAttr) error {
 	var errs error
 	for _, a := range attrs {
 		switch a.Name.Local {
@@ -107,7 +99,7 @@ type sliceRefDecoder struct {
 	resource *SliceStack
 }
 
-func (d *sliceRefDecoder) Start(attrs []spec.Attr) error {
+func (d *sliceRefDecoder) Start(attrs []spec.XMLAttr) error {
 	var (
 		sliceStackID uint32
 		path         string
@@ -160,7 +152,7 @@ func (d *sliceDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	return
 }
 
-func (d *sliceDecoder) Start(attrs []spec.Attr) error {
+func (d *sliceDecoder) Start(attrs []spec.XMLAttr) error {
 	d.polygonDecoder.slice = &d.slice
 	d.polygonVerticesDecoder.slice = &d.slice
 	var errs error
@@ -186,7 +178,7 @@ type polygonVerticesDecoder struct {
 	polygonVertexDecoder polygonVertexDecoder
 }
 
-func (d *polygonVerticesDecoder) Start(_ []spec.Attr) error {
+func (d *polygonVerticesDecoder) Start(_ []spec.XMLAttr) error {
 	d.polygonVertexDecoder.slice = d.slice
 	return nil
 }
@@ -203,7 +195,7 @@ type polygonVertexDecoder struct {
 	slice *Slice
 }
 
-func (d *polygonVertexDecoder) Start(attrs []spec.Attr) error {
+func (d *polygonVertexDecoder) Start(attrs []spec.XMLAttr) error {
 	var (
 		p    go3mf.Point2D
 		errs error
@@ -245,7 +237,7 @@ func (d *polygonDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	return
 }
 
-func (d *polygonDecoder) Start(attrs []spec.Attr) error {
+func (d *polygonDecoder) Start(attrs []spec.XMLAttr) error {
 	var errs error
 	polygonIndex := len(d.slice.Polygons)
 	d.slice.Polygons = append(d.slice.Polygons, Polygon{})
@@ -271,7 +263,7 @@ type polygonSegmentDecoder struct {
 	polygon *Polygon
 }
 
-func (d *polygonSegmentDecoder) Start(attrs []spec.Attr) error {
+func (d *polygonSegmentDecoder) Start(attrs []spec.XMLAttr) error {
 	var (
 		segment      Segment
 		hasP1, hasP2 bool

@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/hpinc/go3mf"
+	"github.com/hpinc/go3mf/spec"
 )
 
 func TestMarshalModel(t *testing.T) {
@@ -30,7 +31,7 @@ func TestMarshalModel(t *testing.T) {
 	meshRes := &go3mf.Object{
 		Mesh: new(go3mf.Mesh),
 		ID:   8, Name: "Box 1",
-		AnyAttr: go3mf.AnyAttr{&ObjectAttr{SliceStackID: 3, MeshResolution: ResolutionLow}},
+		AnyAttr: spec.AnyAttr{&ObjectAttr{SliceStackID: 3, MeshResolution: ResolutionLow}},
 	}
 	baseMaterial := &go3mf.BaseMaterials{ID: 10, Materials: []go3mf.Base{{Name: "a", Color: color.RGBA{R: 1}}, {Name: "b", Color: color.RGBA{R: 1}}}}
 

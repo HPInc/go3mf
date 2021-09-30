@@ -25,7 +25,8 @@ import (
 
 const fakeExtension = "http://dummy.com/fake_ext"
 
-var fooName = xml.Name{Space: "http://dummy.com/foo", Local: "fooname"}
+var fooSpace = "http://dummy.com/foo"
+var fooName = xml.Name{Space: fooSpace, Local: "fooname"}
 
 var fakeSpec = Extension{
 	Namespace:  fakeExtension,
@@ -34,32 +35,20 @@ var fakeSpec = Extension{
 }
 
 var fooSpec = Extension{
-	Namespace:  fooName.Space,
+	Namespace:  fooSpace,
 	LocalName:  "foo",
 	IsRequired: false,
 }
 
 type qmExtension struct{}
 
+func (qmExtension) NewAttr3MF(parent string) spec.Attr3MF {
+	return &fakeAttr{}
+}
+
 func (qmExtension) CreateElementDecoder(parent interface{}, name string) spec.ElementDecoder {
 	if e, ok := parent.(*Resources); ok {
 		return &fakeAssetDecoder{resources: e}
-	}
-	return nil
-}
-
-func (qmExtension) DecodeAttribute(parentNode interface{}, attr spec.Attr) error {
-	switch t := parentNode.(type) {
-	case *Object:
-		t.AnyAttr = append(t.AnyAttr, &fakeAttr{string(attr.Value)})
-	case *Build:
-		t.AnyAttr = append(t.AnyAttr, &fakeAttr{string(attr.Value)})
-	case *Model:
-		t.AnyAttr = append(t.AnyAttr, &fakeAttr{string(attr.Value)})
-	case *Item:
-		t.AnyAttr = append(t.AnyAttr, &fakeAttr{string(attr.Value)})
-	case *Component:
-		t.AnyAttr = append(t.AnyAttr, &fakeAttr{string(attr.Value)})
 	}
 	return nil
 }
@@ -92,12 +81,24 @@ type fakeAttr struct {
 
 func (f *fakeAttr) ObjectPath() string { return f.Value }
 
+func (f fakeAttr) Namespace() string { return fakeExtension }
+
+func (f fakeAttr) Marshal3MFAttr(enc spec.Encoder, start *xml.StartElement) error {
+	start.Attr = append(start.Attr, xml.Attr{Name: xml.Name{Space: fakeExtension, Local: "value"}, Value: f.Value})
+	return nil
+}
+
+func (f *fakeAttr) Unmarshal3MFAttr(a spec.XMLAttr) error {
+	f.Value = string(a.Value)
+	return nil
+}
+
 type fakeAssetDecoder struct {
 	baseDecoder
 	resources *Resources
 }
 
-func (f *fakeAssetDecoder) Start(att []spec.Attr) error {
+func (f *fakeAssetDecoder) Start(att []spec.XMLAttr) error {
 	id, _ := strconv.ParseUint(string(att[0].Value), 10, 32)
 	f.resources.Assets = append(f.resources.Assets, &fakeAsset{ID: uint32(id)})
 	return nil
@@ -316,15 +317,15 @@ func TestDecoder_processRootModel_Fail(t *testing.T) {
 }
 
 func TestDecoder_processRootModel(t *testing.T) {
-	Register(fakeSpec.Namespace, new(qmExtension))
+	spec.Register(fakeSpec.Namespace, new(qmExtension))
 	baseMaterials := &BaseMaterials{ID: 5, Materials: []Base{
 		{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}},
-		{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}, AnyAttr: AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval8"}}}},
-	}, AnyAttr: AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval7"}}}}
+		{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}, AnyAttr: spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "fooval8"}}}}},
+	}, AnyAttr: spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "fooval7"}}}}}
 	meshRes := &Object{
 		ID: 8, Name: "Box 1", Thumbnail: "/a.png", PID: 5, PartNumber: "11111111-1111-1111-1111-111111111111",
 		Mesh: &Mesh{
-			AnyAttr: AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval9"}}},
+			AnyAttr: spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "fooval9"}}}},
 			Any: Any{spec.UnknownTokens{
 				xml.StartElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "fake"}},
 				xml.EndElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "fake"}},
@@ -342,7 +343,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 		{0, 100, 100},
 	}...)
 	meshRes.Mesh.Triangles = append(meshRes.Mesh.Triangles, []Triangle{
-		{V1: 3, V2: 2, V3: 1, PID: 5, P1: 0, P2: 0, P3: 0},
+		{V1: 3, V2: 2, V3: 1, PID: 5, P1: 0, P2: 0, P3: 0, AnyAttr: spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "t1"}}}}},
 		{V1: 1, V2: 0, V3: 3, PID: 5, P1: 0, P2: 0, P3: 0},
 		{V1: 4, V2: 5, V3: 6, PID: 5, P1: 1, P2: 1, P3: 1},
 		{V1: 6, V2: 7, V3: 4, PID: 5, P1: 1, P2: 1, P3: 1},
@@ -358,14 +359,14 @@ func TestDecoder_processRootModel(t *testing.T) {
 
 	components := &Object{
 		ID: 20, Type: ObjectTypeSupport,
-		AnyAttr:  AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval6"}}},
+		AnyAttr:  spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "fooval6"}}}},
 		Metadata: []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}, {Name: xml.Name{Space: "qm", Local: "CustomMetadata4"}, Type: "xs:boolean", Value: "2"}},
 		Components: &Components{
-			AnyAttr: AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval4"}}},
+			AnyAttr: spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "fooval4"}}}},
 			Component: []*Component{
 				{
 					ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1},
-					AnyAttr: AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval5"}}},
+					AnyAttr: spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "fooval5"}}}},
 				},
 			},
 		},
@@ -393,12 +394,12 @@ func TestDecoder_processRootModel(t *testing.T) {
 					xml.EndElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "resources"}},
 				},
 			}}, Objects: []*Object{meshRes, components},
-			AnyAttr: AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval3"}}},
+			AnyAttr: spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "fooval3"}}}},
 		},
 		Build: Build{
-			AnyAttr: AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval1"}}},
+			AnyAttr: spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "fooval1"}}}},
 		},
-		AnyAttr: AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval"}}},
+		AnyAttr: spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "fooval"}}}},
 		Any: Any{
 			spec.UnknownTokens{
 				xml.StartElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "other"}},
@@ -417,7 +418,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 	want.Build.Items = append(want.Build.Items, &Item{
 		ObjectID: 20, PartNumber: "bob", Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
 		Metadata: []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}},
-		AnyAttr:  AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "fooval2"}}},
+		AnyAttr:  spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "fooval2"}}}},
 	})
 	want.Metadata = append(want.Metadata, []Metadata{
 		{Name: xml.Name{Local: "Application"}, Value: "go3mf app"},
@@ -444,7 +445,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 						<vertex x="0" y="100.00000" z="100.00000" />
 					</vertices>
 					<triangles>
-						<triangle v1="3" v2="2" v3="1" foo:fooname="f1" />
+						<triangle v1="3" v2="2" v3="1" foo:fooname="t1" />
 						<triangle v1="1" v2="0" v3="3" />
 						<triangle v1="4" v2="5" v3="6" p1="1" />
 						<triangle v1="6" v2="7" v3="4" pid="5" p1="1" />
@@ -632,7 +633,7 @@ func TestNewDecoder(t *testing.T) {
 }
 
 func TestDecoder_processRootModel_warns(t *testing.T) {
-	Register(fakeSpec.Namespace, new(qmExtension))
+	spec.Register(fakeSpec.Namespace, new(qmExtension))
 	want := []string{
 		fmt.Sprintf("Resources@BaseMaterials#0@Base#0: %v", specerr.NewParseAttrError("displaycolor", true)),
 		fmt.Sprintf("Resources@BaseMaterials#1: %v", specerr.NewParseAttrError("id", true)),

@@ -5,7 +5,9 @@ package slices
 
 import (
 	"errors"
+
 	"github.com/hpinc/go3mf"
+	"github.com/hpinc/go3mf/spec"
 )
 
 // Namespace is the canonical name of this extension.
@@ -18,7 +20,7 @@ var DefaultExtension = go3mf.Extension{
 }
 
 func init() {
-	go3mf.Register(Namespace, Spec{})
+	spec.Register(Namespace, Spec{})
 }
 
 type Spec struct{}
@@ -121,6 +123,8 @@ type ObjectAttr struct {
 	SliceStackID   uint32
 	MeshResolution MeshResolution
 }
+
+func (ObjectAttr) Namespace() string { return Namespace }
 
 const (
 	attrSliceStack = "slicestack"

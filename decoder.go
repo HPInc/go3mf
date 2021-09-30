@@ -36,7 +36,7 @@ func (d *modelDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 				child = &metadataDecoder{metadatas: &d.model.Metadata, model: d.model}
 			}
 		}
-	} else if ext, ok := loadExtension(name.Space); ok {
+	} else if ext, ok := spec.LoadExtension(name.Space); ok {
 		child = ext.CreateElementDecoder(d.model, name.Local)
 	} else {
 		child = &anyUnknownDecoder{UnknownTokensDecoder: spec.UnknownTokensDecoder{Name: name}, Any: &d.model.Any}
@@ -44,7 +44,7 @@ func (d *modelDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	return
 }
 
-func (d *modelDecoder) Start(attrs []spec.Attr) (err error) {
+func (d *modelDecoder) Start(attrs []spec.XMLAttr) (err error) {
 	if !d.isRoot {
 		return
 	}
@@ -79,7 +79,7 @@ func (d *modelDecoder) Start(attrs []spec.Attr) (err error) {
 	return
 }
 
-func (d *modelDecoder) noCoreAttribute(a spec.Attr) (err error) {
+func (d *modelDecoder) noCoreAttribute(a spec.XMLAttr) (err error) {
 	switch a.Name.Space {
 	case nsXML:
 		if a.Name.Local == attrLang {
@@ -92,11 +92,12 @@ func (d *modelDecoder) noCoreAttribute(a spec.Attr) (err error) {
 			IsRequired: false,
 		})
 	default:
-		if ext, ok := loadExtension(a.Name.Space); ok {
-			err = specerr.Append(err, ext.DecodeAttribute(d.model, a))
-		} else {
-			d.model.AnyAttr.AddUnknownAttr(a)
+		var attr spec.Attr3MF
+		if attr = d.model.AnyAttr.Get(a.Name.Space); attr == nil {
+			attr = spec.NewAttr3MF(a.Name.Space, attrModel)
+			d.model.AnyAttr = append(d.model.AnyAttr, attr)
 		}
+		err = specerr.Append(err, attr.Unmarshal3MFAttr(a))
 	}
 	return
 }
@@ -130,7 +131,7 @@ func (d *metadataDecoder) namespace(local string) (string, bool) {
 	return "", false
 }
 
-func (d *metadataDecoder) Start(attrs []spec.Attr) error {
+func (d *metadataDecoder) Start(attrs []spec.XMLAttr) error {
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
@@ -181,14 +182,15 @@ func (d *buildDecoder) Wrap(err error) error {
 	return specerr.Wrap(err, d.build)
 }
 
-func (d *buildDecoder) Start(attrs []spec.Attr) error {
+func (d *buildDecoder) Start(attrs []spec.XMLAttr) error {
 	var errs error
 	for _, a := range attrs {
-		if ext, ok := loadExtension(a.Name.Space); ok {
-			errs = specerr.Append(errs, ext.DecodeAttribute(d.build, a))
-		} else {
-			d.build.AnyAttr.AddUnknownAttr(a)
+		var attr spec.Attr3MF
+		if attr = d.build.AnyAttr.Get(a.Name.Space); attr == nil {
+			attr = spec.NewAttr3MF(a.Name.Space, attrBuild)
+			d.build.AnyAttr = append(d.build.AnyAttr, attr)
 		}
+		errs = specerr.Append(errs, attr.Unmarshal3MFAttr(a))
 	}
 	if errs != nil {
 		return d.Wrap(errs)
@@ -218,15 +220,18 @@ func (d *buildItemDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	return
 }
 
-func (d *buildItemDecoder) Start(attrs []spec.Attr) error {
+func (d *buildItemDecoder) Start(attrs []spec.XMLAttr) error {
 	var errs error
 	for _, a := range attrs {
 		if a.Name.Space == "" {
 			errs = specerr.Append(errs, d.parseCoreAttr(a))
-		} else if ext, ok := loadExtension(a.Name.Space); ok {
-			errs = specerr.Append(errs, ext.DecodeAttribute(&d.item, a))
 		} else {
-			d.item.AnyAttr.AddUnknownAttr(a)
+			var attr spec.Attr3MF
+			if attr = d.item.AnyAttr.Get(a.Name.Space); attr == nil {
+				attr = spec.NewAttr3MF(a.Name.Space, attrItem)
+				d.item.AnyAttr = append(d.item.AnyAttr, attr)
+			}
+			errs = specerr.Append(errs, attr.Unmarshal3MFAttr(a))
 		}
 	}
 	if errs != nil {
@@ -235,7 +240,7 @@ func (d *buildItemDecoder) Start(attrs []spec.Attr) error {
 	return errs
 }
 
-func (d *buildItemDecoder) parseCoreAttr(a spec.Attr) (errs error) {
+func (d *buildItemDecoder) parseCoreAttr(a spec.XMLAttr) (errs error) {
 	switch a.Name.Local {
 	case attrObjectID:
 		val, err := strconv.ParseUint(string(a.Value), 10, 32)
@@ -261,14 +266,15 @@ type resourceDecoder struct {
 	resources *Resources
 }
 
-func (d *resourceDecoder) Start(attrs []spec.Attr) error {
+func (d *resourceDecoder) Start(attrs []spec.XMLAttr) error {
 	var errs error
 	for _, a := range attrs {
-		if ext, ok := loadExtension(a.Name.Space); ok {
-			errs = specerr.Append(errs, ext.DecodeAttribute(d.resources, a))
-		} else {
-			d.resources.AnyAttr.AddUnknownAttr(a)
+		var attr spec.Attr3MF
+		if attr = d.resources.AnyAttr.Get(a.Name.Space); attr == nil {
+			attr = spec.NewAttr3MF(a.Name.Space, attrResources)
+			d.resources.AnyAttr = append(d.resources.AnyAttr, attr)
 		}
+		errs = specerr.Append(errs, attr.Unmarshal3MFAttr(a))
 	}
 	if errs != nil {
 		return specerr.Wrap(errs, d.resources)
@@ -288,7 +294,7 @@ func (d *resourceDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 		case attrBaseMaterials:
 			child = &baseMaterialsDecoder{resources: d.resources}
 		}
-	} else if ext, ok := loadExtension(name.Space); ok {
+	} else if ext, ok := spec.LoadExtension(name.Space); ok {
 		child = ext.CreateElementDecoder(d.resources, name.Local)
 	} else {
 		child = &unknownAssetDecoder{UnknownTokensDecoder: spec.UnknownTokensDecoder{Name: name}, resources: d.resources}
@@ -318,7 +324,7 @@ func (d *baseMaterialsDecoder) Child(name xml.Name) (child spec.ElementDecoder) 
 	return
 }
 
-func (d *baseMaterialsDecoder) Start(attrs []spec.Attr) error {
+func (d *baseMaterialsDecoder) Start(attrs []spec.XMLAttr) error {
 	var errs error
 	d.baseMaterialDecoder.resource = &d.resource
 	for _, a := range attrs {
@@ -330,10 +336,13 @@ func (d *baseMaterialsDecoder) Start(attrs []spec.Attr) error {
 				}
 				d.resource.ID = uint32(id)
 			}
-		} else if ext, ok := loadExtension(a.Name.Space); ok {
-			errs = specerr.Append(errs, ext.DecodeAttribute(&d.resource, a))
 		} else {
-			d.resource.AnyAttr.AddUnknownAttr(a)
+			var attr spec.Attr3MF
+			if attr = d.resource.AnyAttr.Get(a.Name.Space); attr == nil {
+				attr = spec.NewAttr3MF(a.Name.Space, attrBaseMaterials)
+				d.resource.AnyAttr = append(d.resource.AnyAttr, attr)
+			}
+			errs = specerr.Append(errs, attr.Unmarshal3MFAttr(a))
 		}
 	}
 	if errs != nil {
@@ -347,7 +356,7 @@ type baseMaterialDecoder struct {
 	resource *BaseMaterials
 }
 
-func (d *baseMaterialDecoder) Start(attrs []spec.Attr) error {
+func (d *baseMaterialDecoder) Start(attrs []spec.XMLAttr) error {
 	var (
 		base Base
 		errs error
@@ -364,10 +373,13 @@ func (d *baseMaterialDecoder) Start(attrs []spec.Attr) error {
 					errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 				}
 			}
-		} else if ext, ok := loadExtension(a.Name.Space); ok {
-			errs = specerr.Append(errs, ext.DecodeAttribute(&base, a))
 		} else {
-			base.AnyAttr.AddUnknownAttr(a)
+			var attr spec.Attr3MF
+			if attr = base.AnyAttr.Get(a.Name.Space); attr == nil {
+				attr = spec.NewAttr3MF(a.Name.Space, attrBase)
+				base.AnyAttr = append(base.AnyAttr, attr)
+			}
+			errs = specerr.Append(errs, attr.Unmarshal3MFAttr(a))
 		}
 	}
 	d.resource.Materials = append(d.resource.Materials, base)
@@ -382,15 +394,16 @@ type meshDecoder struct {
 	resource *Object
 }
 
-func (d *meshDecoder) Start(attrs []spec.Attr) error {
+func (d *meshDecoder) Start(attrs []spec.XMLAttr) error {
 	d.resource.Mesh = new(Mesh)
 	var errs error
 	for _, a := range attrs {
-		if ext, ok := loadExtension(a.Name.Space); ok {
-			errs = specerr.Append(errs, ext.DecodeAttribute(d.resource.Mesh, a))
-		} else {
-			d.resource.Mesh.AnyAttr.AddUnknownAttr(a)
+		var attr spec.Attr3MF
+		if attr = d.resource.Mesh.AnyAttr.Get(a.Name.Space); attr == nil {
+			attr = spec.NewAttr3MF(a.Name.Space, attrMesh)
+			d.resource.Mesh.AnyAttr = append(d.resource.Mesh.AnyAttr, attr)
 		}
+		errs = specerr.Append(errs, attr.Unmarshal3MFAttr(a))
 	}
 	if errs != nil {
 		return specerr.Wrap(errs, d.resource.Mesh)
@@ -409,7 +422,7 @@ func (d *meshDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 		} else if name.Local == attrTriangles {
 			child = &trianglesDecoder{resource: d.resource}
 		}
-	} else if ext, ok := loadExtension(name.Space); ok {
+	} else if ext, ok := spec.LoadExtension(name.Space); ok {
 		child = ext.CreateElementDecoder(d.resource.Mesh, name.Local)
 	} else {
 		child = &anyUnknownDecoder{UnknownTokensDecoder: spec.UnknownTokensDecoder{Name: name}, Any: &d.resource.Mesh.Any}
@@ -423,7 +436,7 @@ type verticesDecoder struct {
 	vertexDecoder vertexDecoder
 }
 
-func (d *verticesDecoder) Start(_ []spec.Attr) error {
+func (d *verticesDecoder) Start(_ []spec.XMLAttr) error {
 	d.vertexDecoder.mesh = d.mesh
 	return nil
 }
@@ -440,7 +453,7 @@ type vertexDecoder struct {
 	mesh *Mesh
 }
 
-func (d *vertexDecoder) Start(attrs []spec.Attr) error {
+func (d *vertexDecoder) Start(attrs []spec.XMLAttr) error {
 	var (
 		x, y, z float32
 		errs    error
@@ -475,7 +488,7 @@ type trianglesDecoder struct {
 	triangleDecoder triangleDecoder
 }
 
-func (d *trianglesDecoder) Start(_ []spec.Attr) error {
+func (d *trianglesDecoder) Start(_ []spec.XMLAttr) error {
 	d.triangleDecoder.mesh = d.resource.Mesh
 	d.triangleDecoder.defaultPropertyID = d.resource.PID
 	d.triangleDecoder.defaultPropertyIndex = d.resource.PIndex
@@ -499,7 +512,7 @@ type triangleDecoder struct {
 	defaultPropertyIndex, defaultPropertyID uint32
 }
 
-func (d *triangleDecoder) Start(attrs []spec.Attr) error {
+func (d *triangleDecoder) Start(attrs []spec.XMLAttr) error {
 	var (
 		t                           Triangle
 		pid, p1, p2, p3             uint32
@@ -508,37 +521,43 @@ func (d *triangleDecoder) Start(attrs []spec.Attr) error {
 	)
 
 	for _, a := range attrs {
-		if a.Name.Space != "" {
-			continue
-		}
-		required := true
-		val, err := strconv.ParseUint(string(a.Value), 10, 32)
-		switch a.Name.Local {
-		case attrV1:
-			t.V1 = uint32(val)
-		case attrV2:
-			t.V2 = uint32(val)
-		case attrV3:
-			t.V3 = uint32(val)
-		case attrPID:
-			pid = uint32(val)
-			hasPID = true
-			required = false
-		case attrP1:
-			p1 = uint32(val)
-			hasP1 = true
-			required = false
-		case attrP2:
-			p2 = uint32(val)
-			hasP2 = true
-			required = false
-		case attrP3:
-			p3 = uint32(val)
-			hasP3 = true
-			required = false
-		}
-		if err != nil {
-			errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, required))
+		if a.Name.Space == "" {
+			required := true
+			val, err := strconv.ParseUint(string(a.Value), 10, 32)
+			switch a.Name.Local {
+			case attrV1:
+				t.V1 = uint32(val)
+			case attrV2:
+				t.V2 = uint32(val)
+			case attrV3:
+				t.V3 = uint32(val)
+			case attrPID:
+				pid = uint32(val)
+				hasPID = true
+				required = false
+			case attrP1:
+				p1 = uint32(val)
+				hasP1 = true
+				required = false
+			case attrP2:
+				p2 = uint32(val)
+				hasP2 = true
+				required = false
+			case attrP3:
+				p3 = uint32(val)
+				hasP3 = true
+				required = false
+			}
+			if err != nil {
+				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, required))
+			}
+		} else {
+			var attr spec.Attr3MF
+			if attr = t.AnyAttr.Get(a.Name.Space); attr == nil {
+				attr = spec.NewAttr3MF(a.Name.Space, attrTriangle)
+				t.AnyAttr = append(t.AnyAttr, attr)
+			}
+			errs = specerr.Append(errs, attr.Unmarshal3MFAttr(a))
 		}
 	}
 
@@ -573,15 +592,18 @@ func (d *objectDecoder) End() {
 	d.resources.Objects = append(d.resources.Objects, &d.resource)
 }
 
-func (d *objectDecoder) Start(attrs []spec.Attr) error {
+func (d *objectDecoder) Start(attrs []spec.XMLAttr) error {
 	var errs error
 	for _, a := range attrs {
 		if a.Name.Space == "" {
 			errs = specerr.Append(errs, d.parseCoreAttr(a))
-		} else if ext, ok := loadExtension(a.Name.Space); ok {
-			errs = specerr.Append(errs, ext.DecodeAttribute(&d.resource, a))
 		} else {
-			d.resource.AnyAttr.AddUnknownAttr(a)
+			var attr spec.Attr3MF
+			if attr = d.resource.AnyAttr.Get(a.Name.Space); attr == nil {
+				attr = spec.NewAttr3MF(a.Name.Space, attrObject)
+				d.resource.AnyAttr = append(d.resource.AnyAttr, attr)
+			}
+			errs = specerr.Append(errs, attr.Unmarshal3MFAttr(a))
 		}
 	}
 	if errs != nil {
@@ -607,7 +629,7 @@ func (d *objectDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	return
 }
 
-func (d *objectDecoder) parseCoreAttr(a spec.Attr) (errs error) {
+func (d *objectDecoder) parseCoreAttr(a spec.XMLAttr) (errs error) {
 	switch a.Name.Local {
 	case attrID:
 		id, err := strconv.ParseUint(string(a.Value), 10, 32)
@@ -649,17 +671,18 @@ type componentsDecoder struct {
 	componentDecoder componentDecoder
 }
 
-func (d *componentsDecoder) Start(attrs []spec.Attr) error {
+func (d *componentsDecoder) Start(attrs []spec.XMLAttr) error {
 	var errs error
 	components := new(Components)
 	d.componentDecoder.resource = d.resource
 
 	for _, a := range attrs {
-		if ext, ok := loadExtension(a.Name.Space); ok {
-			errs = specerr.Append(errs, ext.DecodeAttribute(components, a))
-		} else {
-			components.AnyAttr.AddUnknownAttr(a)
+		var attr spec.Attr3MF
+		if attr = components.AnyAttr.Get(a.Name.Space); attr == nil {
+			attr = spec.NewAttr3MF(a.Name.Space, attrComponents)
+			components.AnyAttr = append(components.AnyAttr, attr)
 		}
+		errs = specerr.Append(errs, attr.Unmarshal3MFAttr(a))
 	}
 	d.resource.Components = components
 	if errs != nil {
@@ -684,7 +707,7 @@ type componentDecoder struct {
 	resource *Object
 }
 
-func (d *componentDecoder) Start(attrs []spec.Attr) error {
+func (d *componentDecoder) Start(attrs []spec.XMLAttr) error {
 	var (
 		component Component
 		errs      error
@@ -704,10 +727,13 @@ func (d *componentDecoder) Start(attrs []spec.Attr) error {
 					errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, false))
 				}
 			}
-		} else if ext, ok := loadExtension(a.Name.Space); ok {
-			errs = specerr.Append(errs, ext.DecodeAttribute(&component, a))
 		} else {
-			component.AnyAttr.AddUnknownAttr(a)
+			var attr spec.Attr3MF
+			if attr = component.AnyAttr.Get(a.Name.Space); attr == nil {
+				attr = spec.NewAttr3MF(a.Name.Space, attrComponent)
+				component.AnyAttr = append(component.AnyAttr, attr)
+			}
+			errs = specerr.Append(errs, attr.Unmarshal3MFAttr(a))
 		}
 	}
 	d.resource.Components.Component = append(d.resource.Components.Component, &component)
@@ -720,8 +746,8 @@ func (d *componentDecoder) Start(attrs []spec.Attr) error {
 type baseDecoder struct {
 }
 
-func (d *baseDecoder) Start([]spec.Attr) error { return nil }
-func (d *baseDecoder) End()                    {}
+func (d *baseDecoder) Start([]spec.XMLAttr) error { return nil }
+func (d *baseDecoder) End()                       {}
 
 type topLevelDecoder struct {
 	baseDecoder
@@ -744,7 +770,7 @@ type unknownAssetDecoder struct {
 	resource  UnknownAsset
 }
 
-func (d *unknownAssetDecoder) Start(attrs []spec.Attr) (errs error) {
+func (d *unknownAssetDecoder) Start(attrs []spec.XMLAttr) (errs error) {
 	d.UnknownTokensDecoder.Start(attrs)
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrID {

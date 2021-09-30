@@ -11,6 +11,7 @@ import (
 	"github.com/go-test/deep"
 	"github.com/hpinc/go3mf"
 	"github.com/hpinc/go3mf/errors"
+	"github.com/hpinc/go3mf/spec"
 )
 
 func TestValidate(t *testing.T) {
@@ -21,13 +22,13 @@ func TestValidate(t *testing.T) {
 		want  []string
 	}{
 		{"extRequired", &go3mf.Model{
-			AnyAttr:    go3mf.AnyAttr{&ObjectAttr{SliceStackID: 10}},
+			AnyAttr:    spec.AnyAttr{&ObjectAttr{SliceStackID: 10}},
 			Extensions: []go3mf.Extension{{Namespace: Namespace, LocalName: "s", IsRequired: true}}, Resources: go3mf.Resources{
 				Assets: []go3mf.Asset{
 					&SliceStack{ID: 1, Slices: []*Slice{{TopZ: 1}}},
 				},
 				Objects: []*go3mf.Object{
-					{ID: 2, AnyAttr: go3mf.AnyAttr{&ObjectAttr{
+					{ID: 2, AnyAttr: spec.AnyAttr{&ObjectAttr{
 						SliceStackID: 1, MeshResolution: ResolutionLow,
 					}}},
 				}},
@@ -125,30 +126,30 @@ func TestValidate(t *testing.T) {
 					}}}},
 				},
 				Objects: []*go3mf.Object{
-					{ID: 1, Mesh: &go3mf.Mesh{}, AnyAttr: go3mf.AnyAttr{&ObjectAttr{
+					{ID: 1, Mesh: &go3mf.Mesh{}, AnyAttr: spec.AnyAttr{&ObjectAttr{
 						SliceStackID: 1,
 					}}},
-					{ID: 2, Type: go3mf.ObjectTypeSupport, Components: &go3mf.Components{Component: []*go3mf.Component{{ObjectID: 1}}}, AnyAttr: go3mf.AnyAttr{&ObjectAttr{
+					{ID: 2, Type: go3mf.ObjectTypeSupport, Components: &go3mf.Components{Component: []*go3mf.Component{{ObjectID: 1}}}, AnyAttr: spec.AnyAttr{&ObjectAttr{
 						SliceStackID: 3, MeshResolution: ResolutionLow,
 					}}},
 					{ID: 4, Components: &go3mf.Components{Component: []*go3mf.Component{{ObjectID: 10, Transform: go3mf.Matrix{2, 3, 0, 0, 1, 3, 0, 0, 0, 0, 2, 0, 2, 3, 4, 1}}}},
-						AnyAttr: go3mf.AnyAttr{&ObjectAttr{
+						AnyAttr: spec.AnyAttr{&ObjectAttr{
 							SliceStackID: 0,
 						}}},
-					{ID: 5, Components: &go3mf.Components{Component: []*go3mf.Component{{ObjectID: 12}}}, AnyAttr: go3mf.AnyAttr{&ObjectAttr{
+					{ID: 5, Components: &go3mf.Components{Component: []*go3mf.Component{{ObjectID: 12}}}, AnyAttr: spec.AnyAttr{&ObjectAttr{
 						SliceStackID: 6,
 					}}},
-					{ID: 7, Components: &go3mf.Components{Component: []*go3mf.Component{{ObjectID: 1}, {ObjectID: 4}}}, AnyAttr: go3mf.AnyAttr{&ObjectAttr{
+					{ID: 7, Components: &go3mf.Components{Component: []*go3mf.Component{{ObjectID: 1}, {ObjectID: 4}}}, AnyAttr: spec.AnyAttr{&ObjectAttr{
 						SliceStackID: 9,
 					}}},
-					{ID: 10, Type: go3mf.ObjectTypeSolidSupport, Components: &go3mf.Components{Component: []*go3mf.Component{{ObjectID: 1}}}, AnyAttr: go3mf.AnyAttr{&ObjectAttr{
+					{ID: 10, Type: go3mf.ObjectTypeSolidSupport, Components: &go3mf.Components{Component: []*go3mf.Component{{ObjectID: 1}}}, AnyAttr: spec.AnyAttr{&ObjectAttr{
 						SliceStackID: 3,
 					}}},
 					{ID: 12, Components: &go3mf.Components{Component: []*go3mf.Component{
 						{ObjectID: 7, Transform: go3mf.Matrix{2, 3, 0, 0, 1, 3, 1, 0, 0, 0, 1, 0, 2, 3, 4, 1}},
 						{ObjectID: 12},
 						{ObjectID: 5},
-					}}, AnyAttr: go3mf.AnyAttr{&ObjectAttr{
+					}}, AnyAttr: spec.AnyAttr{&ObjectAttr{
 						SliceStackID: 11,
 					}}},
 				}}}, []string{

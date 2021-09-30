@@ -5,7 +5,9 @@ package beamlattice
 
 import (
 	"errors"
+
 	"github.com/hpinc/go3mf"
+	"github.com/hpinc/go3mf/spec"
 )
 
 // Namespace is the canonical name of this extension.
@@ -26,7 +28,7 @@ var (
 )
 
 func init() {
-	go3mf.Register(Namespace, Spec{})
+	spec.Register(Namespace, Spec{})
 }
 
 type Spec struct{}

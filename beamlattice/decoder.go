@@ -12,7 +12,7 @@ import (
 	"github.com/hpinc/go3mf/spec"
 )
 
-func (Spec) DecodeAttribute(interface{}, spec.Attr) error {
+func (Spec) NewAttr3MF(string) spec.Attr3MF {
 	return nil
 }
 
@@ -28,7 +28,7 @@ type beamLatticeDecoder struct {
 	mesh *go3mf.Mesh
 }
 
-func (d *beamLatticeDecoder) Start(attrs []spec.Attr) error {
+func (d *beamLatticeDecoder) Start(attrs []spec.XMLAttr) error {
 	var errs error
 	beamLattice := new(BeamLattice)
 	d.mesh.Any = append(d.mesh.Any, beamLattice)
@@ -102,7 +102,7 @@ type beamsDecoder struct {
 	beamDecoder beamDecoder
 }
 
-func (d *beamsDecoder) Start(_ []spec.Attr) error {
+func (d *beamsDecoder) Start(_ []spec.XMLAttr) error {
 	d.beamDecoder.mesh = d.mesh
 	return nil
 }
@@ -119,7 +119,7 @@ type beamDecoder struct {
 	mesh *go3mf.Mesh
 }
 
-func (d *beamDecoder) Start(attrs []spec.Attr) error {
+func (d *beamDecoder) Start(attrs []spec.XMLAttr) error {
 	var (
 		beam             Beam
 		hasCap1, hasCap2 bool
@@ -212,7 +212,7 @@ func (d *beamSetDecoder) End() {
 	beamLattice.BeamSets = append(beamLattice.BeamSets, d.beamSet)
 }
 
-func (d *beamSetDecoder) Start(attrs []spec.Attr) error {
+func (d *beamSetDecoder) Start(attrs []spec.XMLAttr) error {
 	d.beamRefDecoder.beamSet = &d.beamSet
 	for _, a := range attrs {
 		if a.Name.Space != "" {
@@ -244,7 +244,7 @@ type beamRefDecoder struct {
 	beamSet *BeamSet
 }
 
-func (d *beamRefDecoder) Start(attrs []spec.Attr) error {
+func (d *beamRefDecoder) Start(attrs []spec.XMLAttr) error {
 	var (
 		val  uint64
 		errs error
@@ -269,5 +269,5 @@ func (d *beamRefDecoder) Start(attrs []spec.Attr) error {
 type baseDecoder struct {
 }
 
-func (d *baseDecoder) Start([]spec.Attr) error { return nil }
-func (d *baseDecoder) End()                    {}
+func (d *baseDecoder) Start([]spec.XMLAttr) error { return nil }
+func (d *baseDecoder) End()                       {}

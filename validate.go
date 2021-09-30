@@ -46,7 +46,7 @@ func (m *Model) Validate() error {
 	errs = errors.Append(errs, checkMetadadata(m, m.Metadata))
 
 	for _, ext := range m.Extensions {
-		if ext, ok := loadValidator(ext.Namespace); ok {
+		if ext, ok := spec.LoadValidator(ext.Namespace); ok {
 			errs = errors.Append(errs, ext.Validate(m, m.Path, m))
 		}
 	}
@@ -178,7 +178,7 @@ func (res *Resources) validate(m *Model, path string) error {
 		}
 
 		for _, ext := range m.Extensions {
-			if ext, ok := loadValidator(ext.Namespace); ok {
+			if ext, ok := spec.LoadValidator(ext.Namespace); ok {
 				aErrs = errors.Append(aErrs, ext.Validate(m, path, r))
 			}
 		}
@@ -236,7 +236,7 @@ func (r *Object) Validate(m *Model, path string) error {
 	}
 
 	for _, ext := range m.Extensions {
-		if ext, ok := loadValidator(ext.Namespace); ok {
+		if ext, ok := spec.LoadValidator(ext.Namespace); ok {
 			errs = errors.Append(errs, ext.Validate(m, path, r))
 		}
 	}
@@ -306,7 +306,7 @@ func (r *Object) validateComponents(m *Model, path string) error {
 func (m *Model) validateNamespaces() error {
 	for _, ext := range m.Extensions {
 		if ext.IsRequired {
-			if _, ok := loadExtension(ext.Namespace); !ok {
+			if _, ok := spec.LoadExtension(ext.Namespace); !ok {
 				return errors.ErrRequiredExt
 			}
 		}

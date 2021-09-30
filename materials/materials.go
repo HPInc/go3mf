@@ -8,6 +8,7 @@ import (
 	"image/color"
 
 	"github.com/hpinc/go3mf"
+	"github.com/hpinc/go3mf/spec"
 )
 
 const (
@@ -24,7 +25,7 @@ var DefaultExtension = go3mf.Extension{
 }
 
 func init() {
-	go3mf.Register(Namespace, Spec{})
+	spec.Register(Namespace, Spec{})
 }
 
 type Spec struct{}

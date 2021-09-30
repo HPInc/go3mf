@@ -123,7 +123,7 @@ type Relationship struct {
 // Build contains one or more items to manufacture as part of processing the job.
 type Build struct {
 	Items   []*Item
-	AnyAttr AnyAttr
+	AnyAttr spec.AnyAttr
 }
 
 // The Resources element acts as the root element of a library of constituent
@@ -131,7 +131,7 @@ type Build struct {
 type Resources struct {
 	Assets  []Asset
 	Objects []*Object
-	AnyAttr AnyAttr
+	AnyAttr spec.AnyAttr
 }
 
 // UnusedID returns the lowest unused ID.
@@ -221,7 +221,7 @@ type Model struct {
 	RootRelationships []Relationship
 	Relationships     []Relationship
 	Any               Any
-	AnyAttr           AnyAttr
+	AnyAttr           spec.AnyAttr
 }
 
 // PathOrDefault returns Path if not empty, else DefaultModelPath.
@@ -338,14 +338,14 @@ func (m *Model) WalkObjects(fn func(string, *Object) error) error {
 type Base struct {
 	Name    string
 	Color   color.RGBA
-	AnyAttr AnyAttr
+	AnyAttr spec.AnyAttr
 }
 
 // BaseMaterials defines a slice of Base.
 type BaseMaterials struct {
 	ID        uint32
 	Materials []Base
-	AnyAttr   AnyAttr
+	AnyAttr   spec.AnyAttr
 }
 
 // Len returns the materials count.
@@ -364,7 +364,7 @@ type Item struct {
 	Transform  Matrix
 	PartNumber string
 	Metadata   []Metadata
-	AnyAttr    AnyAttr
+	AnyAttr    spec.AnyAttr
 }
 
 // ObjectPath search an extension attribute with an ObjectPath
@@ -399,7 +399,7 @@ type Object struct {
 	Metadata   []Metadata
 	Mesh       *Mesh
 	Components *Components
-	AnyAttr    AnyAttr
+	AnyAttr    spec.AnyAttr
 }
 
 func (o *Object) boundingBox(m *Model, path string) Box {
@@ -424,14 +424,14 @@ func (o *Object) boundingBox(m *Model, path string) Box {
 // A Components is an in memory representation of the 3MF components.
 type Components struct {
 	Component []*Component
-	AnyAttr   AnyAttr
+	AnyAttr   spec.AnyAttr
 }
 
 // A Component is an in memory representation of the 3MF component.
 type Component struct {
 	ObjectID  uint32
 	Transform Matrix
-	AnyAttr   AnyAttr
+	AnyAttr   spec.AnyAttr
 }
 
 // ObjectPath search an extension attribute with an ObjectPath
@@ -461,6 +461,7 @@ type Triangle struct {
 	V1, V2, V3 uint32
 	PID        uint32
 	P1, P2, P3 uint32
+	AnyAttr    spec.AnyAttr
 }
 
 // A Mesh is an in memory representation of the 3MF mesh object.
@@ -470,7 +471,7 @@ type Triangle struct {
 type Mesh struct {
 	Vertices  []Point3D
 	Triangles []Triangle
-	AnyAttr   AnyAttr
+	AnyAttr   spec.AnyAttr
 	Any       Any
 }
 
@@ -543,27 +544,6 @@ func newUnits(s string) (u Units, ok bool) {
 		"meter":      UnitMeter,
 	}[s]
 	return
-}
-
-// AnyAttr is an extension point containing <anyAttribute> information.
-type AnyAttr []spec.MarshalerAttr
-
-func (any *AnyAttr) AddUnknownAttr(a spec.Attr) {
-	ua := any.GetUnknownAttr()
-	if ua == nil {
-		ua = &spec.UnknownAttrs{}
-		*any = append(*any, ua)
-	}
-	*ua = append(*ua, xml.Attr{Name: a.Name, Value: string(a.Value)})
-}
-
-func (any AnyAttr) GetUnknownAttr() *spec.UnknownAttrs {
-	for _, a := range any {
-		if a, ok := a.(*spec.UnknownAttrs); ok {
-			return a
-		}
-	}
-	return nil
 }
 
 // Any is an extension point containing <any> information.

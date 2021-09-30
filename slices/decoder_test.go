@@ -10,6 +10,7 @@ import (
 	"github.com/go-test/deep"
 	"github.com/hpinc/go3mf"
 	specerr "github.com/hpinc/go3mf/errors"
+	"github.com/hpinc/go3mf/spec"
 )
 
 func TestDecode(t *testing.T) {
@@ -31,7 +32,7 @@ func TestDecode(t *testing.T) {
 	meshRes := &go3mf.Object{
 		Mesh: new(go3mf.Mesh),
 		ID:   8, Name: "Box 1",
-		AnyAttr: go3mf.AnyAttr{&ObjectAttr{SliceStackID: 3, MeshResolution: ResolutionLow}},
+		AnyAttr: spec.AnyAttr{&ObjectAttr{SliceStackID: 3, MeshResolution: ResolutionLow}},
 	}
 
 	want := &go3mf.Model{

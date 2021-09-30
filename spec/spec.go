@@ -5,13 +5,14 @@ package spec
 
 import (
 	"encoding/xml"
+	"sync"
 )
 
 // Spec is the interface that must be implemented by a 3mf spec.
 //
 // Specs may implement ValidateSpec.
 type Spec interface {
-	DecodeAttribute(parent interface{}, attr Attr) error
+	NewAttr3MF(parent string) Attr3MF
 	CreateElementDecoder(parent interface{}, name string) ElementDecoder
 }
 
@@ -29,8 +30,8 @@ type ValidateSpec interface {
 	Validate(model interface{}, path string, element interface{}) error
 }
 
-// An Attr represents an attribute in an XML element (Name=Value).
-type Attr struct {
+// An XMLAttr represents an attribute in an XML element (Name=Value).
+type XMLAttr struct {
 	Name  xml.Name
 	Value []byte
 }
@@ -47,10 +48,16 @@ type Marshaler interface {
 	Marshal3MF(Encoder) error
 }
 
+// UnmarshalerAttr is the interface implemented by objects that can unmarshal
+// an XML element description of themselves.
+type UnmarshalerAttr interface {
+	Unmarshal3MFAttr(XMLAttr) error
+}
+
 // MarshalerAttr is the interface implemented by objects that can marshal
 // themselves into valid XML attributes.
 type MarshalerAttr interface {
-	Marshal3MFAttr(Encoder) ([]xml.Attr, error)
+	Marshal3MFAttr(Encoder, *xml.StartElement) error
 }
 
 type ErrorWrapper interface {
@@ -59,7 +66,7 @@ type ErrorWrapper interface {
 
 // ElementDecoder defines the minimum contract to decode a 3MF node.
 type ElementDecoder interface {
-	Start([]Attr) error
+	Start([]XMLAttr) error
 	End()
 }
 
@@ -99,56 +106,70 @@ type Encoder interface {
 	SetSkipAttrEscape(bool)
 }
 
-// An UnknownAttrs represents a list of attributes
-// that are not supported by any loaded Spec.
-type UnknownAttrs []xml.Attr
+var (
+	specMu sync.RWMutex
+	specs  = make(map[string]Spec)
+)
 
-func (u UnknownAttrs) Marshal3MFAttr(enc Encoder) ([]xml.Attr, error) {
-	return u, nil
+// Register makes a spec available by the provided namesoace.
+// If Register is called twice with the same name or if spec is nil,
+// it panics.
+func Register(namespace string, spec Spec) {
+	specMu.Lock()
+	defer specMu.Unlock()
+	specs[namespace] = spec
 }
 
-// UnknownTokens represents a section of an xml
-// that cannot be decoded by any loaded Spec.
-type UnknownTokens []xml.Token
-
-func (u UnknownTokens) Marshal3MF(enc Encoder) error {
-	for _, t := range u {
-		enc.EncodeToken(t)
-	}
-	return nil
+type Attr3MF interface {
+	UnmarshalerAttr
+	MarshalerAttr
+	Namespace() string
 }
 
-// UnknownTokensDecoder can be used by spec decoders to maintain the
-// xml tree elements of unknown extensions.
-type UnknownTokensDecoder struct {
-	Name xml.Name
+type AnyAttr []Attr3MF
 
-	tokens UnknownTokens
-}
-
-func (d *UnknownTokensDecoder) Start(attrs []Attr) error {
-	var xattrs []xml.Attr
-	if len(attrs) > 0 {
-		xattrs = make([]xml.Attr, len(attrs))
-		for i, att := range attrs {
-			xattrs[i] = xml.Attr{Name: att.Name, Value: string(att.Value)}
+func (a AnyAttr) Get(namespace string) Attr3MF {
+	for _, v := range a {
+		if v.Namespace() == namespace {
+			return v
 		}
 	}
-	d.AppendToken(xml.StartElement{
-		Name: d.Name,
-		Attr: xattrs,
-	})
 	return nil
 }
 
-func (d *UnknownTokensDecoder) End() {
-	d.AppendToken(xml.EndElement{Name: d.Name})
+func (a AnyAttr) Marshal3MFAttr(x Encoder, start *xml.StartElement) error {
+	for _, ext := range a {
+		err := ext.Marshal3MFAttr(x, start)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-func (d *UnknownTokensDecoder) AppendToken(t xml.Token) {
-	d.tokens = append(d.tokens, t)
+func NewAttr3MF(namespace, parent string) Attr3MF {
+	if ext, ok := LoadExtension(namespace); ok {
+		return ext.NewAttr3MF(parent)
+	}
+	return &UnknownAttrs{
+		Space: namespace,
+	}
 }
 
-func (d UnknownTokensDecoder) Tokens() UnknownTokens {
-	return d.tokens
+func LoadExtension(space string) (Spec, bool) {
+	specMu.RLock()
+	ext, ok := specs[space]
+	specMu.RUnlock()
+	return ext, ok
+}
+
+func LoadValidator(ns string) (ValidateSpec, bool) {
+	specMu.RLock()
+	ext, ok := specs[ns]
+	specMu.RUnlock()
+	if ok {
+		ext, ok := ext.(ValidateSpec)
+		return ext, ok
+	}
+	return nil, false
 }

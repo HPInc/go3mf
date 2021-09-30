@@ -12,10 +12,11 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/hpinc/go3mf/errors"
+	"github.com/hpinc/go3mf/spec"
 )
 
 func TestValidate(t *testing.T) {
-	Register(fakeSpec.Namespace, new(qmExtension))
+	spec.Register(fakeSpec.Namespace, new(qmExtension))
 	tests := []struct {
 		name  string
 		model *Model
@@ -50,7 +51,7 @@ func TestValidate(t *testing.T) {
 		{"build", &Model{Resources: Resources{Assets: []Asset{&BaseMaterials{ID: 1, Materials: []Base{{Name: "a", Color: color.RGBA{A: 1}}}}}, Objects: []*Object{
 			{ID: 2, Type: ObjectTypeOther, Mesh: &Mesh{Vertices: []Point3D{{}, {}, {}, {}}, Triangles: []Triangle{
 				{V1: 0, V2: 1, V3: 2}, {V1: 0, V2: 3, V3: 1}, {V1: 0, V2: 2, V3: 3}, {V1: 1, V2: 3, V3: 2},
-			}}}}}, Build: Build{AnyAttr: AnyAttr{&fakeAttr{}}, Items: []*Item{
+			}}}}}, Build: Build{AnyAttr: spec.AnyAttr{&fakeAttr{}}, Items: []*Item{
 			{},
 			{ObjectID: 2},
 			{ObjectID: 100},

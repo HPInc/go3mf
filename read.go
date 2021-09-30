@@ -80,7 +80,7 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 				names = append(names, currentName)
 				currentName = tp.Name
 				currentDecoder = tmpDecoder
-				err := currentDecoder.Start(*(*[]spec.Attr)(unsafe.Pointer(&tp.Attr)))
+				err := currentDecoder.Start(*(*[]spec.XMLAttr)(unsafe.Pointer(&tp.Attr)))
 				if err != nil {
 					for i := len(state) - 1; i >= 0; i-- {
 						if ew, ok := state[i].(spec.ErrorWrapper); ok {

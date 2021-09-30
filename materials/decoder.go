@@ -13,7 +13,7 @@ import (
 	"github.com/hpinc/go3mf/spec"
 )
 
-func (Spec) DecodeAttribute(interface{}, spec.Attr) error {
+func (Spec) NewAttr3MF(string) spec.Attr3MF {
 	return nil
 }
 
@@ -55,7 +55,7 @@ func (d *colorGroupDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	return
 }
 
-func (d *colorGroupDecoder) Start(attrs []spec.Attr) (errs error) {
+func (d *colorGroupDecoder) Start(attrs []spec.XMLAttr) (errs error) {
 	d.colorDecoder.resource = &d.resource
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrID {
@@ -75,7 +75,7 @@ type colorDecoder struct {
 	resource *ColorGroup
 }
 
-func (d *colorDecoder) Start(attrs []spec.Attr) error {
+func (d *colorDecoder) Start(attrs []spec.XMLAttr) error {
 	for _, a := range attrs {
 		if a.Name.Space == "" && a.Name.Local == attrColor {
 			c, err := spec.ParseRGBA(string(a.Value))
@@ -97,7 +97,7 @@ type tex2DCoordDecoder struct {
 	resource *Texture2DGroup
 }
 
-func (d *tex2DCoordDecoder) Start(attrs []spec.Attr) error {
+func (d *tex2DCoordDecoder) Start(attrs []spec.XMLAttr) error {
 	var (
 		text TextureCoord
 		errs error
@@ -146,7 +146,7 @@ func (d *tex2DGroupDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	return
 }
 
-func (d *tex2DGroupDecoder) Start(attrs []spec.Attr) error {
+func (d *tex2DGroupDecoder) Start(attrs []spec.XMLAttr) error {
 	var errs error
 	d.tex2DCoordDecoder.resource = &d.resource
 	for _, a := range attrs {
@@ -184,7 +184,7 @@ func (d *texture2DDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *texture2DDecoder) Start(attrs []spec.Attr) error {
+func (d *texture2DDecoder) Start(attrs []spec.XMLAttr) error {
 	var errs error
 	for _, a := range attrs {
 		if a.Name.Space != "" {
@@ -237,7 +237,7 @@ func (d *compositeMaterialsDecoder) Child(name xml.Name) (child spec.ElementDeco
 	return
 }
 
-func (d *compositeMaterialsDecoder) Start(attrs []spec.Attr) error {
+func (d *compositeMaterialsDecoder) Start(attrs []spec.XMLAttr) error {
 	var errs error
 	d.compositeDecoder.resource = &d.resource
 	for _, a := range attrs {
@@ -278,7 +278,7 @@ type compositeDecoder struct {
 	resource *CompositeMaterials
 }
 
-func (d *compositeDecoder) Start(attrs []spec.Attr) error {
+func (d *compositeDecoder) Start(attrs []spec.XMLAttr) error {
 	var (
 		composite Composite
 		errs      error
@@ -323,7 +323,7 @@ func (d *multiPropertiesDecoder) Child(name xml.Name) (child spec.ElementDecoder
 	return
 }
 
-func (d *multiPropertiesDecoder) Start(attrs []spec.Attr) error {
+func (d *multiPropertiesDecoder) Start(attrs []spec.XMLAttr) error {
 	var errs error
 	d.multiDecoder.resource = &d.resource
 	for _, a := range attrs {
@@ -363,7 +363,7 @@ type multiDecoder struct {
 	resource *MultiProperties
 }
 
-func (d *multiDecoder) Start(attrs []spec.Attr) error {
+func (d *multiDecoder) Start(attrs []spec.XMLAttr) error {
 	var (
 		multi Multi
 		errs  error
