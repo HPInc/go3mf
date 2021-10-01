@@ -42,18 +42,18 @@ var fooSpec = Extension{
 
 type qmExtension struct{}
 
-func (qmExtension) NewAttr3MF(parent string) spec.AttrGroup {
+func (qmExtension) NewAttrGroup(xml.Name) spec.AttrGroup {
 	return &fakeAttr{}
 }
 
-func (qmExtension) NewElementDecoder(parent interface{}, name string) spec.ElementDecoder {
+func (qmExtension) NewElementDecoder(parent interface{}, _ string) spec.ElementDecoder {
 	if e, ok := parent.(*Resources); ok {
 		return &fakeAssetDecoder{resources: e}
 	}
 	return nil
 }
 
-func (qmExtension) Validate(model interface{}, path string, element interface{}) error {
+func (qmExtension) Validate(model interface{}, _ string, element interface{}) error {
 	if _, ok := element.(*Model); !ok {
 		return nil
 	}

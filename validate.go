@@ -306,7 +306,7 @@ func (r *Object) validateComponents(m *Model, path string) error {
 func (m *Model) validateNamespaces() error {
 	for _, ext := range m.Extensions {
 		if ext.IsRequired {
-			if _, ok := spec.LoadExtension(ext.Namespace); !ok {
+			if _, ok := spec.Load(ext.Namespace); !ok {
 				return errors.ErrRequiredExt
 			}
 		}

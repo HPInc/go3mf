@@ -4,6 +4,9 @@
 package production
 
 import (
+	"encoding/xml"
+
+	"github.com/hpinc/go3mf"
 	specerr "github.com/hpinc/go3mf/errors"
 	"github.com/hpinc/go3mf/spec"
 	"github.com/hpinc/go3mf/uuid"
@@ -13,16 +16,18 @@ func (Spec) NewElementDecoder(_ interface{}, _ string) spec.ElementDecoder {
 	return nil
 }
 
-func (Spec) NewAttr3MF(parent string) spec.AttrGroup {
-	switch parent {
-	case "build":
-		return new(BuildAttr)
-	case "item":
-		return new(ItemAttr)
-	case "object":
-		return new(ObjectAttr)
-	case "component":
-		return new(ComponentAttr)
+func (Spec) NewAttrGroup(parent xml.Name) spec.AttrGroup {
+	if parent.Space == go3mf.Namespace {
+		switch parent.Local {
+		case "build":
+			return new(BuildAttr)
+		case "item":
+			return new(ItemAttr)
+		case "object":
+			return new(ObjectAttr)
+		case "component":
+			return new(ComponentAttr)
+		}
 	}
 	return nil
 }

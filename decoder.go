@@ -36,7 +36,7 @@ func (d *modelDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 				child = &metadataDecoder{metadatas: &d.model.Metadata, model: d.model}
 			}
 		}
-	} else if ext, ok := spec.LoadExtension(name.Space); ok {
+	} else if ext, ok := spec.Load(name.Space); ok {
 		child = ext.NewElementDecoder(d.model, name.Local)
 	} else {
 		child = &spec.AnyUnknownDecoder{UnknownTokensDecoder: spec.UnknownTokensDecoder{Name: name}, Any: &d.model.Any}
@@ -94,7 +94,7 @@ func (d *modelDecoder) noCoreAttribute(a spec.XMLAttr) (err error) {
 	default:
 		var attr spec.AttrGroup
 		if attr = d.model.AnyAttr.Get(a.Name.Space); attr == nil {
-			attr = spec.NewAttr3MF(a.Name.Space, attrModel)
+			attr = spec.NewAttrGroup(a.Name.Space, xml.Name{Space: Namespace, Local: attrModel})
 			d.model.AnyAttr = append(d.model.AnyAttr, attr)
 		}
 		err = specerr.Append(err, attr.Unmarshal3MFAttr(a))
@@ -187,7 +187,7 @@ func (d *buildDecoder) Start(attrs []spec.XMLAttr) error {
 	for _, a := range attrs {
 		var attr spec.AttrGroup
 		if attr = d.build.AnyAttr.Get(a.Name.Space); attr == nil {
-			attr = spec.NewAttr3MF(a.Name.Space, attrBuild)
+			attr = spec.NewAttrGroup(a.Name.Space, xml.Name{Space: Namespace, Local: attrBuild})
 			d.build.AnyAttr = append(d.build.AnyAttr, attr)
 		}
 		errs = specerr.Append(errs, attr.Unmarshal3MFAttr(a))
@@ -228,7 +228,7 @@ func (d *buildItemDecoder) Start(attrs []spec.XMLAttr) error {
 		} else {
 			var attr spec.AttrGroup
 			if attr = d.item.AnyAttr.Get(a.Name.Space); attr == nil {
-				attr = spec.NewAttr3MF(a.Name.Space, attrItem)
+				attr = spec.NewAttrGroup(a.Name.Space, xml.Name{Space: Namespace, Local: attrItem})
 				d.item.AnyAttr = append(d.item.AnyAttr, attr)
 			}
 			errs = specerr.Append(errs, attr.Unmarshal3MFAttr(a))
@@ -271,7 +271,7 @@ func (d *resourceDecoder) Start(attrs []spec.XMLAttr) error {
 	for _, a := range attrs {
 		var attr spec.AttrGroup
 		if attr = d.resources.AnyAttr.Get(a.Name.Space); attr == nil {
-			attr = spec.NewAttr3MF(a.Name.Space, attrResources)
+			attr = spec.NewAttrGroup(a.Name.Space, xml.Name{Space: Namespace, Local: attrResources})
 			d.resources.AnyAttr = append(d.resources.AnyAttr, attr)
 		}
 		errs = specerr.Append(errs, attr.Unmarshal3MFAttr(a))
@@ -294,7 +294,7 @@ func (d *resourceDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 		case attrBaseMaterials:
 			child = &baseMaterialsDecoder{resources: d.resources}
 		}
-	} else if ext, ok := spec.LoadExtension(name.Space); ok {
+	} else if ext, ok := spec.Load(name.Space); ok {
 		child = ext.NewElementDecoder(d.resources, name.Local)
 	} else {
 		child = &unknownAssetDecoder{UnknownTokensDecoder: spec.UnknownTokensDecoder{Name: name}, resources: d.resources}
@@ -339,7 +339,7 @@ func (d *baseMaterialsDecoder) Start(attrs []spec.XMLAttr) error {
 		} else {
 			var attr spec.AttrGroup
 			if attr = d.resource.AnyAttr.Get(a.Name.Space); attr == nil {
-				attr = spec.NewAttr3MF(a.Name.Space, attrBaseMaterials)
+				attr = spec.NewAttrGroup(a.Name.Space, xml.Name{Space: Namespace, Local: attrBaseMaterials})
 				d.resource.AnyAttr = append(d.resource.AnyAttr, attr)
 			}
 			errs = specerr.Append(errs, attr.Unmarshal3MFAttr(a))
@@ -376,7 +376,7 @@ func (d *baseMaterialDecoder) Start(attrs []spec.XMLAttr) error {
 		} else {
 			var attr spec.AttrGroup
 			if attr = base.AnyAttr.Get(a.Name.Space); attr == nil {
-				attr = spec.NewAttr3MF(a.Name.Space, attrBase)
+				attr = spec.NewAttrGroup(a.Name.Space, xml.Name{Space: Namespace, Local: attrBase})
 				base.AnyAttr = append(base.AnyAttr, attr)
 			}
 			errs = specerr.Append(errs, attr.Unmarshal3MFAttr(a))
@@ -400,7 +400,7 @@ func (d *meshDecoder) Start(attrs []spec.XMLAttr) error {
 	for _, a := range attrs {
 		var attr spec.AttrGroup
 		if attr = d.resource.Mesh.AnyAttr.Get(a.Name.Space); attr == nil {
-			attr = spec.NewAttr3MF(a.Name.Space, attrMesh)
+			attr = spec.NewAttrGroup(a.Name.Space, xml.Name{Space: Namespace, Local: attrMesh})
 			d.resource.Mesh.AnyAttr = append(d.resource.Mesh.AnyAttr, attr)
 		}
 		errs = specerr.Append(errs, attr.Unmarshal3MFAttr(a))
@@ -422,7 +422,7 @@ func (d *meshDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 		} else if name.Local == attrTriangles {
 			child = &trianglesDecoder{resource: d.resource}
 		}
-	} else if ext, ok := spec.LoadExtension(name.Space); ok {
+	} else if ext, ok := spec.Load(name.Space); ok {
 		child = ext.NewElementDecoder(d.resource.Mesh, name.Local)
 	} else {
 		child = &spec.AnyUnknownDecoder{UnknownTokensDecoder: spec.UnknownTokensDecoder{Name: name}, Any: &d.resource.Mesh.Any}
@@ -554,7 +554,7 @@ func (d *triangleDecoder) Start(attrs []spec.XMLAttr) error {
 		} else {
 			var attr spec.AttrGroup
 			if attr = t.AnyAttr.Get(a.Name.Space); attr == nil {
-				attr = spec.NewAttr3MF(a.Name.Space, attrTriangle)
+				attr = spec.NewAttrGroup(a.Name.Space, xml.Name{Space: Namespace, Local: attrTriangle})
 				t.AnyAttr = append(t.AnyAttr, attr)
 			}
 			errs = specerr.Append(errs, attr.Unmarshal3MFAttr(a))
@@ -600,7 +600,7 @@ func (d *objectDecoder) Start(attrs []spec.XMLAttr) error {
 		} else {
 			var attr spec.AttrGroup
 			if attr = d.resource.AnyAttr.Get(a.Name.Space); attr == nil {
-				attr = spec.NewAttr3MF(a.Name.Space, attrObject)
+				attr = spec.NewAttrGroup(a.Name.Space, xml.Name{Space: Namespace, Local: attrObject})
 				d.resource.AnyAttr = append(d.resource.AnyAttr, attr)
 			}
 			errs = specerr.Append(errs, attr.Unmarshal3MFAttr(a))
@@ -679,7 +679,7 @@ func (d *componentsDecoder) Start(attrs []spec.XMLAttr) error {
 	for _, a := range attrs {
 		var attr spec.AttrGroup
 		if attr = components.AnyAttr.Get(a.Name.Space); attr == nil {
-			attr = spec.NewAttr3MF(a.Name.Space, attrComponents)
+			attr = spec.NewAttrGroup(a.Name.Space, xml.Name{Space: Namespace, Local: attrComponents})
 			components.AnyAttr = append(components.AnyAttr, attr)
 		}
 		errs = specerr.Append(errs, attr.Unmarshal3MFAttr(a))
@@ -730,7 +730,7 @@ func (d *componentDecoder) Start(attrs []spec.XMLAttr) error {
 		} else {
 			var attr spec.AttrGroup
 			if attr = component.AnyAttr.Get(a.Name.Space); attr == nil {
-				attr = spec.NewAttr3MF(a.Name.Space, attrComponent)
+				attr = spec.NewAttrGroup(a.Name.Space, xml.Name{Space: Namespace, Local: attrComponent})
 				component.AnyAttr = append(component.AnyAttr, attr)
 			}
 			errs = specerr.Append(errs, attr.Unmarshal3MFAttr(a))

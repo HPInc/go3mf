@@ -19,10 +19,12 @@ func (Spec) NewElementDecoder(parent interface{}, name string) spec.ElementDecod
 	return nil
 }
 
-func (Spec) NewAttr3MF(parentNode string) spec.AttrGroup {
-	switch parentNode {
-	case "object":
-		return new(ObjectAttr)
+func (Spec) NewAttrGroup(parent xml.Name) spec.AttrGroup {
+	if parent.Space == go3mf.Namespace {
+		switch parent.Local {
+		case "object":
+			return new(ObjectAttr)
+		}
 	}
 	return nil
 }
