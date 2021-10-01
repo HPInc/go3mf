@@ -12,7 +12,7 @@ import (
 	"github.com/hpinc/go3mf/spec"
 )
 
-func (Spec) CreateElementDecoder(parent interface{}, name string) spec.ElementDecoder {
+func (Spec) NewElementDecoder(parent interface{}, name string) spec.ElementDecoder {
 	if name == attrSliceStack {
 		return &sliceStackDecoder{resources: parent.(*go3mf.Resources)}
 	}

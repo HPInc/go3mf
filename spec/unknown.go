@@ -16,7 +16,7 @@ func (u UnknownAttrs) Namespace() string {
 	return u.Space
 }
 
-func (u UnknownAttrs) Marshal3MFAttr(enc Encoder, start *xml.StartElement) error {
+func (u UnknownAttrs) Marshal3MF(enc Encoder, start *xml.StartElement) error {
 	start.Attr = append(start.Attr, u.Attr...)
 	return nil
 }
@@ -30,7 +30,7 @@ func (u *UnknownAttrs) Unmarshal3MFAttr(a XMLAttr) error {
 // that cannot be decoded by any loaded Spec.
 type UnknownTokens []xml.Token
 
-func (u UnknownTokens) Marshal3MF(enc Encoder) error {
+func (u UnknownTokens) Marshal3MF(enc Encoder, _ *xml.StartElement) error {
 	for _, t := range u {
 		enc.EncodeToken(t)
 	}
@@ -70,4 +70,14 @@ func (d *UnknownTokensDecoder) AppendToken(t xml.Token) {
 
 func (d UnknownTokensDecoder) Tokens() UnknownTokens {
 	return d.tokens
+}
+
+type AnyUnknownDecoder struct {
+	UnknownTokensDecoder
+	Any *Any
+}
+
+func (d *AnyUnknownDecoder) End() {
+	d.UnknownTokensDecoder.End()
+	*d.Any = append(*d.Any, d.Tokens())
 }

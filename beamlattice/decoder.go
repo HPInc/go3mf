@@ -16,7 +16,7 @@ func (Spec) NewAttr3MF(string) spec.Attr3MF {
 	return nil
 }
 
-func (Spec) CreateElementDecoder(parent interface{}, name string) spec.ElementDecoder {
+func (Spec) NewElementDecoder(parent interface{}, name string) spec.ElementDecoder {
 	if name == attrBeamLattice {
 		return &beamLatticeDecoder{mesh: parent.(*go3mf.Mesh)}
 	}

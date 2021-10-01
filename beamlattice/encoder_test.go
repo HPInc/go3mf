@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/hpinc/go3mf"
+	"github.com/hpinc/go3mf/spec"
 )
 
 func TestMarshalModel(t *testing.T) {
@@ -16,7 +17,7 @@ func TestMarshalModel(t *testing.T) {
 		ID: 15, Name: "Box",
 		Mesh: &go3mf.Mesh{
 			Triangles: []go3mf.Triangle{},
-			Any:       go3mf.Any{beamLattice}},
+			Any:       spec.Any{beamLattice}},
 	}
 	beamLattice.MinLength = 0.0001
 	beamLattice.CapMode = CapModeHemisphere

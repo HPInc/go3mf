@@ -9,20 +9,20 @@ import (
 	"github.com/hpinc/go3mf/spec"
 )
 
-// Marshal3MFAttr encodes the resource attributes.
-func (u *BuildAttr) Marshal3MFAttr(_ spec.Encoder, start *xml.StartElement) error {
+// Marshal3MF encodes the resource attributes.
+func (u *BuildAttr) Marshal3MF(_ spec.Encoder, start *xml.StartElement) error {
 	start.Attr = append(start.Attr, xml.Attr{Name: xml.Name{Space: Namespace, Local: attrProdUUID}, Value: u.UUID})
 	return nil
 }
 
-// Marshal3MFAttr encodes the resource attributes.
-func (u *ObjectAttr) Marshal3MFAttr(_ spec.Encoder, start *xml.StartElement) error {
+// Marshal3MF encodes the resource attributes.
+func (u *ObjectAttr) Marshal3MF(_ spec.Encoder, start *xml.StartElement) error {
 	start.Attr = append(start.Attr, xml.Attr{Name: xml.Name{Space: Namespace, Local: attrProdUUID}, Value: u.UUID})
 	return nil
 }
 
-// Marshal3MFAttr encodes the resource attributes.
-func (u *ItemAttr) Marshal3MFAttr(_ spec.Encoder, start *xml.StartElement) error {
+// Marshal3MF encodes the resource attributes.
+func (u *ItemAttr) Marshal3MF(_ spec.Encoder, start *xml.StartElement) error {
 	if u.Path != "" {
 		start.Attr = append(start.Attr, xml.Attr{Name: xml.Name{Space: Namespace, Local: attrPath}, Value: u.Path})
 	}
@@ -30,8 +30,8 @@ func (u *ItemAttr) Marshal3MFAttr(_ spec.Encoder, start *xml.StartElement) error
 	return nil
 }
 
-// Marshal3MFAttr encodes the resource attributes.
-func (u *ComponentAttr) Marshal3MFAttr(_ spec.Encoder, start *xml.StartElement) error {
+// Marshal3MF encodes the resource attributes.
+func (u *ComponentAttr) Marshal3MF(_ spec.Encoder, start *xml.StartElement) error {
 	if u.Path != "" {
 		start.Attr = append(start.Attr, xml.Attr{Name: xml.Name{Space: Namespace, Local: attrPath}, Value: u.Path})
 	}

@@ -9,7 +9,7 @@ import (
 	"github.com/hpinc/go3mf/uuid"
 )
 
-func (Spec) CreateElementDecoder(_ interface{}, _ string) spec.ElementDecoder {
+func (Spec) NewElementDecoder(_ interface{}, _ string) spec.ElementDecoder {
 	return nil
 }
 

@@ -10,10 +10,10 @@ import (
 	"github.com/hpinc/go3mf/spec"
 )
 
-var _ spec.MarshalerAttr = new(BuildAttr)
-var _ spec.MarshalerAttr = new(ItemAttr)
-var _ spec.MarshalerAttr = new(ComponentAttr)
-var _ spec.MarshalerAttr = new(ObjectAttr)
+var _ spec.Marshaler = new(BuildAttr)
+var _ spec.Marshaler = new(ItemAttr)
+var _ spec.Marshaler = new(ComponentAttr)
+var _ spec.Marshaler = new(ObjectAttr)
 
 func TestComponentAttr_ObjectPath(t *testing.T) {
 	tests := []struct {

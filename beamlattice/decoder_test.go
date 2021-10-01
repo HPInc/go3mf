@@ -10,6 +10,7 @@ import (
 	"github.com/go-test/deep"
 	"github.com/hpinc/go3mf"
 	"github.com/hpinc/go3mf/errors"
+	"github.com/hpinc/go3mf/spec"
 )
 
 func TestDecode(t *testing.T) {
@@ -17,7 +18,7 @@ func TestDecode(t *testing.T) {
 	meshLattice := &go3mf.Object{
 		ID: 15, Name: "Box",
 		Mesh: &go3mf.Mesh{
-			Any: go3mf.Any{beamLattice},
+			Any: spec.Any{beamLattice},
 		},
 	}
 	beamLattice.MinLength = 0.0001

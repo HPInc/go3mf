@@ -18,7 +18,7 @@ import (
 )
 
 // Marshal3MF encodes the resource.
-func (f *fakeAsset) Marshal3MF(x spec.Encoder) error {
+func (f *fakeAsset) Marshal3MF(x spec.Encoder, _ *xml.StartElement) error {
 	xs := xml.StartElement{Name: xml.Name{Space: fakeExtension, Local: "fakeasset"}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(f.ID), 10)},
 	}}
@@ -46,7 +46,7 @@ func TestMarshalModel(t *testing.T) {
 		Units: UnitMillimeter, Language: "en-US", Path: "/3D/3dmodel.model", Thumbnail: "/thumbnail.png",
 		Extensions: []Extension{fakeSpec, fooSpec},
 		AnyAttr:    spec.AnyAttr{&fakeAttr{Value: "model_fake"}, &spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "foo1"}}}},
-		Any: Any{spec.UnknownTokens{
+		Any: spec.Any{spec.UnknownTokens{
 			xml.StartElement{Name: fooName},
 			xml.EndElement{Name: fooName},
 		}},
@@ -68,7 +68,7 @@ func TestMarshalModel(t *testing.T) {
 					ID: 8, Name: "Box 1", PartNumber: "11111111-1111-1111-1111-111111111111", Thumbnail: "/a.png",
 					AnyAttr: spec.AnyAttr{&fakeAttr{Value: "object_fake"}, &spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "foo3"}}}},
 					PID:     1, PIndex: 1, Type: ObjectTypeModel, Mesh: &Mesh{
-						Any: Any{spec.UnknownTokens{
+						Any: spec.Any{spec.UnknownTokens{
 							xml.StartElement{Name: fooName},
 							xml.EndElement{Name: fooName},
 						}},

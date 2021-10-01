@@ -197,7 +197,7 @@ type Extension struct {
 type ChildModel struct {
 	Resources     Resources
 	Relationships []Relationship
-	Any           Any
+	Any           spec.Any
 }
 
 // A Model is an in memory representation of the 3MF file.
@@ -220,7 +220,7 @@ type Model struct {
 	Childs            map[string]*ChildModel // path -> child
 	RootRelationships []Relationship
 	Relationships     []Relationship
-	Any               Any
+	Any               spec.Any
 	AnyAttr           spec.AnyAttr
 }
 
@@ -472,7 +472,7 @@ type Mesh struct {
 	Vertices  []Point3D
 	Triangles []Triangle
 	AnyAttr   spec.AnyAttr
-	Any       Any
+	Any       spec.Any
 }
 
 // BoundingBox returns the bounding box of the mesh.
@@ -545,9 +545,6 @@ func newUnits(s string) (u Units, ok bool) {
 	}[s]
 	return
 }
-
-// Any is an extension point containing <any> information.
-type Any []spec.Marshaler
 
 const (
 	nsXML   = "http://www.w3.org/XML/1998/namespace"

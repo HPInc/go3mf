@@ -46,7 +46,7 @@ func (qmExtension) NewAttr3MF(parent string) spec.Attr3MF {
 	return &fakeAttr{}
 }
 
-func (qmExtension) CreateElementDecoder(parent interface{}, name string) spec.ElementDecoder {
+func (qmExtension) NewElementDecoder(parent interface{}, name string) spec.ElementDecoder {
 	if e, ok := parent.(*Resources); ok {
 		return &fakeAssetDecoder{resources: e}
 	}
@@ -83,7 +83,7 @@ func (f *fakeAttr) ObjectPath() string { return f.Value }
 
 func (f fakeAttr) Namespace() string { return fakeExtension }
 
-func (f fakeAttr) Marshal3MFAttr(enc spec.Encoder, start *xml.StartElement) error {
+func (f fakeAttr) Marshal3MF(enc spec.Encoder, start *xml.StartElement) error {
 	start.Attr = append(start.Attr, xml.Attr{Name: xml.Name{Space: fakeExtension, Local: "value"}, Value: f.Value})
 	return nil
 }
@@ -326,7 +326,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 		ID: 8, Name: "Box 1", Thumbnail: "/a.png", PID: 5, PartNumber: "11111111-1111-1111-1111-111111111111",
 		Mesh: &Mesh{
 			AnyAttr: spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "fooval9"}}}},
-			Any: Any{spec.UnknownTokens{
+			Any: spec.Any{spec.UnknownTokens{
 				xml.StartElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "fake"}},
 				xml.EndElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "fake"}},
 			}},
@@ -400,7 +400,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 			AnyAttr: spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "fooval1"}}}},
 		},
 		AnyAttr: spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "fooval"}}}},
-		Any: Any{
+		Any: spec.Any{
 			spec.UnknownTokens{
 				xml.StartElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "other"}},
 				xml.EndElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "other"}},

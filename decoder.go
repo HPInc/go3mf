@@ -37,9 +37,9 @@ func (d *modelDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 			}
 		}
 	} else if ext, ok := spec.LoadExtension(name.Space); ok {
-		child = ext.CreateElementDecoder(d.model, name.Local)
+		child = ext.NewElementDecoder(d.model, name.Local)
 	} else {
-		child = &anyUnknownDecoder{UnknownTokensDecoder: spec.UnknownTokensDecoder{Name: name}, Any: &d.model.Any}
+		child = &spec.AnyUnknownDecoder{UnknownTokensDecoder: spec.UnknownTokensDecoder{Name: name}, Any: &d.model.Any}
 	}
 	return
 }
@@ -295,7 +295,7 @@ func (d *resourceDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 			child = &baseMaterialsDecoder{resources: d.resources}
 		}
 	} else if ext, ok := spec.LoadExtension(name.Space); ok {
-		child = ext.CreateElementDecoder(d.resources, name.Local)
+		child = ext.NewElementDecoder(d.resources, name.Local)
 	} else {
 		child = &unknownAssetDecoder{UnknownTokensDecoder: spec.UnknownTokensDecoder{Name: name}, resources: d.resources}
 	}
@@ -423,9 +423,9 @@ func (d *meshDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 			child = &trianglesDecoder{resource: d.resource}
 		}
 	} else if ext, ok := spec.LoadExtension(name.Space); ok {
-		child = ext.CreateElementDecoder(d.resource.Mesh, name.Local)
+		child = ext.NewElementDecoder(d.resource.Mesh, name.Local)
 	} else {
-		child = &anyUnknownDecoder{UnknownTokensDecoder: spec.UnknownTokensDecoder{Name: name}, Any: &d.resource.Mesh.Any}
+		child = &spec.AnyUnknownDecoder{UnknownTokensDecoder: spec.UnknownTokensDecoder{Name: name}, Any: &d.resource.Mesh.Any}
 	}
 	return
 }
@@ -792,14 +792,4 @@ func (d *unknownAssetDecoder) End() {
 	d.UnknownTokensDecoder.End()
 	d.resource.UnknownTokens = d.UnknownTokensDecoder.Tokens()
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
-}
-
-type anyUnknownDecoder struct {
-	spec.UnknownTokensDecoder
-	Any *Any
-}
-
-func (d *anyUnknownDecoder) End() {
-	d.UnknownTokensDecoder.End()
-	*d.Any = append(*d.Any, d.Tokens())
 }

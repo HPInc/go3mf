@@ -234,7 +234,7 @@ func (e *Encoder) modelToken(x spec.Encoder, m *Model, isRoot bool) (xml.StartEl
 		attrs = append(attrs, xml.Attr{Name: xml.Name{Local: attrReqExt}, Value: strings.Join(exts, " ")})
 	}
 	tm := xml.StartElement{Name: xml.Name{Local: attrModel}, Attr: attrs}
-	m.AnyAttr.Marshal3MFAttr(x, &tm)
+	m.AnyAttr.Marshal3MF(x, &tm)
 	return tm, nil
 }
 
@@ -249,7 +249,7 @@ func (e *Encoder) writeChildModel(x spec.Encoder, m *Model, child *ChildModel) e
 	xb := xml.StartElement{Name: xml.Name{Local: attrBuild}}
 	x.EncodeToken(xb)
 	x.EncodeToken(xb.End())
-	child.Any.encode(x)
+	child.Any.Marshal3MF(x, &tm)
 	x.EncodeToken(tm.End())
 	return x.Flush()
 }
@@ -266,7 +266,7 @@ func (e *Encoder) writeModel(x spec.Encoder, m *Model) error {
 		return err
 	}
 	e.writeBuild(x, m)
-	m.Any.encode(x)
+	m.Any.Marshal3MF(x, &tm)
 	x.EncodeToken(tm.End())
 	return x.Flush()
 }
@@ -280,7 +280,7 @@ func (e *Encoder) writeMetadataGroup(x spec.Encoder, m []Metadata) {
 
 func (e *Encoder) writeBuild(x spec.Encoder, m *Model) {
 	xb := xml.StartElement{Name: xml.Name{Local: attrBuild}}
-	m.Build.AnyAttr.Marshal3MFAttr(x, &xb)
+	m.Build.AnyAttr.Marshal3MF(x, &xb)
 	x.EncodeToken(xb)
 	x.SetAutoClose(true)
 	for _, item := range m.Build.Items {
@@ -297,7 +297,7 @@ func (e *Encoder) writeBuild(x spec.Encoder, m *Model) {
 				Name: xml.Name{Local: attrPartNumber}, Value: item.PartNumber,
 			})
 		}
-		item.AnyAttr.Marshal3MFAttr(x, &xi)
+		item.AnyAttr.Marshal3MF(x, &xi)
 		if len(item.Metadata) != 0 {
 			x.SetAutoClose(false)
 			x.EncodeToken(xi)
@@ -314,11 +314,11 @@ func (e *Encoder) writeBuild(x spec.Encoder, m *Model) {
 
 func (e *Encoder) writeResources(x spec.Encoder, rs *Resources) error {
 	xt := xml.StartElement{Name: xml.Name{Local: attrResources}}
-	rs.AnyAttr.Marshal3MFAttr(x, &xt)
+	rs.AnyAttr.Marshal3MF(x, &xt)
 	x.EncodeToken(xt)
 	for _, r := range rs.Assets {
 		if r, ok := r.(spec.Marshaler); ok {
-			if err := r.Marshal3MF(x); err != nil {
+			if err := r.Marshal3MF(x, &xt); err != nil {
 				return err
 			}
 		}
@@ -391,7 +391,7 @@ func (e *Encoder) writeObject(x spec.Encoder, r *Object) {
 			})
 		}
 	}
-	r.AnyAttr.Marshal3MFAttr(x, &xo)
+	r.AnyAttr.Marshal3MF(x, &xo)
 	x.EncodeToken(xo)
 
 	if len(r.Metadata) != 0 {
@@ -408,7 +408,7 @@ func (e *Encoder) writeObject(x spec.Encoder, r *Object) {
 
 func (e *Encoder) writeComponents(x spec.Encoder, comps *Components) {
 	xcs := xml.StartElement{Name: xml.Name{Local: attrComponents}}
-	comps.AnyAttr.Marshal3MFAttr(x, &xcs)
+	comps.AnyAttr.Marshal3MF(x, &xcs)
 	x.EncodeToken(xcs)
 	x.SetAutoClose(true)
 	for _, c := range comps.Component {
@@ -420,7 +420,7 @@ func (e *Encoder) writeComponents(x spec.Encoder, comps *Components) {
 		if c.HasTransform() {
 			xt.Attr = append(xt.Attr, xml.Attr{Name: xml.Name{Local: attrTransform}, Value: c.Transform.String()})
 		}
-		c.AnyAttr.Marshal3MFAttr(x, &xt)
+		c.AnyAttr.Marshal3MF(x, &xt)
 		x.EncodeToken(xt)
 	}
 	x.SetAutoClose(false)
@@ -487,7 +487,7 @@ func (e *Encoder) writeTriangles(x spec.Encoder, r *Object, m *Mesh) {
 				start.Attr = attrs[:5]
 			}
 		}
-		t.AnyAttr.Marshal3MFAttr(x, &start)
+		t.AnyAttr.Marshal3MF(x, &start)
 		x.EncodeToken(start)
 	}
 	x.SetSkipAttrEscape(false)
@@ -497,21 +497,21 @@ func (e *Encoder) writeTriangles(x spec.Encoder, r *Object, m *Mesh) {
 
 func (e *Encoder) writeMesh(x spec.Encoder, r *Object, m *Mesh) {
 	xm := xml.StartElement{Name: xml.Name{Local: attrMesh}}
-	m.AnyAttr.Marshal3MFAttr(x, &xm)
+	m.AnyAttr.Marshal3MF(x, &xm)
 	x.EncodeToken(xm)
 
 	e.writeVertices(x, m)
 	e.writeTriangles(x, r, m)
 
-	m.Any.encode(x)
+	m.Any.Marshal3MF(x, &xm)
 	x.EncodeToken(xm.End())
 }
 
-func (r *BaseMaterials) Marshal3MF(x spec.Encoder) error {
+func (r *BaseMaterials) Marshal3MF(x spec.Encoder, _ *xml.StartElement) error {
 	xt := xml.StartElement{Name: xml.Name{Local: attrBaseMaterials}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(r.ID), 10)},
 	}}
-	r.AnyAttr.Marshal3MFAttr(x, &xt)
+	r.AnyAttr.Marshal3MF(x, &xt)
 	x.EncodeToken(xt)
 	x.SetAutoClose(true)
 	for _, ma := range r.Materials {
@@ -522,19 +522,10 @@ func (r *BaseMaterials) Marshal3MF(x spec.Encoder) error {
 				{Name: xml.Name{Local: attrDisplayColor}, Value: spec.FormatRGBA(ma.Color)},
 			},
 		}
-		ma.AnyAttr.Marshal3MFAttr(x, &start)
+		ma.AnyAttr.Marshal3MF(x, &start)
 		x.EncodeToken(start)
 	}
 	x.SetAutoClose(false)
 	x.EncodeToken(xt.End())
-	return nil
-}
-
-func (e Any) encode(x spec.Encoder) error {
-	for _, ext := range e {
-		if err := ext.Marshal3MF(x); err == nil {
-			return err
-		}
-	}
 	return nil
 }

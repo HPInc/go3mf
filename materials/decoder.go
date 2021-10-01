@@ -17,7 +17,7 @@ func (Spec) NewAttr3MF(string) spec.Attr3MF {
 	return nil
 }
 
-func (Spec) CreateElementDecoder(parent interface{}, name string) (child spec.ElementDecoder) {
+func (Spec) NewElementDecoder(parent interface{}, name string) (child spec.ElementDecoder) {
 	switch name {
 	case attrColorGroup:
 		child = &colorGroupDecoder{resources: parent.(*go3mf.Resources)}

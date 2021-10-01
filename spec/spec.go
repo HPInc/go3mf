@@ -13,7 +13,7 @@ import (
 // Specs may implement ValidateSpec.
 type Spec interface {
 	NewAttr3MF(parent string) Attr3MF
-	CreateElementDecoder(parent interface{}, name string) ElementDecoder
+	NewElementDecoder(parent interface{}, name string) ElementDecoder
 }
 
 type PropertyGroup interface {
@@ -45,19 +45,13 @@ type Relationship struct {
 // Marshaler is the interface implemented by objects
 // that can marshal themselves into valid XML elements.
 type Marshaler interface {
-	Marshal3MF(Encoder) error
+	Marshal3MF(Encoder, *xml.StartElement) error
 }
 
 // UnmarshalerAttr is the interface implemented by objects that can unmarshal
 // an XML element description of themselves.
 type UnmarshalerAttr interface {
 	Unmarshal3MFAttr(XMLAttr) error
-}
-
-// MarshalerAttr is the interface implemented by objects that can marshal
-// themselves into valid XML attributes.
-type MarshalerAttr interface {
-	Marshal3MFAttr(Encoder, *xml.StartElement) error
 }
 
 type ErrorWrapper interface {
@@ -122,7 +116,7 @@ func Register(namespace string, spec Spec) {
 
 type Attr3MF interface {
 	UnmarshalerAttr
-	MarshalerAttr
+	Marshaler
 	Namespace() string
 }
 
@@ -137,9 +131,9 @@ func (a AnyAttr) Get(namespace string) Attr3MF {
 	return nil
 }
 
-func (a AnyAttr) Marshal3MFAttr(x Encoder, start *xml.StartElement) error {
+func (a AnyAttr) Marshal3MF(x Encoder, start *xml.StartElement) error {
 	for _, ext := range a {
-		err := ext.Marshal3MFAttr(x, start)
+		err := ext.Marshal3MF(x, start)
 		if err != nil {
 			return err
 		}
@@ -154,6 +148,18 @@ func NewAttr3MF(namespace, parent string) Attr3MF {
 	return &UnknownAttrs{
 		Space: namespace,
 	}
+}
+
+// Any is an extension point containing <any> information.
+type Any []Marshaler
+
+func (e Any) Marshal3MF(x Encoder, start *xml.StartElement) error {
+	for _, ext := range e {
+		if err := ext.Marshal3MF(x, start); err == nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func LoadExtension(space string) (Spec, bool) {
