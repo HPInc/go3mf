@@ -92,7 +92,7 @@ func (d *modelDecoder) noCoreAttribute(a spec.XMLAttr) (err error) {
 			IsRequired: false,
 		})
 	default:
-		var attr spec.Attr3MF
+		var attr spec.AttrGroup
 		if attr = d.model.AnyAttr.Get(a.Name.Space); attr == nil {
 			attr = spec.NewAttr3MF(a.Name.Space, attrModel)
 			d.model.AnyAttr = append(d.model.AnyAttr, attr)
@@ -185,7 +185,7 @@ func (d *buildDecoder) Wrap(err error) error {
 func (d *buildDecoder) Start(attrs []spec.XMLAttr) error {
 	var errs error
 	for _, a := range attrs {
-		var attr spec.Attr3MF
+		var attr spec.AttrGroup
 		if attr = d.build.AnyAttr.Get(a.Name.Space); attr == nil {
 			attr = spec.NewAttr3MF(a.Name.Space, attrBuild)
 			d.build.AnyAttr = append(d.build.AnyAttr, attr)
@@ -226,7 +226,7 @@ func (d *buildItemDecoder) Start(attrs []spec.XMLAttr) error {
 		if a.Name.Space == "" {
 			errs = specerr.Append(errs, d.parseCoreAttr(a))
 		} else {
-			var attr spec.Attr3MF
+			var attr spec.AttrGroup
 			if attr = d.item.AnyAttr.Get(a.Name.Space); attr == nil {
 				attr = spec.NewAttr3MF(a.Name.Space, attrItem)
 				d.item.AnyAttr = append(d.item.AnyAttr, attr)
@@ -269,7 +269,7 @@ type resourceDecoder struct {
 func (d *resourceDecoder) Start(attrs []spec.XMLAttr) error {
 	var errs error
 	for _, a := range attrs {
-		var attr spec.Attr3MF
+		var attr spec.AttrGroup
 		if attr = d.resources.AnyAttr.Get(a.Name.Space); attr == nil {
 			attr = spec.NewAttr3MF(a.Name.Space, attrResources)
 			d.resources.AnyAttr = append(d.resources.AnyAttr, attr)
@@ -337,7 +337,7 @@ func (d *baseMaterialsDecoder) Start(attrs []spec.XMLAttr) error {
 				d.resource.ID = uint32(id)
 			}
 		} else {
-			var attr spec.Attr3MF
+			var attr spec.AttrGroup
 			if attr = d.resource.AnyAttr.Get(a.Name.Space); attr == nil {
 				attr = spec.NewAttr3MF(a.Name.Space, attrBaseMaterials)
 				d.resource.AnyAttr = append(d.resource.AnyAttr, attr)
@@ -374,7 +374,7 @@ func (d *baseMaterialDecoder) Start(attrs []spec.XMLAttr) error {
 				}
 			}
 		} else {
-			var attr spec.Attr3MF
+			var attr spec.AttrGroup
 			if attr = base.AnyAttr.Get(a.Name.Space); attr == nil {
 				attr = spec.NewAttr3MF(a.Name.Space, attrBase)
 				base.AnyAttr = append(base.AnyAttr, attr)
@@ -398,7 +398,7 @@ func (d *meshDecoder) Start(attrs []spec.XMLAttr) error {
 	d.resource.Mesh = new(Mesh)
 	var errs error
 	for _, a := range attrs {
-		var attr spec.Attr3MF
+		var attr spec.AttrGroup
 		if attr = d.resource.Mesh.AnyAttr.Get(a.Name.Space); attr == nil {
 			attr = spec.NewAttr3MF(a.Name.Space, attrMesh)
 			d.resource.Mesh.AnyAttr = append(d.resource.Mesh.AnyAttr, attr)
@@ -552,7 +552,7 @@ func (d *triangleDecoder) Start(attrs []spec.XMLAttr) error {
 				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, required))
 			}
 		} else {
-			var attr spec.Attr3MF
+			var attr spec.AttrGroup
 			if attr = t.AnyAttr.Get(a.Name.Space); attr == nil {
 				attr = spec.NewAttr3MF(a.Name.Space, attrTriangle)
 				t.AnyAttr = append(t.AnyAttr, attr)
@@ -598,7 +598,7 @@ func (d *objectDecoder) Start(attrs []spec.XMLAttr) error {
 		if a.Name.Space == "" {
 			errs = specerr.Append(errs, d.parseCoreAttr(a))
 		} else {
-			var attr spec.Attr3MF
+			var attr spec.AttrGroup
 			if attr = d.resource.AnyAttr.Get(a.Name.Space); attr == nil {
 				attr = spec.NewAttr3MF(a.Name.Space, attrObject)
 				d.resource.AnyAttr = append(d.resource.AnyAttr, attr)
@@ -677,7 +677,7 @@ func (d *componentsDecoder) Start(attrs []spec.XMLAttr) error {
 	d.componentDecoder.resource = d.resource
 
 	for _, a := range attrs {
-		var attr spec.Attr3MF
+		var attr spec.AttrGroup
 		if attr = components.AnyAttr.Get(a.Name.Space); attr == nil {
 			attr = spec.NewAttr3MF(a.Name.Space, attrComponents)
 			components.AnyAttr = append(components.AnyAttr, attr)
@@ -728,7 +728,7 @@ func (d *componentDecoder) Start(attrs []spec.XMLAttr) error {
 				}
 			}
 		} else {
-			var attr spec.Attr3MF
+			var attr spec.AttrGroup
 			if attr = component.AnyAttr.Get(a.Name.Space); attr == nil {
 				attr = spec.NewAttr3MF(a.Name.Space, attrComponent)
 				component.AnyAttr = append(component.AnyAttr, attr)

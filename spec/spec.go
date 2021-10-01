@@ -12,7 +12,7 @@ import (
 //
 // Specs may implement ValidateSpec.
 type Spec interface {
-	NewAttr3MF(parent string) Attr3MF
+	NewAttr3MF(parent string) AttrGroup
 	NewElementDecoder(parent interface{}, name string) ElementDecoder
 }
 
@@ -114,15 +114,17 @@ func Register(namespace string, spec Spec) {
 	specs[namespace] = spec
 }
 
-type Attr3MF interface {
+// AttrGroup defines a container for different attributes of the same namespace.
+// It supports encoding and decoding to XML.
+type AttrGroup interface {
 	UnmarshalerAttr
 	Marshaler
 	Namespace() string
 }
 
-type AnyAttr []Attr3MF
+type AnyAttr []AttrGroup
 
-func (a AnyAttr) Get(namespace string) Attr3MF {
+func (a AnyAttr) Get(namespace string) AttrGroup {
 	for _, v := range a {
 		if v.Namespace() == namespace {
 			return v
@@ -141,7 +143,7 @@ func (a AnyAttr) Marshal3MF(x Encoder, start *xml.StartElement) error {
 	return nil
 }
 
-func NewAttr3MF(namespace, parent string) Attr3MF {
+func NewAttr3MF(namespace, parent string) AttrGroup {
 	if ext, ok := LoadExtension(namespace); ok {
 		return ext.NewAttr3MF(parent)
 	}

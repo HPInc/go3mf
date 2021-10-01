@@ -13,7 +13,7 @@ func (Spec) NewElementDecoder(_ interface{}, _ string) spec.ElementDecoder {
 	return nil
 }
 
-func (Spec) NewAttr3MF(parent string) spec.Attr3MF {
+func (Spec) NewAttr3MF(parent string) spec.AttrGroup {
 	switch parent {
 	case "build":
 		return new(BuildAttr)

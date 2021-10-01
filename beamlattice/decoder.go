@@ -12,7 +12,7 @@ import (
 	"github.com/hpinc/go3mf/spec"
 )
 
-func (Spec) NewAttr3MF(string) spec.Attr3MF {
+func (Spec) NewAttr3MF(string) spec.AttrGroup {
 	return nil
 }
 

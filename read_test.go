@@ -42,7 +42,7 @@ var fooSpec = Extension{
 
 type qmExtension struct{}
 
-func (qmExtension) NewAttr3MF(parent string) spec.Attr3MF {
+func (qmExtension) NewAttr3MF(parent string) spec.AttrGroup {
 	return &fakeAttr{}
 }
 
