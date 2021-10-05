@@ -21,6 +21,10 @@ type modelDecoder struct {
 	path   string
 }
 
+func (d *modelDecoder) Wrap(err error) error {
+	return err
+}
+
 func (d *modelDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	if name.Space == Namespace {
 		switch name.Local {
