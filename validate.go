@@ -81,7 +81,7 @@ func (item *Item) validate(m *Model) error {
 	} else {
 		errs = errors.Append(errs, errors.ErrMissingResource)
 	}
-	return errors.Append(errs, checkMetadadata(m, item.Metadata))
+	return errors.Append(errs, checkMetadadata(m, item.Metadata.Metadata))
 }
 
 func (b *Build) validate(m *Model) error {

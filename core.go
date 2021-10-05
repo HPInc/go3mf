@@ -358,12 +358,17 @@ func (r *BaseMaterials) Identify() uint32 {
 	return r.ID
 }
 
+type MetadataGroup struct {
+	Metadata []Metadata
+	AnyAttr  spec.AnyAttr
+}
+
 // A Item is an in memory representation of the 3MF build item.
 type Item struct {
 	ObjectID   uint32
 	Transform  Matrix
 	PartNumber string
-	Metadata   []Metadata
+	Metadata   MetadataGroup
 	AnyAttr    spec.AnyAttr
 }
 
@@ -396,7 +401,7 @@ type Object struct {
 	PID        uint32
 	PIndex     uint32
 	Type       ObjectType
-	Metadata   []Metadata
+	Metadata   MetadataGroup
 	Mesh       *Mesh
 	Components *Components
 	AnyAttr    spec.AnyAttr

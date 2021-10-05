@@ -55,7 +55,7 @@ func TestValidate(t *testing.T) {
 			{},
 			{ObjectID: 2},
 			{ObjectID: 100},
-			{ObjectID: 1, Metadata: []Metadata{{Name: xml.Name{Local: "issue"}}}},
+			{ObjectID: 1, Metadata: MetadataGroup{Metadata: []Metadata{{Name: xml.Name{Local: "issue"}}}}},
 		}}}, []string{
 			"Build: fake",
 			fmt.Sprintf("Build@Item#0: %v", &errors.MissingFieldError{Name: attrObjectID}),

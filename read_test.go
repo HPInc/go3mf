@@ -359,8 +359,11 @@ func TestDecoder_processRootModel(t *testing.T) {
 
 	components := &Object{
 		ID: 20, Type: ObjectTypeSupport,
-		AnyAttr:  spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "fooval6"}}}},
-		Metadata: []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}, {Name: xml.Name{Space: "qm", Local: "CustomMetadata4"}, Type: "xs:boolean", Value: "2"}},
+		AnyAttr: spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "fooval6"}}}},
+		Metadata: MetadataGroup{Metadata: []Metadata{
+			{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"},
+			{Name: xml.Name{Space: "qm", Local: "CustomMetadata4"}, Type: "xs:boolean", Value: "2"},
+		}, AnyAttr: spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "fooval12"}}}}},
 		Components: &Components{
 			AnyAttr: spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "fooval4"}}}},
 			Component: []*Component{
@@ -417,8 +420,11 @@ func TestDecoder_processRootModel(t *testing.T) {
 	}
 	want.Build.Items = append(want.Build.Items, &Item{
 		ObjectID: 20, PartNumber: "bob", Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
-		Metadata: []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}},
-		AnyAttr:  spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "fooval2"}}}},
+		Metadata: MetadataGroup{
+			Metadata: []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}},
+			AnyAttr:  spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "fooval13"}}}},
+		},
+		AnyAttr: spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "fooval2"}}}},
 	})
 	want.Metadata = append(want.Metadata, []Metadata{
 		{Name: xml.Name{Local: "Application"}, Value: "go3mf app"},
@@ -462,7 +468,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 				</mesh>
 			</object>
 			<object id="20" type="support" foo:fooname="fooval6">
-				<metadatagroup>
+				<metadatagroup foo:fooname="fooval12">
 					<metadata name="qm:CustomMetadata3" type="xs:boolean">1</metadata>
 					<metadata name="qm:CustomMetadata4" type="xs:boolean">2</metadata>
 				</metadatagroup>
@@ -478,7 +484,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 		</resources>
 		<build foo:fooname="fooval1">
 			<item partnumber="bob" objectid="20" transform="1 0 0 0 2 0 0 0 3 -66.4 -87.1 8.8" foo:fooname="fooval2">
-				<metadatagroup>
+				<metadatagroup foo:fooname="fooval13">
 					<metadata name="qm:CustomMetadata3" type="xs:boolean">1</metadata>
 				</metadatagroup>
 			</item>

@@ -271,10 +271,11 @@ func (e *Encoder) writeModel(x spec.Encoder, m *Model) error {
 	return x.Flush()
 }
 
-func (e *Encoder) writeMetadataGroup(x spec.Encoder, m []Metadata) {
+func (e *Encoder) writeMetadataGroup(x spec.Encoder, m MetadataGroup) {
 	xm := xml.StartElement{Name: xml.Name{Local: attrMetadataGroup}}
+	m.AnyAttr.Marshal3MF(x, &xm)
 	x.EncodeToken(xm)
-	e.writeMetadata(x, m)
+	e.writeMetadata(x, m.Metadata)
 	x.EncodeToken(xm.End())
 }
 
@@ -298,7 +299,7 @@ func (e *Encoder) writeBuild(x spec.Encoder, m *Model) {
 			})
 		}
 		item.AnyAttr.Marshal3MF(x, &xi)
-		if len(item.Metadata) != 0 {
+		if len(item.Metadata.Metadata) != 0 {
 			x.SetAutoClose(false)
 			x.EncodeToken(xi)
 			e.writeMetadataGroup(x, item.Metadata)
@@ -394,7 +395,7 @@ func (e *Encoder) writeObject(x spec.Encoder, r *Object) {
 	r.AnyAttr.Marshal3MF(x, &xo)
 	x.EncodeToken(xo)
 
-	if len(r.Metadata) != 0 {
+	if len(r.Metadata.Metadata) != 0 {
 		e.writeMetadataGroup(x, r.Metadata)
 	}
 

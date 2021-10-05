@@ -104,15 +104,31 @@ func (d *modelDecoder) noCoreAttribute(a spec.XMLAttr) (err error) {
 
 type metadataGroupDecoder struct {
 	baseDecoder
-	metadatas *[]Metadata
+	metadatas *MetadataGroup
 	model     *Model
 }
 
 func (d *metadataGroupDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrMetadata {
-		child = &metadataDecoder{metadatas: d.metadatas, model: d.model}
+		child = &metadataDecoder{metadatas: &d.metadatas.Metadata, model: d.model}
 	}
 	return
+}
+
+func (d *metadataGroupDecoder) Start(attrs []spec.XMLAttr) error {
+	var errs error
+	for _, a := range attrs {
+		var attr spec.AttrGroup
+		if attr = d.metadatas.AnyAttr.Get(a.Name.Space); attr == nil {
+			attr = spec.NewAttrGroup(a.Name.Space, xml.Name{Space: Namespace, Local: attrMetadataGroup})
+			d.metadatas.AnyAttr = append(d.metadatas.AnyAttr, attr)
+		}
+		errs = specerr.Append(errs, attr.Unmarshal3MFAttr(a))
+	}
+	if errs != nil {
+		return specerr.Wrap(errs, d.metadatas)
+	}
+	return errs
 }
 
 type metadataDecoder struct {
