@@ -32,8 +32,8 @@ func TestMarshalModel(t *testing.T) {
 		{55, 45, 55},
 		{55, 45, 45},
 	}...)
-	beamLattice.BeamSets = append(beamLattice.BeamSets, BeamSet{Name: "test", Identifier: "set_id", Refs: []uint32{1}})
-	beamLattice.Beams = append(beamLattice.Beams, []Beam{
+	beamLattice.BeamSets.BeamSet = append(beamLattice.BeamSets.BeamSet, BeamSet{Name: "test", Identifier: "set_id", Refs: []uint32{1}})
+	beamLattice.Beams.Beam = append(beamLattice.Beams.Beam, []Beam{
 		{Indices: [2]uint32{0, 1}, Radius: [2]float32{1.5, 1.6}, CapMode: [2]CapMode{CapModeSphere, CapModeButt}},
 		{Indices: [2]uint32{2, 0}, Radius: [2]float32{3, 1.5}, CapMode: [2]CapMode{CapModeSphere, CapModeHemisphere}},
 		{Indices: [2]uint32{1, 3}, Radius: [2]float32{1.6, 3}, CapMode: [2]CapMode{CapModeHemisphere, CapModeHemisphere}},

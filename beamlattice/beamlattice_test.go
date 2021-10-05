@@ -11,6 +11,10 @@ import (
 )
 
 var _ spec.Marshaler = new(BeamLattice)
+var _ spec.ChildElementDecoder = new(beamLatticeDecoder)
+var _ spec.ChildElementDecoder = new(beamsDecoder)
+var _ spec.ChildElementDecoder = new(beamSetsDecoder)
+var _ spec.ChildElementDecoder = new(beamSetDecoder)
 
 func TestCapMode_String(t *testing.T) {
 	tests := []struct {

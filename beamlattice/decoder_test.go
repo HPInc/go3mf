@@ -34,8 +34,8 @@ func TestDecode(t *testing.T) {
 		{55, 45, 55},
 		{55, 45, 45},
 	}...)
-	beamLattice.BeamSets = append(beamLattice.BeamSets, BeamSet{Name: "test", Identifier: "set_id", Refs: []uint32{1}})
-	beamLattice.Beams = append(beamLattice.Beams, []Beam{
+	beamLattice.BeamSets.BeamSet = append(beamLattice.BeamSets.BeamSet, BeamSet{Name: "test", Identifier: "set_id", Refs: []uint32{1}})
+	beamLattice.Beams.Beam = append(beamLattice.Beams.Beam, []Beam{
 		{Indices: [2]uint32{0, 1}, Radius: [2]float32{1.5, 1.6}, CapMode: [2]CapMode{CapModeSphere, CapModeButt}},
 		{Indices: [2]uint32{2, 0}, Radius: [2]float32{3, 1.5}, CapMode: [2]CapMode{CapModeSphere, CapModeHemisphere}},
 		{Indices: [2]uint32{1, 3}, Radius: [2]float32{1.6, 3}, CapMode: [2]CapMode{CapModeHemisphere, CapModeHemisphere}},
@@ -125,11 +125,11 @@ func TestDecode_warns(t *testing.T) {
 		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice: %v", errors.NewParseAttrError("clippingmode", false)),
 		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice: %v", errors.NewParseAttrError("clippingmesh", false)),
 		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice: %v", errors.NewParseAttrError("representationmesh", false)),
-		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@Beam#0: %v", errors.NewParseAttrError("r1", false)),
-		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@Beam#0: %v", errors.NewParseAttrError("r2", false)),
-		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@Beam#2: %v", errors.NewParseAttrError("v2", true)),
-		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@Beam#3: %v", errors.NewParseAttrError("v1", true)),
-		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@BeamSet#0@uint32#2: %v", errors.NewParseAttrError("index", true)),
+		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@Beams@Beam#0: %v", errors.NewParseAttrError("r1", false)),
+		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@Beams@Beam#0: %v", errors.NewParseAttrError("r2", false)),
+		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@Beams@Beam#2: %v", errors.NewParseAttrError("v2", true)),
+		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@Beams@Beam#3: %v", errors.NewParseAttrError("v1", true)),
+		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@BeamSets@BeamSet#0@uint32#2: %v", errors.NewParseAttrError("index", true)),
 	}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"

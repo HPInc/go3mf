@@ -25,13 +25,14 @@ func (Spec) NewElementDecoder(parent interface{}, name string) spec.ElementDecod
 
 type beamLatticeDecoder struct {
 	baseDecoder
-	mesh *go3mf.Mesh
+	mesh        *go3mf.Mesh
+	beamLattice *BeamLattice
 }
 
 func (d *beamLatticeDecoder) Start(attrs []spec.XMLAttr) error {
 	var errs error
-	beamLattice := new(BeamLattice)
-	d.mesh.Any = append(d.mesh.Any, beamLattice)
+	d.beamLattice = new(BeamLattice)
+	d.mesh.Any = append(d.mesh.Any, d.beamLattice)
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
@@ -42,16 +43,16 @@ func (d *beamLatticeDecoder) Start(attrs []spec.XMLAttr) error {
 			if err != nil {
 				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 			}
-			beamLattice.Radius = float32(val)
+			d.beamLattice.Radius = float32(val)
 		case attrMinLength, attrPrecision: // lib3mf legacy
 			val, err := strconv.ParseFloat(string(a.Value), 32)
 			if err != nil {
 				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, true))
 			}
-			beamLattice.MinLength = float32(val)
+			d.beamLattice.MinLength = float32(val)
 		case attrClippingMode, attrClipping: // lib3mf legacy
 			var ok bool
-			beamLattice.ClipMode, ok = newClipMode(string(a.Value))
+			d.beamLattice.ClipMode, ok = newClipMode(string(a.Value))
 			if !ok {
 				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, false))
 			}
@@ -60,37 +61,37 @@ func (d *beamLatticeDecoder) Start(attrs []spec.XMLAttr) error {
 			if err != nil {
 				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, false))
 			}
-			beamLattice.ClippingMeshID = uint32(val)
+			d.beamLattice.ClippingMeshID = uint32(val)
 		case attrRepresentationMesh:
 			val, err := strconv.ParseUint(string(a.Value), 10, 32)
 			if err != nil {
 				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, false))
 			}
-			beamLattice.RepresentationMeshID = uint32(val)
+			d.beamLattice.RepresentationMeshID = uint32(val)
 		case attrCap:
 			var ok bool
-			beamLattice.CapMode, ok = newCapMode(string(a.Value))
+			d.beamLattice.CapMode, ok = newCapMode(string(a.Value))
 			if !ok {
 				errs = specerr.Append(errs, specerr.NewParseAttrError(a.Name.Local, false))
 			}
 		}
 	}
 	if errs != nil {
-		return specerr.Wrap(errs, GetBeamLattice(d.mesh))
+		return specerr.Wrap(errs, d.beamLattice)
 	}
 	return nil
 }
 
 func (d *beamLatticeDecoder) Wrap(err error) error {
-	return specerr.Wrap(err, GetBeamLattice(d.mesh))
+	return specerr.Wrap(err, d.beamLattice)
 }
 
 func (d *beamLatticeDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	if name.Space == Namespace {
 		if name.Local == attrBeams {
-			child = &beamsDecoder{mesh: d.mesh}
+			child = &beamsDecoder{beamLattice: d.beamLattice}
 		} else if name.Local == attrBeamSets {
-			child = &beamSetsDecoder{mesh: d.mesh}
+			child = &beamSetsDecoder{beamLattice: d.beamLattice}
 		}
 	}
 	return
@@ -98,12 +99,12 @@ func (d *beamLatticeDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 
 type beamsDecoder struct {
 	baseDecoder
-	mesh        *go3mf.Mesh
+	beamLattice *BeamLattice
 	beamDecoder beamDecoder
 }
 
 func (d *beamsDecoder) Start(_ []spec.XMLAttr) error {
-	d.beamDecoder.mesh = d.mesh
+	d.beamDecoder.beamLattice = d.beamLattice
 	return nil
 }
 
@@ -114,9 +115,13 @@ func (d *beamsDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	return
 }
 
+func (d *beamsDecoder) Wrap(err error) error {
+	return specerr.Wrap(err, &d.beamLattice.Beams)
+}
+
 type beamDecoder struct {
 	baseDecoder
-	mesh *go3mf.Mesh
+	beamLattice *BeamLattice
 }
 
 func (d *beamDecoder) Start(attrs []spec.XMLAttr) error {
@@ -125,7 +130,6 @@ func (d *beamDecoder) Start(attrs []spec.XMLAttr) error {
 		hasCap1, hasCap2 bool
 		errs             error
 	)
-	beamLattice := GetBeamLattice(d.mesh)
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
@@ -170,46 +174,49 @@ func (d *beamDecoder) Start(attrs []spec.XMLAttr) error {
 		}
 	}
 	if beam.Radius[0] == 0 {
-		beam.Radius[0] = beamLattice.Radius
+		beam.Radius[0] = d.beamLattice.Radius
 	}
 	if beam.Radius[1] == 0 {
 		beam.Radius[1] = beam.Radius[0]
 	}
 	if !hasCap1 {
-		beam.CapMode[0] = beamLattice.CapMode
+		beam.CapMode[0] = d.beamLattice.CapMode
 	}
 	if !hasCap2 {
-		beam.CapMode[1] = beamLattice.CapMode
+		beam.CapMode[1] = d.beamLattice.CapMode
 	}
-	beamLattice.Beams = append(beamLattice.Beams, beam)
+	d.beamLattice.Beams.Beam = append(d.beamLattice.Beams.Beam, beam)
 	if errs != nil {
-		return specerr.WrapIndex(errs, beam, len(beamLattice.Beams)-1)
+		return specerr.WrapIndex(errs, beam, len(d.beamLattice.Beams.Beam)-1)
 	}
 	return nil
 }
 
 type beamSetsDecoder struct {
 	baseDecoder
-	mesh *go3mf.Mesh
+	beamLattice *BeamLattice
 }
 
 func (d *beamSetsDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrBeamSet {
-		child = &beamSetDecoder{mesh: d.mesh}
+		child = &beamSetDecoder{beamLattice: d.beamLattice}
 	}
 	return
 }
 
+func (d *beamSetsDecoder) Wrap(err error) error {
+	return specerr.Wrap(err, &d.beamLattice.BeamSets)
+}
+
 type beamSetDecoder struct {
 	baseDecoder
-	mesh           *go3mf.Mesh
+	beamLattice    *BeamLattice
 	beamSet        BeamSet
 	beamRefDecoder beamRefDecoder
 }
 
 func (d *beamSetDecoder) End() {
-	beamLattice := GetBeamLattice(d.mesh)
-	beamLattice.BeamSets = append(beamLattice.BeamSets, d.beamSet)
+	d.beamLattice.BeamSets.BeamSet = append(d.beamLattice.BeamSets.BeamSet, d.beamSet)
 }
 
 func (d *beamSetDecoder) Start(attrs []spec.XMLAttr) error {
@@ -229,7 +236,7 @@ func (d *beamSetDecoder) Start(attrs []spec.XMLAttr) error {
 }
 
 func (d *beamSetDecoder) Wrap(err error) error {
-	return specerr.WrapIndex(err, &d.beamSet, len(GetBeamLattice(d.mesh).BeamSets))
+	return specerr.WrapIndex(err, &d.beamSet, len(d.beamLattice.BeamSets.BeamSet))
 }
 
 func (d *beamSetDecoder) Child(name xml.Name) (child spec.ElementDecoder) {

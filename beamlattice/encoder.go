@@ -46,7 +46,7 @@ func (m *BeamLattice) Marshal3MF(x spec.Encoder, _ *xml.StartElement) error {
 func marshalBeamsets(x spec.Encoder, m *BeamLattice) {
 	xb := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrBeamSets}}
 	x.EncodeToken(xb)
-	for _, bs := range m.BeamSets {
+	for _, bs := range m.BeamSets.BeamSet {
 		xbs := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrBeamSet}}
 		if bs.Name != "" {
 			xbs.Attr = append(xbs.Attr, xml.Attr{Name: xml.Name{Local: attrName}, Value: bs.Name})
@@ -72,7 +72,7 @@ func marshalBeams(x spec.Encoder, m *BeamLattice) {
 	x.EncodeToken(xb)
 	x.SetAutoClose(true)
 	x.SetSkipAttrEscape(true)
-	for _, b := range m.Beams {
+	for _, b := range m.Beams.Beam {
 		xbeam := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrBeam}, Attr: []xml.Attr{
 			{Name: xml.Name{Local: attrV1}, Value: strconv.FormatUint(uint64(b.Indices[0]), 10)},
 			{Name: xml.Name{Local: attrV2}, Value: strconv.FormatUint(uint64(b.Indices[1]), 10)},

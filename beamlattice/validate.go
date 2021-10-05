@@ -46,7 +46,7 @@ func validateObject(m *go3mf.Model, path string, obj *go3mf.Object) error {
 		errs = errors.Append(errs, validateRefMesh(m, path, bl.RepresentationMeshID, obj.ID))
 	}
 
-	for i, b := range bl.Beams {
+	for i, b := range bl.Beams.Beam {
 		if b.Indices[0] == b.Indices[1] {
 			errs = errors.Append(errs, errors.WrapIndex(ErrLatticeSameVertex, b, i))
 		} else {
@@ -59,7 +59,7 @@ func validateObject(m *go3mf.Model, path string, obj *go3mf.Object) error {
 			errs = errors.Append(errs, errors.WrapIndex(ErrLatticeBeamR2, b, i))
 		}
 	}
-	for i, set := range bl.BeamSets {
+	for i, set := range bl.BeamSets.BeamSet {
 		for _, ref := range set.Refs {
 			if int(ref) >= len(set.Refs) {
 				errs = errors.Append(errs, errors.WrapIndex(errors.ErrIndexOutOfBounds, set, i))

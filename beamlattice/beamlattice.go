@@ -92,10 +92,18 @@ type BeamLattice struct {
 	ClipMode             ClipMode
 	ClippingMeshID       uint32
 	RepresentationMeshID uint32
-	Beams                []Beam
-	BeamSets             []BeamSet
+	Beams                Beams
+	BeamSets             BeamSets
 	MinLength, Radius    float32
 	CapMode              CapMode
+}
+
+type Beams struct {
+	Beam []Beam
+}
+
+type BeamSets struct {
+	BeamSet []BeamSet
 }
 
 func GetBeamLattice(mesh *go3mf.Mesh) *BeamLattice {
