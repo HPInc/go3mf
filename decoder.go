@@ -193,7 +193,7 @@ func (d *buildDecoder) Start(attrs []spec.XMLAttr) error {
 		errs = specerr.Append(errs, attr.Unmarshal3MFAttr(a))
 	}
 	if errs != nil {
-		return d.Wrap(errs)
+		return specerr.Wrap(errs, d.build)
 	}
 	return errs
 }
@@ -686,7 +686,7 @@ func (d *componentsDecoder) Start(attrs []spec.XMLAttr) error {
 	}
 	d.resource.Components = components
 	if errs != nil {
-		return d.Wrap(errs)
+		return specerr.Wrap(errs, d.resource.Components)
 	}
 	return nil
 }
