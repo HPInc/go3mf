@@ -45,6 +45,12 @@ type UnknownTokensDecoder struct {
 	tokens UnknownTokens
 }
 
+func NewUnknownDecoder(name xml.Name) *UnknownTokensDecoder {
+	return &UnknownTokensDecoder{
+		Name: name,
+	}
+}
+
 func (d *UnknownTokensDecoder) Start(attrs []XMLAttr) error {
 	var xattrs []xml.Attr
 	if len(attrs) > 0 {
@@ -75,6 +81,15 @@ func (d UnknownTokensDecoder) Tokens() UnknownTokens {
 type AnyUnknownDecoder struct {
 	UnknownTokensDecoder
 	Any *Any
+}
+
+func NewAnyUnknownDecoder(name xml.Name, any *Any) *AnyUnknownDecoder {
+	return &AnyUnknownDecoder{
+		UnknownTokensDecoder: UnknownTokensDecoder{
+			Name: name,
+		},
+		Any: any,
+	}
 }
 
 func (d *AnyUnknownDecoder) End() {
