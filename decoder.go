@@ -115,6 +115,10 @@ func (d *metadataGroupDecoder) Child(name xml.Name) (child spec.ElementDecoder) 
 	return
 }
 
+func (d *metadataGroupDecoder) Wrap(err error) error {
+	return specerr.Wrap(err, d.metadatas)
+}
+
 func (d *metadataGroupDecoder) Start(attrs []spec.XMLAttr) error {
 	var errs error
 	for _, a := range attrs {
