@@ -15,15 +15,15 @@ import (
 
 func TestDecode(t *testing.T) {
 	sliceStack := &SliceStack{ID: 3, BottomZ: 1,
-		Slices: []*Slice{
+		Slices: []Slice{
 			{
 				TopZ:     0,
-				Vertices: []go3mf.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
+				Vertices: Vertices{Vertex: []go3mf.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}}},
 				Polygons: []Polygon{{StartV: 0, Segments: []Segment{{V2: 1, PID: 1, P1: 2, P2: 3}, {V2: 2, PID: 1, P1: 2, P2: 2}, {V2: 3}, {V2: 0}}}},
 			},
 			{
 				TopZ:     0.1,
-				Vertices: []go3mf.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
+				Vertices: Vertices{Vertex: []go3mf.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}}},
 				Polygons: []Polygon{{StartV: 0, Segments: []Segment{{V2: 2}, {V2: 1}, {V2: 3}, {V2: 0}}}},
 			},
 		},
@@ -97,8 +97,8 @@ func TestDecode_warns(t *testing.T) {
 	want := []string{
 		fmt.Sprintf("Resources@SliceStack#0: %v", specerr.NewParseAttrError("id", true)),
 		fmt.Sprintf("Resources@SliceStack#0: %v", specerr.NewParseAttrError("zbottom", false)),
-		fmt.Sprintf("Resources@SliceStack#0@Slice#0@Point2D#0: %v", specerr.NewParseAttrError("x", true)),
-		fmt.Sprintf("Resources@SliceStack#0@Slice#0@Point2D#1: %v", specerr.NewParseAttrError("y", true)),
+		fmt.Sprintf("Resources@SliceStack#0@Slice#0@Vertices@Point2D#0: %v", specerr.NewParseAttrError("x", true)),
+		fmt.Sprintf("Resources@SliceStack#0@Slice#0@Vertices@Point2D#1: %v", specerr.NewParseAttrError("y", true)),
 		fmt.Sprintf("Resources@SliceStack#0@Slice#1: %v", specerr.NewParseAttrError("ztop", true)),
 		fmt.Sprintf("Resources@SliceStack#0@Slice#1@Polygon#0: %v", specerr.NewParseAttrError("startv", true)),
 		fmt.Sprintf("Resources@SliceStack#0@Slice#1@Polygon#0@Segment#1: %v", specerr.NewParseAttrError("v2", true)),

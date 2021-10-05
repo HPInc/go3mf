@@ -53,7 +53,7 @@ func (s *Slice) marshal3MF(x spec.Encoder) {
 	}}
 	x.EncodeToken(xs)
 
-	marshalVertices(x, s.Vertices)
+	marshalVertices(x, s.Vertices.Vertex)
 	marshalPolygons(x, s.Polygons)
 
 	x.EncodeToken(xs.End())

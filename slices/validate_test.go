@@ -25,7 +25,7 @@ func TestValidate(t *testing.T) {
 			AnyAttr:    spec.AnyAttr{&ObjectAttr{SliceStackID: 10}},
 			Extensions: []go3mf.Extension{{Namespace: Namespace, LocalName: "s", IsRequired: true}}, Resources: go3mf.Resources{
 				Assets: []go3mf.Asset{
-					&SliceStack{ID: 1, Slices: []*Slice{{TopZ: 1}}},
+					&SliceStack{ID: 1, Slices: []Slice{{TopZ: 1}}},
 				},
 				Objects: []*go3mf.Object{
 					{ID: 2, AnyAttr: spec.AnyAttr{&ObjectAttr{
@@ -48,10 +48,10 @@ func TestValidate(t *testing.T) {
 		}},
 		{"slicestack", &go3mf.Model{Resources: go3mf.Resources{
 			Assets: []go3mf.Asset{&SliceStack{
-				ID: 1, BottomZ: 1, Slices: []*Slice{
+				ID: 1, BottomZ: 1, Slices: []Slice{
 					{},
-					{TopZ: 0.5, Vertices: make([]go3mf.Point2D, 1)},
-					{TopZ: 1.5, Vertices: make([]go3mf.Point2D, 2), Polygons: []Polygon{
+					{TopZ: 0.5, Vertices: Vertices{Vertex: make([]go3mf.Point2D, 1)}},
+					{TopZ: 1.5, Vertices: Vertices{Vertex: make([]go3mf.Point2D, 2)}, Polygons: []Polygon{
 						{Segments: []Segment{}},
 						{Segments: []Segment{{}}},
 					}},
@@ -71,15 +71,15 @@ func TestValidate(t *testing.T) {
 		{"sliceref", &go3mf.Model{
 			Childs: map[string]*go3mf.ChildModel{
 				"/that.model": {Resources: go3mf.Resources{Assets: []go3mf.Asset{
-					&SliceStack{ID: 1, Slices: []*Slice{{TopZ: 1}, {TopZ: 2}}},
+					&SliceStack{ID: 1, Slices: []Slice{{TopZ: 1}, {TopZ: 2}}},
 					&SliceStack{ID: 2, Refs: []SliceRef{{SliceStackID: 1, Path: rootPath}}},
 					&go3mf.BaseMaterials{ID: 3, Materials: []go3mf.Base{{Name: "a", Color: color.RGBA{R: 1}}}},
-					&SliceStack{ID: 4, Slices: []*Slice{{TopZ: 1.5}}},
+					&SliceStack{ID: 4, Slices: []Slice{{TopZ: 1.5}}},
 				}}},
 			},
 			Resources: go3mf.Resources{
 				Assets: []go3mf.Asset{
-					&SliceStack{ID: 1, Slices: []*Slice{{TopZ: 1}, {TopZ: 2}}},
+					&SliceStack{ID: 1, Slices: []Slice{{TopZ: 1}, {TopZ: 2}}},
 					&SliceStack{ID: 3, Refs: []SliceRef{
 						{},
 						{SliceStackID: 1, Path: rootPath},
@@ -110,18 +110,18 @@ func TestValidate(t *testing.T) {
 		}},
 			Childs: map[string]*go3mf.ChildModel{
 				"/that.model": {Resources: go3mf.Resources{Assets: []go3mf.Asset{
-					&SliceStack{ID: 1, Slices: []*Slice{{TopZ: 1, Vertices: []go3mf.Point2D{{}, {}, {}}, Polygons: []Polygon{
+					&SliceStack{ID: 1, Slices: []Slice{{TopZ: 1, Vertices: Vertices{Vertex: []go3mf.Point2D{{}, {}, {}}}, Polygons: []Polygon{
 						{StartV: 1, Segments: []Segment{{V2: 2}}},
 					}}}},
 				}}},
 			}, Resources: go3mf.Resources{
 				Assets: []go3mf.Asset{
-					&SliceStack{ID: 3, Slices: []*Slice{{TopZ: 1, Vertices: []go3mf.Point2D{{}, {}, {}}, Polygons: []Polygon{
+					&SliceStack{ID: 3, Slices: []Slice{{TopZ: 1, Vertices: Vertices{Vertex: []go3mf.Point2D{{}, {}, {}}}, Polygons: []Polygon{
 						{StartV: 1, Segments: []Segment{{V2: 2}}},
 					}}}},
 					&go3mf.BaseMaterials{ID: 6, Materials: []go3mf.Base{{Name: "a", Color: color.RGBA{R: 1}}}},
 					&SliceStack{ID: 9, Refs: []SliceRef{{SliceStackID: 1, Path: "/that.model"}}},
-					&SliceStack{ID: 11, Slices: []*Slice{{TopZ: 1, Vertices: []go3mf.Point2D{{}, {}, {}}, Polygons: []Polygon{
+					&SliceStack{ID: 11, Slices: []Slice{{TopZ: 1, Vertices: Vertices{Vertex: []go3mf.Point2D{{}, {}, {}}}, Polygons: []Polygon{
 						{StartV: 1, Segments: []Segment{{V2: 2}, {V2: 1}}},
 					}}}},
 				},

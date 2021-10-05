@@ -61,8 +61,12 @@ type Polygon struct {
 // Slice defines the resource object for slices.
 type Slice struct {
 	TopZ     float32
-	Vertices []go3mf.Point2D
+	Vertices Vertices
 	Polygons []Polygon
+}
+
+type Vertices struct {
+	Vertex []go3mf.Point2D
 }
 
 // MeshResolution defines the resolutions for a slice.
@@ -100,7 +104,7 @@ type SliceRef struct {
 type SliceStack struct {
 	ID      uint32
 	BottomZ float32
-	Slices  []*Slice
+	Slices  []Slice
 	Refs    []SliceRef
 }
 

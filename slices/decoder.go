@@ -136,7 +136,7 @@ type sliceDecoder struct {
 }
 
 func (d *sliceDecoder) End() {
-	d.resource.Slices = append(d.resource.Slices, &d.slice)
+	d.resource.Slices = append(d.resource.Slices, d.slice)
 }
 
 func (d *sliceDecoder) Wrap(err error) error {
@@ -192,6 +192,10 @@ func (d *polygonVerticesDecoder) Child(name xml.Name) (child spec.ElementDecoder
 	return
 }
 
+func (d *polygonVerticesDecoder) Wrap(err error) error {
+	return specerr.Wrap(err, &d.slice.Vertices)
+}
+
 type polygonVertexDecoder struct {
 	baseDecoder
 	slice *Slice
@@ -214,9 +218,9 @@ func (d *polygonVertexDecoder) Start(attrs []spec.XMLAttr) error {
 			p[1] = float32(val)
 		}
 	}
-	d.slice.Vertices = append(d.slice.Vertices, p)
+	d.slice.Vertices.Vertex = append(d.slice.Vertices.Vertex, p)
 	if errs != nil {
-		return specerr.WrapIndex(errs, p, len(d.slice.Vertices)-1)
+		return specerr.WrapIndex(errs, p, len(d.slice.Vertices.Vertex)-1)
 	}
 	return nil
 }

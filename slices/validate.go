@@ -95,10 +95,10 @@ func (r *SliceStack) validateSlices() error {
 			errs = errors.Append(errs, errors.WrapIndex(ErrSliceNoMonotonic, slice, j))
 		}
 		lastTopZ = slice.TopZ
-		if len(slice.Polygons) == 0 && len(slice.Vertices) == 0 {
+		if len(slice.Polygons) == 0 && len(slice.Vertices.Vertex) == 0 {
 			continue
 		}
-		if len(slice.Vertices) < 2 {
+		if len(slice.Vertices.Vertex) < 2 {
 			errs = errors.Append(errs, errors.WrapIndex(ErrSliceInsufficientVertices, slice, j))
 		}
 		if len(slice.Polygons) == 0 {
