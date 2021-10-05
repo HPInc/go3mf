@@ -56,11 +56,11 @@ func TestValidate(t *testing.T) {
 			fmt.Sprintf("Resources@Object#2@Mesh@BeamLattice: %v", ErrLatticeObjType),
 		}},
 		{"incorrect mesh references", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
-			{ID: 1, Mesh: &go3mf.Mesh{Vertices: []go3mf.Point3D{{}, {}, {}}, Any: spec.Any{nil}}},
-			{ID: 2, Mesh: &go3mf.Mesh{Vertices: []go3mf.Point3D{{}, {}, {}}, Any: spec.Any{&BeamLattice{
+			{ID: 1, Mesh: &go3mf.Mesh{Vertices: go3mf.Vertices{Vertex: []go3mf.Point3D{{}, {}, {}}}, Any: spec.Any{nil}}},
+			{ID: 2, Mesh: &go3mf.Mesh{Vertices: go3mf.Vertices{Vertex: []go3mf.Point3D{{}, {}, {}}}, Any: spec.Any{&BeamLattice{
 				MinLength: 1, Radius: 1, ClippingMeshID: 100, RepresentationMeshID: 2,
 			}}}},
-			{ID: 3, Mesh: &go3mf.Mesh{Vertices: []go3mf.Point3D{{}, {}, {}}, Any: spec.Any{&BeamLattice{
+			{ID: 3, Mesh: &go3mf.Mesh{Vertices: go3mf.Vertices{Vertex: []go3mf.Point3D{{}, {}, {}}}, Any: spec.Any{&BeamLattice{
 				MinLength: 1, Radius: 1, ClippingMeshID: 1, RepresentationMeshID: 2,
 			}}}},
 		}}}, []string{
@@ -69,7 +69,7 @@ func TestValidate(t *testing.T) {
 			fmt.Sprintf("Resources@Object#2@Mesh@BeamLattice: %v", ErrLatticeInvalidMesh),
 		}},
 		{"incorrect beams", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
-			{ID: 2, Mesh: &go3mf.Mesh{Vertices: []go3mf.Point3D{{}, {}, {}}, Any: spec.Any{&BeamLattice{
+			{ID: 2, Mesh: &go3mf.Mesh{Vertices: go3mf.Vertices{Vertex: []go3mf.Point3D{{}, {}, {}}}, Any: spec.Any{&BeamLattice{
 				MinLength: 1, Radius: 1, ClipMode: ClipInside, Beams: Beams{Beam: []Beam{
 					{}, {Indices: [2]uint32{1, 1}, Radius: [2]float32{0.5, 0}}, {Indices: [2]uint32{1, 3}},
 				},
@@ -81,7 +81,7 @@ func TestValidate(t *testing.T) {
 			fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@Beam#2: %v", errors.ErrIndexOutOfBounds),
 		}},
 		{"incorrect beamseat", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
-			{ID: 2, Mesh: &go3mf.Mesh{Vertices: []go3mf.Point3D{{}, {}, {}}, Any: spec.Any{&BeamLattice{
+			{ID: 2, Mesh: &go3mf.Mesh{Vertices: go3mf.Vertices{Vertex: []go3mf.Point3D{{}, {}, {}}}, Any: spec.Any{&BeamLattice{
 				MinLength: 1, Radius: 1, ClipMode: ClipInside, Beams: Beams{Beam: []Beam{
 					{Indices: [2]uint32{1, 2}},
 				}}, BeamSets: BeamSets{BeamSet: []BeamSet{{Refs: []uint32{0, 2, 3}}}},

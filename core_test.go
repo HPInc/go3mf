@@ -260,7 +260,7 @@ func TestMeshBuilder_AddVertex(t *testing.T) {
 		want uint32
 	}{
 		{"existing", existingStruct, args{pos}, 0},
-		{"base", &MeshBuilder{Mesh: &Mesh{Vertices: []Point3D{{}}}, CalculateConnectivity: false}, args{pos}, 1},
+		{"base", &MeshBuilder{Mesh: &Mesh{Vertices: Vertices{Vertex: []Point3D{{}}}}, CalculateConnectivity: false}, args{pos}, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -444,7 +444,7 @@ func TestMesh_BoundingBox(t *testing.T) {
 		want Box
 	}{
 		{"empty", new(Mesh), Box{}},
-		{"base", &Mesh{Vertices: []Point3D{{1, 1, 1}, {2, 2, 2}, {-1, 0, 3}}}, Box{Min: Point3D{-1, 0, 1}, Max: Point3D{2, 2, 3}}},
+		{"base", &Mesh{Vertices: Vertices{Vertex: []Point3D{{1, 1, 1}, {2, 2, 2}, {-1, 0, 3}}}}, Box{Min: Point3D{-1, 0, 1}, Max: Point3D{2, 2, 3}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -469,9 +469,7 @@ func TestModel_BoundingBox(t *testing.T) {
 				{ObjectID: 3},
 			}},
 			Resources: Resources{Objects: []*Object{
-				{ID: 1, Mesh: &Mesh{Vertices: []Point3D{
-					{10, 20, 30},
-				}}},
+				{ID: 1, Mesh: &Mesh{Vertices: Vertices{Vertex: []Point3D{{10, 20, 30}}}}},
 				{ID: 2, Components: &Components{Component: []*Component{
 					{ObjectID: 1, Transform: Identity().Translate(100, 100, 100)},
 					{ObjectID: 10},

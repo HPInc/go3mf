@@ -72,11 +72,11 @@ func TestMarshalModel(t *testing.T) {
 							xml.StartElement{Name: fooName},
 							xml.EndElement{Name: fooName},
 						}},
-						Vertices: []Point3D{
+						Vertices: Vertices{Vertex: []Point3D{
 							{0, 0, 0}, {100, 0, 0}, {100, 100, 0},
 							{0, 100, 0}, {0, 0, 100}, {100, 0, 100},
-							{100, 100, 100}, {0, 100, 100}},
-						Triangles: []Triangle{
+							{100, 100, 100}, {0, 100, 100}}},
+						Triangles: Triangles{Triangle: []Triangle{
 							{V1: 3, V2: 2, V3: 1, PID: 5, P1: 0, P2: 0, P3: 0},
 							{V1: 1, V2: 0, V3: 3, PID: 5, P1: 0, P2: 0, P3: 0},
 							{V1: 4, V2: 5, V3: 6, PID: 5, P1: 1, P2: 1, P3: 1},
@@ -89,7 +89,7 @@ func TestMarshalModel(t *testing.T) {
 							{V1: 7, V2: 6, V3: 2, PID: 5, P1: 0, P2: 0, P3: 0},
 							{V1: 3, V2: 0, V3: 4, PID: 5, P1: 0, P2: 0, P3: 0},
 							{V1: 4, V2: 7, V3: 3, PID: 5, P1: 0, P2: 0, P3: 0},
-						},
+						}},
 					}},
 				{
 					ID: 20, Type: ObjectTypeSupport,

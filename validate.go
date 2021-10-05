@@ -248,16 +248,16 @@ func (r *Object) validateMesh(m *Model, path string) error {
 	var errs error
 	switch r.Type {
 	case ObjectTypeModel, ObjectTypeSolidSupport:
-		if len(r.Mesh.Vertices) < 3 {
+		if len(r.Mesh.Vertices.Vertex) < 3 {
 			errs = errors.Append(errs, errors.ErrInsufficientVertices)
 		}
-		if len(r.Mesh.Triangles) <= 3 && len(r.Mesh.Any) == 0 {
+		if len(r.Mesh.Triangles.Triangle) <= 3 && len(r.Mesh.Any) == 0 {
 			errs = errors.Append(errs, errors.ErrInsufficientTriangles)
 		}
 	}
 
-	nodeCount := uint32(len(r.Mesh.Vertices))
-	for i, face := range r.Mesh.Triangles {
+	nodeCount := uint32(len(r.Mesh.Vertices.Vertex))
+	for i, face := range r.Mesh.Triangles.Triangle {
 		if face.V1 == face.V2 || face.V1 == face.V3 || face.V2 == face.V3 {
 			errs = errors.Append(errs, errors.WrapIndex(errors.ErrDuplicatedIndices, face, i))
 		}
@@ -413,16 +413,16 @@ func isSolidObject(r *Object) bool {
 
 // ValidateCoherency checks that the mesh is non-empty, manifold and oriented.
 func (m *Mesh) ValidateCoherency() error {
-	if len(m.Vertices) < 3 {
+	if len(m.Vertices.Vertex) < 3 {
 		return errors.ErrInsufficientVertices
 	}
-	if len(m.Triangles) <= 3 {
+	if len(m.Triangles.Triangle) <= 3 {
 		return errors.ErrInsufficientTriangles
 	}
 
 	var edgeCounter uint32
 	pairMatching := make(pairMatch)
-	for _, face := range m.Triangles {
+	for _, face := range m.Triangles.Triangle {
 		fv := [3]uint32{face.V1, face.V2, face.V3}
 		for j := 0; j < 3; j++ {
 			n1, n2 := fv[j], fv[(j+1)%3]
@@ -434,7 +434,7 @@ func (m *Mesh) ValidateCoherency() error {
 	}
 
 	positive, negative := make([]uint32, edgeCounter), make([]uint32, edgeCounter)
-	for _, face := range m.Triangles {
+	for _, face := range m.Triangles.Triangle {
 		fv := [3]uint32{face.V1, face.V2, face.V3}
 		for j := 0; j < 3; j++ {
 			n1, n2 := fv[j], fv[(j+1)%3]

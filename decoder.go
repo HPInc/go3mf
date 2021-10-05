@@ -436,8 +436,20 @@ type verticesDecoder struct {
 	vertexDecoder vertexDecoder
 }
 
-func (d *verticesDecoder) Start(_ []spec.XMLAttr) error {
+func (d *verticesDecoder) Start(attrs []spec.XMLAttr) error {
 	d.vertexDecoder.mesh = d.mesh
+	var errs error
+	for _, a := range attrs {
+		var attr spec.AttrGroup
+		if attr = d.mesh.Vertices.AnyAttr.Get(a.Name.Space); attr == nil {
+			attr = spec.NewAttrGroup(a.Name.Space, xml.Name{Space: Namespace, Local: attrVertices})
+			d.mesh.Vertices.AnyAttr = append(d.mesh.Vertices.AnyAttr, attr)
+		}
+		errs = specerr.Append(errs, attr.Unmarshal3MFAttr(a))
+	}
+	if errs != nil {
+		return specerr.Wrap(errs, &d.mesh.Vertices)
+	}
 	return nil
 }
 
@@ -446,6 +458,10 @@ func (d *verticesDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 		child = &d.vertexDecoder
 	}
 	return
+}
+
+func (d *verticesDecoder) Wrap(err error) error {
+	return specerr.Wrap(err, &d.mesh.Vertices)
 }
 
 type vertexDecoder struct {
@@ -475,9 +491,9 @@ func (d *vertexDecoder) Start(attrs []spec.XMLAttr) error {
 			z = float32(val)
 		}
 	}
-	d.mesh.Vertices = append(d.mesh.Vertices, Point3D{x, y, z})
+	d.mesh.Vertices.Vertex = append(d.mesh.Vertices.Vertex, Point3D{x, y, z})
 	if errs != nil {
-		return specerr.WrapIndex(errs, Point3D{x, y, z}, len(d.mesh.Vertices)-1)
+		return specerr.WrapIndex(errs, Point3D{x, y, z}, len(d.mesh.Vertices.Vertex)-1)
 	}
 	return nil
 }
@@ -488,13 +504,25 @@ type trianglesDecoder struct {
 	triangleDecoder triangleDecoder
 }
 
-func (d *trianglesDecoder) Start(_ []spec.XMLAttr) error {
+func (d *trianglesDecoder) Start(attrs []spec.XMLAttr) error {
 	d.triangleDecoder.mesh = d.resource.Mesh
 	d.triangleDecoder.defaultPropertyID = d.resource.PID
 	d.triangleDecoder.defaultPropertyIndex = d.resource.PIndex
 
-	if len(d.resource.Mesh.Triangles) == 0 && len(d.resource.Mesh.Vertices) > 0 {
-		d.resource.Mesh.Triangles = make([]Triangle, 0, len(d.resource.Mesh.Vertices)*2)
+	if len(d.resource.Mesh.Triangles.Triangle) == 0 && len(d.resource.Mesh.Vertices.Vertex) > 0 {
+		d.resource.Mesh.Triangles.Triangle = make([]Triangle, 0, len(d.resource.Mesh.Vertices.Vertex)*2)
+	}
+	var errs error
+	for _, a := range attrs {
+		var attr spec.AttrGroup
+		if attr = d.resource.Mesh.Triangles.AnyAttr.Get(a.Name.Space); attr == nil {
+			attr = spec.NewAttrGroup(a.Name.Space, xml.Name{Space: Namespace, Local: attrTriangles})
+			d.resource.Mesh.Triangles.AnyAttr = append(d.resource.Mesh.Triangles.AnyAttr, attr)
+		}
+		errs = specerr.Append(errs, attr.Unmarshal3MFAttr(a))
+	}
+	if errs != nil {
+		return specerr.Wrap(errs, &d.resource.Mesh.Triangles)
 	}
 	return nil
 }
@@ -504,6 +532,10 @@ func (d *trianglesDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 		child = &d.triangleDecoder
 	}
 	return
+}
+
+func (d *trianglesDecoder) Wrap(err error) error {
+	return specerr.Wrap(err, &d.resource.Mesh.Triangles)
 }
 
 type triangleDecoder struct {
@@ -567,9 +599,9 @@ func (d *triangleDecoder) Start(attrs []spec.XMLAttr) error {
 	pid = applyDefault(pid, d.defaultPropertyID, hasPID)
 	t.PID = pid
 	t.P1, t.P2, t.P3 = p1, p2, p3
-	d.mesh.Triangles = append(d.mesh.Triangles, t)
+	d.mesh.Triangles.Triangle = append(d.mesh.Triangles.Triangle, t)
 	if errs != nil {
-		return specerr.WrapIndex(errs, t, len(d.mesh.Triangles)-1)
+		return specerr.WrapIndex(errs, t, len(d.mesh.Triangles.Triangle)-1)
 	}
 	return nil
 }

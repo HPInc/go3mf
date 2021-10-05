@@ -50,7 +50,7 @@ func validateObject(m *go3mf.Model, path string, obj *go3mf.Object) error {
 		if b.Indices[0] == b.Indices[1] {
 			errs = errors.Append(errs, errors.WrapIndex(ErrLatticeSameVertex, b, i))
 		} else {
-			l := len(obj.Mesh.Vertices)
+			l := len(obj.Mesh.Vertices.Vertex)
 			if int(b.Indices[0]) >= l || int(b.Indices[1]) >= l {
 				errs = errors.Append(errs, errors.WrapIndex(errors.ErrIndexOutOfBounds, b, i))
 			}

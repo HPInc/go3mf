@@ -14,9 +14,9 @@ import (
 )
 
 func TestValidate(t *testing.T) {
-	validMesh := &go3mf.Object{ID: 1, Mesh: &go3mf.Mesh{Vertices: []go3mf.Point3D{{}, {}, {}, {}}, Triangles: []go3mf.Triangle{
+	validMesh := &go3mf.Object{ID: 1, Mesh: &go3mf.Mesh{Vertices: go3mf.Vertices{Vertex: []go3mf.Point3D{{}, {}, {}, {}}}, Triangles: go3mf.Triangles{Triangle: []go3mf.Triangle{
 		{V1: 0, V2: 1, V3: 2}, {V1: 0, V2: 3, V3: 1}, {V1: 0, V2: 2, V3: 3}, {V1: 1, V2: 3, V3: 2},
-	}}}
+	}}}}
 	tests := []struct {
 		name  string
 		model *go3mf.Model

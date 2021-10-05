@@ -330,32 +330,32 @@ func TestDecoder_processRootModel(t *testing.T) {
 				xml.StartElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "fake"}},
 				xml.EndElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "fake"}},
 			}},
+			Vertices: Vertices{Vertex: []Point3D{
+				{0, 0, 0},
+				{100, 0, 0},
+				{100, 100, 0},
+				{0, 100, 0},
+				{0, 0, 100},
+				{100, 0, 100},
+				{100, 100, 100},
+				{0, 100, 100},
+			}, AnyAttr: spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "fooval10"}}}}},
+			Triangles: Triangles{Triangle: []Triangle{
+				{V1: 3, V2: 2, V3: 1, PID: 5, P1: 0, P2: 0, P3: 0, AnyAttr: spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "t1"}}}}},
+				{V1: 1, V2: 0, V3: 3, PID: 5, P1: 0, P2: 0, P3: 0},
+				{V1: 4, V2: 5, V3: 6, PID: 5, P1: 1, P2: 1, P3: 1},
+				{V1: 6, V2: 7, V3: 4, PID: 5, P1: 1, P2: 1, P3: 1},
+				{V1: 0, V2: 1, V3: 5, PID: 5, P1: 0, P2: 1, P3: 2},
+				{V1: 5, V2: 4, V3: 0, PID: 5, P1: 3, P2: 0, P3: 2},
+				{V1: 1, V2: 2, V3: 6, PID: 5, P1: 0, P2: 1, P3: 2},
+				{V1: 6, V2: 5, V3: 1, PID: 5, P1: 2, P2: 1, P3: 3},
+				{V1: 2, V2: 3, V3: 7, PID: 5, P1: 0, P2: 0, P3: 0},
+				{V1: 7, V2: 6, V3: 2, PID: 5, P1: 0, P2: 0, P3: 0},
+				{V1: 3, V2: 0, V3: 4, PID: 5, P1: 0, P2: 0, P3: 0},
+				{V1: 4, V2: 7, V3: 3, PID: 5, P1: 0, P2: 0, P3: 0},
+			}, AnyAttr: spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "fooval11"}}}}},
 		},
 	}
-	meshRes.Mesh.Vertices = append(meshRes.Mesh.Vertices, []Point3D{
-		{0, 0, 0},
-		{100, 0, 0},
-		{100, 100, 0},
-		{0, 100, 0},
-		{0, 0, 100},
-		{100, 0, 100},
-		{100, 100, 100},
-		{0, 100, 100},
-	}...)
-	meshRes.Mesh.Triangles = append(meshRes.Mesh.Triangles, []Triangle{
-		{V1: 3, V2: 2, V3: 1, PID: 5, P1: 0, P2: 0, P3: 0, AnyAttr: spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "t1"}}}}},
-		{V1: 1, V2: 0, V3: 3, PID: 5, P1: 0, P2: 0, P3: 0},
-		{V1: 4, V2: 5, V3: 6, PID: 5, P1: 1, P2: 1, P3: 1},
-		{V1: 6, V2: 7, V3: 4, PID: 5, P1: 1, P2: 1, P3: 1},
-		{V1: 0, V2: 1, V3: 5, PID: 5, P1: 0, P2: 1, P3: 2},
-		{V1: 5, V2: 4, V3: 0, PID: 5, P1: 3, P2: 0, P3: 2},
-		{V1: 1, V2: 2, V3: 6, PID: 5, P1: 0, P2: 1, P3: 2},
-		{V1: 6, V2: 5, V3: 1, PID: 5, P1: 2, P2: 1, P3: 3},
-		{V1: 2, V2: 3, V3: 7, PID: 5, P1: 0, P2: 0, P3: 0},
-		{V1: 7, V2: 6, V3: 2, PID: 5, P1: 0, P2: 0, P3: 0},
-		{V1: 3, V2: 0, V3: 4, PID: 5, P1: 0, P2: 0, P3: 0},
-		{V1: 4, V2: 7, V3: 3, PID: 5, P1: 0, P2: 0, P3: 0},
-	}...)
 
 	components := &Object{
 		ID: 20, Type: ObjectTypeSupport,
@@ -434,7 +434,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 			</basematerials>
 			<object id="8" name="Box 1" pid="5" pindex="0" thumbnail="/a.png" partnumber="11111111-1111-1111-1111-111111111111" type="model">
 				<mesh foo:fooname="fooval9">
-					<vertices>
+					<vertices foo:fooname="fooval10">
 						<vertex x="0" y="0" z="0" foo:fooname="f1"/>
 						<vertex x="100.00000" y="0" z="0" />
 						<vertex x="100.00000" y="100.00000" z="0" />
@@ -444,7 +444,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 						<vertex x="100.00000" y="100.00000" z="100.00000" />
 						<vertex x="0" y="100.00000" z="100.00000" />
 					</vertices>
-					<triangles>
+					<triangles foo:fooname="fooval11">
 						<triangle v1="3" v2="2" v3="1" foo:fooname="t1" />
 						<triangle v1="1" v2="0" v3="3" />
 						<triangle v1="4" v2="5" v3="6" p1="1" />
@@ -637,8 +637,8 @@ func TestDecoder_processRootModel_warns(t *testing.T) {
 	want := []string{
 		fmt.Sprintf("Resources@BaseMaterials#0@Base#0: %v", specerr.NewParseAttrError("displaycolor", true)),
 		fmt.Sprintf("Resources@BaseMaterials#1: %v", specerr.NewParseAttrError("id", true)),
-		fmt.Sprintf("Resources@Object#0@Mesh@Point3D#8: %v", specerr.NewParseAttrError("x", true)),
-		fmt.Sprintf("Resources@Object#0@Mesh@Triangle#13: %v", specerr.NewParseAttrError("v1", true)),
+		fmt.Sprintf("Resources@Object#0@Mesh@Vertices@Point3D#8: %v", specerr.NewParseAttrError("x", true)),
+		fmt.Sprintf("Resources@Object#0@Mesh@Triangles@Triangle#13: %v", specerr.NewParseAttrError("v1", true)),
 		fmt.Sprintf("Resources@Object#1: %v", specerr.NewParseAttrError("pid", false)),
 		fmt.Sprintf("Resources@Object#1: %v", specerr.NewParseAttrError("pindex", false)),
 		fmt.Sprintf("Resources@Object#1: %v", specerr.NewParseAttrError("type", false)),
@@ -748,14 +748,14 @@ func TestOpenReader(t *testing.T) {
 		Language: "en-US", Path: "/3D/3dmodel.model",
 		Resources: Resources{Objects: []*Object{
 			{ID: 1, Name: "Cube", Mesh: &Mesh{
-				Vertices: []Point3D{
+				Vertices: Vertices{Vertex: []Point3D{
 					{100, 100, 100}, {100, 0, 100}, {100, 100, 0}, {0, 100, 0}, {100, 0, 0}, {}, {0, 0, 100}, {0, 100, 100},
-				}, Triangles: []Triangle{
+				}}, Triangles: Triangles{Triangle: []Triangle{
 					{V1: 0, V2: 1, V3: 2}, {V1: 3, V2: 0, V3: 2}, {V1: 4, V2: 3, V3: 2},
 					{V1: 5, V2: 3, V3: 4}, {V1: 4, V2: 6, V3: 5}, {V1: 6, V2: 7, V3: 5},
 					{V1: 7, V2: 6, V3: 0}, {V1: 1, V2: 6, V3: 4}, {V1: 5, V2: 7, V3: 3},
 					{V1: 7, V2: 0, V3: 3}, {V1: 2, V2: 1, V3: 4}, {V1: 0, V2: 6, V3: 1},
-				}},
+				}}},
 			},
 		}},
 		Build: Build{

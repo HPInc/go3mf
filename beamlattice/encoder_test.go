@@ -16,13 +16,13 @@ func TestMarshalModel(t *testing.T) {
 	meshLattice := &go3mf.Object{
 		ID: 15, Name: "Box",
 		Mesh: &go3mf.Mesh{
-			Triangles: []go3mf.Triangle{},
+			Triangles: go3mf.Triangles{Triangle: []go3mf.Triangle{}},
 			Any:       spec.Any{beamLattice}},
 	}
 	beamLattice.MinLength = 0.0001
 	beamLattice.CapMode = CapModeHemisphere
 	beamLattice.Radius = 1
-	meshLattice.Mesh.Vertices = append(meshLattice.Mesh.Vertices, []go3mf.Point3D{
+	meshLattice.Mesh.Vertices.Vertex = append(meshLattice.Mesh.Vertices.Vertex, []go3mf.Point3D{
 		{45, 55, 55},
 		{45, 45, 55},
 		{45, 55, 45},

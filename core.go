@@ -469,19 +469,29 @@ type Triangle struct {
 // orientation (i.e. the face can look up or look down) and have three nodes.
 // The orientation is defined by the order of its nodes.
 type Mesh struct {
-	Vertices  []Point3D
-	Triangles []Triangle
+	Vertices  Vertices
+	Triangles Triangles
 	AnyAttr   spec.AnyAttr
 	Any       spec.Any
 }
 
+type Vertices struct {
+	Vertex  []Point3D
+	AnyAttr spec.AnyAttr
+}
+
+type Triangles struct {
+	Triangle []Triangle
+	AnyAttr  spec.AnyAttr
+}
+
 // BoundingBox returns the bounding box of the mesh.
 func (m *Mesh) BoundingBox() Box {
-	if len(m.Vertices) == 0 {
+	if len(m.Vertices.Vertex) == 0 {
 		return Box{}
 	}
 	box := newLimitBox()
-	for _, v := range m.Vertices {
+	for _, v := range m.Vertices.Vertex {
 		box = box.extendPoint(v)
 	}
 	return box
@@ -515,8 +525,8 @@ func (mb *MeshBuilder) AddVertex(node Point3D) uint32 {
 			return index
 		}
 	}
-	mb.Mesh.Vertices = append(mb.Mesh.Vertices, node)
-	index := uint32(len(mb.Mesh.Vertices)) - 1
+	mb.Mesh.Vertices.Vertex = append(mb.Mesh.Vertices.Vertex, node)
+	index := uint32(len(mb.Mesh.Vertices.Vertex)) - 1
 	if mb.CalculateConnectivity {
 		mb.vectorTree.AddVector(node, index)
 	}

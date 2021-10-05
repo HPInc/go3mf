@@ -49,9 +49,9 @@ func TestValidate(t *testing.T) {
 			fmt.Sprintf("Metadata#4: %v", &errors.MissingFieldError{Name: attrName}),
 		}},
 		{"build", &Model{Resources: Resources{Assets: []Asset{&BaseMaterials{ID: 1, Materials: []Base{{Name: "a", Color: color.RGBA{A: 1}}}}}, Objects: []*Object{
-			{ID: 2, Type: ObjectTypeOther, Mesh: &Mesh{Vertices: []Point3D{{}, {}, {}, {}}, Triangles: []Triangle{
+			{ID: 2, Type: ObjectTypeOther, Mesh: &Mesh{Vertices: Vertices{Vertex: []Point3D{{}, {}, {}, {}}}, Triangles: Triangles{Triangle: []Triangle{
 				{V1: 0, V2: 1, V3: 2}, {V1: 0, V2: 3, V3: 1}, {V1: 0, V2: 2, V3: 3}, {V1: 1, V2: 3, V3: 2},
-			}}}}}, Build: Build{AnyAttr: spec.AnyAttr{&fakeAttr{}}, Items: []*Item{
+			}}}}}}, Build: Build{AnyAttr: spec.AnyAttr{&fakeAttr{}}, Items: []*Item{
 			{},
 			{ObjectID: 2},
 			{ObjectID: 100},
@@ -89,20 +89,20 @@ func TestValidate(t *testing.T) {
 		}, Objects: []*Object{
 			{},
 			{ID: 1, PIndex: 1, Mesh: &Mesh{}, Components: &Components{Component: []*Component{{ObjectID: 1}}}},
-			{ID: 2, Mesh: &Mesh{Vertices: []Point3D{{}, {}, {}, {}}, Triangles: []Triangle{
+			{ID: 2, Mesh: &Mesh{Vertices: Vertices{Vertex: []Point3D{{}, {}, {}, {}}}, Triangles: Triangles{Triangle: []Triangle{
 				{V1: 0, V2: 1, V3: 2}, {V1: 0, V2: 3, V3: 1}, {V1: 0, V2: 2, V3: 3}, {V1: 1, V2: 3, V3: 2},
-			}}},
+			}}}},
 			{ID: 3, PID: 5, Components: &Components{Component: []*Component{
 				{ObjectID: 3}, {ObjectID: 2}, {}, {ObjectID: 5}, {ObjectID: 100},
 			}}},
-			{ID: 4, PID: 100, Mesh: &Mesh{Vertices: make([]Point3D, 2), Triangles: make([]Triangle, 3)}},
-			{ID: 6, PID: 5, PIndex: 2, Mesh: &Mesh{Vertices: []Point3D{{}, {}, {}, {}},
-				Triangles: []Triangle{
+			{ID: 4, PID: 100, Mesh: &Mesh{Vertices: Vertices{Vertex: make([]Point3D, 2)}, Triangles: Triangles{Triangle: make([]Triangle, 3)}}},
+			{ID: 6, PID: 5, PIndex: 2, Mesh: &Mesh{Vertices: Vertices{Vertex: []Point3D{{}, {}, {}, {}}},
+				Triangles: Triangles{Triangle: []Triangle{
 					{V1: 0, V2: 1, V3: 2, PID: 5, P1: 2, P2: 0, P3: 0},
 					{V1: 0, V2: 1, V3: 4, PID: 5, P1: 2, P2: 2, P3: 2},
 					{V1: 0, V2: 2, V3: 3, PID: 5, P1: 1, P2: 1, P3: 0},
 					{V1: 1, V2: 2, V3: 3, PID: 100, P1: 0, P2: 0, P3: 0},
-				}}},
+				}}}},
 		}}}, []string{
 			fmt.Sprintf("Resources@Object#0: %v", errors.ErrMissingID),
 			fmt.Sprintf("Resources@Object#0: %v", errors.ErrInvalidObject),
@@ -160,22 +160,22 @@ func TestObject_ValidateMesh(t *testing.T) {
 		r       *Mesh
 		wantErr bool
 	}{
-		{"few vertices", &Mesh{Vertices: make([]Point3D, 1), Triangles: make([]Triangle, 3)}, true},
-		{"few triangles", &Mesh{Vertices: make([]Point3D, 3), Triangles: make([]Triangle, 3)}, true},
-		{"wrong orientation", &Mesh{Vertices: []Point3D{{}, {}, {}, {}},
-			Triangles: []Triangle{
+		{"few vertices", &Mesh{Vertices: Vertices{Vertex: make([]Point3D, 1)}, Triangles: Triangles{Triangle: make([]Triangle, 3)}}, true},
+		{"few triangles", &Mesh{Vertices: Vertices{Vertex: make([]Point3D, 3)}, Triangles: Triangles{Triangle: make([]Triangle, 3)}}, true},
+		{"wrong orientation", &Mesh{Vertices: Vertices{Vertex: []Point3D{{}, {}, {}, {}}},
+			Triangles: Triangles{Triangle: []Triangle{
 				{V1: 0, V2: 1, V3: 2},
 				{V1: 0, V2: 3, V3: 1},
 				{V1: 0, V2: 2, V3: 3},
 				{V1: 1, V2: 2, V3: 3},
-			}}, true},
-		{"correct", &Mesh{Vertices: []Point3D{{}, {}, {}, {}},
-			Triangles: []Triangle{
+			}}}, true},
+		{"correct", &Mesh{Vertices: Vertices{Vertex: []Point3D{{}, {}, {}, {}}},
+			Triangles: Triangles{Triangle: []Triangle{
 				{V1: 0, V2: 1, V3: 2},
 				{V1: 0, V2: 3, V3: 1},
 				{V1: 0, V2: 2, V3: 3},
 				{V1: 1, V2: 3, V3: 2},
-			}}, false},
+			}}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -187,14 +187,14 @@ func TestObject_ValidateMesh(t *testing.T) {
 }
 
 func TestModel_ValidateCoherency(t *testing.T) {
-	validMesh := &Mesh{Vertices: []Point3D{{}, {}, {}, {}}, Triangles: []Triangle{
+	validMesh := &Mesh{Vertices: Vertices{Vertex: []Point3D{{}, {}, {}, {}}}, Triangles: Triangles{Triangle: []Triangle{
 		{V1: 0, V2: 1, V3: 2}, {V1: 0, V2: 3, V3: 1},
 		{V1: 0, V2: 2, V3: 3}, {V1: 1, V2: 3, V3: 2},
-	}}
-	invalidMesh := &Mesh{Vertices: []Point3D{{}, {}, {}, {}}, Triangles: []Triangle{
+	}}}
+	invalidMesh := &Mesh{Vertices: Vertices{Vertex: []Point3D{{}, {}, {}, {}}}, Triangles: Triangles{Triangle: []Triangle{
 		{V1: 0, V2: 1, V3: 2}, {V1: 0, V2: 3, V3: 1},
 		{V1: 0, V2: 2, V3: 3}, {V1: 1, V2: 2, V3: 3},
-	}}
+	}}}
 	tests := []struct {
 		name string
 		m    *Model

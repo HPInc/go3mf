@@ -429,6 +429,7 @@ func (e *Encoder) writeComponents(x spec.Encoder, comps *Components) {
 
 func (e *Encoder) writeVertices(x spec.Encoder, m *Mesh) {
 	xvs := xml.StartElement{Name: xml.Name{Local: attrVertices}}
+	m.Vertices.AnyAttr.Marshal3MF(x, &xvs)
 	x.EncodeToken(xvs)
 	prec := x.FloatPresicion()
 	start := xml.StartElement{
@@ -441,7 +442,7 @@ func (e *Encoder) writeVertices(x spec.Encoder, m *Mesh) {
 	}
 	x.SetAutoClose(true)
 	x.SetSkipAttrEscape(true)
-	for _, v := range m.Vertices {
+	for _, v := range m.Vertices.Vertex {
 		start.Attr[0].Value = strconv.FormatFloat(float64(v.X()), 'f', prec, 32)
 		start.Attr[1].Value = strconv.FormatFloat(float64(v.Y()), 'f', prec, 32)
 		start.Attr[2].Value = strconv.FormatFloat(float64(v.Z()), 'f', prec, 32)
@@ -454,6 +455,7 @@ func (e *Encoder) writeVertices(x spec.Encoder, m *Mesh) {
 
 func (e *Encoder) writeTriangles(x spec.Encoder, r *Object, m *Mesh) {
 	xvt := xml.StartElement{Name: xml.Name{Local: attrTriangles}}
+	m.Triangles.AnyAttr.Marshal3MF(x, &xvt)
 	x.EncodeToken(xvt)
 	start := xml.StartElement{
 		Name: xml.Name{Local: attrTriangle},
@@ -469,7 +471,7 @@ func (e *Encoder) writeTriangles(x spec.Encoder, r *Object, m *Mesh) {
 	}
 	x.SetAutoClose(true)
 	x.SetSkipAttrEscape(true)
-	for _, t := range m.Triangles {
+	for _, t := range m.Triangles.Triangle {
 		attrs[0].Value = strconv.FormatUint(uint64(t.V1), 10)
 		attrs[1].Value = strconv.FormatUint(uint64(t.V2), 10)
 		attrs[2].Value = strconv.FormatUint(uint64(t.V3), 10)

@@ -38,8 +38,8 @@ func (d *asciiDecoder) decode(ctx context.Context, m *go3mf.Mesh) (err error) {
 
 			if position == 3 {
 				position = 0
-				m.Triangles = append(m.Triangles, go3mf.Triangle{V1: nodes[0], V2: nodes[1], V3: nodes[2]})
-				if len(m.Triangles) > nextFaceCheck {
+				m.Triangles.Triangle = append(m.Triangles.Triangle, go3mf.Triangle{V1: nodes[0], V2: nodes[1], V3: nodes[2]})
+				if len(m.Triangles.Triangle) > nextFaceCheck {
 					select {
 					case <-ctx.Done():
 						err = ctx.Err()
