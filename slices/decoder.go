@@ -57,7 +57,7 @@ func (d *sliceStackDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *sliceStackDecoder) Wrap(err error) error {
+func (d *sliceStackDecoder) WrapError(err error) error {
 	return specerr.WrapIndex(err, d.resource, len(d.resources.Assets))
 }
 
@@ -139,7 +139,7 @@ func (d *sliceDecoder) End() {
 	d.resource.Slices = append(d.resource.Slices, d.slice)
 }
 
-func (d *sliceDecoder) Wrap(err error) error {
+func (d *sliceDecoder) WrapError(err error) error {
 	return specerr.WrapIndex(err, &d.slice, len(d.resource.Slices))
 }
 
@@ -192,7 +192,7 @@ func (d *polygonVerticesDecoder) Child(name xml.Name) (child spec.ElementDecoder
 	return
 }
 
-func (d *polygonVerticesDecoder) Wrap(err error) error {
+func (d *polygonVerticesDecoder) WrapError(err error) error {
 	return specerr.Wrap(err, &d.slice.Vertices)
 }
 
@@ -231,7 +231,7 @@ type polygonDecoder struct {
 	polygonSegmentDecoder polygonSegmentDecoder
 }
 
-func (d *polygonDecoder) Wrap(err error) error {
+func (d *polygonDecoder) WrapError(err error) error {
 	index := len(d.slice.Polygons) - 1
 	return specerr.WrapIndex(err, &d.slice.Polygons[index], index)
 }

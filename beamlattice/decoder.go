@@ -82,7 +82,7 @@ func (d *beamLatticeDecoder) Start(attrs []spec.XMLAttr) error {
 	return nil
 }
 
-func (d *beamLatticeDecoder) Wrap(err error) error {
+func (d *beamLatticeDecoder) WrapError(err error) error {
 	return specerr.Wrap(err, d.beamLattice)
 }
 
@@ -115,7 +115,7 @@ func (d *beamsDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	return
 }
 
-func (d *beamsDecoder) Wrap(err error) error {
+func (d *beamsDecoder) WrapError(err error) error {
 	return specerr.Wrap(err, &d.beamLattice.Beams)
 }
 
@@ -204,7 +204,7 @@ func (d *beamSetsDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	return
 }
 
-func (d *beamSetsDecoder) Wrap(err error) error {
+func (d *beamSetsDecoder) WrapError(err error) error {
 	return specerr.Wrap(err, &d.beamLattice.BeamSets)
 }
 
@@ -235,7 +235,7 @@ func (d *beamSetDecoder) Start(attrs []spec.XMLAttr) error {
 	return nil
 }
 
-func (d *beamSetDecoder) Wrap(err error) error {
+func (d *beamSetDecoder) WrapError(err error) error {
 	return specerr.WrapIndex(err, &d.beamSet, len(d.beamLattice.BeamSets.BeamSet))
 }
 

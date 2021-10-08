@@ -70,10 +70,6 @@ type Relationship struct {
 	ID   string
 }
 
-type ErrorWrapper interface {
-	Wrap(error) error
-}
-
 // AttrGroup defines a container for different attributes of the same namespace.
 // It supports encoding and decoding to XML.
 type AttrGroup interface {

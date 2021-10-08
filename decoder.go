@@ -21,7 +21,7 @@ type modelDecoder struct {
 	path   string
 }
 
-func (d *modelDecoder) Wrap(err error) error {
+func (d *modelDecoder) WrapError(err error) error {
 	return err
 }
 
@@ -119,7 +119,7 @@ func (d *metadataGroupDecoder) Child(name xml.Name) (child spec.ElementDecoder) 
 	return
 }
 
-func (d *metadataGroupDecoder) Wrap(err error) error {
+func (d *metadataGroupDecoder) WrapError(err error) error {
 	return specerr.Wrap(err, d.metadatas)
 }
 
@@ -202,7 +202,7 @@ func (d *buildDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	return
 }
 
-func (d *buildDecoder) Wrap(err error) error {
+func (d *buildDecoder) WrapError(err error) error {
 	return specerr.Wrap(err, d.build)
 }
 
@@ -233,7 +233,7 @@ func (d *buildItemDecoder) End() {
 	d.build.Items = append(d.build.Items, &d.item)
 }
 
-func (d *buildItemDecoder) Wrap(err error) error {
+func (d *buildItemDecoder) WrapError(err error) error {
 	return specerr.WrapIndex(err, &d.item, len(d.build.Items))
 }
 
@@ -306,7 +306,7 @@ func (d *resourceDecoder) Start(attrs []spec.XMLAttr) error {
 	return errs
 }
 
-func (d *resourceDecoder) Wrap(err error) error {
+func (d *resourceDecoder) WrapError(err error) error {
 	return specerr.Wrap(err, d.resources)
 }
 
@@ -337,7 +337,7 @@ func (d *baseMaterialsDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *baseMaterialsDecoder) Wrap(err error) error {
+func (d *baseMaterialsDecoder) WrapError(err error) error {
 	return specerr.WrapIndex(err, &d.resource, len(d.resources.Assets))
 }
 
@@ -435,7 +435,7 @@ func (d *meshDecoder) Start(attrs []spec.XMLAttr) error {
 	return errs
 }
 
-func (d *meshDecoder) Wrap(err error) error {
+func (d *meshDecoder) WrapError(err error) error {
 	return specerr.Wrap(err, d.resource.Mesh)
 }
 
@@ -484,7 +484,7 @@ func (d *verticesDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	return
 }
 
-func (d *verticesDecoder) Wrap(err error) error {
+func (d *verticesDecoder) WrapError(err error) error {
 	return specerr.Wrap(err, &d.mesh.Vertices)
 }
 
@@ -558,7 +558,7 @@ func (d *trianglesDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	return
 }
 
-func (d *trianglesDecoder) Wrap(err error) error {
+func (d *trianglesDecoder) WrapError(err error) error {
 	return specerr.Wrap(err, &d.resource.Mesh.Triangles)
 }
 
@@ -668,7 +668,7 @@ func (d *objectDecoder) Start(attrs []spec.XMLAttr) error {
 	return errs
 }
 
-func (d *objectDecoder) Wrap(err error) error {
+func (d *objectDecoder) WrapError(err error) error {
 	return specerr.WrapIndex(err, &d.resource, len(d.resources.Objects))
 }
 
@@ -754,7 +754,7 @@ func (d *componentsDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
 	return
 }
 
-func (d *componentsDecoder) Wrap(err error) error {
+func (d *componentsDecoder) WrapError(err error) error {
 	return specerr.Wrap(err, d.resource.Components)
 }
 
@@ -810,6 +810,10 @@ type topLevelDecoder struct {
 	model  *Model
 	isRoot bool
 	path   string
+}
+
+func (d *topLevelDecoder) WrapError(err error) error {
+	return err
 }
 
 func (d *topLevelDecoder) Child(name xml.Name) (child spec.ElementDecoder) {

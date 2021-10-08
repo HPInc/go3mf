@@ -63,7 +63,7 @@ func (r *ReadCloser) Close() error {
 
 func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string, isRoot, strict bool) error {
 	x := xml3mf.NewDecoder(r)
-	state, names := make([]spec.ElementDecoder, 0, 10), make([]xml.Name, 0, 10)
+	state, names := make([]spec.ChildElementDecoder, 0, 10), make([]xml.Name, 0, 10)
 
 	var (
 		currentDecoder, tmpDecoder spec.ElementDecoder
@@ -76,16 +76,14 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 		if childDecoder, ok := currentDecoder.(spec.ChildElementDecoder); ok {
 			tmpDecoder = childDecoder.Child(tp.Name)
 			if tmpDecoder != nil {
-				state = append(state, currentDecoder)
+				state = append(state, childDecoder)
 				names = append(names, currentName)
 				currentName = tp.Name
 				currentDecoder = tmpDecoder
 				err := currentDecoder.Start(*(*[]spec.XMLAttr)(unsafe.Pointer(&tp.Attr)))
 				if err != nil {
 					for i := len(state) - 1; i >= 0; i-- {
-						if ew, ok := state[i].(spec.ErrorWrapper); ok {
-							err = ew.Wrap(err)
-						}
+						err = state[i].WrapError(err)
 					}
 					specerr.Append(&errs, err)
 				}

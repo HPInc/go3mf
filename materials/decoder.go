@@ -44,7 +44,7 @@ func (d *colorGroupDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *colorGroupDecoder) Wrap(err error) error {
+func (d *colorGroupDecoder) WrapError(err error) error {
 	return specerr.WrapIndex(err, &d.resource, len(d.resources.Assets))
 }
 
@@ -135,7 +135,7 @@ func (d *tex2DGroupDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *tex2DGroupDecoder) Wrap(err error) error {
+func (d *tex2DGroupDecoder) WrapError(err error) error {
 	return specerr.WrapIndex(err, &d.resource, len(d.resources.Assets))
 }
 
@@ -226,7 +226,7 @@ func (d *compositeMaterialsDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *compositeMaterialsDecoder) Wrap(err error) error {
+func (d *compositeMaterialsDecoder) WrapError(err error) error {
 	return specerr.WrapIndex(err, &d.resource, len(d.resources.Assets))
 }
 
@@ -312,7 +312,7 @@ func (d *multiPropertiesDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *multiPropertiesDecoder) Wrap(err error) error {
+func (d *multiPropertiesDecoder) WrapError(err error) error {
 	return specerr.WrapIndex(err, &d.resource, len(d.resources.Assets))
 }
 
