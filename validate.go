@@ -66,7 +66,10 @@ func (m *Model) Validate() error {
 	if err != nil {
 		errs = errors.Append(errs, errors.Wrap(err, attrBuild))
 	}
-	return errs
+	if errs != nil {
+		return errors.Wrap(errs, attrModel)
+	}
+	return nil
 }
 
 func (item *Item) validate(m *Model) error {
@@ -404,7 +407,10 @@ func (m *Model) ValidateCoherency() error {
 		}
 	}
 	wg.Wait()
-	return errs
+	if errs != nil {
+		return errors.Wrap(errs, attrModel)
+	}
+	return nil
 }
 
 func isSolidObject(r *Object) bool {
