@@ -650,17 +650,17 @@ func TestNewDecoder(t *testing.T) {
 func TestDecoder_processRootModel_warns(t *testing.T) {
 	spec.Register(fakeSpec.Namespace, new(qmExtension))
 	want := []string{
-		fmt.Sprintf("model@resources@basematerials#0@base#0: %v", specerr.NewParseAttrError("displaycolor", true)),
-		fmt.Sprintf("model@resources@basematerials#1: %v", specerr.NewParseAttrError("id", true)),
-		fmt.Sprintf("model@resources@object#0@mesh@vertices@vertex#8: %v", specerr.NewParseAttrError("x", true)),
-		fmt.Sprintf("model@resources@object#0@mesh@triangles@triangle#13: %v", specerr.NewParseAttrError("v1", true)),
-		fmt.Sprintf("model@resources@object#1: %v", specerr.NewParseAttrError("pid", false)),
-		fmt.Sprintf("model@resources@object#1: %v", specerr.NewParseAttrError("pindex", false)),
-		fmt.Sprintf("model@resources@object#1: %v", specerr.NewParseAttrError("type", false)),
-		fmt.Sprintf("model@resources@object#2@components@component#0: %v", specerr.NewParseAttrError("transform", false)),
-		fmt.Sprintf("model@resources@object#2@components@component#1: %v", specerr.NewParseAttrError("objectid", true)),
-		fmt.Sprintf("model@build@item#0: %v", specerr.NewParseAttrError("transform", false)),
-		fmt.Sprintf("model@build@item#3: %v", specerr.NewParseAttrError("objectid", true)),
+		fmt.Sprintf("model/resources/basematerials[0]/base[0]: %v", specerr.NewParseAttrError("displaycolor", true)),
+		fmt.Sprintf("model/resources/basematerials[1]: %v", specerr.NewParseAttrError("id", true)),
+		fmt.Sprintf("model/resources/object[0]/mesh/vertices/vertex[8]: %v", specerr.NewParseAttrError("x", true)),
+		fmt.Sprintf("model/resources/object[0]/mesh/triangles/triangle[13]: %v", specerr.NewParseAttrError("v1", true)),
+		fmt.Sprintf("model/resources/object[1]: %v", specerr.NewParseAttrError("pid", false)),
+		fmt.Sprintf("model/resources/object[1]: %v", specerr.NewParseAttrError("pindex", false)),
+		fmt.Sprintf("model/resources/object[1]: %v", specerr.NewParseAttrError("type", false)),
+		fmt.Sprintf("model/resources/object[2]/components/component[0]: %v", specerr.NewParseAttrError("transform", false)),
+		fmt.Sprintf("model/resources/object[2]/components/component[1]: %v", specerr.NewParseAttrError("objectid", true)),
+		fmt.Sprintf("model/build/item[0]: %v", specerr.NewParseAttrError("transform", false)),
+		fmt.Sprintf("model/build/item[3]: %v", specerr.NewParseAttrError("objectid", true)),
 	}
 	got := new(Model)
 	got.Extensions = append(got.Extensions, fakeSpec)

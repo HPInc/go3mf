@@ -57,7 +57,7 @@ func (e *List) Unwrap() error {
 // one. If any of the errs are errors.List, they will be flattened
 // one level into err.
 func Append(err error, errs ...error) error {
-	if errs == nil || len(errs) == 0 {
+	if len(errs) == 0 {
 		return err
 	}
 	switch err := err.(type) {

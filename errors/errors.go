@@ -47,7 +47,7 @@ func (l *Level) String() string {
 	if l.Index == -1 {
 		return l.Name
 	}
-	return fmt.Sprintf("%s#%d", l.Name, l.Index)
+	return fmt.Sprintf("%s[%d]", l.Name, l.Index)
 }
 
 type Error struct {
@@ -108,7 +108,7 @@ func (e *Error) Error() string {
 	if e.Path == "" {
 		levels = levels[1:]
 	}
-	return fmt.Sprintf("%s: %v", strings.Join(levels, "@"), e.Err)
+	return fmt.Sprintf("%s: %v", strings.Join(levels, "/"), e.Err)
 }
 
 func NewMissingFieldError(name string) error {

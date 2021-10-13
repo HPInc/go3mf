@@ -95,16 +95,16 @@ func TestDecode(t *testing.T) {
 
 func TestDecode_warns(t *testing.T) {
 	want := []string{
-		fmt.Sprintf("model@resources@slicestack#0: %v", specerr.NewParseAttrError("id", true)),
-		fmt.Sprintf("model@resources@slicestack#0: %v", specerr.NewParseAttrError("zbottom", false)),
-		fmt.Sprintf("model@resources@slicestack#0@slice#0@vertices@vertex#0: %v", specerr.NewParseAttrError("x", true)),
-		fmt.Sprintf("model@resources@slicestack#0@slice#0@vertices@vertex#1: %v", specerr.NewParseAttrError("y", true)),
-		fmt.Sprintf("model@resources@slicestack#0@slice#1: %v", specerr.NewParseAttrError("ztop", true)),
-		fmt.Sprintf("model@resources@slicestack#0@slice#1@polygon#0: %v", specerr.NewParseAttrError("startv", true)),
-		fmt.Sprintf("model@resources@slicestack#0@slice#1@polygon#0@segment#1: %v", specerr.NewParseAttrError("v2", true)),
-		fmt.Sprintf("model@resources@slicestack#0@sliceref#0: %v", specerr.NewParseAttrError("slicestackid", true)),
-		fmt.Sprintf("model@resources@object#0: %v", specerr.NewParseAttrError("meshresolution", false)),
-		fmt.Sprintf("model@resources@object#0: %v", specerr.NewParseAttrError("slicestackid", true)),
+		fmt.Sprintf("model/resources/slicestack[0]: %v", specerr.NewParseAttrError("id", true)),
+		fmt.Sprintf("model/resources/slicestack[0]: %v", specerr.NewParseAttrError("zbottom", false)),
+		fmt.Sprintf("model/resources/slicestack[0]/slice[0]/vertices/vertex[0]: %v", specerr.NewParseAttrError("x", true)),
+		fmt.Sprintf("model/resources/slicestack[0]/slice[0]/vertices/vertex[1]: %v", specerr.NewParseAttrError("y", true)),
+		fmt.Sprintf("model/resources/slicestack[0]/slice[1]: %v", specerr.NewParseAttrError("ztop", true)),
+		fmt.Sprintf("model/resources/slicestack[0]/slice[1]/polygon[0]: %v", specerr.NewParseAttrError("startv", true)),
+		fmt.Sprintf("model/resources/slicestack[0]/slice[1]/polygon[0]/segment[1]: %v", specerr.NewParseAttrError("v2", true)),
+		fmt.Sprintf("model/resources/slicestack[0]/sliceref[0]: %v", specerr.NewParseAttrError("slicestackid", true)),
+		fmt.Sprintf("model/resources/object[0]: %v", specerr.NewParseAttrError("meshresolution", false)),
+		fmt.Sprintf("model/resources/object[0]: %v", specerr.NewParseAttrError("slicestackid", true)),
 	}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"
