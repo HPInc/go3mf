@@ -46,9 +46,9 @@ func (qmExtension) NewAttrGroup(xml.Name) spec.AttrGroup {
 	return &fakeAttr{}
 }
 
-func (qmExtension) NewElementDecoder(parent interface{}, _ string) spec.ElementDecoder {
-	if e, ok := parent.(*Resources); ok {
-		return &fakeAssetDecoder{resources: e}
+func (qmExtension) NewElementDecoder(name xml.Name) spec.GetterElementDecoder {
+	if name.Space == fakeSpec.Namespace && name.Local == "fakeasset" {
+		return new(fakeAssetDecoder)
 	}
 	return nil
 }
@@ -77,7 +77,7 @@ func (f *fakeAsset) Identify() uint32 {
 
 // XMLName returns the xml identifier of the resource.
 func (fakeAsset) XMLName() xml.Name {
-	return xml.Name{Space: Namespace, Local: "fake"}
+	return xml.Name{Space: Namespace, Local: "fakeasset"}
 }
 
 type fakeAttr struct {
@@ -100,12 +100,16 @@ func (f *fakeAttr) Unmarshal3MFAttr(a spec.XMLAttr) error {
 
 type fakeAssetDecoder struct {
 	baseDecoder
-	resources *Resources
+	fa fakeAsset
+}
+
+func (f *fakeAssetDecoder) Element() interface{} {
+	return &f.fa
 }
 
 func (f *fakeAssetDecoder) Start(att []spec.XMLAttr) error {
 	id, _ := strconv.ParseUint(string(att[0].Value), 10, 32)
-	f.resources.Assets = append(f.resources.Assets, &fakeAsset{ID: uint32(id)})
+	f.fa.ID = uint32(id)
 	return nil
 }
 

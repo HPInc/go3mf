@@ -33,7 +33,7 @@ func TestValidate(t *testing.T) {
 					}}},
 				}},
 		}, []string{
-			fmt.Sprintf("Resources@Object#0: %v", errors.ErrInvalidObject),
+			fmt.Sprintf("resources@object#0: %v", errors.ErrInvalidObject),
 		}},
 		{"child", &go3mf.Model{Childs: map[string]*go3mf.ChildModel{
 			"/other.model": {Resources: go3mf.Resources{Assets: []go3mf.Asset{
@@ -43,8 +43,8 @@ func TestValidate(t *testing.T) {
 				&SliceStack{ID: 2},
 			}}},
 		}}, []string{
-			fmt.Sprintf("/other.model@Resources@SliceStack#0: %v", ErrSlicesAndRefs),
-			fmt.Sprintf("/that.model@Resources@SliceStack#0: %v", ErrSlicesAndRefs),
+			fmt.Sprintf("/other.model@resources@slicestack#0: %v", ErrSlicesAndRefs),
+			fmt.Sprintf("/that.model@resources@slicestack#0: %v", ErrSlicesAndRefs),
 		}},
 		{"slicestack", &go3mf.Model{Resources: go3mf.Resources{
 			Assets: []go3mf.Asset{&SliceStack{
@@ -60,13 +60,13 @@ func TestValidate(t *testing.T) {
 				},
 			}},
 		}}, []string{
-			fmt.Sprintf("Resources@SliceStack#0@Slice#0: %v", &errors.MissingFieldError{Name: attrZTop}),
-			fmt.Sprintf("Resources@SliceStack#0@Slice#1: %v", ErrSliceSmallTopZ),
-			fmt.Sprintf("Resources@SliceStack#0@Slice#1: %v", ErrSliceInsufficientVertices),
-			fmt.Sprintf("Resources@SliceStack#0@Slice#1: %v", ErrSliceInsufficientPolygons),
-			fmt.Sprintf("Resources@SliceStack#0@Slice#2@Polygon#0: %v", ErrSliceInsufficientSegments),
-			fmt.Sprintf("Resources@SliceStack#0@Slice#3: %v", ErrSliceNoMonotonic),
-			fmt.Sprintf("Resources@SliceStack#0@Slice#4: %v", ErrSliceNoMonotonic),
+			fmt.Sprintf("resources@slicestack#0@slice#0: %v", &errors.MissingFieldError{Name: attrZTop}),
+			fmt.Sprintf("resources@slicestack#0@slice#1: %v", ErrSliceSmallTopZ),
+			fmt.Sprintf("resources@slicestack#0@slice#1: %v", ErrSliceInsufficientVertices),
+			fmt.Sprintf("resources@slicestack#0@slice#1: %v", ErrSliceInsufficientPolygons),
+			fmt.Sprintf("resources@slicestack#0@slice#2@polygon#0: %v", ErrSliceInsufficientSegments),
+			fmt.Sprintf("resources@slicestack#0@slice#3: %v", ErrSliceNoMonotonic),
+			fmt.Sprintf("resources@slicestack#0@slice#4: %v", ErrSliceNoMonotonic),
 		}},
 		{"sliceref", &go3mf.Model{
 			Childs: map[string]*go3mf.ChildModel{
@@ -91,13 +91,13 @@ func TestValidate(t *testing.T) {
 					},
 					}},
 			}}, []string{
-			fmt.Sprintf("Resources@SliceStack#1@SliceRef#0: %v", &errors.MissingFieldError{Name: attrSlicePath}),
-			fmt.Sprintf("Resources@SliceStack#1@SliceRef#0: %v", &errors.MissingFieldError{Name: attrSliceRefID}),
-			fmt.Sprintf("Resources@SliceStack#1@SliceRef#1: %v", ErrSliceRefSamePart),
-			fmt.Sprintf("Resources@SliceStack#1@SliceRef#2: %v", errors.ErrMissingResource),
-			fmt.Sprintf("Resources@SliceStack#1@SliceRef#3: %v", ErrSliceRefRef),
-			fmt.Sprintf("Resources@SliceStack#1@SliceRef#4: %v", ErrNonSliceStack),
-			fmt.Sprintf("Resources@SliceStack#1@SliceRef#6: %v", ErrSliceNoMonotonic),
+			fmt.Sprintf("resources@slicestack#1@sliceref#0: %v", &errors.MissingFieldError{Name: attrSlicePath}),
+			fmt.Sprintf("resources@slicestack#1@sliceref#0: %v", &errors.MissingFieldError{Name: attrSliceRefID}),
+			fmt.Sprintf("resources@slicestack#1@sliceref#1: %v", ErrSliceRefSamePart),
+			fmt.Sprintf("resources@slicestack#1@sliceref#2: %v", errors.ErrMissingResource),
+			fmt.Sprintf("resources@slicestack#1@sliceref#3: %v", ErrSliceRefRef),
+			fmt.Sprintf("resources@slicestack#1@sliceref#4: %v", ErrNonSliceStack),
+			fmt.Sprintf("resources@slicestack#1@sliceref#6: %v", ErrSliceNoMonotonic),
 		}},
 		{"info", &go3mf.Model{Build: go3mf.Build{Items: []*go3mf.Item{
 			{ObjectID: 7},
@@ -153,18 +153,18 @@ func TestValidate(t *testing.T) {
 						SliceStackID: 11,
 					}}},
 				}}}, []string{
-			fmt.Sprintf("Resources@Object#0@Mesh: %v", errors.ErrInsufficientVertices),
-			fmt.Sprintf("Resources@Object#0@Mesh: %v", errors.ErrInsufficientTriangles),
-			fmt.Sprintf("Resources@Object#0: %v", errors.ErrMissingResource),
-			fmt.Sprintf("Resources@Object#1: %v", ErrSliceInvalidTranform),
-			fmt.Sprintf("Resources@Object#1: %v", ErrSliceExtRequired),
-			fmt.Sprintf("Resources@Object#2: %v", &errors.MissingFieldError{Name: attrSliceRefID}),
-			fmt.Sprintf("Resources@Object#3: %v", ErrNonSliceStack),
-			fmt.Sprintf("Resources@Object#4: %v", ErrSliceInvalidTranform),
-			fmt.Sprintf("Resources@Object#4: %v", ErrSlicePolygonNotClosed),
-			fmt.Sprintf("Resources@Object#5: %v", ErrSliceInvalidTranform),
-			fmt.Sprintf("Resources@Object#5: %v", ErrSlicePolygonNotClosed),
-			fmt.Sprintf("Resources@Object#6@Components@Component#1: %v", errors.ErrRecursion),
+			fmt.Sprintf("resources@object#0@mesh: %v", errors.ErrInsufficientVertices),
+			fmt.Sprintf("resources@object#0@mesh: %v", errors.ErrInsufficientTriangles),
+			fmt.Sprintf("resources@object#0: %v", errors.ErrMissingResource),
+			fmt.Sprintf("resources@object#1: %v", ErrSliceInvalidTranform),
+			fmt.Sprintf("resources@object#1: %v", ErrSliceExtRequired),
+			fmt.Sprintf("resources@object#2: %v", &errors.MissingFieldError{Name: attrSliceRefID}),
+			fmt.Sprintf("resources@object#3: %v", ErrNonSliceStack),
+			fmt.Sprintf("resources@object#4: %v", ErrSliceInvalidTranform),
+			fmt.Sprintf("resources@object#4: %v", ErrSlicePolygonNotClosed),
+			fmt.Sprintf("resources@object#5: %v", ErrSliceInvalidTranform),
+			fmt.Sprintf("resources@object#5: %v", ErrSlicePolygonNotClosed),
+			fmt.Sprintf("resources@object#6@components@component#1: %v", errors.ErrRecursion),
 		}},
 	}
 	for _, tt := range tests {

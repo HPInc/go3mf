@@ -7,7 +7,6 @@ import (
 	"encoding/xml"
 	"strconv"
 
-	"github.com/hpinc/go3mf"
 	specerr "github.com/hpinc/go3mf/errors"
 	"github.com/hpinc/go3mf/spec"
 )
@@ -16,23 +15,24 @@ func (Spec) NewAttrGroup(xml.Name) spec.AttrGroup {
 	return nil
 }
 
-func (Spec) NewElementDecoder(parent interface{}, name string) spec.ElementDecoder {
-	if name == attrBeamLattice {
-		return &beamLatticeDecoder{mesh: parent.(*go3mf.Mesh)}
+func (Spec) NewElementDecoder(name xml.Name) spec.GetterElementDecoder {
+	if name.Space == Namespace && name.Local == attrBeamLattice {
+		return new(beamLatticeDecoder)
 	}
 	return nil
 }
 
 type beamLatticeDecoder struct {
 	baseDecoder
-	mesh        *go3mf.Mesh
-	beamLattice *BeamLattice
+	beamLattice BeamLattice
+}
+
+func (d *beamLatticeDecoder) Element() interface{} {
+	return &d.beamLattice
 }
 
 func (d *beamLatticeDecoder) Start(attrs []spec.XMLAttr) error {
 	var errs error
-	d.beamLattice = new(BeamLattice)
-	d.mesh.Any = append(d.mesh.Any, d.beamLattice)
 	for _, a := range attrs {
 		if a.Name.Space != "" {
 			continue
@@ -82,10 +82,10 @@ func (d *beamLatticeDecoder) Start(attrs []spec.XMLAttr) error {
 func (d *beamLatticeDecoder) Child(name xml.Name) (i int, child spec.ElementDecoder) {
 	if name.Space == Namespace {
 		if name.Local == attrBeams {
-			child = &beamsDecoder{beamLattice: d.beamLattice}
+			child = &beamsDecoder{beamLattice: &d.beamLattice}
 			i = -1
 		} else if name.Local == attrBeamSets {
-			child = &beamSetsDecoder{beamLattice: d.beamLattice}
+			child = &beamSetsDecoder{beamLattice: &d.beamLattice}
 			i = -1
 		}
 	}
@@ -224,7 +224,7 @@ func (d *beamSetDecoder) Start(attrs []spec.XMLAttr) error {
 func (d *beamSetDecoder) Child(name xml.Name) (i int, child spec.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrRef {
 		child = &d.beamRefDecoder
-		i = -1
+		i = len(d.beamSet.Refs)
 	}
 	return
 }

@@ -12,7 +12,7 @@ import (
 	"github.com/hpinc/go3mf/uuid"
 )
 
-func (Spec) NewElementDecoder(_ interface{}, _ string) spec.ElementDecoder {
+func (Spec) NewElementDecoder(xml.Name) spec.GetterElementDecoder {
 	return nil
 }
 

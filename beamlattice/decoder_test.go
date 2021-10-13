@@ -119,17 +119,17 @@ func TestDecode(t *testing.T) {
 
 func TestDecode_warns(t *testing.T) {
 	want := []string{
-		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice: %v", errors.NewParseAttrError("radius", true)),
-		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice: %v", errors.NewParseAttrError("minlength", true)),
-		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice: %v", errors.NewParseAttrError("cap", false)),
-		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice: %v", errors.NewParseAttrError("clippingmode", false)),
-		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice: %v", errors.NewParseAttrError("clippingmesh", false)),
-		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice: %v", errors.NewParseAttrError("representationmesh", false)),
-		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@Beams@Beam#0: %v", errors.NewParseAttrError("r1", false)),
-		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@Beams@Beam#0: %v", errors.NewParseAttrError("r2", false)),
-		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@Beams@Beam#2: %v", errors.NewParseAttrError("v2", true)),
-		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@Beams@Beam#3: %v", errors.NewParseAttrError("v1", true)),
-		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@BeamSets@BeamSet#0@uint32#2: %v", errors.NewParseAttrError("index", true)),
+		fmt.Sprintf("model@resources@object#0@mesh@beamlattice: %v", errors.NewParseAttrError("radius", true)),
+		fmt.Sprintf("model@resources@object#0@mesh@beamlattice: %v", errors.NewParseAttrError("minlength", true)),
+		fmt.Sprintf("model@resources@object#0@mesh@beamlattice: %v", errors.NewParseAttrError("cap", false)),
+		fmt.Sprintf("model@resources@object#0@mesh@beamlattice: %v", errors.NewParseAttrError("clippingmode", false)),
+		fmt.Sprintf("model@resources@object#0@mesh@beamlattice: %v", errors.NewParseAttrError("clippingmesh", false)),
+		fmt.Sprintf("model@resources@object#0@mesh@beamlattice: %v", errors.NewParseAttrError("representationmesh", false)),
+		fmt.Sprintf("model@resources@object#0@mesh@beamlattice@beams@beam#0: %v", errors.NewParseAttrError("r1", false)),
+		fmt.Sprintf("model@resources@object#0@mesh@beamlattice@beams@beam#0: %v", errors.NewParseAttrError("r2", false)),
+		fmt.Sprintf("model@resources@object#0@mesh@beamlattice@beams@beam#2: %v", errors.NewParseAttrError("v2", true)),
+		fmt.Sprintf("model@resources@object#0@mesh@beamlattice@beams@beam#3: %v", errors.NewParseAttrError("v1", true)),
+		fmt.Sprintf("model@resources@object#0@mesh@beamlattice@beamsets@beamset#0@ref#2: %v", errors.NewParseAttrError("index", true)),
 	}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"

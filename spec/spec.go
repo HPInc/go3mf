@@ -45,7 +45,7 @@ func LoadValidator(ns string) (ValidateSpec, bool) {
 // Specs may implement ValidateSpec.
 type Spec interface {
 	NewAttrGroup(parent xml.Name) AttrGroup
-	NewElementDecoder(parent interface{}, name string) ElementDecoder
+	NewElementDecoder(name xml.Name) GetterElementDecoder
 }
 
 // If a Spec implemented ValidateSpec, then model.Validate will call

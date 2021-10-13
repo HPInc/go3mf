@@ -17,6 +17,11 @@ type UnmarshalerAttr interface {
 	Unmarshal3MFAttr(XMLAttr) error
 }
 
+type GetterElementDecoder interface {
+	ElementDecoder
+	Element() interface{}
+}
+
 // ElementDecoder defines the minimum contract to decode a 3MF node.
 type ElementDecoder interface {
 	Start([]XMLAttr) error

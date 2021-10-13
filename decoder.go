@@ -40,7 +40,11 @@ func (d *modelDecoder) Child(name xml.Name) (i int, child spec.ElementDecoder) {
 			}
 		}
 	} else if ext, ok := spec.Load(name.Space); ok {
-		child = ext.NewElementDecoder(d.model, name.Local)
+		dec := ext.NewElementDecoder(name)
+		child = dec
+		if dec != nil {
+			d.model.Any = append(d.model.Any, dec.Element().(spec.Marshaler))
+		}
 		i = -1
 	} else {
 		child = spec.NewAnyUnknownDecoder(name, &d.model.Any)
@@ -297,8 +301,12 @@ func (d *resourceDecoder) Child(name xml.Name) (i int, child spec.ElementDecoder
 			i = len(d.resources.Assets)
 		}
 	} else if ext, ok := spec.Load(name.Space); ok {
-		child = ext.NewElementDecoder(d.resources, name.Local)
+		dec := ext.NewElementDecoder(name)
 		i = len(d.resources.Assets)
+		child = dec
+		if dec != nil {
+			d.resources.Assets = append(d.resources.Assets, dec.Element().(Asset))
+		}
 	} else {
 		child = &unknownAssetDecoder{UnknownTokensDecoder: *spec.NewUnknownDecoder(name), resources: d.resources}
 		i = len(d.resources.Assets)
@@ -413,7 +421,11 @@ func (d *meshDecoder) Child(name xml.Name) (i int, child spec.ElementDecoder) {
 			i = -1
 		}
 	} else if ext, ok := spec.Load(name.Space); ok {
-		child = ext.NewElementDecoder(d.resource.Mesh, name.Local)
+		dec := ext.NewElementDecoder(name)
+		child = dec
+		if dec != nil {
+			d.resource.Mesh.Any = append(d.resource.Mesh.Any, dec.Element().(spec.Marshaler))
+		}
 		i = -1
 	} else {
 		child = spec.NewAnyUnknownDecoder(name, &d.resource.Mesh.Any)

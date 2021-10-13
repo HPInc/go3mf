@@ -12,9 +12,9 @@ import (
 	"github.com/hpinc/go3mf/spec"
 )
 
-func (Spec) NewElementDecoder(parent interface{}, name string) spec.ElementDecoder {
-	if name == attrSliceStack {
-		return &sliceStackDecoder{resources: parent.(*go3mf.Resources)}
+func (Spec) NewElementDecoder(name xml.Name) spec.GetterElementDecoder {
+	if name.Space == Namespace && name.Local == attrSliceStack {
+		return new(sliceStackDecoder)
 	}
 	return nil
 }
@@ -49,12 +49,11 @@ func (u *ObjectAttr) Unmarshal3MFAttr(a spec.XMLAttr) error {
 
 type sliceStackDecoder struct {
 	baseDecoder
-	resources *go3mf.Resources
-	resource  SliceStack
+	resource SliceStack
 }
 
-func (d *sliceStackDecoder) End() {
-	d.resources.Assets = append(d.resources.Assets, &d.resource)
+func (d *sliceStackDecoder) Element() interface{} {
+	return &d.resource
 }
 
 func (d *sliceStackDecoder) Child(name xml.Name) (i int, child spec.ElementDecoder) {
