@@ -4,6 +4,7 @@
 package slices
 
 import (
+	"encoding/xml"
 	"errors"
 
 	"github.com/hpinc/go3mf"
@@ -111,6 +112,11 @@ type SliceStack struct {
 // Identify returns the unique ID of the resource.
 func (s *SliceStack) Identify() uint32 {
 	return s.ID
+}
+
+// XMLName returns the xml identifier of the resource.
+func (SliceStack) XMLName() xml.Name {
+	return xml.Name{Space: Namespace, Local: attrSliceStack}
 }
 
 func GetObjectAttr(obj *go3mf.Object) *ObjectAttr {

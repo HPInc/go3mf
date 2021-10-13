@@ -44,13 +44,10 @@ func (d *colorGroupDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *colorGroupDecoder) WrapError(err error) error {
-	return specerr.WrapIndex(err, &d.resource, len(d.resources.Assets))
-}
-
-func (d *colorGroupDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
+func (d *colorGroupDecoder) Child(name xml.Name) (i int, child spec.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrColor {
 		child = &d.colorDecoder
+		i = len(d.resource.Colors)
 	}
 	return
 }
@@ -84,7 +81,7 @@ func (d *colorDecoder) Start(attrs []spec.XMLAttr) error {
 			}
 			d.resource.Colors = append(d.resource.Colors, c)
 			if err != nil {
-				return specerr.WrapIndex(err, c, len(d.resource.Colors)-1)
+				return err
 			}
 			break
 		}
@@ -118,10 +115,7 @@ func (d *tex2DCoordDecoder) Start(attrs []spec.XMLAttr) error {
 		}
 	}
 	d.resource.Coords = append(d.resource.Coords, text)
-	if errs != nil {
-		return specerr.WrapIndex(errs, text, len(d.resource.Coords)-1)
-	}
-	return nil
+	return errs
 }
 
 type tex2DGroupDecoder struct {
@@ -135,13 +129,10 @@ func (d *tex2DGroupDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *tex2DGroupDecoder) WrapError(err error) error {
-	return specerr.WrapIndex(err, &d.resource, len(d.resources.Assets))
-}
-
-func (d *tex2DGroupDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
+func (d *tex2DGroupDecoder) Child(name xml.Name) (i int, child spec.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrTex2DCoord {
 		child = &d.tex2DCoordDecoder
+		i = len(d.resource.Coords)
 	}
 	return
 }
@@ -168,10 +159,7 @@ func (d *tex2DGroupDecoder) Start(attrs []spec.XMLAttr) error {
 			d.resource.TextureID = uint32(val)
 		}
 	}
-	if errs != nil {
-		return specerr.WrapIndex(errs, &d.resource, len(d.resources.Assets))
-	}
-	return nil
+	return errs
 }
 
 type texture2DDecoder struct {
@@ -209,10 +197,7 @@ func (d *texture2DDecoder) Start(attrs []spec.XMLAttr) error {
 			d.resource.Filter, _ = newTextureFilter(string(a.Value))
 		}
 	}
-	if errs != nil {
-		return specerr.WrapIndex(errs, &d.resource, len(d.resources.Assets))
-	}
-	return nil
+	return errs
 }
 
 type compositeMaterialsDecoder struct {
@@ -226,13 +211,10 @@ func (d *compositeMaterialsDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *compositeMaterialsDecoder) WrapError(err error) error {
-	return specerr.WrapIndex(err, &d.resource, len(d.resources.Assets))
-}
-
-func (d *compositeMaterialsDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
+func (d *compositeMaterialsDecoder) Child(name xml.Name) (i int, child spec.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrComposite {
 		child = &d.compositeDecoder
+		i = len(d.resource.Composites)
 	}
 	return
 }
@@ -267,10 +249,7 @@ func (d *compositeMaterialsDecoder) Start(attrs []spec.XMLAttr) error {
 			}
 		}
 	}
-	if errs != nil {
-		return specerr.WrapIndex(errs, &d.resource, len(d.resources.Assets))
-	}
-	return nil
+	return errs
 }
 
 type compositeDecoder struct {
@@ -295,10 +274,7 @@ func (d *compositeDecoder) Start(attrs []spec.XMLAttr) error {
 		}
 	}
 	d.resource.Composites = append(d.resource.Composites, composite)
-	if errs != nil {
-		return specerr.WrapIndex(errs, composite, len(d.resource.Composites)-1)
-	}
-	return nil
+	return errs
 }
 
 type multiPropertiesDecoder struct {
@@ -312,13 +288,10 @@ func (d *multiPropertiesDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *multiPropertiesDecoder) WrapError(err error) error {
-	return specerr.WrapIndex(err, &d.resource, len(d.resources.Assets))
-}
-
-func (d *multiPropertiesDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
+func (d *multiPropertiesDecoder) Child(name xml.Name) (i int, child spec.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrMulti {
 		child = &d.multiDecoder
+		i = len(d.resource.Multis)
 	}
 	return
 }
@@ -352,10 +325,7 @@ func (d *multiPropertiesDecoder) Start(attrs []spec.XMLAttr) error {
 			}
 		}
 	}
-	if errs != nil {
-		return specerr.WrapIndex(errs, &d.resource, len(d.resources.Assets))
-	}
-	return nil
+	return errs
 }
 
 type multiDecoder struct {
@@ -380,10 +350,7 @@ func (d *multiDecoder) Start(attrs []spec.XMLAttr) error {
 		}
 	}
 	d.resource.Multis = append(d.resource.Multis, multi)
-	if errs != nil {
-		return specerr.WrapIndex(errs, &d.resource, len(d.resource.Multis)-1)
-	}
-	return nil
+	return errs
 }
 
 type baseDecoder struct {

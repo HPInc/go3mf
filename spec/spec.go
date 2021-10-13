@@ -52,7 +52,6 @@ type Spec interface {
 // Validate and aggregate the resulting erros.
 //
 // model is guaranteed to be a *go3mf.Model
-// element can be a *go3mf.Model, go3mf.Asset or *go3mf.Object.
 type ValidateSpec interface {
 	Spec
 	Validate(model interface{}, path string, element interface{}) error

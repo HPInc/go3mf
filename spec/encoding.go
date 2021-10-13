@@ -27,8 +27,7 @@ type ElementDecoder interface {
 // that need decoding nested elements.
 type ChildElementDecoder interface {
 	ElementDecoder
-	Child(xml.Name) ElementDecoder
-	WrapError(error) error
+	Child(xml.Name) (int, ElementDecoder)
 }
 
 // CharDataElementDecoder must be implemented by element decoders

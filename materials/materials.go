@@ -4,6 +4,7 @@
 package materials
 
 import (
+	"encoding/xml"
 	"errors"
 	"image/color"
 
@@ -125,6 +126,11 @@ func (t *Texture2D) Identify() uint32 {
 	return t.ID
 }
 
+// XMLName returns the xml identifier of the resource.
+func (Texture2D) XMLName() xml.Name {
+	return xml.Name{Space: Namespace, Local: attrTexture2D}
+}
+
 // TextureCoord map a vertex of a triangle to a position in image space (U, V coordinates)
 type TextureCoord [2]float32
 
@@ -155,6 +161,11 @@ func (r *Texture2DGroup) Identify() uint32 {
 	return r.ID
 }
 
+// XMLName returns the xml identifier of the resource.
+func (Texture2DGroup) XMLName() xml.Name {
+	return xml.Name{Space: Namespace, Local: attrTexture2DGroup}
+}
+
 // ColorGroup acts as a container for color properties.
 type ColorGroup struct {
 	ID     uint32
@@ -169,6 +180,11 @@ func (r *ColorGroup) Len() int {
 // Identify returns the unique ID of the resource.
 func (c *ColorGroup) Identify() uint32 {
 	return c.ID
+}
+
+// XMLName returns the xml identifier of the resource.
+func (ColorGroup) XMLName() xml.Name {
+	return xml.Name{Space: Namespace, Local: attrColorGroup}
 }
 
 // A Composite specifies the proportion of the overall mixture for each material.
@@ -194,6 +210,11 @@ func (c *CompositeMaterials) Identify() uint32 {
 	return c.ID
 }
 
+// XMLName returns the xml identifier of the resource.
+func (CompositeMaterials) XMLName() xml.Name {
+	return xml.Name{Space: Namespace, Local: attrCompositematerials}
+}
+
 // The Multi element combines the constituent materials and properties.
 type Multi struct {
 	PIndices []uint32
@@ -216,6 +237,11 @@ func (r *MultiProperties) Len() int {
 // Identify returns the unique ID of the resource.
 func (c *MultiProperties) Identify() uint32 {
 	return c.ID
+}
+
+// XMLName returns the xml identifier of the resource.
+func (MultiProperties) XMLName() xml.Name {
+	return xml.Name{Space: Namespace, Local: attrMultiProps}
 }
 
 func newTexture2DType(s string) (t Texture2DType, ok bool) {

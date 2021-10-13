@@ -76,22 +76,17 @@ func (d *beamLatticeDecoder) Start(attrs []spec.XMLAttr) error {
 			}
 		}
 	}
-	if errs != nil {
-		return specerr.Wrap(errs, d.beamLattice)
-	}
-	return nil
+	return errs
 }
 
-func (d *beamLatticeDecoder) WrapError(err error) error {
-	return specerr.Wrap(err, d.beamLattice)
-}
-
-func (d *beamLatticeDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
+func (d *beamLatticeDecoder) Child(name xml.Name) (i int, child spec.ElementDecoder) {
 	if name.Space == Namespace {
 		if name.Local == attrBeams {
 			child = &beamsDecoder{beamLattice: d.beamLattice}
+			i = -1
 		} else if name.Local == attrBeamSets {
 			child = &beamSetsDecoder{beamLattice: d.beamLattice}
+			i = -1
 		}
 	}
 	return
@@ -108,15 +103,12 @@ func (d *beamsDecoder) Start(_ []spec.XMLAttr) error {
 	return nil
 }
 
-func (d *beamsDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
+func (d *beamsDecoder) Child(name xml.Name) (i int, child spec.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrBeam {
 		child = &d.beamDecoder
+		i = len(d.beamDecoder.beamLattice.Beams.Beam)
 	}
 	return
-}
-
-func (d *beamsDecoder) WrapError(err error) error {
-	return specerr.Wrap(err, &d.beamLattice.Beams)
 }
 
 type beamDecoder struct {
@@ -186,10 +178,7 @@ func (d *beamDecoder) Start(attrs []spec.XMLAttr) error {
 		beam.CapMode[1] = d.beamLattice.CapMode
 	}
 	d.beamLattice.Beams.Beam = append(d.beamLattice.Beams.Beam, beam)
-	if errs != nil {
-		return specerr.WrapIndex(errs, beam, len(d.beamLattice.Beams.Beam)-1)
-	}
-	return nil
+	return errs
 }
 
 type beamSetsDecoder struct {
@@ -197,15 +186,12 @@ type beamSetsDecoder struct {
 	beamLattice *BeamLattice
 }
 
-func (d *beamSetsDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
+func (d *beamSetsDecoder) Child(name xml.Name) (i int, child spec.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrBeamSet {
 		child = &beamSetDecoder{beamLattice: d.beamLattice}
+		i = len(d.beamLattice.BeamSets.BeamSet)
 	}
 	return
-}
-
-func (d *beamSetsDecoder) WrapError(err error) error {
-	return specerr.Wrap(err, &d.beamLattice.BeamSets)
 }
 
 type beamSetDecoder struct {
@@ -235,13 +221,10 @@ func (d *beamSetDecoder) Start(attrs []spec.XMLAttr) error {
 	return nil
 }
 
-func (d *beamSetDecoder) WrapError(err error) error {
-	return specerr.WrapIndex(err, &d.beamSet, len(d.beamLattice.BeamSets.BeamSet))
-}
-
-func (d *beamSetDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
+func (d *beamSetDecoder) Child(name xml.Name) (i int, child spec.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrRef {
 		child = &d.beamRefDecoder
+		i = -1
 	}
 	return
 }
@@ -267,10 +250,7 @@ func (d *beamRefDecoder) Start(attrs []spec.XMLAttr) error {
 		}
 	}
 	d.beamSet.Refs = append(d.beamSet.Refs, uint32(val))
-	if errs != nil {
-		return specerr.WrapIndex(errs, uint32(0), len(d.beamSet.Refs)-1)
-	}
-	return nil
+	return errs
 }
 
 type baseDecoder struct {

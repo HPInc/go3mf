@@ -57,16 +57,14 @@ func (d *sliceStackDecoder) End() {
 	d.resources.Assets = append(d.resources.Assets, &d.resource)
 }
 
-func (d *sliceStackDecoder) WrapError(err error) error {
-	return specerr.WrapIndex(err, d.resource, len(d.resources.Assets))
-}
-
-func (d *sliceStackDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
+func (d *sliceStackDecoder) Child(name xml.Name) (i int, child spec.ElementDecoder) {
 	if name.Space == Namespace {
 		if name.Local == attrSlice {
 			child = &sliceDecoder{resource: &d.resource}
+			i = len(d.resource.Slices)
 		} else if name.Local == attrSliceRef {
 			child = &sliceRefDecoder{resource: &d.resource}
+			i = len(d.resource.Refs)
 		}
 	}
 	return
@@ -90,10 +88,7 @@ func (d *sliceStackDecoder) Start(attrs []spec.XMLAttr) error {
 			d.resource.BottomZ = float32(val)
 		}
 	}
-	if errs != nil {
-		return specerr.WrapIndex(errs, d.resource, len(d.resources.Assets))
-	}
-	return nil
+	return errs
 }
 
 type sliceRefDecoder struct {
@@ -121,10 +116,7 @@ func (d *sliceRefDecoder) Start(attrs []spec.XMLAttr) error {
 	}
 	ref := SliceRef{SliceStackID: sliceStackID, Path: path}
 	d.resource.Refs = append(d.resource.Refs, ref)
-	if errs != nil {
-		return specerr.WrapIndex(errs, ref, len(d.resource.Refs)-1)
-	}
-	return nil
+	return errs
 }
 
 type sliceDecoder struct {
@@ -139,16 +131,14 @@ func (d *sliceDecoder) End() {
 	d.resource.Slices = append(d.resource.Slices, d.slice)
 }
 
-func (d *sliceDecoder) WrapError(err error) error {
-	return specerr.WrapIndex(err, &d.slice, len(d.resource.Slices))
-}
-
-func (d *sliceDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
+func (d *sliceDecoder) Child(name xml.Name) (i int, child spec.ElementDecoder) {
 	if name.Space == Namespace {
 		if name.Local == attrVertices {
 			child = &d.polygonVerticesDecoder
+			i = -1
 		} else if name.Local == attrPolygon {
 			child = &d.polygonDecoder
+			i = len(d.slice.Polygons)
 		}
 	}
 	return
@@ -168,10 +158,7 @@ func (d *sliceDecoder) Start(attrs []spec.XMLAttr) error {
 			break
 		}
 	}
-	if errs != nil {
-		return specerr.WrapIndex(errs, &d.slice, len(d.resource.Slices))
-	}
-	return nil
+	return errs
 }
 
 type polygonVerticesDecoder struct {
@@ -185,15 +172,12 @@ func (d *polygonVerticesDecoder) Start(_ []spec.XMLAttr) error {
 	return nil
 }
 
-func (d *polygonVerticesDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
+func (d *polygonVerticesDecoder) Child(name xml.Name) (i int, child spec.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrVertex {
 		child = &d.polygonVertexDecoder
+		i = len(d.slice.Vertices.Vertex)
 	}
 	return
-}
-
-func (d *polygonVerticesDecoder) WrapError(err error) error {
-	return specerr.Wrap(err, &d.slice.Vertices)
 }
 
 type polygonVertexDecoder struct {
@@ -219,10 +203,7 @@ func (d *polygonVertexDecoder) Start(attrs []spec.XMLAttr) error {
 		}
 	}
 	d.slice.Vertices.Vertex = append(d.slice.Vertices.Vertex, p)
-	if errs != nil {
-		return specerr.WrapIndex(errs, p, len(d.slice.Vertices.Vertex)-1)
-	}
-	return nil
+	return errs
 }
 
 type polygonDecoder struct {
@@ -231,14 +212,10 @@ type polygonDecoder struct {
 	polygonSegmentDecoder polygonSegmentDecoder
 }
 
-func (d *polygonDecoder) WrapError(err error) error {
-	index := len(d.slice.Polygons) - 1
-	return specerr.WrapIndex(err, &d.slice.Polygons[index], index)
-}
-
-func (d *polygonDecoder) Child(name xml.Name) (child spec.ElementDecoder) {
+func (d *polygonDecoder) Child(name xml.Name) (i int, child spec.ElementDecoder) {
 	if name.Space == Namespace && name.Local == attrSegment {
 		child = &d.polygonSegmentDecoder
+		i = len(d.slice.Polygons)
 	}
 	return
 }
@@ -258,10 +235,7 @@ func (d *polygonDecoder) Start(attrs []spec.XMLAttr) error {
 			break
 		}
 	}
-	if errs != nil {
-		return specerr.WrapIndex(errs, d.slice.Polygons[polygonIndex], polygonIndex)
-	}
-	return nil
+	return errs
 }
 
 type polygonSegmentDecoder struct {
@@ -299,10 +273,7 @@ func (d *polygonSegmentDecoder) Start(attrs []spec.XMLAttr) error {
 		}
 	}
 	d.polygon.Segments = append(d.polygon.Segments, segment)
-	if errs != nil {
-		return specerr.WrapIndex(errs, segment, len(d.polygon.Segments)-1)
-	}
-	return nil
+	return errs
 }
 
 type baseDecoder struct {

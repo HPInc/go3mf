@@ -30,6 +30,15 @@ func (u *UnknownAttrs) Unmarshal3MFAttr(a XMLAttr) error {
 // that cannot be decoded by any loaded Spec.
 type UnknownTokens []xml.Token
 
+// XMLName returns the xml identifier of the resource.
+func (u UnknownTokens) XMLName() xml.Name {
+	if len(u) == 0 {
+		return xml.Name{}
+	}
+	start, _ := u[0].(xml.StartElement)
+	return start.Name
+}
+
 func (u UnknownTokens) Marshal3MF(enc Encoder, _ *xml.StartElement) error {
 	for _, t := range u {
 		enc.EncodeToken(t)

@@ -39,21 +39,15 @@ var (
 )
 
 type Level struct {
-	Element interface{}
-	Index   int // -1 if not needed
+	Name  string
+	Index int // -1 if not needed
 }
 
 func (l *Level) String() string {
-	name := fmt.Sprintf("%T", l.Element)
-	s := strings.Split(name, ".")
-	if len(s) > 0 {
-		name = s[len(s)-1] // remove package name
-	}
-	name = strings.Replace(name, "*", "", -1)
 	if l.Index == -1 {
-		return name
+		return l.Name
 	}
-	return fmt.Sprintf("%s#%d", name, l.Index)
+	return fmt.Sprintf("%s#%d", l.Name, l.Index)
 }
 
 type Error struct {
@@ -62,43 +56,43 @@ type Error struct {
 	Path   string
 }
 
-func Wrap(err error, element interface{}) error {
-	return WrapIndex(err, element, -1)
+func Wrap(err error, name string) error {
+	return WrapIndex(err, name, -1)
 }
 
-func WrapIndex(err error, element interface{}, index int) error {
+func WrapIndex(err error, name string, index int) error {
 	if err == nil {
 		return nil
 	}
 	if e, ok := err.(*Error); ok {
-		e.Target = append(e.Target, Level{element, index})
+		e.Target = append(e.Target, Level{name, index})
 		return e
 	}
 	if e, ok := err.(*List); ok {
 		for i, e1 := range e.Errors {
-			e.Errors[i] = WrapIndex(e1, element, index)
+			e.Errors[i] = WrapIndex(e1, name, index)
 		}
 		return e
 	}
-	return &Error{Target: []Level{{element, index}}, Err: err}
+	return &Error{Target: []Level{{name, index}}, Err: err}
 }
 
-func WrapPath(err error, element interface{}, path string) error {
+func WrapPath(err error, name string, path string) error {
 	if err == nil {
 		return nil
 	}
 	if e, ok := err.(*Error); ok {
 		e.Path = path
-		e.Target = append(e.Target, Level{element, -1})
+		e.Target = append(e.Target, Level{name, -1})
 		return e
 	}
 	if e, ok := err.(*List); ok {
 		for i, e1 := range e.Errors {
-			e.Errors[i] = WrapPath(e1, element, path)
+			e.Errors[i] = WrapPath(e1, name, path)
 		}
 		return e
 	}
-	return &Error{Target: []Level{{element, -1}}, Err: err, Path: path}
+	return &Error{Target: []Level{{name, -1}}, Err: err, Path: path}
 }
 
 func (e *Error) Unwrap() error {

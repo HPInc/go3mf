@@ -91,6 +91,7 @@ func (o ObjectType) String() string {
 
 // Asset defines build resource.
 type Asset interface {
+	XMLName() xml.Name
 	Identify() uint32
 }
 
@@ -358,6 +359,11 @@ func (r *BaseMaterials) Identify() uint32 {
 	return r.ID
 }
 
+// XMLName returns the xml identifier of the resource.
+func (BaseMaterials) XMLName() xml.Name {
+	return xml.Name{Space: Namespace, Local: attrBaseMaterials}
+}
+
 type MetadataGroup struct {
 	Metadata []Metadata
 	AnyAttr  spec.AnyAttr
@@ -538,6 +544,17 @@ func (mb *MeshBuilder) AddVertex(node Point3D) uint32 {
 	return index
 }
 
+// UnknownAsset wraps a spec.UnknownTokens to fulfill
+// the Asset interface.
+type UnknownAsset struct {
+	spec.UnknownTokens
+	id uint32
+}
+
+func (u UnknownAsset) Identify() uint32 {
+	return u.id
+}
+
 func newObjectType(s string) (o ObjectType, ok bool) {
 	o, ok = map[string]ObjectType{
 		"model":        ObjectTypeModel,
@@ -559,6 +576,10 @@ func newUnits(s string) (u Units, ok bool) {
 		"meter":      UnitMeter,
 	}[s]
 	return
+}
+
+type objectPather interface {
+	ObjectPath() string
 }
 
 const (
