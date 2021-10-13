@@ -28,19 +28,21 @@ func (u *UnknownAttrs) Unmarshal3MFAttr(a XMLAttr) error {
 
 // UnknownTokens represents a section of an xml
 // that cannot be decoded by any loaded Spec.
-type UnknownTokens []xml.Token
+type UnknownTokens struct {
+	Token []xml.Token
+}
 
 // XMLName returns the xml identifier of the resource.
 func (u UnknownTokens) XMLName() xml.Name {
-	if len(u) == 0 {
+	if len(u.Token) == 0 {
 		return xml.Name{}
 	}
-	start, _ := u[0].(xml.StartElement)
+	start, _ := u.Token[0].(xml.StartElement)
 	return start.Name
 }
 
 func (u UnknownTokens) Marshal3MF(enc Encoder, _ *xml.StartElement) error {
-	for _, t := range u {
+	for _, t := range u.Token {
 		enc.EncodeToken(t)
 	}
 	return nil
@@ -49,15 +51,19 @@ func (u UnknownTokens) Marshal3MF(enc Encoder, _ *xml.StartElement) error {
 // UnknownTokensDecoder can be used by spec decoders to maintain the
 // xml tree elements of unknown extensions.
 type UnknownTokensDecoder struct {
-	Name xml.Name
+	XMLName xml.Name
 
 	tokens UnknownTokens
 }
 
 func NewUnknownDecoder(name xml.Name) *UnknownTokensDecoder {
 	return &UnknownTokensDecoder{
-		Name: name,
+		XMLName: name,
 	}
+}
+
+func (d *UnknownTokensDecoder) Element() interface{} {
+	return &d.tokens
 }
 
 func (d *UnknownTokensDecoder) Start(attrs []XMLAttr) error {
@@ -69,39 +75,20 @@ func (d *UnknownTokensDecoder) Start(attrs []XMLAttr) error {
 		}
 	}
 	d.AppendToken(xml.StartElement{
-		Name: d.Name,
+		Name: d.XMLName,
 		Attr: xattrs,
 	})
 	return nil
 }
 
 func (d *UnknownTokensDecoder) End() {
-	d.AppendToken(xml.EndElement{Name: d.Name})
+	d.AppendToken(xml.EndElement{Name: d.XMLName})
 }
 
 func (d *UnknownTokensDecoder) AppendToken(t xml.Token) {
-	d.tokens = append(d.tokens, t)
+	d.tokens.Token = append(d.tokens.Token, t)
 }
 
 func (d UnknownTokensDecoder) Tokens() UnknownTokens {
 	return d.tokens
-}
-
-type AnyUnknownDecoder struct {
-	UnknownTokensDecoder
-	Any *Any
-}
-
-func NewAnyUnknownDecoder(name xml.Name, any *Any) *AnyUnknownDecoder {
-	return &AnyUnknownDecoder{
-		UnknownTokensDecoder: UnknownTokensDecoder{
-			Name: name,
-		},
-		Any: any,
-	}
-}
-
-func (d *AnyUnknownDecoder) End() {
-	d.UnknownTokensDecoder.End()
-	*d.Any = append(*d.Any, d.Tokens())
 }

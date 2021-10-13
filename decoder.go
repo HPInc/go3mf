@@ -39,15 +39,12 @@ func (d *modelDecoder) Child(name xml.Name) (i int, child spec.ElementDecoder) {
 				i = len(d.model.Metadata)
 			}
 		}
-	} else if ext, ok := spec.Load(name.Space); ok {
-		dec := ext.NewElementDecoder(name)
+	} else {
+		dec := spec.NewElementDecoder(name)
 		child = dec
 		if dec != nil {
 			d.model.Any = append(d.model.Any, dec.Element().(spec.Marshaler))
 		}
-		i = -1
-	} else {
-		child = spec.NewAnyUnknownDecoder(name, &d.model.Any)
 		i = -1
 	}
 	return
@@ -420,15 +417,12 @@ func (d *meshDecoder) Child(name xml.Name) (i int, child spec.ElementDecoder) {
 			child = &trianglesDecoder{resource: d.resource}
 			i = -1
 		}
-	} else if ext, ok := spec.Load(name.Space); ok {
-		dec := ext.NewElementDecoder(name)
+	} else {
+		dec := spec.NewElementDecoder(name)
 		child = dec
 		if dec != nil {
 			d.resource.Mesh.Any = append(d.resource.Mesh.Any, dec.Element().(spec.Marshaler))
 		}
-		i = -1
-	} else {
-		child = spec.NewAnyUnknownDecoder(name, &d.resource.Mesh.Any)
 		i = -1
 	}
 	return

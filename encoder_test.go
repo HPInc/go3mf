@@ -46,18 +46,18 @@ func TestMarshalModel(t *testing.T) {
 		Units: UnitMillimeter, Language: "en-US", Path: "/3D/3dmodel.model", Thumbnail: "/thumbnail.png",
 		Extensions: []Extension{fakeSpec, fooSpec},
 		AnyAttr:    spec.AnyAttr{&fakeAttr{Value: "model_fake"}, &spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "foo1"}}}},
-		Any: spec.Any{spec.UnknownTokens{
+		Any: spec.Any{&spec.UnknownTokens{Token: []xml.Token{
 			xml.StartElement{Name: fooName},
 			xml.EndElement{Name: fooName},
-		}},
+		}}},
 		Resources: Resources{
 			Assets: []Asset{
-				&UnknownAsset{UnknownTokens: spec.UnknownTokens{
+				&UnknownAsset{UnknownTokens: spec.UnknownTokens{Token: []xml.Token{
 					xml.StartElement{Name: fooName, Attr: []xml.Attr{{Name: xml.Name{Local: "n1"}, Value: "v1"}}},
 					xml.StartElement{Name: xml.Name{Space: fooName.Space, Local: "child"}},
 					xml.EndElement{Name: xml.Name{Space: fooName.Space, Local: "child"}},
 					xml.EndElement{Name: fooName},
-				}},
+				}}},
 				&BaseMaterials{ID: 5, Materials: []Base{
 					{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}, AnyAttr: spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "foo6"}}}}},
 					{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
@@ -68,10 +68,10 @@ func TestMarshalModel(t *testing.T) {
 					ID: 8, Name: "Box 1", PartNumber: "11111111-1111-1111-1111-111111111111", Thumbnail: "/a.png",
 					AnyAttr: spec.AnyAttr{&fakeAttr{Value: "object_fake"}, &spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "foo3"}}}},
 					PID:     1, PIndex: 1, Type: ObjectTypeModel, Mesh: &Mesh{
-						Any: spec.Any{spec.UnknownTokens{
+						Any: spec.Any{&spec.UnknownTokens{Token: []xml.Token{
 							xml.StartElement{Name: fooName},
 							xml.EndElement{Name: fooName},
-						}},
+						}}},
 						Vertices: Vertices{Vertex: []Point3D{
 							{0, 0, 0}, {100, 0, 0}, {100, 100, 0},
 							{0, 100, 0}, {0, 0, 100}, {100, 0, 100},

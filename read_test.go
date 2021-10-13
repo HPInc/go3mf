@@ -335,10 +335,10 @@ func TestDecoder_processRootModel(t *testing.T) {
 		ID: 8, Name: "Box 1", Thumbnail: "/a.png", PID: 5, PartNumber: "11111111-1111-1111-1111-111111111111",
 		Mesh: &Mesh{
 			AnyAttr: spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "fooval9"}}}},
-			Any: spec.Any{spec.UnknownTokens{
+			Any: spec.Any{&spec.UnknownTokens{Token: []xml.Token{
 				xml.StartElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "fake"}},
 				xml.EndElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "fake"}},
-			}},
+			}}},
 			Vertices: Vertices{Vertex: []Point3D{
 				{0, 0, 0},
 				{100, 0, 0},
@@ -390,7 +390,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 		Resources: Resources{
 			Assets: []Asset{baseMaterials, &UnknownAsset{
 				id: 50,
-				UnknownTokens: spec.UnknownTokens{
+				UnknownTokens: spec.UnknownTokens{Token: []xml.Token{
 					xml.StartElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "resources"}, Attr: []xml.Attr{
 						{Name: xml.Name{Space: "", Local: "id"}, Value: "50"},
 						{Name: xml.Name{Space: "", Local: "name"}, Value: "test"},
@@ -404,7 +404,7 @@ func TestDecoder_processRootModel(t *testing.T) {
 					xml.EndElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "subresource"}},
 					xml.EndElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "resource"}},
 					xml.EndElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "resources"}},
-				},
+				}},
 			}}, Objects: []*Object{meshRes, components},
 			AnyAttr: spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "fooval3"}}}},
 		},
@@ -413,18 +413,18 @@ func TestDecoder_processRootModel(t *testing.T) {
 		},
 		AnyAttr: spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "fooval"}}}},
 		Any: spec.Any{
-			spec.UnknownTokens{
+			&spec.UnknownTokens{Token: []xml.Token{
 				xml.StartElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "other"}},
 				xml.EndElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "other"}},
-			},
-			spec.UnknownTokens{
+			}},
+			&spec.UnknownTokens{Token: []xml.Token{
 				xml.StartElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "other1"}, Attr: []xml.Attr{
 					{Name: xml.Name{Space: "", Local: "a"}, Value: "2"},
 				}},
 				xml.StartElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "child1"}},
 				xml.EndElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "child1"}},
 				xml.EndElement{Name: xml.Name{Space: fooSpec.Namespace, Local: "other1"}},
-			},
+			}},
 		},
 	}
 	want.Build.Items = append(want.Build.Items, &Item{

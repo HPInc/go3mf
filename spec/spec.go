@@ -111,6 +111,13 @@ func NewAttrGroup(namespace string, parent xml.Name) AttrGroup {
 	}
 }
 
+func NewElementDecoder(name xml.Name) GetterElementDecoder {
+	if ext, ok := Load(name.Space); ok {
+		return ext.NewElementDecoder(name)
+	}
+	return &UnknownTokensDecoder{XMLName: name}
+}
+
 // Any is an extension point containing <any> information.
 type Any []Marshaler
 
