@@ -73,10 +73,10 @@ func TestDecode(t *testing.T) {
 
 func TestDecode_warns(t *testing.T) {
 	want := []string{
-		fmt.Sprintf("model/resources/object[1]: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
-		fmt.Sprintf("model/resources/object[1]/components/component[0]: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
-		fmt.Sprintf("model/build: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
-		fmt.Sprintf("model/build/item[0]: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
+		fmt.Sprintf("go3mf: XPath: /model/resources/object[1]: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
+		fmt.Sprintf("go3mf: XPath: /model/resources/object[1]/components/component[0]: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
+		fmt.Sprintf("go3mf: XPath: /model/build: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
+		fmt.Sprintf("go3mf: XPath: /model/build/item[0]: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
 	}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"

@@ -99,16 +99,19 @@ func (e *Error) Unwrap() error {
 	return e.Err
 }
 
-func (e *Error) Error() string {
-	levels := make([]string, len(e.Target)+1)
-	levels[0] = e.Path
+func (e *Error) XPath() string {
+	levels := make([]string, len(e.Target))
 	for i, l := range e.Target {
-		levels[len(e.Target)-i] = l.String()
+		levels[len(e.Target)-i-1] = l.String()
 	}
+	return "/" + strings.Join(levels, "/")
+}
+
+func (e *Error) Error() string {
 	if e.Path == "" {
-		levels = levels[1:]
+		return fmt.Sprintf("go3mf: XPath: %s: %v", e.XPath(), e.Err)
 	}
-	return fmt.Sprintf("%s: %v", strings.Join(levels, "/"), e.Err)
+	return fmt.Sprintf("go3mf: Path: %s XPath: %s: %v", e.Path, e.XPath(), e.Err)
 }
 
 func NewMissingFieldError(name string) error {

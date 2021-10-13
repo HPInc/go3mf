@@ -63,14 +63,14 @@ func TestDecode(t *testing.T) {
 
 func TestDecode_warns(t *testing.T) {
 	want := []string{
-		fmt.Sprintf("model/resources/texture2d[1]: %v", errors.NewParseAttrError("id", true)),
-		fmt.Sprintf("model/resources/colorgroup[2]/color[0]: %v", errors.NewParseAttrError("color", true)),
-		fmt.Sprintf("model/resources/texture2dgroup[3]: %v", errors.NewParseAttrError("texid", true)),
-		fmt.Sprintf("model/resources/texture2dgroup[3]/tex2coord[0]: %v", errors.NewParseAttrError("u", true)),
-		fmt.Sprintf("model/resources/texture2dgroup[3]/tex2coord[1]: %v", errors.NewParseAttrError("v", true)),
-		fmt.Sprintf("model/resources/compositematerials[4]: %v", errors.NewParseAttrError("matid", true)),
-		fmt.Sprintf("model/resources/compositematerials[4]/composite[1]: %v", errors.NewParseAttrError("values", true)),
-		fmt.Sprintf("model/resources/multiproperties[5]: %v", errors.NewParseAttrError("pids", true)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/texture2d[1]: %v", errors.NewParseAttrError("id", true)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/colorgroup[2]/color[0]: %v", errors.NewParseAttrError("color", true)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/texture2dgroup[3]: %v", errors.NewParseAttrError("texid", true)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/texture2dgroup[3]/tex2coord[0]: %v", errors.NewParseAttrError("u", true)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/texture2dgroup[3]/tex2coord[1]: %v", errors.NewParseAttrError("v", true)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/compositematerials[4]: %v", errors.NewParseAttrError("matid", true)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/compositematerials[4]/composite[1]: %v", errors.NewParseAttrError("values", true)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/multiproperties[5]: %v", errors.NewParseAttrError("pids", true)),
 	}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"

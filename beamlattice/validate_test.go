@@ -24,21 +24,21 @@ func TestValidate(t *testing.T) {
 				{ID: 1, Mesh: &go3mf.Mesh{Any: spec.Any{&BeamLattice{}}}},
 			}}},
 		}}, []string{
-			fmt.Sprintf("/other.model/model/resources/object[0]/mesh: %v", errors.ErrInsufficientVertices),
-			fmt.Sprintf("/other.model/model/resources/object[0]/mesh/beamlattice: %v", &errors.MissingFieldError{Name: attrMinLength}),
-			fmt.Sprintf("/other.model/model/resources/object[0]/mesh/beamlattice: %v", &errors.MissingFieldError{Name: attrRadius}),
-			fmt.Sprintf("/other.model/model/resources/object[0]/mesh/beamlattice: %v", ErrLatticeClippedNoMesh),
+			fmt.Sprintf("go3mf: Path: /other.model XPath: /model/resources/object[0]/mesh: %v", errors.ErrInsufficientVertices),
+			fmt.Sprintf("go3mf: Path: /other.model XPath: /model/resources/object[0]/mesh/beamlattice: %v", &errors.MissingFieldError{Name: attrMinLength}),
+			fmt.Sprintf("go3mf: Path: /other.model XPath: /model/resources/object[0]/mesh/beamlattice: %v", &errors.MissingFieldError{Name: attrRadius}),
+			fmt.Sprintf("go3mf: Path: /other.model XPath: /model/resources/object[0]/mesh/beamlattice: %v", ErrLatticeClippedNoMesh),
 		}},
 		{"object without beamlattice", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
 			{ID: 1, Mesh: &go3mf.Mesh{}},
 		}}}, []string{
-			fmt.Sprintf("model/resources/object[0]/mesh: %v", errors.ErrInsufficientVertices),
-			fmt.Sprintf("model/resources/object[0]/mesh: %v", errors.ErrInsufficientTriangles),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[0]/mesh: %v", errors.ErrInsufficientVertices),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[0]/mesh: %v", errors.ErrInsufficientTriangles),
 		}},
 		{"object with components", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
 			{ID: 1, Components: &go3mf.Components{Component: []*go3mf.Component{{ObjectID: 2}}}},
 		}}}, []string{
-			fmt.Sprintf("model/resources/object[0]/components/component[0]: %v", errors.ErrMissingResource),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[0]/components/component[0]: %v", errors.ErrMissingResource),
 		}},
 		{"object incorret type", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
 			{ID: 1, Type: go3mf.ObjectTypeOther, Mesh: &go3mf.Mesh{Any: spec.Any{&BeamLattice{
@@ -51,9 +51,9 @@ func TestValidate(t *testing.T) {
 				MinLength: 1, Radius: 1, ClipMode: ClipInside,
 			}}}},
 		}}}, []string{
-			fmt.Sprintf("model/resources/object[0]/mesh/beamlattice: %v", ErrLatticeObjType),
-			fmt.Sprintf("model/resources/object[1]/mesh/beamlattice: %v", ErrLatticeObjType),
-			fmt.Sprintf("model/resources/object[2]/mesh/beamlattice: %v", ErrLatticeObjType),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[0]/mesh/beamlattice: %v", ErrLatticeObjType),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[1]/mesh/beamlattice: %v", ErrLatticeObjType),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[2]/mesh/beamlattice: %v", ErrLatticeObjType),
 		}},
 		{"incorrect mesh references", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
 			{ID: 1, Mesh: &go3mf.Mesh{Vertices: go3mf.Vertices{Vertex: []go3mf.Point3D{{}, {}, {}}}, Any: spec.Any{nil}}},
@@ -64,9 +64,9 @@ func TestValidate(t *testing.T) {
 				MinLength: 1, Radius: 1, ClippingMeshID: 1, RepresentationMeshID: 2,
 			}}}},
 		}}}, []string{
-			fmt.Sprintf("model/resources/object[1]/mesh/beamlattice: %v", errors.ErrMissingResource),
-			fmt.Sprintf("model/resources/object[1]/mesh/beamlattice: %v", errors.ErrRecursion),
-			fmt.Sprintf("model/resources/object[2]/mesh/beamlattice: %v", ErrLatticeInvalidMesh),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[1]/mesh/beamlattice: %v", errors.ErrMissingResource),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[1]/mesh/beamlattice: %v", errors.ErrRecursion),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[2]/mesh/beamlattice: %v", ErrLatticeInvalidMesh),
 		}},
 		{"incorrect beams", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
 			{ID: 2, Mesh: &go3mf.Mesh{Vertices: go3mf.Vertices{Vertex: []go3mf.Point3D{{}, {}, {}}}, Any: spec.Any{&BeamLattice{
@@ -75,10 +75,10 @@ func TestValidate(t *testing.T) {
 				},
 				}}}}},
 		}}}, []string{
-			fmt.Sprintf("model/resources/object[0]/mesh/beamlattice/beam[0]: %v", ErrLatticeSameVertex),
-			fmt.Sprintf("model/resources/object[0]/mesh/beamlattice/beam[1]: %v", ErrLatticeSameVertex),
-			fmt.Sprintf("model/resources/object[0]/mesh/beamlattice/beam[1]: %v", ErrLatticeBeamR2),
-			fmt.Sprintf("model/resources/object[0]/mesh/beamlattice/beam[2]: %v", errors.ErrIndexOutOfBounds),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[0]/mesh/beamlattice/beam[0]: %v", ErrLatticeSameVertex),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[0]/mesh/beamlattice/beam[1]: %v", ErrLatticeSameVertex),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[0]/mesh/beamlattice/beam[1]: %v", ErrLatticeBeamR2),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[0]/mesh/beamlattice/beam[2]: %v", errors.ErrIndexOutOfBounds),
 		}},
 		{"incorrect beamseat", &go3mf.Model{Resources: go3mf.Resources{Objects: []*go3mf.Object{
 			{ID: 2, Mesh: &go3mf.Mesh{Vertices: go3mf.Vertices{Vertex: []go3mf.Point3D{{}, {}, {}}}, Any: spec.Any{&BeamLattice{
@@ -87,7 +87,7 @@ func TestValidate(t *testing.T) {
 				}}, BeamSets: BeamSets{BeamSet: []BeamSet{{Refs: []uint32{0, 2, 3}}}},
 			}}}},
 		}}}, []string{
-			fmt.Sprintf("model/resources/object[0]/mesh/beamlattice/beamset[0]: %v", errors.ErrIndexOutOfBounds),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[0]/mesh/beamlattice/beamset[0]: %v", errors.ErrIndexOutOfBounds),
 		}},
 	}
 	for _, tt := range tests {
