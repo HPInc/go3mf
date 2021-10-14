@@ -11,6 +11,7 @@ import (
 	"github.com/go-test/deep"
 	"github.com/hpinc/go3mf"
 	"github.com/hpinc/go3mf/errors"
+	"github.com/hpinc/go3mf/spec"
 )
 
 func TestValidate(t *testing.T) {
@@ -21,18 +22,18 @@ func TestValidate(t *testing.T) {
 		want  []string
 	}{
 		{"extRequired", &go3mf.Model{
-			AnyAttr:    go3mf.AnyAttr{&ObjectAttr{SliceStackID: 10}},
+			AnyAttr:    spec.AnyAttr{&ObjectAttr{SliceStackID: 10}},
 			Extensions: []go3mf.Extension{{Namespace: Namespace, LocalName: "s", IsRequired: true}}, Resources: go3mf.Resources{
 				Assets: []go3mf.Asset{
-					&SliceStack{ID: 1, Slices: []*Slice{{TopZ: 1}}},
+					&SliceStack{ID: 1, Slices: []Slice{{TopZ: 1}}},
 				},
 				Objects: []*go3mf.Object{
-					{ID: 2, AnyAttr: go3mf.AnyAttr{&ObjectAttr{
+					{ID: 2, AnyAttr: spec.AnyAttr{&ObjectAttr{
 						SliceStackID: 1, MeshResolution: ResolutionLow,
 					}}},
 				}},
 		}, []string{
-			fmt.Sprintf("Resources@Object#0: %v", errors.ErrInvalidObject),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[0]: %v", errors.ErrInvalidObject),
 		}},
 		{"child", &go3mf.Model{Childs: map[string]*go3mf.ChildModel{
 			"/other.model": {Resources: go3mf.Resources{Assets: []go3mf.Asset{
@@ -42,15 +43,15 @@ func TestValidate(t *testing.T) {
 				&SliceStack{ID: 2},
 			}}},
 		}}, []string{
-			fmt.Sprintf("/other.model@Resources@SliceStack#0: %v", ErrSlicesAndRefs),
-			fmt.Sprintf("/that.model@Resources@SliceStack#0: %v", ErrSlicesAndRefs),
+			fmt.Sprintf("go3mf: Path: /other.model XPath: /model/resources/slicestack[0]: %v", ErrSlicesAndRefs),
+			fmt.Sprintf("go3mf: Path: /that.model XPath: /model/resources/slicestack[0]: %v", ErrSlicesAndRefs),
 		}},
 		{"slicestack", &go3mf.Model{Resources: go3mf.Resources{
 			Assets: []go3mf.Asset{&SliceStack{
-				ID: 1, BottomZ: 1, Slices: []*Slice{
+				ID: 1, BottomZ: 1, Slices: []Slice{
 					{},
-					{TopZ: 0.5, Vertices: make([]go3mf.Point2D, 1)},
-					{TopZ: 1.5, Vertices: make([]go3mf.Point2D, 2), Polygons: []Polygon{
+					{TopZ: 0.5, Vertices: Vertices{Vertex: make([]go3mf.Point2D, 1)}},
+					{TopZ: 1.5, Vertices: Vertices{Vertex: make([]go3mf.Point2D, 2)}, Polygons: []Polygon{
 						{Segments: []Segment{}},
 						{Segments: []Segment{{}}},
 					}},
@@ -59,26 +60,26 @@ func TestValidate(t *testing.T) {
 				},
 			}},
 		}}, []string{
-			fmt.Sprintf("Resources@SliceStack#0@Slice#0: %v", &errors.MissingFieldError{Name: attrZTop}),
-			fmt.Sprintf("Resources@SliceStack#0@Slice#1: %v", ErrSliceSmallTopZ),
-			fmt.Sprintf("Resources@SliceStack#0@Slice#1: %v", ErrSliceInsufficientVertices),
-			fmt.Sprintf("Resources@SliceStack#0@Slice#1: %v", ErrSliceInsufficientPolygons),
-			fmt.Sprintf("Resources@SliceStack#0@Slice#2@Polygon#0: %v", ErrSliceInsufficientSegments),
-			fmt.Sprintf("Resources@SliceStack#0@Slice#3: %v", ErrSliceNoMonotonic),
-			fmt.Sprintf("Resources@SliceStack#0@Slice#4: %v", ErrSliceNoMonotonic),
+			fmt.Sprintf("go3mf: XPath: /model/resources/slicestack[0]/slice[0]: %v", &errors.MissingFieldError{Name: attrZTop}),
+			fmt.Sprintf("go3mf: XPath: /model/resources/slicestack[0]/slice[1]: %v", ErrSliceSmallTopZ),
+			fmt.Sprintf("go3mf: XPath: /model/resources/slicestack[0]/slice[1]: %v", ErrSliceInsufficientVertices),
+			fmt.Sprintf("go3mf: XPath: /model/resources/slicestack[0]/slice[1]: %v", ErrSliceInsufficientPolygons),
+			fmt.Sprintf("go3mf: XPath: /model/resources/slicestack[0]/slice[2]/polygon[0]: %v", ErrSliceInsufficientSegments),
+			fmt.Sprintf("go3mf: XPath: /model/resources/slicestack[0]/slice[3]: %v", ErrSliceNoMonotonic),
+			fmt.Sprintf("go3mf: XPath: /model/resources/slicestack[0]/slice[4]: %v", ErrSliceNoMonotonic),
 		}},
 		{"sliceref", &go3mf.Model{
 			Childs: map[string]*go3mf.ChildModel{
 				"/that.model": {Resources: go3mf.Resources{Assets: []go3mf.Asset{
-					&SliceStack{ID: 1, Slices: []*Slice{{TopZ: 1}, {TopZ: 2}}},
+					&SliceStack{ID: 1, Slices: []Slice{{TopZ: 1}, {TopZ: 2}}},
 					&SliceStack{ID: 2, Refs: []SliceRef{{SliceStackID: 1, Path: rootPath}}},
 					&go3mf.BaseMaterials{ID: 3, Materials: []go3mf.Base{{Name: "a", Color: color.RGBA{R: 1}}}},
-					&SliceStack{ID: 4, Slices: []*Slice{{TopZ: 1.5}}},
+					&SliceStack{ID: 4, Slices: []Slice{{TopZ: 1.5}}},
 				}}},
 			},
 			Resources: go3mf.Resources{
 				Assets: []go3mf.Asset{
-					&SliceStack{ID: 1, Slices: []*Slice{{TopZ: 1}, {TopZ: 2}}},
+					&SliceStack{ID: 1, Slices: []Slice{{TopZ: 1}, {TopZ: 2}}},
 					&SliceStack{ID: 3, Refs: []SliceRef{
 						{},
 						{SliceStackID: 1, Path: rootPath},
@@ -90,13 +91,13 @@ func TestValidate(t *testing.T) {
 					},
 					}},
 			}}, []string{
-			fmt.Sprintf("Resources@SliceStack#1@SliceRef#0: %v", &errors.MissingFieldError{Name: attrSlicePath}),
-			fmt.Sprintf("Resources@SliceStack#1@SliceRef#0: %v", &errors.MissingFieldError{Name: attrSliceRefID}),
-			fmt.Sprintf("Resources@SliceStack#1@SliceRef#1: %v", ErrSliceRefSamePart),
-			fmt.Sprintf("Resources@SliceStack#1@SliceRef#2: %v", errors.ErrMissingResource),
-			fmt.Sprintf("Resources@SliceStack#1@SliceRef#3: %v", ErrSliceRefRef),
-			fmt.Sprintf("Resources@SliceStack#1@SliceRef#4: %v", ErrNonSliceStack),
-			fmt.Sprintf("Resources@SliceStack#1@SliceRef#6: %v", ErrSliceNoMonotonic),
+			fmt.Sprintf("go3mf: XPath: /model/resources/slicestack[1]/sliceref[0]: %v", &errors.MissingFieldError{Name: attrSlicePath}),
+			fmt.Sprintf("go3mf: XPath: /model/resources/slicestack[1]/sliceref[0]: %v", &errors.MissingFieldError{Name: attrSliceRefID}),
+			fmt.Sprintf("go3mf: XPath: /model/resources/slicestack[1]/sliceref[1]: %v", ErrSliceRefSamePart),
+			fmt.Sprintf("go3mf: XPath: /model/resources/slicestack[1]/sliceref[2]: %v", errors.ErrMissingResource),
+			fmt.Sprintf("go3mf: XPath: /model/resources/slicestack[1]/sliceref[3]: %v", ErrSliceRefRef),
+			fmt.Sprintf("go3mf: XPath: /model/resources/slicestack[1]/sliceref[4]: %v", ErrNonSliceStack),
+			fmt.Sprintf("go3mf: XPath: /model/resources/slicestack[1]/sliceref[6]: %v", ErrSliceNoMonotonic),
 		}},
 		{"info", &go3mf.Model{Build: go3mf.Build{Items: []*go3mf.Item{
 			{ObjectID: 7},
@@ -109,61 +110,61 @@ func TestValidate(t *testing.T) {
 		}},
 			Childs: map[string]*go3mf.ChildModel{
 				"/that.model": {Resources: go3mf.Resources{Assets: []go3mf.Asset{
-					&SliceStack{ID: 1, Slices: []*Slice{{TopZ: 1, Vertices: []go3mf.Point2D{{}, {}, {}}, Polygons: []Polygon{
+					&SliceStack{ID: 1, Slices: []Slice{{TopZ: 1, Vertices: Vertices{Vertex: []go3mf.Point2D{{}, {}, {}}}, Polygons: []Polygon{
 						{StartV: 1, Segments: []Segment{{V2: 2}}},
 					}}}},
 				}}},
 			}, Resources: go3mf.Resources{
 				Assets: []go3mf.Asset{
-					&SliceStack{ID: 3, Slices: []*Slice{{TopZ: 1, Vertices: []go3mf.Point2D{{}, {}, {}}, Polygons: []Polygon{
+					&SliceStack{ID: 3, Slices: []Slice{{TopZ: 1, Vertices: Vertices{Vertex: []go3mf.Point2D{{}, {}, {}}}, Polygons: []Polygon{
 						{StartV: 1, Segments: []Segment{{V2: 2}}},
 					}}}},
 					&go3mf.BaseMaterials{ID: 6, Materials: []go3mf.Base{{Name: "a", Color: color.RGBA{R: 1}}}},
 					&SliceStack{ID: 9, Refs: []SliceRef{{SliceStackID: 1, Path: "/that.model"}}},
-					&SliceStack{ID: 11, Slices: []*Slice{{TopZ: 1, Vertices: []go3mf.Point2D{{}, {}, {}}, Polygons: []Polygon{
+					&SliceStack{ID: 11, Slices: []Slice{{TopZ: 1, Vertices: Vertices{Vertex: []go3mf.Point2D{{}, {}, {}}}, Polygons: []Polygon{
 						{StartV: 1, Segments: []Segment{{V2: 2}, {V2: 1}}},
 					}}}},
 				},
 				Objects: []*go3mf.Object{
-					{ID: 1, Mesh: &go3mf.Mesh{}, AnyAttr: go3mf.AnyAttr{&ObjectAttr{
+					{ID: 1, Mesh: &go3mf.Mesh{}, AnyAttr: spec.AnyAttr{&ObjectAttr{
 						SliceStackID: 1,
 					}}},
-					{ID: 2, Type: go3mf.ObjectTypeSupport, Components: &go3mf.Components{Component: []*go3mf.Component{{ObjectID: 1}}}, AnyAttr: go3mf.AnyAttr{&ObjectAttr{
+					{ID: 2, Type: go3mf.ObjectTypeSupport, Components: &go3mf.Components{Component: []*go3mf.Component{{ObjectID: 1}}}, AnyAttr: spec.AnyAttr{&ObjectAttr{
 						SliceStackID: 3, MeshResolution: ResolutionLow,
 					}}},
 					{ID: 4, Components: &go3mf.Components{Component: []*go3mf.Component{{ObjectID: 10, Transform: go3mf.Matrix{2, 3, 0, 0, 1, 3, 0, 0, 0, 0, 2, 0, 2, 3, 4, 1}}}},
-						AnyAttr: go3mf.AnyAttr{&ObjectAttr{
+						AnyAttr: spec.AnyAttr{&ObjectAttr{
 							SliceStackID: 0,
 						}}},
-					{ID: 5, Components: &go3mf.Components{Component: []*go3mf.Component{{ObjectID: 12}}}, AnyAttr: go3mf.AnyAttr{&ObjectAttr{
+					{ID: 5, Components: &go3mf.Components{Component: []*go3mf.Component{{ObjectID: 12}}}, AnyAttr: spec.AnyAttr{&ObjectAttr{
 						SliceStackID: 6,
 					}}},
-					{ID: 7, Components: &go3mf.Components{Component: []*go3mf.Component{{ObjectID: 1}, {ObjectID: 4}}}, AnyAttr: go3mf.AnyAttr{&ObjectAttr{
+					{ID: 7, Components: &go3mf.Components{Component: []*go3mf.Component{{ObjectID: 1}, {ObjectID: 4}}}, AnyAttr: spec.AnyAttr{&ObjectAttr{
 						SliceStackID: 9,
 					}}},
-					{ID: 10, Type: go3mf.ObjectTypeSolidSupport, Components: &go3mf.Components{Component: []*go3mf.Component{{ObjectID: 1}}}, AnyAttr: go3mf.AnyAttr{&ObjectAttr{
+					{ID: 10, Type: go3mf.ObjectTypeSolidSupport, Components: &go3mf.Components{Component: []*go3mf.Component{{ObjectID: 1}}}, AnyAttr: spec.AnyAttr{&ObjectAttr{
 						SliceStackID: 3,
 					}}},
 					{ID: 12, Components: &go3mf.Components{Component: []*go3mf.Component{
 						{ObjectID: 7, Transform: go3mf.Matrix{2, 3, 0, 0, 1, 3, 1, 0, 0, 0, 1, 0, 2, 3, 4, 1}},
 						{ObjectID: 12},
 						{ObjectID: 5},
-					}}, AnyAttr: go3mf.AnyAttr{&ObjectAttr{
+					}}, AnyAttr: spec.AnyAttr{&ObjectAttr{
 						SliceStackID: 11,
 					}}},
 				}}}, []string{
-			fmt.Sprintf("Resources@Object#0@Mesh: %v", errors.ErrInsufficientVertices),
-			fmt.Sprintf("Resources@Object#0@Mesh: %v", errors.ErrInsufficientTriangles),
-			fmt.Sprintf("Resources@Object#0: %v", errors.ErrMissingResource),
-			fmt.Sprintf("Resources@Object#1: %v", ErrSliceInvalidTranform),
-			fmt.Sprintf("Resources@Object#1: %v", ErrSliceExtRequired),
-			fmt.Sprintf("Resources@Object#2: %v", &errors.MissingFieldError{Name: attrSliceRefID}),
-			fmt.Sprintf("Resources@Object#3: %v", ErrNonSliceStack),
-			fmt.Sprintf("Resources@Object#4: %v", ErrSliceInvalidTranform),
-			fmt.Sprintf("Resources@Object#4: %v", ErrSlicePolygonNotClosed),
-			fmt.Sprintf("Resources@Object#5: %v", ErrSliceInvalidTranform),
-			fmt.Sprintf("Resources@Object#5: %v", ErrSlicePolygonNotClosed),
-			fmt.Sprintf("Resources@Object#6@Components@Component#1: %v", errors.ErrRecursion),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[0]/mesh: %v", errors.ErrInsufficientVertices),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[0]/mesh: %v", errors.ErrInsufficientTriangles),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[0]: %v", errors.ErrMissingResource),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[1]: %v", ErrSliceInvalidTranform),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[1]: %v", ErrSliceExtRequired),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[2]: %v", &errors.MissingFieldError{Name: attrSliceRefID}),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[3]: %v", ErrNonSliceStack),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[4]: %v", ErrSliceInvalidTranform),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[4]: %v", ErrSlicePolygonNotClosed),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[5]: %v", ErrSliceInvalidTranform),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[5]: %v", ErrSlicePolygonNotClosed),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[6]/components/component[1]: %v", errors.ErrRecursion),
 		}},
 	}
 	for _, tt := range tests {

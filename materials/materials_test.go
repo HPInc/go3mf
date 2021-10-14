@@ -246,9 +246,6 @@ func Test_newBlendMethod(t *testing.T) {
 }
 
 func Test_newTextureFilter(t *testing.T) {
-	type args struct {
-		s string
-	}
 	tests := []struct {
 		name   string
 		want   TextureFilter
@@ -273,9 +270,6 @@ func Test_newTextureFilter(t *testing.T) {
 }
 
 func Test_newTileStyle(t *testing.T) {
-	type args struct {
-		s string
-	}
 	tests := []struct {
 		name  string
 		want  TileStyle

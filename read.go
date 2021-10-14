@@ -63,29 +63,32 @@ func (r *ReadCloser) Close() error {
 
 func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string, isRoot, strict bool) error {
 	x := xml3mf.NewDecoder(r)
-	state, names := make([]spec.ElementDecoder, 0, 10), make([]xml.Name, 0, 10)
+	type stackElement struct {
+		decoder spec.ElementDecoder
+		name    xml.Name
+		i       int
+	}
+	stack := make([]stackElement, 0, 10)
 
 	var (
-		currentDecoder, tmpDecoder spec.ElementDecoder
-		currentName                xml.Name
-		errs                       specerr.List
+		currentDecoder spec.ElementDecoder
+		currentName    xml.Name
+		errs           specerr.List
 	)
 	currentDecoder = &topLevelDecoder{isRoot: isRoot, model: model, path: path}
 	var err error
 	x.OnStart = func(tp xml3mf.StartElement) {
 		if childDecoder, ok := currentDecoder.(spec.ChildElementDecoder); ok {
-			tmpDecoder = childDecoder.Child(tp.Name)
+			i, tmpDecoder := childDecoder.Child(tp.Name)
 			if tmpDecoder != nil {
-				state = append(state, currentDecoder)
-				names = append(names, currentName)
+				stack = append(stack, stackElement{tmpDecoder, tp.Name, i})
 				currentName = tp.Name
 				currentDecoder = tmpDecoder
-				err := currentDecoder.Start(*(*[]spec.Attr)(unsafe.Pointer(&tp.Attr)))
+				err := currentDecoder.Start(*(*[]spec.XMLAttr)(unsafe.Pointer(&tp.Attr)))
 				if err != nil {
-					for i := len(state) - 1; i >= 0; i-- {
-						if ew, ok := state[i].(spec.ErrorWrapper); ok {
-							err = ew.Wrap(err)
-						}
+					for j := len(stack) - 1; j >= 0; j-- {
+						element := stack[j]
+						err = specerr.WrapIndex(err, element.name.Local, element.i)
 					}
 					specerr.Append(&errs, err)
 				}
@@ -107,8 +110,12 @@ func decodeModelFile(ctx context.Context, r io.Reader, model *Model, path string
 	x.OnEnd = func(tp xml.EndElement) {
 		if currentName == tp.Name {
 			currentDecoder.End()
-			currentDecoder, state = state[len(state)-1], state[:len(state)-1]
-			currentName, names = names[len(names)-1], names[:len(names)-1]
+			stack = stack[:len(stack)-1]
+			if len(stack) > 0 {
+				element := stack[len(stack)-1]
+				currentDecoder = element.decoder
+				currentName = element.name
+			}
 		} else if appendDecoder, ok := currentDecoder.(spec.AppendTokenElementDecoder); ok {
 			appendDecoder.AppendToken(tp)
 		}

@@ -12,10 +12,11 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/hpinc/go3mf/errors"
+	"github.com/hpinc/go3mf/spec"
 )
 
 func TestValidate(t *testing.T) {
-	Register(fakeSpec.Namespace, new(qmExtension))
+	spec.Register(fakeSpec.Namespace, new(qmExtension))
 	tests := []struct {
 		name  string
 		model *Model
@@ -26,61 +27,61 @@ func TestValidate(t *testing.T) {
 			{}, {Path: "/.png"}, {Path: "/a.png"}, {Path: "a.png"}, {Path: "/b.png"}, {Path: "/a.png"},
 			{Path: "/a.png", Type: RelTypePrintTicket}, {Path: "/a.png", Type: RelTypePrintTicket},
 		}}, []string{
-			fmt.Sprintf("/3D/3dmodel.model@Relationship#0: %v", errors.ErrOPCPartName),
-			fmt.Sprintf("/3D/3dmodel.model@Relationship#1: %v", errors.ErrOPCPartName),
-			fmt.Sprintf("/3D/3dmodel.model@Relationship#3: %v", errors.ErrOPCPartName),
-			fmt.Sprintf("/3D/3dmodel.model@Relationship#4: %v", errors.ErrOPCRelTarget),
-			fmt.Sprintf("/3D/3dmodel.model@Relationship#5: %v", errors.ErrOPCDuplicatedRel),
-			fmt.Sprintf("/3D/3dmodel.model@Relationship#6: %v", errors.ErrOPCContentType),
-			fmt.Sprintf("/3D/3dmodel.model@Relationship#7: %v", errors.ErrOPCDuplicatedRel),
-			fmt.Sprintf("/3D/3dmodel.model@Relationship#7: %v", errors.ErrOPCContentType),
-			fmt.Sprintf("/3D/3dmodel.model@Relationship#7: %v", errors.ErrOPCDuplicatedTicket),
+			fmt.Sprintf("go3mf: Path: /3D/3dmodel.model XPath: /model/relationship[0]: %v", errors.ErrOPCPartName),
+			fmt.Sprintf("go3mf: Path: /3D/3dmodel.model XPath: /model/relationship[1]: %v", errors.ErrOPCPartName),
+			fmt.Sprintf("go3mf: Path: /3D/3dmodel.model XPath: /model/relationship[3]: %v", errors.ErrOPCPartName),
+			fmt.Sprintf("go3mf: Path: /3D/3dmodel.model XPath: /model/relationship[4]: %v", errors.ErrOPCRelTarget),
+			fmt.Sprintf("go3mf: Path: /3D/3dmodel.model XPath: /model/relationship[5]: %v", errors.ErrOPCDuplicatedRel),
+			fmt.Sprintf("go3mf: Path: /3D/3dmodel.model XPath: /model/relationship[6]: %v", errors.ErrOPCContentType),
+			fmt.Sprintf("go3mf: Path: /3D/3dmodel.model XPath: /model/relationship[7]: %v", errors.ErrOPCDuplicatedRel),
+			fmt.Sprintf("go3mf: Path: /3D/3dmodel.model XPath: /model/relationship[7]: %v", errors.ErrOPCContentType),
+			fmt.Sprintf("go3mf: Path: /3D/3dmodel.model XPath: /model/relationship[7]: %v", errors.ErrOPCDuplicatedTicket),
 		}},
 		{"namespaces", &Model{Extensions: []Extension{{Namespace: "fake", LocalName: "f", IsRequired: true}}}, []string{
-			errors.ErrRequiredExt.Error(),
+			fmt.Sprintf("go3mf: XPath: /model: %v", errors.ErrRequiredExt),
 		}},
 		{"metadata", &Model{Extensions: []Extension{{Namespace: "fake", LocalName: "f"}}, Metadata: []Metadata{
 			{Name: xml.Name{Space: "fake", Local: "issue"}}, {Name: xml.Name{Space: "f", Local: "issue"}}, {Name: xml.Name{Space: "fake", Local: "issue"}}, {Name: xml.Name{Local: "issue"}}, {},
 		}}, []string{
-			fmt.Sprintf("Metadata#1: %v", errors.ErrMetadataNamespace),
-			fmt.Sprintf("Metadata#2: %v", errors.ErrMetadataDuplicated),
-			fmt.Sprintf("Metadata#3: %v", errors.ErrMetadataName),
-			fmt.Sprintf("Metadata#4: %v", &errors.MissingFieldError{Name: attrName}),
+			fmt.Sprintf("go3mf: XPath: /model/metadata[1]: %v", errors.ErrMetadataNamespace),
+			fmt.Sprintf("go3mf: XPath: /model/metadata[2]: %v", errors.ErrMetadataDuplicated),
+			fmt.Sprintf("go3mf: XPath: /model/metadata[3]: %v", errors.ErrMetadataName),
+			fmt.Sprintf("go3mf: XPath: /model/metadata[4]: %v", &errors.MissingFieldError{Name: attrName}),
 		}},
 		{"build", &Model{Resources: Resources{Assets: []Asset{&BaseMaterials{ID: 1, Materials: []Base{{Name: "a", Color: color.RGBA{A: 1}}}}}, Objects: []*Object{
-			{ID: 2, Type: ObjectTypeOther, Mesh: &Mesh{Vertices: []Point3D{{}, {}, {}, {}}, Triangles: []Triangle{
+			{ID: 2, Type: ObjectTypeOther, Mesh: &Mesh{Vertices: Vertices{Vertex: []Point3D{{}, {}, {}, {}}}, Triangles: Triangles{Triangle: []Triangle{
 				{V1: 0, V2: 1, V3: 2}, {V1: 0, V2: 3, V3: 1}, {V1: 0, V2: 2, V3: 3}, {V1: 1, V2: 3, V3: 2},
-			}}}}}, Build: Build{AnyAttr: AnyAttr{&fakeAttr{}}, Items: []*Item{
+			}}}}}}, Build: Build{AnyAttr: spec.AnyAttr{&fakeAttr{}}, Items: []*Item{
 			{},
 			{ObjectID: 2},
 			{ObjectID: 100},
-			{ObjectID: 1, Metadata: []Metadata{{Name: xml.Name{Local: "issue"}}}},
+			{ObjectID: 1, Metadata: MetadataGroup{Metadata: []Metadata{{Name: xml.Name{Local: "issue"}}}}},
 		}}}, []string{
-			fmt.Sprintf("Build: fake"),
-			fmt.Sprintf("Build@Item#0: %v", &errors.MissingFieldError{Name: attrObjectID}),
-			fmt.Sprintf("Build@Item#1: %v", errors.ErrOtherItem),
-			fmt.Sprintf("Build@Item#2: %v", errors.ErrMissingResource),
-			fmt.Sprintf("Build@Item#3: %v", errors.ErrMissingResource),
-			fmt.Sprintf("Build@Item#3@Metadata#0: %v", errors.ErrMetadataName),
+			"go3mf: XPath: /model: Build: fake",
+			fmt.Sprintf("go3mf: XPath: /model/build/item[0]: %v", &errors.MissingFieldError{Name: attrObjectID}),
+			fmt.Sprintf("go3mf: XPath: /model/build/item[1]: %v", errors.ErrOtherItem),
+			fmt.Sprintf("go3mf: XPath: /model/build/item[2]: %v", errors.ErrMissingResource),
+			fmt.Sprintf("go3mf: XPath: /model/build/item[3]: %v", errors.ErrMissingResource),
+			fmt.Sprintf("go3mf: XPath: /model/build/item[3]/metadata[0]: %v", errors.ErrMetadataName),
 		}},
 		{"childs", &Model{Childs: map[string]*ChildModel{DefaultModelPath: {}, "/a.model": {
 			Relationships: make([]Relationship, 1), Resources: Resources{Objects: []*Object{{}}}}}},
 			[]string{
-				errors.ErrOPCDuplicatedModelName.Error(),
-				fmt.Sprintf("/a.model@Relationship#0: %v", errors.ErrOPCPartName),
-				fmt.Sprintf("/a.model@Resources@Object#0: %v", errors.ErrMissingID),
-				fmt.Sprintf("/a.model@Resources@Object#0: %v", errors.ErrInvalidObject),
+				fmt.Sprintf("go3mf: XPath: /model: %v", errors.ErrOPCDuplicatedModelName),
+				fmt.Sprintf("go3mf: Path: /a.model XPath: /model/relationship[0]: %v", errors.ErrOPCPartName),
+				fmt.Sprintf("go3mf: Path: /a.model XPath: /model/resources/object[0]: %v", errors.ErrMissingID),
+				fmt.Sprintf("go3mf: Path: /a.model XPath: /model/resources/object[0]: %v", errors.ErrInvalidObject),
 			}},
 		{"assets", &Model{Resources: Resources{Assets: []Asset{
 			&BaseMaterials{Materials: []Base{{Color: color.RGBA{}}}},
 			&BaseMaterials{ID: 1, Materials: []Base{{Name: "a", Color: color.RGBA{A: 1}}}},
 			&BaseMaterials{ID: 1},
 		}}}, []string{
-			fmt.Sprintf("Resources@BaseMaterials#0: %v", errors.ErrMissingID),
-			fmt.Sprintf("Resources@BaseMaterials#0@Base#0: %v", &errors.MissingFieldError{Name: attrName}),
-			fmt.Sprintf("Resources@BaseMaterials#0@Base#0: %v", &errors.MissingFieldError{Name: attrDisplayColor}),
-			fmt.Sprintf("Resources@BaseMaterials#2: %v", errors.ErrDuplicatedID),
-			fmt.Sprintf("Resources@BaseMaterials#2: %v", errors.ErrEmptyResourceProps),
+			fmt.Sprintf("go3mf: XPath: /model/resources/basematerials[0]: %v", errors.ErrMissingID),
+			fmt.Sprintf("go3mf: XPath: /model/resources/basematerials[0]/base[0]: %v", &errors.MissingFieldError{Name: attrName}),
+			fmt.Sprintf("go3mf: XPath: /model/resources/basematerials[0]/base[0]: %v", &errors.MissingFieldError{Name: attrDisplayColor}),
+			fmt.Sprintf("go3mf: XPath: /model/resources/basematerials[2]: %v", errors.ErrDuplicatedID),
+			fmt.Sprintf("go3mf: XPath: /model/resources/basematerials[2]: %v", errors.ErrEmptyResourceProps),
 		}},
 		{"objects", &Model{Resources: Resources{Assets: []Asset{
 			&BaseMaterials{ID: 1, Materials: []Base{{Name: "a", Color: color.RGBA{A: 1}}, {Name: "b", Color: color.RGBA{A: 1}}}},
@@ -88,44 +89,44 @@ func TestValidate(t *testing.T) {
 		}, Objects: []*Object{
 			{},
 			{ID: 1, PIndex: 1, Mesh: &Mesh{}, Components: &Components{Component: []*Component{{ObjectID: 1}}}},
-			{ID: 2, Mesh: &Mesh{Vertices: []Point3D{{}, {}, {}, {}}, Triangles: []Triangle{
+			{ID: 2, Mesh: &Mesh{Vertices: Vertices{Vertex: []Point3D{{}, {}, {}, {}}}, Triangles: Triangles{Triangle: []Triangle{
 				{V1: 0, V2: 1, V3: 2}, {V1: 0, V2: 3, V3: 1}, {V1: 0, V2: 2, V3: 3}, {V1: 1, V2: 3, V3: 2},
-			}}},
+			}}}},
 			{ID: 3, PID: 5, Components: &Components{Component: []*Component{
 				{ObjectID: 3}, {ObjectID: 2}, {}, {ObjectID: 5}, {ObjectID: 100},
 			}}},
-			{ID: 4, PID: 100, Mesh: &Mesh{Vertices: make([]Point3D, 2), Triangles: make([]Triangle, 3)}},
-			{ID: 6, PID: 5, PIndex: 2, Mesh: &Mesh{Vertices: []Point3D{{}, {}, {}, {}},
-				Triangles: []Triangle{
+			{ID: 4, PID: 100, Mesh: &Mesh{Vertices: Vertices{Vertex: make([]Point3D, 2)}, Triangles: Triangles{Triangle: make([]Triangle, 3)}}},
+			{ID: 6, PID: 5, PIndex: 2, Mesh: &Mesh{Vertices: Vertices{Vertex: []Point3D{{}, {}, {}, {}}},
+				Triangles: Triangles{Triangle: []Triangle{
 					{V1: 0, V2: 1, V3: 2, PID: 5, P1: 2, P2: 0, P3: 0},
 					{V1: 0, V2: 1, V3: 4, PID: 5, P1: 2, P2: 2, P3: 2},
 					{V1: 0, V2: 2, V3: 3, PID: 5, P1: 1, P2: 1, P3: 0},
 					{V1: 1, V2: 2, V3: 3, PID: 100, P1: 0, P2: 0, P3: 0},
-				}}},
+				}}}},
 		}}}, []string{
-			fmt.Sprintf("Resources@Object#0: %v", errors.ErrMissingID),
-			fmt.Sprintf("Resources@Object#0: %v", errors.ErrInvalidObject),
-			fmt.Sprintf("Resources@Object#1: %v", errors.ErrDuplicatedID),
-			fmt.Sprintf("Resources@Object#1: %v", &errors.MissingFieldError{Name: attrPID}),
-			fmt.Sprintf("Resources@Object#1: %v", errors.ErrInvalidObject),
-			fmt.Sprintf("Resources@Object#1@Mesh: %v", errors.ErrInsufficientVertices),
-			fmt.Sprintf("Resources@Object#1@Mesh: %v", errors.ErrInsufficientTriangles),
-			fmt.Sprintf("Resources@Object#1@Components@Component#0: %v", errors.ErrRecursion),
-			fmt.Sprintf("Resources@Object#3: %v", errors.ErrComponentsPID),
-			fmt.Sprintf("Resources@Object#3@Components@Component#0: %v", errors.ErrRecursion),
-			fmt.Sprintf("Resources@Object#3@Components@Component#2: %v", &errors.MissingFieldError{Name: attrObjectID}),
-			fmt.Sprintf("Resources@Object#3@Components@Component#3: %v", errors.ErrMissingResource),
-			fmt.Sprintf("Resources@Object#3@Components@Component#4: %v", errors.ErrMissingResource),
-			fmt.Sprintf("Resources@Object#4: %v", errors.ErrMissingResource),
-			fmt.Sprintf("Resources@Object#4@Mesh: %v", errors.ErrInsufficientVertices),
-			fmt.Sprintf("Resources@Object#4@Mesh: %v", errors.ErrInsufficientTriangles),
-			fmt.Sprintf("Resources@Object#4@Mesh@Triangle#0: %v", errors.ErrDuplicatedIndices),
-			fmt.Sprintf("Resources@Object#4@Mesh@Triangle#1: %v", errors.ErrDuplicatedIndices),
-			fmt.Sprintf("Resources@Object#4@Mesh@Triangle#2: %v", errors.ErrDuplicatedIndices),
-			fmt.Sprintf("Resources@Object#5: %v", errors.ErrIndexOutOfBounds),
-			fmt.Sprintf("Resources@Object#5@Mesh@Triangle#0: %v", errors.ErrIndexOutOfBounds),
-			fmt.Sprintf("Resources@Object#5@Mesh@Triangle#1: %v", errors.ErrIndexOutOfBounds),
-			fmt.Sprintf("Resources@Object#5@Mesh@Triangle#3: %v", errors.ErrMissingResource),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[0]: %v", errors.ErrMissingID),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[0]: %v", errors.ErrInvalidObject),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[1]: %v", errors.ErrDuplicatedID),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[1]: %v", &errors.MissingFieldError{Name: attrPID}),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[1]: %v", errors.ErrInvalidObject),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[1]/mesh: %v", errors.ErrInsufficientVertices),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[1]/mesh: %v", errors.ErrInsufficientTriangles),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[1]/components/component[0]: %v", errors.ErrRecursion),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[3]: %v", errors.ErrComponentsPID),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[3]/components/component[0]: %v", errors.ErrRecursion),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[3]/components/component[2]: %v", &errors.MissingFieldError{Name: attrObjectID}),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[3]/components/component[3]: %v", errors.ErrMissingResource),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[3]/components/component[4]: %v", errors.ErrMissingResource),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[4]: %v", errors.ErrMissingResource),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[4]/mesh: %v", errors.ErrInsufficientVertices),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[4]/mesh: %v", errors.ErrInsufficientTriangles),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[4]/mesh/triangle[0]: %v", errors.ErrDuplicatedIndices),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[4]/mesh/triangle[1]: %v", errors.ErrDuplicatedIndices),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[4]/mesh/triangle[2]: %v", errors.ErrDuplicatedIndices),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[5]: %v", errors.ErrIndexOutOfBounds),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[5]/mesh/triangle[0]: %v", errors.ErrIndexOutOfBounds),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[5]/mesh/triangle[1]: %v", errors.ErrIndexOutOfBounds),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[5]/mesh/triangle[3]: %v", errors.ErrMissingResource),
 		}},
 	}
 	for _, tt := range tests {
@@ -159,22 +160,22 @@ func TestObject_ValidateMesh(t *testing.T) {
 		r       *Mesh
 		wantErr bool
 	}{
-		{"few vertices", &Mesh{Vertices: make([]Point3D, 1), Triangles: make([]Triangle, 3)}, true},
-		{"few triangles", &Mesh{Vertices: make([]Point3D, 3), Triangles: make([]Triangle, 3)}, true},
-		{"wrong orientation", &Mesh{Vertices: []Point3D{{}, {}, {}, {}},
-			Triangles: []Triangle{
+		{"few vertices", &Mesh{Vertices: Vertices{Vertex: make([]Point3D, 1)}, Triangles: Triangles{Triangle: make([]Triangle, 3)}}, true},
+		{"few triangles", &Mesh{Vertices: Vertices{Vertex: make([]Point3D, 3)}, Triangles: Triangles{Triangle: make([]Triangle, 3)}}, true},
+		{"wrong orientation", &Mesh{Vertices: Vertices{Vertex: []Point3D{{}, {}, {}, {}}},
+			Triangles: Triangles{Triangle: []Triangle{
 				{V1: 0, V2: 1, V3: 2},
 				{V1: 0, V2: 3, V3: 1},
 				{V1: 0, V2: 2, V3: 3},
 				{V1: 1, V2: 2, V3: 3},
-			}}, true},
-		{"correct", &Mesh{Vertices: []Point3D{{}, {}, {}, {}},
-			Triangles: []Triangle{
+			}}}, true},
+		{"correct", &Mesh{Vertices: Vertices{Vertex: []Point3D{{}, {}, {}, {}}},
+			Triangles: Triangles{Triangle: []Triangle{
 				{V1: 0, V2: 1, V3: 2},
 				{V1: 0, V2: 3, V3: 1},
 				{V1: 0, V2: 2, V3: 3},
 				{V1: 1, V2: 3, V3: 2},
-			}}, false},
+			}}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -186,14 +187,14 @@ func TestObject_ValidateMesh(t *testing.T) {
 }
 
 func TestModel_ValidateCoherency(t *testing.T) {
-	validMesh := &Mesh{Vertices: []Point3D{{}, {}, {}, {}}, Triangles: []Triangle{
+	validMesh := &Mesh{Vertices: Vertices{Vertex: []Point3D{{}, {}, {}, {}}}, Triangles: Triangles{Triangle: []Triangle{
 		{V1: 0, V2: 1, V3: 2}, {V1: 0, V2: 3, V3: 1},
 		{V1: 0, V2: 2, V3: 3}, {V1: 1, V2: 3, V3: 2},
-	}}
-	invalidMesh := &Mesh{Vertices: []Point3D{{}, {}, {}, {}}, Triangles: []Triangle{
+	}}}
+	invalidMesh := &Mesh{Vertices: Vertices{Vertex: []Point3D{{}, {}, {}, {}}}, Triangles: Triangles{Triangle: []Triangle{
 		{V1: 0, V2: 1, V3: 2}, {V1: 0, V2: 3, V3: 1},
 		{V1: 0, V2: 2, V3: 3}, {V1: 1, V2: 2, V3: 3},
-	}}
+	}}}
 	tests := []struct {
 		name string
 		m    *Model
@@ -210,8 +211,8 @@ func TestModel_ValidateCoherency(t *testing.T) {
 		}}, Childs: map[string]*ChildModel{"/other.model": {Resources: Resources{Objects: []*Object{
 			{Mesh: invalidMesh},
 		}}}}}, []string{
-			fmt.Sprintf("/other.model@Resources@Object#0@Mesh: %v", errors.ErrMeshConsistency),
-			fmt.Sprintf("Resources@Object#0@Mesh: %v", errors.ErrMeshConsistency),
+			fmt.Sprintf("go3mf: Path: /other.model XPath: /model/resources/object[0]/mesh: %v", errors.ErrMeshConsistency),
+			fmt.Sprintf("go3mf: XPath: /model/resources/object[0]/mesh: %v", errors.ErrMeshConsistency),
 		}},
 	}
 	for _, tt := range tests {

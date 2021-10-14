@@ -11,16 +11,17 @@ import (
 	"github.com/hpinc/go3mf/spec"
 )
 
-// Marshal3MFAttr encodes the resource attributes.
-func (s *ObjectAttr) Marshal3MFAttr(_ spec.Encoder) ([]xml.Attr, error) {
-	return []xml.Attr{
-		{Name: xml.Name{Space: Namespace, Local: attrSliceRefID}, Value: strconv.FormatUint(uint64(s.SliceStackID), 10)},
-		{Name: xml.Name{Space: Namespace, Local: attrMeshRes}, Value: s.MeshResolution.String()},
-	}, nil
+// Marshal3MF encodes the resource attributes.
+func (s *ObjectAttr) Marshal3MF(_ spec.Encoder, start *xml.StartElement) error {
+	start.Attr = append(start.Attr,
+		xml.Attr{Name: xml.Name{Space: Namespace, Local: attrSliceRefID}, Value: strconv.FormatUint(uint64(s.SliceStackID), 10)},
+		xml.Attr{Name: xml.Name{Space: Namespace, Local: attrMeshRes}, Value: s.MeshResolution.String()},
+	)
+	return nil
 }
 
 // Marshal3MF encodes the resource.
-func (s *SliceStack) Marshal3MF(x spec.Encoder) error {
+func (s *SliceStack) Marshal3MF(x spec.Encoder, _ *xml.StartElement) error {
 	xs := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrSliceStack}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(s.ID), 10)},
 	}}
@@ -52,7 +53,7 @@ func (s *Slice) marshal3MF(x spec.Encoder) {
 	}}
 	x.EncodeToken(xs)
 
-	marshalVertices(x, s.Vertices)
+	marshalVertices(x, s.Vertices.Vertex)
 	marshalPolygons(x, s.Polygons)
 
 	x.EncodeToken(xs.End())

@@ -4,8 +4,11 @@
 package slices
 
 import (
+	"encoding/xml"
 	"errors"
+
 	"github.com/hpinc/go3mf"
+	"github.com/hpinc/go3mf/spec"
 )
 
 // Namespace is the canonical name of this extension.
@@ -18,7 +21,7 @@ var DefaultExtension = go3mf.Extension{
 }
 
 func init() {
-	go3mf.Register(Namespace, Spec{})
+	spec.Register(Namespace, Spec{})
 }
 
 type Spec struct{}
@@ -59,8 +62,12 @@ type Polygon struct {
 // Slice defines the resource object for slices.
 type Slice struct {
 	TopZ     float32
-	Vertices []go3mf.Point2D
+	Vertices Vertices
 	Polygons []Polygon
+}
+
+type Vertices struct {
+	Vertex []go3mf.Point2D
 }
 
 // MeshResolution defines the resolutions for a slice.
@@ -98,13 +105,18 @@ type SliceRef struct {
 type SliceStack struct {
 	ID      uint32
 	BottomZ float32
-	Slices  []*Slice
+	Slices  []Slice
 	Refs    []SliceRef
 }
 
 // Identify returns the unique ID of the resource.
 func (s *SliceStack) Identify() uint32 {
 	return s.ID
+}
+
+// XMLName returns the xml identifier of the resource.
+func (SliceStack) XMLName() xml.Name {
+	return xml.Name{Space: Namespace, Local: attrSliceStack}
 }
 
 func GetObjectAttr(obj *go3mf.Object) *ObjectAttr {
@@ -121,6 +133,8 @@ type ObjectAttr struct {
 	SliceStackID   uint32
 	MeshResolution MeshResolution
 }
+
+func (ObjectAttr) Namespace() string { return Namespace }
 
 const (
 	attrSliceStack = "slicestack"

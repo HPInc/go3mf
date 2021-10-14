@@ -5,32 +5,60 @@ package spec
 
 import (
 	"encoding/xml"
+	"sync"
 )
+
+var (
+	specMu sync.RWMutex
+	specs  = make(map[string]Spec)
+)
+
+// Register makes a spec available by the provided namesoace.
+// If Register is called twice with the same name or if spec is nil,
+// it panics.
+func Register(namespace string, spec Spec) {
+	specMu.Lock()
+	defer specMu.Unlock()
+	specs[namespace] = spec
+}
+
+func Load(space string) (Spec, bool) {
+	specMu.RLock()
+	ext, ok := specs[space]
+	specMu.RUnlock()
+	return ext, ok
+}
+
+func LoadValidator(ns string) (ValidateSpec, bool) {
+	specMu.RLock()
+	ext, ok := specs[ns]
+	specMu.RUnlock()
+	if ok {
+		ext, ok := ext.(ValidateSpec)
+		return ext, ok
+	}
+	return nil, false
+}
 
 // Spec is the interface that must be implemented by a 3mf spec.
 //
 // Specs may implement ValidateSpec.
 type Spec interface {
-	DecodeAttribute(parent interface{}, attr Attr) error
-	CreateElementDecoder(parent interface{}, name string) ElementDecoder
-}
-
-type PropertyGroup interface {
-	Len() int
+	NewAttrGroup(parent xml.Name) AttrGroup
+	NewElementDecoder(name xml.Name) GetterElementDecoder
 }
 
 // If a Spec implemented ValidateSpec, then model.Validate will call
 // Validate and aggregate the resulting erros.
 //
 // model is guaranteed to be a *go3mf.Model
-// element can be a *go3mf.Model, go3mf.Asset or *go3mf.Object.
 type ValidateSpec interface {
 	Spec
 	Validate(model interface{}, path string, element interface{}) error
 }
 
-// An Attr represents an attribute in an XML element (Name=Value).
-type Attr struct {
+// An XMLAttr represents an attribute in an XML element (Name=Value).
+type XMLAttr struct {
 	Name  xml.Name
 	Value []byte
 }
@@ -41,114 +69,63 @@ type Relationship struct {
 	ID   string
 }
 
-// Marshaler is the interface implemented by objects
-// that can marshal themselves into valid XML elements.
-type Marshaler interface {
-	Marshal3MF(Encoder) error
+// AttrGroup defines a container for different attributes of the same namespace.
+// It supports encoding and decoding to XML.
+type AttrGroup interface {
+	UnmarshalerAttr
+	Marshaler
+	Namespace() string
 }
 
-// MarshalerAttr is the interface implemented by objects that can marshal
-// themselves into valid XML attributes.
-type MarshalerAttr interface {
-	Marshal3MFAttr(Encoder) ([]xml.Attr, error)
+type PropertyGroup interface {
+	Len() int
 }
 
-type ErrorWrapper interface {
-	Wrap(error) error
-}
+type AnyAttr []AttrGroup
 
-// ElementDecoder defines the minimum contract to decode a 3MF node.
-type ElementDecoder interface {
-	Start([]Attr) error
-	End()
-}
-
-// ChildElementDecoder must be implemented by element decoders
-// that need decoding nested elements.
-type ChildElementDecoder interface {
-	ElementDecoder
-	Child(xml.Name) ElementDecoder
-}
-
-// CharDataElementDecoder must be implemented by element decoders
-// that need to decode raw text.
-type CharDataElementDecoder interface {
-	ElementDecoder
-	CharData([]byte)
-}
-
-// AppendTokenElementDecoder must be implemented by element decoders
-// that need to accumulate tokens to support loseless encoding.
-type AppendTokenElementDecoder interface {
-	ElementDecoder
-	AppendToken(xml.Token)
-}
-
-// Encoder provides de necessary methods to encode specs.
-// It should not be implemented by spec authors but
-// will be provided be go3mf itself.
-type Encoder interface {
-	AddRelationship(Relationship)
-	FloatPresicion() int
-	EncodeToken(xml.Token)
-	Flush() error
-	SetAutoClose(bool)
-	// Use SetSkipAttrEscape(true) when there is no need to escape
-	// StartElement attribute values, such as as when all attributes
-	// are filled using strconv.
-	SetSkipAttrEscape(bool)
-}
-
-// An UnknownAttrs represents a list of attributes
-// that are not supported by any loaded Spec.
-type UnknownAttrs []xml.Attr
-
-func (u UnknownAttrs) Marshal3MFAttr(enc Encoder) ([]xml.Attr, error) {
-	return u, nil
-}
-
-// UnknownTokens represents a section of an xml
-// that cannot be decoded by any loaded Spec.
-type UnknownTokens []xml.Token
-
-func (u UnknownTokens) Marshal3MF(enc Encoder) error {
-	for _, t := range u {
-		enc.EncodeToken(t)
-	}
-	return nil
-}
-
-// UnknownTokensDecoder can be used by spec decoders to maintain the
-// xml tree elements of unknown extensions.
-type UnknownTokensDecoder struct {
-	Name xml.Name
-
-	tokens UnknownTokens
-}
-
-func (d *UnknownTokensDecoder) Start(attrs []Attr) error {
-	var xattrs []xml.Attr
-	if len(attrs) > 0 {
-		xattrs = make([]xml.Attr, len(attrs))
-		for i, att := range attrs {
-			xattrs[i] = xml.Attr{Name: att.Name, Value: string(att.Value)}
+func (a AnyAttr) Get(namespace string) AttrGroup {
+	for _, v := range a {
+		if v.Namespace() == namespace {
+			return v
 		}
 	}
-	d.AppendToken(xml.StartElement{
-		Name: d.Name,
-		Attr: xattrs,
-	})
 	return nil
 }
 
-func (d *UnknownTokensDecoder) End() {
-	d.AppendToken(xml.EndElement{Name: d.Name})
+func (a AnyAttr) Marshal3MF(x Encoder, start *xml.StartElement) error {
+	for _, ext := range a {
+		err := ext.Marshal3MF(x, start)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-func (d *UnknownTokensDecoder) AppendToken(t xml.Token) {
-	d.tokens = append(d.tokens, t)
+func NewAttrGroup(namespace string, parent xml.Name) AttrGroup {
+	if ext, ok := Load(namespace); ok {
+		return ext.NewAttrGroup(parent)
+	}
+	return &UnknownAttrs{
+		Space: namespace,
+	}
 }
 
-func (d UnknownTokensDecoder) Tokens() UnknownTokens {
-	return d.tokens
+func NewElementDecoder(name xml.Name) GetterElementDecoder {
+	if ext, ok := Load(name.Space); ok {
+		return ext.NewElementDecoder(name)
+	}
+	return &UnknownTokensDecoder{XMLName: name}
+}
+
+// Any is an extension point containing <any> information.
+type Any []Marshaler
+
+func (e Any) Marshal3MF(x Encoder, start *xml.StartElement) error {
+	for _, ext := range e {
+		if err := ext.Marshal3MF(x, start); err == nil {
+			return err
+		}
+	}
+	return nil
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/go-test/deep"
 	"github.com/hpinc/go3mf"
 	"github.com/hpinc/go3mf/errors"
+	"github.com/hpinc/go3mf/spec"
 )
 
 func TestDecode(t *testing.T) {
@@ -17,13 +18,13 @@ func TestDecode(t *testing.T) {
 	meshLattice := &go3mf.Object{
 		ID: 15, Name: "Box",
 		Mesh: &go3mf.Mesh{
-			Any: go3mf.Any{beamLattice},
+			Any: spec.Any{beamLattice},
 		},
 	}
 	beamLattice.MinLength = 0.0001
 	beamLattice.CapMode = CapModeHemisphere
 	beamLattice.Radius = 1
-	meshLattice.Mesh.Vertices = append(meshLattice.Mesh.Vertices, []go3mf.Point3D{
+	meshLattice.Mesh.Vertices.Vertex = append(meshLattice.Mesh.Vertices.Vertex, []go3mf.Point3D{
 		{45, 55, 55},
 		{45, 45, 55},
 		{45, 55, 45},
@@ -33,8 +34,8 @@ func TestDecode(t *testing.T) {
 		{55, 45, 55},
 		{55, 45, 45},
 	}...)
-	beamLattice.BeamSets = append(beamLattice.BeamSets, BeamSet{Name: "test", Identifier: "set_id", Refs: []uint32{1}})
-	beamLattice.Beams = append(beamLattice.Beams, []Beam{
+	beamLattice.BeamSets.BeamSet = append(beamLattice.BeamSets.BeamSet, BeamSet{Name: "test", Identifier: "set_id", Refs: []uint32{1}})
+	beamLattice.Beams.Beam = append(beamLattice.Beams.Beam, []Beam{
 		{Indices: [2]uint32{0, 1}, Radius: [2]float32{1.5, 1.6}, CapMode: [2]CapMode{CapModeSphere, CapModeButt}},
 		{Indices: [2]uint32{2, 0}, Radius: [2]float32{3, 1.5}, CapMode: [2]CapMode{CapModeSphere, CapModeHemisphere}},
 		{Indices: [2]uint32{1, 3}, Radius: [2]float32{1.6, 3}, CapMode: [2]CapMode{CapModeHemisphere, CapModeHemisphere}},
@@ -118,17 +119,17 @@ func TestDecode(t *testing.T) {
 
 func TestDecode_warns(t *testing.T) {
 	want := []string{
-		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice: %v", errors.NewParseAttrError("radius", true)),
-		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice: %v", errors.NewParseAttrError("minlength", true)),
-		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice: %v", errors.NewParseAttrError("cap", false)),
-		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice: %v", errors.NewParseAttrError("clippingmode", false)),
-		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice: %v", errors.NewParseAttrError("clippingmesh", false)),
-		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice: %v", errors.NewParseAttrError("representationmesh", false)),
-		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@Beam#0: %v", errors.NewParseAttrError("r1", false)),
-		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@Beam#0: %v", errors.NewParseAttrError("r2", false)),
-		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@Beam#2: %v", errors.NewParseAttrError("v2", true)),
-		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@Beam#3: %v", errors.NewParseAttrError("v1", true)),
-		fmt.Sprintf("Resources@Object#0@Mesh@BeamLattice@BeamSet#0@uint32#2: %v", errors.NewParseAttrError("index", true)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/object[0]/mesh/beamlattice: %v", errors.NewParseAttrError("radius", true)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/object[0]/mesh/beamlattice: %v", errors.NewParseAttrError("minlength", true)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/object[0]/mesh/beamlattice: %v", errors.NewParseAttrError("cap", false)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/object[0]/mesh/beamlattice: %v", errors.NewParseAttrError("clippingmode", false)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/object[0]/mesh/beamlattice: %v", errors.NewParseAttrError("clippingmesh", false)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/object[0]/mesh/beamlattice: %v", errors.NewParseAttrError("representationmesh", false)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/object[0]/mesh/beamlattice/beams/beam[0]: %v", errors.NewParseAttrError("r1", false)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/object[0]/mesh/beamlattice/beams/beam[0]: %v", errors.NewParseAttrError("r2", false)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/object[0]/mesh/beamlattice/beams/beam[2]: %v", errors.NewParseAttrError("v2", true)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/object[0]/mesh/beamlattice/beams/beam[3]: %v", errors.NewParseAttrError("v1", true)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/object[0]/mesh/beamlattice/beamsets/beamset[0]/ref[2]: %v", errors.NewParseAttrError("index", true)),
 	}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"

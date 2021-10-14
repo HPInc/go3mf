@@ -10,19 +10,20 @@ import (
 	"github.com/go-test/deep"
 	"github.com/hpinc/go3mf"
 	specerr "github.com/hpinc/go3mf/errors"
+	"github.com/hpinc/go3mf/spec"
 )
 
 func TestDecode(t *testing.T) {
 	sliceStack := &SliceStack{ID: 3, BottomZ: 1,
-		Slices: []*Slice{
+		Slices: []Slice{
 			{
 				TopZ:     0,
-				Vertices: []go3mf.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
+				Vertices: Vertices{Vertex: []go3mf.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}}},
 				Polygons: []Polygon{{StartV: 0, Segments: []Segment{{V2: 1, PID: 1, P1: 2, P2: 3}, {V2: 2, PID: 1, P1: 2, P2: 2}, {V2: 3}, {V2: 0}}}},
 			},
 			{
 				TopZ:     0.1,
-				Vertices: []go3mf.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
+				Vertices: Vertices{Vertex: []go3mf.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}}},
 				Polygons: []Polygon{{StartV: 0, Segments: []Segment{{V2: 2}, {V2: 1}, {V2: 3}, {V2: 0}}}},
 			},
 		},
@@ -31,7 +32,7 @@ func TestDecode(t *testing.T) {
 	meshRes := &go3mf.Object{
 		Mesh: new(go3mf.Mesh),
 		ID:   8, Name: "Box 1",
-		AnyAttr: go3mf.AnyAttr{&ObjectAttr{SliceStackID: 3, MeshResolution: ResolutionLow}},
+		AnyAttr: spec.AnyAttr{&ObjectAttr{SliceStackID: 3, MeshResolution: ResolutionLow}},
 	}
 
 	want := &go3mf.Model{
@@ -94,16 +95,16 @@ func TestDecode(t *testing.T) {
 
 func TestDecode_warns(t *testing.T) {
 	want := []string{
-		fmt.Sprintf("Resources@SliceStack#0: %v", specerr.NewParseAttrError("id", true)),
-		fmt.Sprintf("Resources@SliceStack#0: %v", specerr.NewParseAttrError("zbottom", false)),
-		fmt.Sprintf("Resources@SliceStack#0@Slice#0@Point2D#0: %v", specerr.NewParseAttrError("x", true)),
-		fmt.Sprintf("Resources@SliceStack#0@Slice#0@Point2D#1: %v", specerr.NewParseAttrError("y", true)),
-		fmt.Sprintf("Resources@SliceStack#0@Slice#1: %v", specerr.NewParseAttrError("ztop", true)),
-		fmt.Sprintf("Resources@SliceStack#0@Slice#1@Polygon#0: %v", specerr.NewParseAttrError("startv", true)),
-		fmt.Sprintf("Resources@SliceStack#0@Slice#1@Polygon#0@Segment#1: %v", specerr.NewParseAttrError("v2", true)),
-		fmt.Sprintf("Resources@SliceStack#0@SliceRef#0: %v", specerr.NewParseAttrError("slicestackid", true)),
-		fmt.Sprintf("Resources@Object#0: %v", specerr.NewParseAttrError("meshresolution", false)),
-		fmt.Sprintf("Resources@Object#0: %v", specerr.NewParseAttrError("slicestackid", true)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/slicestack[0]: %v", specerr.NewParseAttrError("id", true)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/slicestack[0]: %v", specerr.NewParseAttrError("zbottom", false)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/slicestack[0]/slice[0]/vertices/vertex[0]: %v", specerr.NewParseAttrError("x", true)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/slicestack[0]/slice[0]/vertices/vertex[1]: %v", specerr.NewParseAttrError("y", true)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/slicestack[0]/slice[1]: %v", specerr.NewParseAttrError("ztop", true)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/slicestack[0]/slice[1]/polygon[0]: %v", specerr.NewParseAttrError("startv", true)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/slicestack[0]/slice[1]/polygon[0]/segment[1]: %v", specerr.NewParseAttrError("v2", true)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/slicestack[0]/sliceref[0]: %v", specerr.NewParseAttrError("slicestackid", true)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/object[0]: %v", specerr.NewParseAttrError("meshresolution", false)),
+		fmt.Sprintf("go3mf: XPath: /model/resources/object[0]: %v", specerr.NewParseAttrError("slicestackid", true)),
 	}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"

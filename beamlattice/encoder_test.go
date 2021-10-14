@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/hpinc/go3mf"
+	"github.com/hpinc/go3mf/spec"
 )
 
 func TestMarshalModel(t *testing.T) {
@@ -15,13 +16,13 @@ func TestMarshalModel(t *testing.T) {
 	meshLattice := &go3mf.Object{
 		ID: 15, Name: "Box",
 		Mesh: &go3mf.Mesh{
-			Triangles: []go3mf.Triangle{},
-			Any:       go3mf.Any{beamLattice}},
+			Triangles: go3mf.Triangles{Triangle: []go3mf.Triangle{}},
+			Any:       spec.Any{beamLattice}},
 	}
 	beamLattice.MinLength = 0.0001
 	beamLattice.CapMode = CapModeHemisphere
 	beamLattice.Radius = 1
-	meshLattice.Mesh.Vertices = append(meshLattice.Mesh.Vertices, []go3mf.Point3D{
+	meshLattice.Mesh.Vertices.Vertex = append(meshLattice.Mesh.Vertices.Vertex, []go3mf.Point3D{
 		{45, 55, 55},
 		{45, 45, 55},
 		{45, 55, 45},
@@ -31,8 +32,8 @@ func TestMarshalModel(t *testing.T) {
 		{55, 45, 55},
 		{55, 45, 45},
 	}...)
-	beamLattice.BeamSets = append(beamLattice.BeamSets, BeamSet{Name: "test", Identifier: "set_id", Refs: []uint32{1}})
-	beamLattice.Beams = append(beamLattice.Beams, []Beam{
+	beamLattice.BeamSets.BeamSet = append(beamLattice.BeamSets.BeamSet, BeamSet{Name: "test", Identifier: "set_id", Refs: []uint32{1}})
+	beamLattice.Beams.Beam = append(beamLattice.Beams.Beam, []Beam{
 		{Indices: [2]uint32{0, 1}, Radius: [2]float32{1.5, 1.6}, CapMode: [2]CapMode{CapModeSphere, CapModeButt}},
 		{Indices: [2]uint32{2, 0}, Radius: [2]float32{3, 1.5}, CapMode: [2]CapMode{CapModeSphere, CapModeHemisphere}},
 		{Indices: [2]uint32{1, 3}, Radius: [2]float32{1.6, 3}, CapMode: [2]CapMode{CapModeHemisphere, CapModeHemisphere}},

@@ -13,7 +13,7 @@ import (
 
 var _ go3mf.Asset = new(SliceStack)
 var _ spec.Marshaler = new(SliceStack)
-var _ spec.MarshalerAttr = new(ObjectAttr)
+var _ spec.Marshaler = new(ObjectAttr)
 var _ spec.Spec = new(Spec)
 
 func TestSliceStack_Identify(t *testing.T) {

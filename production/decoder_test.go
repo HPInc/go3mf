@@ -10,14 +10,15 @@ import (
 	"github.com/go-test/deep"
 	"github.com/hpinc/go3mf"
 	"github.com/hpinc/go3mf/errors"
+	"github.com/hpinc/go3mf/spec"
 )
 
 func TestDecode(t *testing.T) {
 	components := &go3mf.Object{
-		AnyAttr: go3mf.AnyAttr{&ObjectAttr{UUID: "cb828680-8895-4e08-a1fc-be63e033df15"}},
+		AnyAttr: spec.AnyAttr{&ObjectAttr{UUID: "cb828680-8895-4e08-a1fc-be63e033df15"}},
 		ID:      20,
 		Components: &go3mf.Components{Component: []*go3mf.Component{{
-			AnyAttr: go3mf.AnyAttr{&ComponentAttr{
+			AnyAttr: spec.AnyAttr{&ComponentAttr{
 				Path: "/3D/other.model",
 				UUID: "cb828680-8895-4e08-a1fc-be63e033df16",
 			}},
@@ -28,13 +29,13 @@ func TestDecode(t *testing.T) {
 	want := &go3mf.Model{Path: "/3D/3dmodel.model", Resources: go3mf.Resources{
 		Objects: []*go3mf.Object{components},
 	}, Build: go3mf.Build{
-		AnyAttr: go3mf.AnyAttr{&BuildAttr{UUID: "e9e25302-6428-402e-8633-cc95528d0ed3"}}},
+		AnyAttr: spec.AnyAttr{&BuildAttr{UUID: "e9e25302-6428-402e-8633-cc95528d0ed3"}}},
 	}
 	want.Build.Items = append(want.Build.Items, &go3mf.Item{ObjectID: 20,
-		AnyAttr:   go3mf.AnyAttr{&ItemAttr{UUID: "e9e25302-6428-402e-8633-cc95528d0ed2"}},
+		AnyAttr:   spec.AnyAttr{&ItemAttr{UUID: "e9e25302-6428-402e-8633-cc95528d0ed2"}},
 		Transform: go3mf.Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
 	}, &go3mf.Item{ObjectID: 8,
-		AnyAttr: go3mf.AnyAttr{&ItemAttr{
+		AnyAttr: spec.AnyAttr{&ItemAttr{
 			Path: "/3D/other.model",
 			UUID: "e9e25302-6428-402e-8633-cc95528d0ed4",
 		}},
@@ -72,10 +73,10 @@ func TestDecode(t *testing.T) {
 
 func TestDecode_warns(t *testing.T) {
 	want := []string{
-		fmt.Sprintf("Resources@Object#1: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
-		fmt.Sprintf("Resources@Object#1@Components@Component#0: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
-		fmt.Sprintf("Build: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
-		fmt.Sprintf("Build@Item#0: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
+		fmt.Sprintf("go3mf: XPath: /model/resources/object[1]: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
+		fmt.Sprintf("go3mf: XPath: /model/resources/object[1]/components/component[0]: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
+		fmt.Sprintf("go3mf: XPath: /model/build: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
+		fmt.Sprintf("go3mf: XPath: /model/build/item[0]: %v", &errors.ParseAttrError{Required: true, Name: "UUID"}),
 	}
 	got := new(go3mf.Model)
 	got.Path = "/3D/3dmodel.model"

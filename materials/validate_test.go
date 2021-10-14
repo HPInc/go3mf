@@ -27,10 +27,10 @@ func TestValidate(t *testing.T) {
 				&MultiProperties{ID: 2},
 			}}},
 		}}, []string{
-			fmt.Sprintf("/other.model@Resources@ColorGroup#0: %v", errors.ErrEmptyResourceProps),
-			fmt.Sprintf("/that.model@Resources@MultiProperties#0: %v", &errors.MissingFieldError{Name: attrPIDs}),
-			fmt.Sprintf("/that.model@Resources@MultiProperties#0: %v", ErrMultiBlend),
-			fmt.Sprintf("/that.model@Resources@MultiProperties#0: %v", errors.ErrEmptyResourceProps),
+			fmt.Sprintf("go3mf: Path: /other.model XPath: /model/resources/colorgroup[0]: %v", errors.ErrEmptyResourceProps),
+			fmt.Sprintf("go3mf: Path: /that.model XPath: /model/resources/multiproperties[0]: %v", &errors.MissingFieldError{Name: attrPIDs}),
+			fmt.Sprintf("go3mf: Path: /that.model XPath: /model/resources/multiproperties[0]: %v", ErrMultiBlend),
+			fmt.Sprintf("go3mf: Path: /that.model XPath: /model/resources/multiproperties[0]: %v", errors.ErrEmptyResourceProps),
 		}},
 		{"multi", &go3mf.Model{
 			Resources: go3mf.Resources{Assets: []go3mf.Asset{
@@ -48,15 +48,15 @@ func TestValidate(t *testing.T) {
 				&MultiProperties{ID: 9, Multis: []Multi{{PIndices: []uint32{}}}, PIDs: []uint32{1, 3}},
 			}},
 		}, []string{
-			fmt.Sprintf("Resources@MultiProperties#0: %v", &errors.MissingFieldError{Name: attrPIDs}),
-			fmt.Sprintf("Resources@MultiProperties#0: %v", ErrMultiBlend),
-			fmt.Sprintf("Resources@MultiProperties#0: %v", errors.ErrEmptyResourceProps),
-			fmt.Sprintf("Resources@MultiProperties#1: %v", ErrMultiRefMulti),
-			fmt.Sprintf("Resources@MultiProperties#1: %v", errors.ErrMissingResource),
-			fmt.Sprintf("Resources@MultiProperties#6@Multi#0: %v", errors.ErrIndexOutOfBounds),
-			fmt.Sprintf("Resources@MultiProperties#7: %v", ErrMaterialMulti),
-			fmt.Sprintf("Resources@MultiProperties#7: %v", ErrMultiColors),
-			fmt.Sprintf("Resources@MultiProperties#8: %v", ErrMaterialMulti),
+			fmt.Sprintf("go3mf: XPath: /model/resources/multiproperties[0]: %v", &errors.MissingFieldError{Name: attrPIDs}),
+			fmt.Sprintf("go3mf: XPath: /model/resources/multiproperties[0]: %v", ErrMultiBlend),
+			fmt.Sprintf("go3mf: XPath: /model/resources/multiproperties[0]: %v", errors.ErrEmptyResourceProps),
+			fmt.Sprintf("go3mf: XPath: /model/resources/multiproperties[1]: %v", ErrMultiRefMulti),
+			fmt.Sprintf("go3mf: XPath: /model/resources/multiproperties[1]: %v", errors.ErrMissingResource),
+			fmt.Sprintf("go3mf: XPath: /model/resources/multiproperties[6]/multi[0]: %v", errors.ErrIndexOutOfBounds),
+			fmt.Sprintf("go3mf: XPath: /model/resources/multiproperties[7]: %v", ErrMaterialMulti),
+			fmt.Sprintf("go3mf: XPath: /model/resources/multiproperties[7]: %v", ErrMultiColors),
+			fmt.Sprintf("go3mf: XPath: /model/resources/multiproperties[8]: %v", ErrMaterialMulti),
 		}},
 		{"missingTextPart", &go3mf.Model{
 			Resources: go3mf.Resources{Assets: []go3mf.Asset{
@@ -64,9 +64,9 @@ func TestValidate(t *testing.T) {
 				&Texture2D{ID: 2, ContentType: TextureTypePNG, Path: "/a.png"},
 			}},
 		}, []string{
-			fmt.Sprintf("Resources@Texture2D#0: %v", &errors.MissingFieldError{Name: attrPath}),
-			fmt.Sprintf("Resources@Texture2D#0: %v", &errors.MissingFieldError{Name: attrContentType}),
-			fmt.Sprintf("Resources@Texture2D#1: %v", ErrMissingTexturePart),
+			fmt.Sprintf("go3mf: XPath: /model/resources/texture2d[0]: %v", &errors.MissingFieldError{Name: attrPath}),
+			fmt.Sprintf("go3mf: XPath: /model/resources/texture2d[0]: %v", &errors.MissingFieldError{Name: attrContentType}),
+			fmt.Sprintf("go3mf: XPath: /model/resources/texture2d[1]: %v", ErrMissingTexturePart),
 		}},
 		{"textureGroup", &go3mf.Model{
 			Attachments: []go3mf.Attachment{{Path: "/a.png"}},
@@ -78,10 +78,10 @@ func TestValidate(t *testing.T) {
 				&Texture2DGroup{ID: 5, TextureID: 100, Coords: []TextureCoord{{}}},
 			}},
 		}, []string{
-			fmt.Sprintf("Resources@Texture2DGroup#1: %v", &errors.MissingFieldError{Name: attrTexID}),
-			fmt.Sprintf("Resources@Texture2DGroup#1: %v", errors.ErrEmptyResourceProps),
-			fmt.Sprintf("Resources@Texture2DGroup#3: %v", ErrTextureReference),
-			fmt.Sprintf("Resources@Texture2DGroup#4: %v", ErrTextureReference),
+			fmt.Sprintf("go3mf: XPath: /model/resources/texture2dgroup[1]: %v", &errors.MissingFieldError{Name: attrTexID}),
+			fmt.Sprintf("go3mf: XPath: /model/resources/texture2dgroup[1]: %v", errors.ErrEmptyResourceProps),
+			fmt.Sprintf("go3mf: XPath: /model/resources/texture2dgroup[3]: %v", ErrTextureReference),
+			fmt.Sprintf("go3mf: XPath: /model/resources/texture2dgroup[4]: %v", ErrTextureReference),
 		}},
 		{"colorGroup", &go3mf.Model{
 			Resources: go3mf.Resources{Assets: []go3mf.Asset{
@@ -90,8 +90,8 @@ func TestValidate(t *testing.T) {
 				&ColorGroup{ID: 3, Colors: []color.RGBA{{R: 1}, {}}},
 			}},
 		}, []string{
-			fmt.Sprintf("Resources@ColorGroup#0: %v", errors.ErrEmptyResourceProps),
-			fmt.Sprintf("Resources@ColorGroup#2@RGBA#1: %v", &errors.MissingFieldError{Name: attrColor}),
+			fmt.Sprintf("go3mf: XPath: /model/resources/colorgroup[0]: %v", errors.ErrEmptyResourceProps),
+			fmt.Sprintf("go3mf: XPath: /model/resources/colorgroup[2]/color[1]: %v", &errors.MissingFieldError{Name: attrColor}),
 		}},
 		{"composite", &go3mf.Model{
 			Resources: go3mf.Resources{Assets: []go3mf.Asset{
@@ -105,12 +105,12 @@ func TestValidate(t *testing.T) {
 				&CompositeMaterials{ID: 5, MaterialID: 2, Indices: []uint32{0, 1}, Composites: []Composite{{Values: []float32{1, 2}}}},
 				&CompositeMaterials{ID: 6, MaterialID: 100, Indices: []uint32{0, 1}, Composites: []Composite{{Values: []float32{1, 2}}}},
 			}}}, []string{
-			fmt.Sprintf("Resources@CompositeMaterials#1: %v", &errors.MissingFieldError{Name: attrMatID}),
-			fmt.Sprintf("Resources@CompositeMaterials#1: %v", &errors.MissingFieldError{Name: attrMatIndices}),
-			fmt.Sprintf("Resources@CompositeMaterials#1: %v", errors.ErrEmptyResourceProps),
-			fmt.Sprintf("Resources@CompositeMaterials#3: %v", errors.ErrIndexOutOfBounds),
-			fmt.Sprintf("Resources@CompositeMaterials#4: %v", ErrCompositeBase),
-			fmt.Sprintf("Resources@CompositeMaterials#5: %v", errors.ErrMissingResource),
+			fmt.Sprintf("go3mf: XPath: /model/resources/compositematerials[1]: %v", &errors.MissingFieldError{Name: attrMatID}),
+			fmt.Sprintf("go3mf: XPath: /model/resources/compositematerials[1]: %v", &errors.MissingFieldError{Name: attrMatIndices}),
+			fmt.Sprintf("go3mf: XPath: /model/resources/compositematerials[1]: %v", errors.ErrEmptyResourceProps),
+			fmt.Sprintf("go3mf: XPath: /model/resources/compositematerials[3]: %v", errors.ErrIndexOutOfBounds),
+			fmt.Sprintf("go3mf: XPath: /model/resources/compositematerials[4]: %v", ErrCompositeBase),
+			fmt.Sprintf("go3mf: XPath: /model/resources/compositematerials[5]: %v", errors.ErrMissingResource),
 		}},
 	}
 	for _, tt := range tests {

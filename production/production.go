@@ -7,6 +7,7 @@ import (
 	"errors"
 
 	"github.com/hpinc/go3mf"
+	"github.com/hpinc/go3mf/spec"
 	"github.com/hpinc/go3mf/uuid"
 )
 
@@ -32,7 +33,7 @@ const (
 type Spec struct{}
 
 func init() {
-	go3mf.Register(Namespace, Spec{})
+	spec.Register(Namespace, Spec{})
 }
 
 // BuildAttr provides a UUID in the root model file build element to ensure
@@ -40,6 +41,8 @@ func init() {
 type BuildAttr struct {
 	UUID string
 }
+
+func (BuildAttr) Namespace() string { return Namespace }
 
 func GetBuildAttr(build *go3mf.Build) *BuildAttr {
 	for _, a := range build.AnyAttr {
@@ -56,6 +59,8 @@ type ObjectAttr struct {
 	UUID string
 }
 
+func (ObjectAttr) Namespace() string { return Namespace }
+
 func GetObjectAttr(obj *go3mf.Object) *ObjectAttr {
 	for _, a := range obj.AnyAttr {
 		if a, ok := a.(*ObjectAttr); ok {
@@ -71,6 +76,8 @@ type ItemAttr struct {
 	UUID string
 	Path string
 }
+
+func (ItemAttr) Namespace() string { return Namespace }
 
 func GetItemAttr(item *go3mf.Item) *ItemAttr {
 	for _, a := range item.AnyAttr {
@@ -96,6 +103,8 @@ type ComponentAttr struct {
 	UUID string
 	Path string
 }
+
+func (ComponentAttr) Namespace() string { return Namespace }
 
 func GetComponentAttr(comp *go3mf.Component) *ComponentAttr {
 	for _, a := range comp.AnyAttr {
@@ -152,5 +161,4 @@ func SetMissingUUIDs(m *go3mf.Model) {
 		}
 		return nil
 	})
-	return
 }

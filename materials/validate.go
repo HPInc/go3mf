@@ -43,7 +43,7 @@ func validateColorGroup(path string, r *ColorGroup) (errs error) {
 	}
 	for j, c := range r.Colors {
 		if c == (color.RGBA{}) {
-			errs = errors.Append(errs, errors.WrapIndex(errors.NewMissingFieldError(attrColor), c, j))
+			errs = errors.Append(errs, errors.WrapIndex(errors.NewMissingFieldError(attrColor), attrColor, j))
 		}
 	}
 	return
@@ -137,10 +137,10 @@ func validateMultiProps(m *go3mf.Model, path string, r *MultiProperties) (errs e
 			errs = errors.Append(errs, errors.ErrMissingResource)
 		}
 	}
-	for j, m := range r.Multis {
-		for k, index := range m.PIndices {
+	for j, multi := range r.Multis {
+		for k, index := range multi.PIndices {
 			if k < len(r.PIDs) && lengths[k] < int(index) {
-				errs = errors.Append(errs, errors.WrapIndex(errors.ErrIndexOutOfBounds, m, j))
+				errs = errors.Append(errs, errors.WrapIndex(errors.ErrIndexOutOfBounds, attrMulti, j))
 				break
 			}
 		}

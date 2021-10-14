@@ -28,9 +28,9 @@ func validateModel(m *go3mf.Model) error {
 	var errs error
 	u := GetBuildAttr(&m.Build)
 	if u == nil {
-		errs = errors.Append(errs, errors.Wrap(errors.NewMissingFieldError(attrProdUUID), m.Build))
+		errs = errors.Append(errs, errors.Wrap(errors.NewMissingFieldError(attrProdUUID), "build"))
 	} else if uuid.Validate(u.UUID) != nil {
-		errs = errors.Append(errs, errors.Wrap(ErrUUID, m.Build))
+		errs = errors.Append(errs, errors.Wrap(ErrUUID, "build"))
 	}
 	for i, item := range m.Build.Items {
 		var iErrs error
@@ -41,7 +41,7 @@ func validateModel(m *go3mf.Model) error {
 			iErrs = errors.Append(iErrs, errors.NewMissingFieldError(attrProdUUID))
 		}
 		if iErrs != nil {
-			errs = errors.Append(errs, errors.Wrap(errors.WrapIndex(iErrs, item, i), m.Build))
+			errs = errors.Append(errs, errors.Wrap(errors.WrapIndex(iErrs, "item", i), "build"))
 		}
 	}
 	return errs
@@ -65,11 +65,11 @@ func validateObject(m *go3mf.Model, path string, obj *go3mf.Object) error {
 				err = errors.Append(err, errors.NewMissingFieldError(attrProdUUID))
 			}
 			if err != nil {
-				cErrs = errors.Append(cErrs, errors.WrapIndex(err, c, i))
+				cErrs = errors.Append(cErrs, errors.WrapIndex(err, "component", i))
 			}
 		}
 		if cErrs != nil {
-			errs = errors.Append(errs, errors.Wrap(cErrs, obj.Components))
+			errs = errors.Append(errs, errors.Wrap(cErrs, "components"))
 		}
 	}
 	return errs

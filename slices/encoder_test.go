@@ -9,19 +9,20 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/hpinc/go3mf"
+	"github.com/hpinc/go3mf/spec"
 )
 
 func TestMarshalModel(t *testing.T) {
 	sliceStack := &SliceStack{ID: 3, BottomZ: 1,
-		Slices: []*Slice{
+		Slices: []Slice{
 			{
 				TopZ:     0,
-				Vertices: []go3mf.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
+				Vertices: Vertices{Vertex: []go3mf.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}}},
 				Polygons: []Polygon{{StartV: 0, Segments: []Segment{{V2: 1, PID: 10}, {V2: 2, PID: 10, P2: 1}, {V2: 3}, {V2: 0}}}},
 			},
 			{
 				TopZ:     0.1,
-				Vertices: []go3mf.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}},
+				Vertices: Vertices{Vertex: []go3mf.Point2D{{1.01, 1.02}, {9.03, 1.04}, {9.05, 9.06}, {1.07, 9.08}}},
 				Polygons: []Polygon{{StartV: 1, Segments: []Segment{{V2: 2}, {V2: 1}, {V2: 3}, {V2: 0}}}},
 			},
 		},
@@ -30,7 +31,7 @@ func TestMarshalModel(t *testing.T) {
 	meshRes := &go3mf.Object{
 		Mesh: new(go3mf.Mesh),
 		ID:   8, Name: "Box 1",
-		AnyAttr: go3mf.AnyAttr{&ObjectAttr{SliceStackID: 3, MeshResolution: ResolutionLow}},
+		AnyAttr: spec.AnyAttr{&ObjectAttr{SliceStackID: 3, MeshResolution: ResolutionLow}},
 	}
 	baseMaterial := &go3mf.BaseMaterials{ID: 10, Materials: []go3mf.Base{{Name: "a", Color: color.RGBA{R: 1}}, {Name: "b", Color: color.RGBA{R: 1}}}}
 

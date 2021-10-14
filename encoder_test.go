@@ -17,14 +17,8 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func (f *fakeAttr) Marshal3MFAttr(_ spec.Encoder) ([]xml.Attr, error) {
-	return []xml.Attr{
-		{Name: xml.Name{Space: fakeExtension, Local: "value"}, Value: f.Value},
-	}, nil
-}
-
 // Marshal3MF encodes the resource.
-func (f *fakeAsset) Marshal3MF(x spec.Encoder) error {
+func (f *fakeAsset) Marshal3MF(x spec.Encoder, _ *xml.StartElement) error {
 	xs := xml.StartElement{Name: xml.Name{Space: fakeExtension, Local: "fakeasset"}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrID}, Value: strconv.FormatUint(uint64(f.ID), 10)},
 	}}
@@ -47,41 +41,42 @@ func (m *mockPackagePart) AddRelationship(args0 Relationship) {
 }
 
 func TestMarshalModel(t *testing.T) {
-	Register(fakeSpec.Namespace, new(qmExtension))
+	spec.Register(fakeSpec.Namespace, new(qmExtension))
 	m := &Model{
 		Units: UnitMillimeter, Language: "en-US", Path: "/3D/3dmodel.model", Thumbnail: "/thumbnail.png",
 		Extensions: []Extension{fakeSpec, fooSpec},
-		AnyAttr:    AnyAttr{&fakeAttr{Value: "model_fake"}, &spec.UnknownAttrs{{Name: fooName, Value: "foo1"}}},
-		Any: Any{spec.UnknownTokens{
+		AnyAttr:    spec.AnyAttr{&fakeAttr{Value: "model_fake"}, &spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "foo1"}}}},
+		Any: spec.Any{&spec.UnknownTokens{Token: []xml.Token{
 			xml.StartElement{Name: fooName},
 			xml.EndElement{Name: fooName},
-		}},
+		}}},
 		Resources: Resources{
 			Assets: []Asset{
-				&UnknownAsset{UnknownTokens: spec.UnknownTokens{
+				&UnknownAsset{UnknownTokens: spec.UnknownTokens{Token: []xml.Token{
 					xml.StartElement{Name: fooName, Attr: []xml.Attr{{Name: xml.Name{Local: "n1"}, Value: "v1"}}},
 					xml.StartElement{Name: xml.Name{Space: fooName.Space, Local: "child"}},
 					xml.EndElement{Name: xml.Name{Space: fooName.Space, Local: "child"}},
 					xml.EndElement{Name: fooName},
-				}},
+				}}},
 				&BaseMaterials{ID: 5, Materials: []Base{
-					{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}, AnyAttr: AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "foo6"}}}},
+					{Name: "Blue PLA", Color: color.RGBA{0, 0, 255, 255}, AnyAttr: spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "foo6"}}}}},
 					{Name: "Red ABS", Color: color.RGBA{255, 0, 0, 255}},
-				}, AnyAttr: AnyAttr{&spec.UnknownAttrs{{Name: fooName, Value: "foo2"}}}}, &fakeAsset{ID: 25}},
+				}, AnyAttr: spec.AnyAttr{&spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "foo2"}}}}},
+				&fakeAsset{ID: 25}},
 			Objects: []*Object{
 				{
 					ID: 8, Name: "Box 1", PartNumber: "11111111-1111-1111-1111-111111111111", Thumbnail: "/a.png",
-					AnyAttr: AnyAttr{&fakeAttr{Value: "object_fake"}, &spec.UnknownAttrs{{Name: fooName, Value: "foo3"}}},
+					AnyAttr: spec.AnyAttr{&fakeAttr{Value: "object_fake"}, &spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "foo3"}}}},
 					PID:     1, PIndex: 1, Type: ObjectTypeModel, Mesh: &Mesh{
-						Any: Any{spec.UnknownTokens{
+						Any: spec.Any{&spec.UnknownTokens{Token: []xml.Token{
 							xml.StartElement{Name: fooName},
 							xml.EndElement{Name: fooName},
-						}},
-						Vertices: []Point3D{
+						}}},
+						Vertices: Vertices{Vertex: []Point3D{
 							{0, 0, 0}, {100, 0, 0}, {100, 100, 0},
 							{0, 100, 0}, {0, 0, 100}, {100, 0, 100},
-							{100, 100, 100}, {0, 100, 100}},
-						Triangles: []Triangle{
+							{100, 100, 100}, {0, 100, 100}}},
+						Triangles: Triangles{Triangle: []Triangle{
 							{V1: 3, V2: 2, V3: 1, PID: 5, P1: 0, P2: 0, P3: 0},
 							{V1: 1, V2: 0, V3: 3, PID: 5, P1: 0, P2: 0, P3: 0},
 							{V1: 4, V2: 5, V3: 6, PID: 5, P1: 1, P2: 1, P3: 1},
@@ -94,24 +89,27 @@ func TestMarshalModel(t *testing.T) {
 							{V1: 7, V2: 6, V3: 2, PID: 5, P1: 0, P2: 0, P3: 0},
 							{V1: 3, V2: 0, V3: 4, PID: 5, P1: 0, P2: 0, P3: 0},
 							{V1: 4, V2: 7, V3: 3, PID: 5, P1: 0, P2: 0, P3: 0},
-						},
+						}},
 					}},
 				{
 					ID: 20, Type: ObjectTypeSupport,
-					Metadata: []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}, {Name: xml.Name{Space: "qm", Local: "CustomMetadata4"}, Type: "xs:boolean", Value: "2"}},
+					Metadata: MetadataGroup{Metadata: []Metadata{
+						{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"},
+						{Name: xml.Name{Space: "qm", Local: "CustomMetadata4"}, Type: "xs:boolean", Value: "2"},
+					}},
 					Components: &Components{Component: []*Component{{ObjectID: 8, Transform: Matrix{3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, -66.4, -87.1, 8.8, 1},
-						AnyAttr: AnyAttr{&fakeAttr{Value: "component_fake"}, &spec.UnknownAttrs{{Name: fooName, Value: "foo8"}}}}}},
+						AnyAttr: spec.AnyAttr{&fakeAttr{Value: "component_fake"}, &spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "foo8"}}}}}}},
 				},
 			},
 		},
 		Build: Build{
-			AnyAttr: AnyAttr{&fakeAttr{Value: "build_fake"}, &spec.UnknownAttrs{{Name: fooName, Value: "foo4"}, {Name: fooName, Value: "foo6"}}},
+			AnyAttr: spec.AnyAttr{&fakeAttr{Value: "build_fake"}, &spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "foo4"}, {Name: fooName, Value: "foo6"}}}},
 			Items: []*Item{
 				{
 					ObjectID: 20, PartNumber: "bob", Transform: Matrix{1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, -66.4, -87.1, 8.8, 1},
-					Metadata: []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}},
+					Metadata: MetadataGroup{Metadata: []Metadata{{Name: xml.Name{Space: "qm", Local: "CustomMetadata3"}, Type: "xs:boolean", Value: "1"}}},
 				},
-				{ObjectID: 21, AnyAttr: AnyAttr{&fakeAttr{Value: "item_fake"}, &spec.UnknownAttrs{{Name: fooName, Value: "foo5"}}}},
+				{ObjectID: 21, AnyAttr: spec.AnyAttr{&fakeAttr{Value: "item_fake"}, &spec.UnknownAttrs{Space: fooSpace, Attr: []xml.Attr{{Name: fooName, Value: "foo5"}}}}},
 			}}, Metadata: []Metadata{
 			{Name: xml.Name{Local: "Application"}, Value: "go3mf app"},
 			{Name: xml.Name{Space: "qm", Local: "CustomMetadata1"}, Preserve: true, Type: "xs:string", Value: "CE8A91FB-C44E-4F00-B634-BAA411465F6A"},

@@ -46,29 +46,29 @@ func validateObject(m *go3mf.Model, path string, obj *go3mf.Object) error {
 		errs = errors.Append(errs, validateRefMesh(m, path, bl.RepresentationMeshID, obj.ID))
 	}
 
-	for i, b := range bl.Beams {
+	for i, b := range bl.Beams.Beam {
 		if b.Indices[0] == b.Indices[1] {
-			errs = errors.Append(errs, errors.WrapIndex(ErrLatticeSameVertex, b, i))
+			errs = errors.Append(errs, errors.WrapIndex(ErrLatticeSameVertex, attrBeam, i))
 		} else {
-			l := len(obj.Mesh.Vertices)
+			l := len(obj.Mesh.Vertices.Vertex)
 			if int(b.Indices[0]) >= l || int(b.Indices[1]) >= l {
-				errs = errors.Append(errs, errors.WrapIndex(errors.ErrIndexOutOfBounds, b, i))
+				errs = errors.Append(errs, errors.WrapIndex(errors.ErrIndexOutOfBounds, attrBeam, i))
 			}
 		}
 		if b.Radius[0] != 0 && b.Radius[0] != bl.Radius && b.Radius[0] != b.Radius[1] {
-			errs = errors.Append(errs, errors.WrapIndex(ErrLatticeBeamR2, b, i))
+			errs = errors.Append(errs, errors.WrapIndex(ErrLatticeBeamR2, attrBeam, i))
 		}
 	}
-	for i, set := range bl.BeamSets {
+	for i, set := range bl.BeamSets.BeamSet {
 		for _, ref := range set.Refs {
 			if int(ref) >= len(set.Refs) {
-				errs = errors.Append(errs, errors.WrapIndex(errors.ErrIndexOutOfBounds, set, i))
+				errs = errors.Append(errs, errors.WrapIndex(errors.ErrIndexOutOfBounds, attrBeamSet, i))
 				break
 			}
 		}
 	}
 	if errs != nil {
-		errs = errors.Wrap(errors.Wrap(errs, bl), obj.Mesh)
+		errs = errors.Wrap(errors.Wrap(errs, attrBeamLattice), "mesh")
 	}
 	return errs
 }

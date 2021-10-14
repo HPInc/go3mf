@@ -4,68 +4,74 @@
 package production
 
 import (
+	"encoding/xml"
+
 	"github.com/hpinc/go3mf"
 	specerr "github.com/hpinc/go3mf/errors"
 	"github.com/hpinc/go3mf/spec"
 	"github.com/hpinc/go3mf/uuid"
 )
 
-func (Spec) CreateElementDecoder(_ interface{}, _ string) spec.ElementDecoder {
+func (Spec) NewElementDecoder(xml.Name) spec.GetterElementDecoder {
 	return nil
 }
 
-func (Spec) DecodeAttribute(parentNode interface{}, attr spec.Attr) (errs error) {
-	switch t := parentNode.(type) {
-	case *go3mf.Build:
-		if attr.Name.Local == attrProdUUID {
-			if err := uuid.Validate(string(attr.Value)); err != nil {
-				errs = specerr.Append(errs, specerr.NewParseAttrError(attr.Name.Local, true))
-			}
-			t.AnyAttr = append(t.AnyAttr, &BuildAttr{UUID: string(attr.Value)})
-		}
-	case *go3mf.Item:
-		switch attr.Name.Local {
-		case attrProdUUID:
-			if err := uuid.Validate(string(attr.Value)); err != nil {
-				errs = specerr.Append(errs, specerr.NewParseAttrError(attr.Name.Local, true))
-			}
-			if ext := GetItemAttr(t); ext != nil {
-				ext.UUID = string(attr.Value)
-			} else {
-				t.AnyAttr = append(t.AnyAttr, &ItemAttr{UUID: string(attr.Value)})
-			}
-		case attrPath:
-			if ext := GetItemAttr(t); ext != nil {
-				ext.Path = string(attr.Value)
-			} else {
-				t.AnyAttr = append(t.AnyAttr, &ItemAttr{Path: string(attr.Value)})
-			}
-		}
-	case *go3mf.Object:
-		if attr.Name.Local == attrProdUUID {
-			if err := uuid.Validate(string(attr.Value)); err != nil {
-				errs = specerr.Append(errs, specerr.NewParseAttrError(attr.Name.Local, true))
-			}
-			t.AnyAttr = append(t.AnyAttr, &ObjectAttr{UUID: string(attr.Value)})
-		}
-	case *go3mf.Component:
-		switch attr.Name.Local {
-		case attrProdUUID:
-			if err := uuid.Validate(string(attr.Value)); err != nil {
-				errs = specerr.Append(errs, specerr.NewParseAttrError(attr.Name.Local, true))
-			}
-			if ext := GetComponentAttr(t); ext != nil {
-				ext.UUID = string(attr.Value)
-			} else {
-				t.AnyAttr = append(t.AnyAttr, &ComponentAttr{UUID: string(attr.Value)})
-			}
-		case attrPath:
-			if ext := GetComponentAttr(t); ext != nil {
-				ext.Path = string(attr.Value)
-			} else {
-				t.AnyAttr = append(t.AnyAttr, &ComponentAttr{Path: string(attr.Value)})
-			}
+func (Spec) NewAttrGroup(parent xml.Name) spec.AttrGroup {
+	if parent.Space == go3mf.Namespace {
+		switch parent.Local {
+		case "build":
+			return new(BuildAttr)
+		case "item":
+			return new(ItemAttr)
+		case "object":
+			return new(ObjectAttr)
+		case "component":
+			return new(ComponentAttr)
 		}
 	}
-	return
+	return nil
+}
+
+func (u *BuildAttr) Unmarshal3MFAttr(a spec.XMLAttr) error {
+	if a.Name.Local == attrProdUUID {
+		if err := uuid.Validate(string(a.Value)); err != nil {
+			return specerr.NewParseAttrError(a.Name.Local, true)
+		}
+		u.UUID = string(a.Value)
+	}
+	return nil
+}
+
+func (u *ItemAttr) Unmarshal3MFAttr(a spec.XMLAttr) error {
+	if a.Name.Local == attrProdUUID {
+		if err := uuid.Validate(string(a.Value)); err != nil {
+			return specerr.NewParseAttrError(a.Name.Local, true)
+		}
+		u.UUID = string(a.Value)
+	} else if a.Name.Local == attrPath {
+		u.Path = string(a.Value)
+	}
+	return nil
+}
+
+func (u *ObjectAttr) Unmarshal3MFAttr(a spec.XMLAttr) error {
+	if a.Name.Local == attrProdUUID {
+		if err := uuid.Validate(string(a.Value)); err != nil {
+			return specerr.NewParseAttrError(a.Name.Local, true)
+		}
+		u.UUID = string(a.Value)
+	}
+	return nil
+}
+
+func (u *ComponentAttr) Unmarshal3MFAttr(a spec.XMLAttr) error {
+	if a.Name.Local == attrProdUUID {
+		if err := uuid.Validate(string(a.Value)); err != nil {
+			return specerr.NewParseAttrError(a.Name.Local, true)
+		}
+		u.UUID = string(a.Value)
+	} else if a.Name.Local == attrPath {
+		u.Path = string(a.Value)
+	}
+	return nil
 }

@@ -5,7 +5,9 @@ package beamlattice
 
 import (
 	"errors"
+
 	"github.com/hpinc/go3mf"
+	"github.com/hpinc/go3mf/spec"
 )
 
 // Namespace is the canonical name of this extension.
@@ -26,7 +28,7 @@ var (
 )
 
 func init() {
-	go3mf.Register(Namespace, Spec{})
+	spec.Register(Namespace, Spec{})
 }
 
 type Spec struct{}
@@ -90,10 +92,18 @@ type BeamLattice struct {
 	ClipMode             ClipMode
 	ClippingMeshID       uint32
 	RepresentationMeshID uint32
-	Beams                []Beam
-	BeamSets             []BeamSet
+	Beams                Beams
+	BeamSets             BeamSets
 	MinLength, Radius    float32
 	CapMode              CapMode
+}
+
+type Beams struct {
+	Beam []Beam
+}
+
+type BeamSets struct {
+	BeamSet []BeamSet
 }
 
 func GetBeamLattice(mesh *go3mf.Mesh) *BeamLattice {

@@ -91,6 +91,7 @@ func (o ObjectType) String() string {
 
 // Asset defines build resource.
 type Asset interface {
+	XMLName() xml.Name
 	Identify() uint32
 }
 
@@ -123,7 +124,7 @@ type Relationship struct {
 // Build contains one or more items to manufacture as part of processing the job.
 type Build struct {
 	Items   []*Item
-	AnyAttr AnyAttr
+	AnyAttr spec.AnyAttr
 }
 
 // The Resources element acts as the root element of a library of constituent
@@ -131,7 +132,7 @@ type Build struct {
 type Resources struct {
 	Assets  []Asset
 	Objects []*Object
-	AnyAttr AnyAttr
+	AnyAttr spec.AnyAttr
 }
 
 // UnusedID returns the lowest unused ID.
@@ -197,7 +198,7 @@ type Extension struct {
 type ChildModel struct {
 	Resources     Resources
 	Relationships []Relationship
-	Any           Any
+	Any           spec.Any
 }
 
 // A Model is an in memory representation of the 3MF file.
@@ -220,8 +221,8 @@ type Model struct {
 	Childs            map[string]*ChildModel // path -> child
 	RootRelationships []Relationship
 	Relationships     []Relationship
-	Any               Any
-	AnyAttr           AnyAttr
+	Any               spec.Any
+	AnyAttr           spec.AnyAttr
 }
 
 // PathOrDefault returns Path if not empty, else DefaultModelPath.
@@ -338,14 +339,14 @@ func (m *Model) WalkObjects(fn func(string, *Object) error) error {
 type Base struct {
 	Name    string
 	Color   color.RGBA
-	AnyAttr AnyAttr
+	AnyAttr spec.AnyAttr
 }
 
 // BaseMaterials defines a slice of Base.
 type BaseMaterials struct {
 	ID        uint32
 	Materials []Base
-	AnyAttr   AnyAttr
+	AnyAttr   spec.AnyAttr
 }
 
 // Len returns the materials count.
@@ -358,13 +359,23 @@ func (r *BaseMaterials) Identify() uint32 {
 	return r.ID
 }
 
+// XMLName returns the xml identifier of the resource.
+func (BaseMaterials) XMLName() xml.Name {
+	return xml.Name{Space: Namespace, Local: attrBaseMaterials}
+}
+
+type MetadataGroup struct {
+	Metadata []Metadata
+	AnyAttr  spec.AnyAttr
+}
+
 // A Item is an in memory representation of the 3MF build item.
 type Item struct {
 	ObjectID   uint32
 	Transform  Matrix
 	PartNumber string
-	Metadata   []Metadata
-	AnyAttr    AnyAttr
+	Metadata   MetadataGroup
+	AnyAttr    spec.AnyAttr
 }
 
 // ObjectPath search an extension attribute with an ObjectPath
@@ -396,10 +407,10 @@ type Object struct {
 	PID        uint32
 	PIndex     uint32
 	Type       ObjectType
-	Metadata   []Metadata
+	Metadata   MetadataGroup
 	Mesh       *Mesh
 	Components *Components
-	AnyAttr    AnyAttr
+	AnyAttr    spec.AnyAttr
 }
 
 func (o *Object) boundingBox(m *Model, path string) Box {
@@ -424,14 +435,14 @@ func (o *Object) boundingBox(m *Model, path string) Box {
 // A Components is an in memory representation of the 3MF components.
 type Components struct {
 	Component []*Component
-	AnyAttr   AnyAttr
+	AnyAttr   spec.AnyAttr
 }
 
 // A Component is an in memory representation of the 3MF component.
 type Component struct {
 	ObjectID  uint32
 	Transform Matrix
-	AnyAttr   AnyAttr
+	AnyAttr   spec.AnyAttr
 }
 
 // ObjectPath search an extension attribute with an ObjectPath
@@ -461,6 +472,7 @@ type Triangle struct {
 	V1, V2, V3 uint32
 	PID        uint32
 	P1, P2, P3 uint32
+	AnyAttr    spec.AnyAttr
 }
 
 // A Mesh is an in memory representation of the 3MF mesh object.
@@ -468,19 +480,29 @@ type Triangle struct {
 // orientation (i.e. the face can look up or look down) and have three nodes.
 // The orientation is defined by the order of its nodes.
 type Mesh struct {
-	Vertices  []Point3D
-	Triangles []Triangle
-	AnyAttr   AnyAttr
-	Any       Any
+	Vertices  Vertices
+	Triangles Triangles
+	AnyAttr   spec.AnyAttr
+	Any       spec.Any
+}
+
+type Vertices struct {
+	Vertex  []Point3D
+	AnyAttr spec.AnyAttr
+}
+
+type Triangles struct {
+	Triangle []Triangle
+	AnyAttr  spec.AnyAttr
 }
 
 // BoundingBox returns the bounding box of the mesh.
 func (m *Mesh) BoundingBox() Box {
-	if len(m.Vertices) == 0 {
+	if len(m.Vertices.Vertex) == 0 {
 		return Box{}
 	}
 	box := newLimitBox()
-	for _, v := range m.Vertices {
+	for _, v := range m.Vertices.Vertex {
 		box = box.extendPoint(v)
 	}
 	return box
@@ -514,12 +536,23 @@ func (mb *MeshBuilder) AddVertex(node Point3D) uint32 {
 			return index
 		}
 	}
-	mb.Mesh.Vertices = append(mb.Mesh.Vertices, node)
-	index := uint32(len(mb.Mesh.Vertices)) - 1
+	mb.Mesh.Vertices.Vertex = append(mb.Mesh.Vertices.Vertex, node)
+	index := uint32(len(mb.Mesh.Vertices.Vertex)) - 1
 	if mb.CalculateConnectivity {
 		mb.vectorTree.AddVector(node, index)
 	}
 	return index
+}
+
+// UnknownAsset wraps a spec.UnknownTokens to fulfill
+// the Asset interface.
+type UnknownAsset struct {
+	spec.UnknownTokens
+	id uint32
+}
+
+func (u UnknownAsset) Identify() uint32 {
+	return u.id
 }
 
 func newObjectType(s string) (o ObjectType, ok bool) {
@@ -545,29 +578,9 @@ func newUnits(s string) (u Units, ok bool) {
 	return
 }
 
-// AnyAttr is an extension point containing <anyAttribute> information.
-type AnyAttr []spec.MarshalerAttr
-
-func (any *AnyAttr) AddUnknownAttr(a spec.Attr) {
-	ua := any.GetUnknownAttr()
-	if ua == nil {
-		ua = &spec.UnknownAttrs{}
-		*any = append(*any, ua)
-	}
-	*ua = append(*ua, xml.Attr{Name: a.Name, Value: string(a.Value)})
+type objectPather interface {
+	ObjectPath() string
 }
-
-func (any AnyAttr) GetUnknownAttr() *spec.UnknownAttrs {
-	for _, a := range any {
-		if a, ok := a.(*spec.UnknownAttrs); ok {
-			return a
-		}
-	}
-	return nil
-}
-
-// Any is an extension point containing <any> information.
-type Any []spec.Marshaler
 
 const (
 	nsXML   = "http://www.w3.org/XML/1998/namespace"
