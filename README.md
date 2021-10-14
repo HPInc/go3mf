@@ -38,18 +38,18 @@ import (
 )
 
 func main() {
-    model := new(go3mf.Model)
+    var model go3mf.Model
     r, _ := go3mf.OpenReader("/testdata/cube.3mf")
-    r.Decode(model)
+    r.Decode(&model)
     for _, item := range model.Build.Items {
       fmt.Println("item:", *item)
       obj, _ := model.FindObject(item.ObjectPath(), item.ObjectID)
       fmt.Println("object:", *obj)
       if obj.Mesh != nil {
-        for _, t := range obj.Mesh.Triangles {
-          fmt.Println(t.Indices())
+        for _, t := range obj.Mesh.Triangles.Triangle {
+          fmt.Println(t)
         }
-        for _, v := range obj.Mesh.Vertices {
+        for _, v := range obj.Mesh.Vertices.Vertex {
           fmt.Println(v.X(), v.Y(), v.Z())
         }
       }
@@ -74,9 +74,9 @@ func main() {
     resp, _ := http.Get("zip file url")
     defer resp.Body.Close()
     body, _ := ioutil.ReadAll(resp.Body)
-    model := new(go3mf.Model)
+    var model go3mf.Model
     r, _ := go3mf.NewDecoder(bytes.NewReader(body), int64(len(body)))
-    r.Decode(model)
+    r.Decode(&model)
     fmt.Println(model)
 }
 ```
@@ -94,9 +94,9 @@ import (
 )
 
 func main() {
-    model := new(go3mf.Model)
+    var model go3mf.Model
     w, _ := go3mf.CreateWriter("/testdata/cube.3mf")
-    w.Encode(model)
+    w.Encode(&model)
     w.Close()
 }
 ```
@@ -113,12 +113,13 @@ import (
 
     "github.com/hpinc/go3mf"
     "github.com/hpinc/go3mf/material"
+    "github.com/hpinc/go3mf/production"
 )
 
 func main() {
-    model := new(go3mf.Model)
+    var model go3mf.Model
     r, _ := go3mf.OpenReader("/testdata/cube.3mf")
-    r.Decode(model)
+    r.Decode(&model)
     fmt.Println(production.GetBuildAttr(&model.Build).UUID)
 
     model.Resources.Assets = append(model.Resources.Assets, &materials.ColorGroup{
