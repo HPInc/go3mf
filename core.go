@@ -247,7 +247,7 @@ func (m *Model) BoundingBox() Box {
 			defer wg.Done()
 			item := m.Build.Items[i]
 			if o, ok := m.FindObject(item.ObjectPath(), item.ObjectID); ok {
-				ibox := o.boundingBox(m, "")
+				ibox := o.boundingBox(m, item.ObjectPath())
 				if ibox != emptyBox {
 					mu.Lock()
 					box = box.extend(item.Transform.MulBox(ibox))

@@ -476,6 +476,56 @@ func TestModel_BoundingBox(t *testing.T) {
 				}}},
 			}},
 		}, Box{Min: Point3D{10, 20, 30}, Max: Point3D{110, 120, 130}}},
+		{"non-root-model", &Model{
+			Build: Build{Items: []*Item{
+				{ObjectID: 2, Transform: Identity(), AnyAttr: spec.AnyAttr{&fakeAttr{Value: "/other.model"}}},
+			}},
+			Resources: Resources{},
+			Childs: map[string]*ChildModel{
+				"/other.model": &ChildModel{
+					Resources: Resources{Objects: []*Object{
+						{ID: 1, Mesh: &Mesh{Vertices: Vertices{Vertex: []Point3D{
+							{0, 10, 20},
+							{100, 110, 120},
+						}}}},
+						{ID: 2, Components: &Components{Component: []*Component{
+							{ObjectID: 1, Transform: Identity().Translate(10, 10, 10)},
+							{ObjectID: 10},
+						}}},
+					}},
+				},
+			},
+		}, Box{Min: Point3D{10, 20, 30}, Max: Point3D{110, 120, 130}}},
+		{"model-tree", &Model{
+			Build: Build{Items: []*Item{
+				{ObjectID: 2, Transform: Identity(), AnyAttr: spec.AnyAttr{&fakeAttr{Value: "/other.model"}}},
+			}},
+			Resources: Resources{},
+			Childs: map[string]*ChildModel{
+				"/leaf.model": &ChildModel{
+					Resources: Resources{Objects: []*Object{
+						{ID: 1, Mesh: &Mesh{Vertices: Vertices{Vertex: []Point3D{
+							{0, 10, 20},
+							{100, 110, 120},
+						}}}},
+					}},
+				},
+				"/another.model": &ChildModel{
+					Resources: Resources{Objects: []*Object{
+						{ID: 2, Components: &Components{Component: []*Component{
+							{ObjectID: 1, Transform: Identity().Translate(7, 7, 7), AnyAttr: spec.AnyAttr{&fakeAttr{Value: "/leaf.model"}}},
+						}}},
+					}},
+				},
+				"/other.model": &ChildModel{
+					Resources: Resources{Objects: []*Object{
+						{ID: 2, Components: &Components{Component: []*Component{
+							{ObjectID: 2, Transform: Identity().Translate(3, 3, 3), AnyAttr: spec.AnyAttr{&fakeAttr{Value: "/another.model"}}},
+						}}},
+					}},
+				},
+			},
+		}, Box{Min: Point3D{10, 20, 30}, Max: Point3D{110, 120, 130}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
