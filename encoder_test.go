@@ -8,12 +8,14 @@ import (
 	"encoding/xml"
 	"errors"
 	"image/color"
+	"path/filepath"
 	"reflect"
 	"strconv"
 	"testing"
 
 	"github.com/go-test/deep"
 	"github.com/hpinc/go3mf/spec"
+	"github.com/hpinc/go3mf/utils"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -308,4 +310,63 @@ func TestEncoder_Encode_Roundtrip(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestEncoder_Relationship(t *testing.T) {
+	type request struct {
+		fileName string
+	}
+	type response struct {
+		relationships []Relationship
+	}
+
+	tests := []struct {
+		name     string
+		request  request
+		response response
+	}{ /*Verfy if a file rels is not update in case of relationship exists*/
+		{"file_with_texture_rel_but_no_texture",
+			request{fileName: "super_boogoku_tiny.3mf"},
+			response{relationships: []Relationship{
+				{ID: "rel2", Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture", Path: "/Thumbnails/super_boo.png"},
+				{ID: "rel3", Type: "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dtexture", Path: "/Thumbnails/goku_ss.png"},
+			}},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			utils.WithProjectDirAndTestTempDirRemoveAtEnd(
+				filepath.Join("testdata"), func(testFileDir string, testTempDir string) {
+					testFile := filepath.Join(testFileDir, tt.request.fileName)
+					outputFile := filepath.Join(testTempDir, "SW3DBUG-2700_changed.3mf")
+					var model Model
+					r, err := OpenReader(testFile)
+					if err != nil {
+						t.Errorf("TestEncoder_Relationship() error = %v", err)
+					}
+					r.Decode(&model)
+					defer r.Close()
+					w, err := CreateWriter(outputFile)
+					if err != nil {
+						t.Errorf("TestEncoder_Relationship() error = %v", err)
+					}
+					w.Encode(&model)
+					defer w.Close()
+
+					var modelUpdated Model
+					r, err = OpenReader(outputFile)
+					if err != nil {
+						t.Errorf("TestEncoder_Relationship() error = %v", err)
+					}
+					r.Decode(&modelUpdated)
+					defer r.Close()
+
+					if diff := deep.Equal(modelUpdated.Relationships, tt.response.relationships); diff != nil {
+						t.Errorf("TestEncoder_Relationship() = %v", diff)
+					}
+				})
+
+		})
+	}
+
 }

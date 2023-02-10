@@ -36,7 +36,16 @@ func newXMLEncoder(w io.Writer, floatPresicion int) *xmlEncoder {
 // AddRelationship adds a relationship to the encoded model.
 // Duplicated relationships will be removed before encoding.
 func (enc *xmlEncoder) AddRelationship(r spec.Relationship) {
-	enc.relationships = append(enc.relationships, Relationship(r))
+	hasRelationship := false
+	for _, relationship := range enc.relationships {
+		if relationship.Path == r.Path {
+			hasRelationship = true
+			break
+		}
+	}
+	if !hasRelationship {
+		enc.relationships = append(enc.relationships, Relationship(r))
+	}
 }
 
 // FloatPresicion returns the float presicion to use
