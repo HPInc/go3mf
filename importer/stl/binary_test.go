@@ -19,9 +19,9 @@ func Test_binaryDecoder_decode(t *testing.T) {
 	triangle := createBinaryTriangle()
 	tests := []struct {
 		name    string
-		d       *binaryDecoder
+		d       binaryDecoder
 		ctx     context.Context
-		want    *go3mf.Mesh
+		want    go3mf.Mesh
 		wantErr bool
 	}{
 		{"base", &binaryDecoder{r: bytes.NewReader(triangle)}, context.Background(), createMeshTriangle(0).Mesh, false},
