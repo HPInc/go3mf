@@ -54,7 +54,7 @@ type AppendTokenElementDecoder interface {
 // will be provided be go3mf itself.
 type Encoder interface {
 	AddRelationship(Relationship)
-	FloatPresicion() int
+	FloatPrecision() int
 	EncodeToken(xml.Token)
 	Flush() error
 	SetAutoClose(bool)

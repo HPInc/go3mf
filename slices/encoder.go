@@ -28,7 +28,7 @@ func (s *SliceStack) Marshal3MF(x spec.Encoder, _ *xml.StartElement) error {
 	if s.BottomZ != 0 {
 		xs.Attr = append(xs.Attr, xml.Attr{
 			Name:  xml.Name{Local: attrZBottom},
-			Value: strconv.FormatFloat(float64(s.BottomZ), 'f', x.FloatPresicion(), 32),
+			Value: strconv.FormatFloat(float64(s.BottomZ), 'f', x.FloatPrecision(), 32),
 		})
 	}
 	x.EncodeToken(xs)
@@ -49,7 +49,7 @@ func (s *SliceStack) Marshal3MF(x spec.Encoder, _ *xml.StartElement) error {
 
 func (s *Slice) marshal3MF(x spec.Encoder) {
 	xs := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrSlice}, Attr: []xml.Attr{
-		{Name: xml.Name{Local: attrZTop}, Value: strconv.FormatFloat(float64(s.TopZ), 'f', x.FloatPresicion(), 32)},
+		{Name: xml.Name{Local: attrZTop}, Value: strconv.FormatFloat(float64(s.TopZ), 'f', x.FloatPrecision(), 32)},
 	}}
 	x.EncodeToken(xs)
 
@@ -102,7 +102,7 @@ func marshalVertices(x spec.Encoder, vs []go3mf.Point2D) {
 	x.EncodeToken(xv)
 	x.SetAutoClose(true)
 	x.SetSkipAttrEscape(true)
-	prec := x.FloatPresicion()
+	prec := x.FloatPrecision()
 	start := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrVertex}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrX}},
 		{Name: xml.Name{Local: attrY}},
