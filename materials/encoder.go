@@ -41,7 +41,7 @@ func (r *Texture2DGroup) Marshal3MF(x spec.Encoder, _ *xml.StartElement) error {
 	x.EncodeToken(xs)
 	x.SetAutoClose(true)
 	x.SetSkipAttrEscape(true)
-	prec := x.FloatPresicion()
+	prec := x.FloatPrecision()
 	start := xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrTex2DCoord}, Attr: []xml.Attr{
 		{Name: xml.Name{Local: attrU}},
 		{Name: xml.Name{Local: attrV}},
@@ -74,7 +74,7 @@ func (r *CompositeMaterials) Marshal3MF(x spec.Encoder, _ *xml.StartElement) err
 	for _, c := range r.Composites {
 		values := make([]string, len(c.Values))
 		for i, v := range c.Values {
-			values[i] = strconv.FormatFloat(float64(v), 'f', x.FloatPresicion(), 32)
+			values[i] = strconv.FormatFloat(float64(v), 'f', x.FloatPrecision(), 32)
 		}
 		x.EncodeToken(xml.StartElement{Name: xml.Name{Space: Namespace, Local: attrComposite}, Attr: []xml.Attr{
 			{Name: xml.Name{Local: attrValues}, Value: strings.Join(values, " ")},

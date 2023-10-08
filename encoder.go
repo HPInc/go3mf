@@ -20,15 +20,15 @@ import (
 const defaultFloatPrecision = 4
 
 type xmlEncoder struct {
-	floatPresicion int
+	floatPrecision int
 	relationships  []Relationship
 	p              xml3mf.Printer
 }
 
 // newXMLEncoder returns a new encoder that writes to w.
-func newXMLEncoder(w io.Writer, floatPresicion int) *xmlEncoder {
+func newXMLEncoder(w io.Writer, floatPrecision int) *xmlEncoder {
 	return &xmlEncoder{
-		floatPresicion: floatPresicion,
+		floatPrecision: floatPrecision,
 		p:              xml3mf.Printer{Writer: bufio.NewWriter(w)},
 	}
 }
@@ -48,10 +48,10 @@ func (enc *xmlEncoder) AddRelationship(r spec.Relationship) {
 	}
 }
 
-// FloatPresicion returns the float presicion to use
+// FloatPrecision returns the float presicion to use
 // when encoding floats.
-func (enc *xmlEncoder) FloatPresicion() int {
-	return enc.floatPresicion
+func (enc *xmlEncoder) FloatPrecision() int {
+	return enc.floatPrecision
 }
 
 // EncodeToken writes the given XML token to the stream.
@@ -441,7 +441,7 @@ func (e *Encoder) writeVertices(x spec.Encoder, m *Mesh) {
 	xvs := xml.StartElement{Name: xml.Name{Local: attrVertices}}
 	m.Vertices.AnyAttr.Marshal3MF(x, &xvs)
 	x.EncodeToken(xvs)
-	prec := x.FloatPresicion()
+	prec := x.FloatPrecision()
 	start := xml.StartElement{
 		Name: xml.Name{Local: attrVertex},
 		Attr: []xml.Attr{
